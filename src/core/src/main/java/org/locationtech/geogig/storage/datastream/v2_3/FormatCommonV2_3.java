@@ -58,8 +58,7 @@ class FormatCommonV2_3 extends FormatCommonV2_2 {
         }
     }
 
-    @Override
-    public void writeTree(RevTree tree, DataOutput data) throws IOException {
+    public @Override void writeTree(RevTree tree, DataOutput data) throws IOException {
         InternalByteArrayOutputStream out = new InternalByteArrayOutputStream();
         RevTreeFormat.encode(tree, new DataOutputStream(out));
         int size = out.size();
@@ -67,8 +66,7 @@ class FormatCommonV2_3 extends FormatCommonV2_2 {
         data.write(out.intenal(), 0, size);
     }
 
-    @Override
-    public RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
+    public @Override RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final int size = in.readInt();
         byte[] data = new byte[size];
         in.readFully(data);

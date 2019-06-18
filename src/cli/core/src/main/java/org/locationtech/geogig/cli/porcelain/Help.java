@@ -47,8 +47,7 @@ public class Help implements CLICommand {
      * @param cli
      * @see org.locationtech.geogig.cli.CLICommand#run(org.locationtech.geogig.cli.GeogigCLI)
      */
-    // @Override
-    public void run(GeogigCLI cli) {
+    public @Override void run(GeogigCLI cli) {
 
         JCommander jc = cli.newCommandParser();
 

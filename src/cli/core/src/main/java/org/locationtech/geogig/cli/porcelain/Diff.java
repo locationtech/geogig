@@ -12,18 +12,14 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Ref;
@@ -34,8 +30,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.geom.Envelope;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -88,8 +83,7 @@ public class Diff extends AbstractCommand implements CLICommand {
     /**
      * Executes the diff command with the specified options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(refSpec.size() <= 2, "Commit list is too long :%s", refSpec);
         checkParameter(!(nogeom && summary), "Only one printing mode allowed");
         checkParameter(!(bounds && count), "Only one of --bounds or --count is allowed");
@@ -106,11 +100,7 @@ public class Diff extends AbstractCommand implements CLICommand {
             DiffBounds diff = geogig.command(DiffBounds.class).setOldVersion(oldVersion)
                     .setNewVersion(newVersion).setCompareIndex(cached);
             diff.setPathFilters(paths);
-            CoordinateReferenceSystem crs = parseCrs();
-            if (crs != null) {
-                diff.setCRS(crs);
-            }
-            DiffSummary<BoundingBox, BoundingBox> diffBounds = diff.call();
+            DiffSummary<Envelope, Envelope> diffBounds = diff.call();
             BoundsDiffPrinter.print(geogig, cli.getConsole(), diffBounds);
             return;
         }
@@ -186,17 +176,6 @@ public class Diff extends AbstractCommand implements CLICommand {
         return paths;
     }
 
-    private CoordinateReferenceSystem parseCrs() {
-        if (boundsCrs == null) {
-            return null;
-        }
-        try {
-            return CRS.decode(boundsCrs, true);
-        } catch (Exception e) {
-            throw new InvalidParameterException(String.format("Unrecognized CRS: '%s'", boundsCrs));
-        }
-    }
-
     @Nullable
     private String resolveOldVersion() {
         return refSpec.size() > 0 ? refSpec.get(0) : null;
@@ -210,28 +189,24 @@ public class Diff extends AbstractCommand implements CLICommand {
     private static final class BoundsDiffPrinter {
 
         public static void print(GeoGIG geogig, Console console,
-                DiffSummary<BoundingBox, BoundingBox> diffBounds) throws IOException {
+                DiffSummary<Envelope, Envelope> diffBounds) throws IOException {
 
-            BoundingBox left = diffBounds.getLeft();
-            BoundingBox right = diffBounds.getRight();
-            Optional<BoundingBox> mergedResult = diffBounds.getMergedResult();
-            BoundingBox both = new ReferencedEnvelope();
-            if (mergedResult.isPresent()) {
-                both = mergedResult.get();
-            }
+            Envelope left = diffBounds.getLeft();
+            Envelope right = diffBounds.getRight();
+            Envelope both = diffBounds.getMergedResult().orElseGet(Envelope::new);
 
             Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
 
             ansi.a("left:  ").a(bounds(left)).newline();
             ansi.a("right: ").a(bounds(right)).newline();
             ansi.a("both:  ").a(bounds(both)).newline();
-            ansi.a("CRS:   ").a(CRS.toSRS(left.getCoordinateReferenceSystem())).newline();
+            // ansi.a("CRS: ").a(CRS.toSRS(left.getCoordinateReferenceSystem())).newline();
 
             console.print(ansi.toString());
         }
 
-        private static CharSequence bounds(BoundingBox b) {
-            if (b.isEmpty()) {
+        private static CharSequence bounds(Envelope b) {
+            if (b.isNull()) {
                 return "<empty>";
             }
             return String.format("%f,%f,%f,%f", b.getMinX(), b.getMinY(), b.getMaxX(), b.getMaxY());

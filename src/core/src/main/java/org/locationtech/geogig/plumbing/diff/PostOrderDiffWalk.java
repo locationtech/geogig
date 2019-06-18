@@ -133,8 +133,7 @@ public class PostOrderDiffWalk {
             return path;
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             if (accept) {
                 consumer.feature(left, right);
@@ -142,8 +141,7 @@ public class PostOrderDiffWalk {
             return true;
         }
 
-        @Override
-        public boolean tree(NodeRef left, NodeRef right) {
+        public @Override boolean tree(NodeRef left, NodeRef right) {
             boolean accept = filter.apply(left) || filter.apply(right);
             Entry entry = Entry.tree(left, right, accept);
             String path = treePath(left, right);
@@ -152,8 +150,7 @@ public class PostOrderDiffWalk {
             return accept;
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             String path = treePath(left, right);
 
             Entry entry = stack.remove(path);
@@ -161,9 +158,8 @@ public class PostOrderDiffWalk {
             entry.apply(consumer);
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             final boolean accept = filter.apply(left) || filter.apply(right);
 
             final String path = bucketPath(leftParent, rightParent, bucketIndex);
@@ -173,9 +169,8 @@ public class PostOrderDiffWalk {
             return accept;
         }
 
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
 
             final String path = bucketPath(leftParent, rightParent, bucketIndex);
 

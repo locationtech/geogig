@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.DiffEntry;
@@ -43,6 +42,7 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private final List<String> pathFilters = Lists.newLinkedList();
 
-    private ReferencedEnvelope boundsFilter;
+    private Envelope boundsFilter;
 
     private ChangeType changeTypeFilter;
 
@@ -210,7 +210,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
-    public DiffTree setBoundsFilter(@Nullable ReferencedEnvelope bounds) {
+    public DiffTree setBoundsFilter(@Nullable Envelope bounds) {
         this.boundsFilter = bounds;
         return this;
     }
@@ -233,8 +233,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
     /**
      * Implements {@link Supplier#get()} by delegating to {@link #call()}.
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> get() {
+    public @Override AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 
@@ -264,8 +263,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
      * @return an iterator to a set of differences between the two trees
      * @see DiffEntry
      */
-    @Override
-    protected AutoCloseableIterator<DiffEntry> _call() throws IllegalArgumentException {
+    protected @Override AutoCloseableIterator<DiffEntry> _call() throws IllegalArgumentException {
         checkArgument(oldRefSpec != null || oldTreeId != null || oldTree != null,
                 "old version not specified");
         checkArgument(newRefSpec != null || oldTreeId != null || newTree != null,
@@ -302,8 +300,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             stats = new Stats();
         }
         Runnable producer = new Runnable() {
-            @Override
-            public void run() {
+            public @Override void run() {
                 Consumer consumer = diffProducer;
                 if (recordStats) {
                     consumer = new AcceptedFeaturesStatsConsumer(consumer, stats);
@@ -318,8 +315,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                     consumer = new ChangeTypeFilteringDiffConsumer(changeTypeFilter, consumer);
                 }
                 if (boundsFilter != null) {
-                    consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer,
-                            objectDatabase());
+                    consumer = new BoundsFilteringDiffConsumer(boundsFilter, consumer);
                 }
                 if (!pathFilters.isEmpty()) {// evaluated the former
                     consumer = new PathFilteringDiffConsumer(pathFilters, consumer);
@@ -371,13 +367,11 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 return null;
             }
 
-            @Override
-            protected void finalize() {
+            protected @Override void finalize() {
                 diffProducer.finished = true;
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 visitor.abortTraversal();
                 // free up any threads waiting for the queue to be unblocked
                 queue.clear();
@@ -385,16 +379,14 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 visitor.awaitTermination();
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 if (next == null) {
                     next = computeNext();
                 }
                 return next != null;
             }
 
-            @Override
-            public DiffEntry next() {
+            public @Override DiffEntry next() {
                 if (next == null && !hasNext()) {
                     throw new NoSuchElementException();
                 }
@@ -444,38 +436,33 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             this.changeTypeFilter = changeTypeFilter;
         }
 
-        @Override
-        public boolean feature(final NodeRef left, final NodeRef right) {
+        public @Override boolean feature(final NodeRef left, final NodeRef right) {
             if (featureApplies(left, right)) {
                 super.feature(left, right);
             }
             return true;
         }
 
-        @Override
-        public boolean tree(final NodeRef left, final NodeRef right) {
+        public @Override boolean tree(final NodeRef left, final NodeRef right) {
             if (isRoot(left, right) || treeApplies(left, right)) {
                 return super.tree(left, right);
             }
             return false;
         }
 
-        @Override
-        public void endTree(final NodeRef left, final NodeRef right) {
+        public @Override void endTree(final NodeRef left, final NodeRef right) {
             if (isRoot(left, right) || treeApplies(left, right)) {
                 super.endTree(left, right);
             }
         }
 
-        @Override
-        public boolean bucket(NodeRef lparent, NodeRef rparent, final BucketIndex bucketIndex,
-                final Bucket left, final Bucket right) {
+        public @Override boolean bucket(NodeRef lparent, NodeRef rparent,
+                final BucketIndex bucketIndex, final Bucket left, final Bucket right) {
             return treeApplies(left, right)
                     && super.bucket(lparent, rparent, bucketIndex, left, right);
         }
 
-        @Override
-        public void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+        public @Override void endBucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
                 Bucket left, Bucket right) {
             if (treeApplies(left, right)) {
                 super.endBucket(lparent, rparent, bucketIndex, left, right);
@@ -533,8 +520,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             this.entries = queue;
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             if (!finished && reportFeatures) {
                 try {
                     entries.put(new DiffEntry(left, right));
@@ -557,8 +543,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             return finished;
         }
 
-        @Override
-        public boolean tree(NodeRef left, NodeRef right) {
+        public @Override boolean tree(NodeRef left, NodeRef right) {
             final String parentPath = left == null ? right.getParentPath() : left.getParentPath();
 
             if (!finished && reportTrees) {
@@ -578,8 +563,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             return parentPath == null;
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             final String name = (left == null ? right : left).name();
 
             if (NodeRef.ROOT.equals(name)) {
@@ -588,9 +572,8 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             }
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
 
             return !finished;
         }
@@ -651,8 +634,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
                 allBuckets = new AtomicLong(), acceptedBuckets = new AtomicLong(),
                 allFeatures = new AtomicLong(), acceptedFeatures = new AtomicLong();
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return String.format("Trees: %,d/%,d; buckets: %,d/%,d; features: %,d/%,d",
                     acceptedTrees.get(), allTrees.get(), acceptedBuckets.get(), allBuckets.get(),
                     acceptedFeatures.get(), allFeatures.get());
@@ -668,8 +650,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             this.stats = stats;
         }
 
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
             stats.acceptedFeatures.incrementAndGet();
             return super.feature(left, right);
         }
@@ -685,23 +666,20 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
             this.stats = stats;
         }
 
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
             stats.allFeatures.incrementAndGet();
             return super.feature(left, right);
         }
 
-        @Override
-        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
             stats.allTrees.incrementAndGet();
             boolean ret = super.tree(left, right);
             stats.acceptedTrees.addAndGet(ret ? 1 : 0);
             return ret;
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
             stats.allBuckets.incrementAndGet();
             boolean ret = super.bucket(leftParent, rightParent, bucketIndex, left, right);
             stats.acceptedBuckets.addAndGet(ret ? 1 : 0);

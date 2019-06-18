@@ -15,7 +15,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.annotations.Beta;
@@ -32,11 +31,6 @@ public interface Context extends CommandFactory {
      * @return the {@link WorkingTree} for this context
      */
     public WorkingTree workingTree();
-
-    /**
-     * @deprecated use {@link #stagingArea()} instead
-     */
-    public StagingArea index();
 
     /**
      * @return the {@link StagingArea} for this context
@@ -88,13 +82,6 @@ public interface Context extends CommandFactory {
      * @return the {@link BlobStore} for this context
      */
     public BlobStore blobStore();
-
-    /**
-     * @TODO find a better way of accessing plugins and defaults. This method is currently here for
-     *       the sake of {@link InitOp} and to get rid of the {@code getInstance(Class anyClass)}
-     *       method in Injector
-     */
-    public PluginDefaults pluginDefaults();
 
     @Beta
     public Context snapshot();

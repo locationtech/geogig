@@ -23,19 +23,6 @@
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>jul-to-slf4j</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
       <version>${project.version}</version>
@@ -48,11 +35,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-flatbuffers</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli-geotools</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -75,6 +57,7 @@
       <artifactId>geogig-postgres</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cache-caffeine</artifactId>
@@ -103,7 +86,6 @@
       <classifier>tests</classifier>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -111,6 +93,10 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <manifest>
+              <mainClass>org.locationtech.geogig.cli.app.CLI</mainClass>
+              <addClasspath>true</addClasspath>
+            </manifest>
             <manifestEntries>
               <Automatic-Module-Name>geogig.cli.app</Automatic-Module-Name>
             </manifestEntries>
@@ -215,6 +201,44 @@
 
   <profiles>
     <profile>
+      <id>minimal</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-simple</artifactId>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>full</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.locationtech.geogig</groupId>
+          <artifactId>geogig-cli-geotools</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-core</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>web</id>
       <dependencies>
         <dependency>
@@ -230,16 +254,6 @@
         <dependency>
           <groupId>org.locationtech.geogig</groupId>
           <artifactId>geogig-ql</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.locationtech.geogig</groupId>
-          <artifactId>geogig-gui</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>org.locationtech.geogig</groupId>
-          <artifactId>geogig-scripting</artifactId>
           <version>${project.version}</version>
         </dependency>
       </dependencies>

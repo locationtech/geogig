@@ -46,8 +46,7 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
         return this;
     }
 
-    @Override
-    protected Optional<RevFeatureType> _call() {
+    protected @Override Optional<RevFeatureType> _call() {
         Preconditions.checkState(refSpec != null, "ref spec has not been set.");
         final String fullRefspec;
         if (refSpec.contains(":")) {

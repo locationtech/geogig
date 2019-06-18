@@ -55,7 +55,6 @@ public class Config extends AbstractWebAPICommand {
                 || super.supports(method);
     }
 
-
     /**
      * Mutator for the name variable
      * 
@@ -105,7 +104,7 @@ public class Config extends AbstractWebAPICommand {
 
         command.setAction(action);
 
-        final Optional<Map<String,String>> results = command.call();
+        final Optional<Map<String, String>> results = command.call();
         context.setResponseContent(new CommandResponse() {
             @Override
             public void write(ResponseWriter out) throws Exception {

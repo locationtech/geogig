@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Optional;
@@ -21,6 +20,8 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
+
+import lombok.NonNull;
 
 /**
  * Resolves the given "ref spec" to a tree id in the repository's object database.
@@ -37,8 +38,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
      * @param treeishRefSpec a ref spec that ultimately resolves to a tree id
      * @return {@code this}
      */
-    public ResolveTreeish setTreeish(String treeishRefSpec) {
-        checkNotNull(treeishRefSpec);
+    public ResolveTreeish setTreeish(@NonNull String treeishRefSpec) {
         this.treeishRefSpec = treeishRefSpec;
         this.treeish = null;
         return this;
@@ -49,8 +49,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
      *        id)
      * @return {@code this}
      */
-    public ResolveTreeish setTreeish(ObjectId treeish) {
-        checkNotNull(treeish);
+    public ResolveTreeish setTreeish(@NonNull ObjectId treeish) {
         this.treeish = treeish;
         this.treeishRefSpec = null;
         return this;
@@ -71,8 +70,7 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
      * @return an {@link Optional} of the {@link ObjectId} that was resolved, or
      *         {@link Optional#empty()} if it did not resolve.
      */
-    @Override
-    protected Optional<ObjectId> _call() {
+    protected @Override Optional<ObjectId> _call() {
         checkState(treeishRefSpec != null || treeish != null, "tree-ish ref spec not set");
 
         ObjectStore source = this.source == null ? objectDatabase() : this.source;

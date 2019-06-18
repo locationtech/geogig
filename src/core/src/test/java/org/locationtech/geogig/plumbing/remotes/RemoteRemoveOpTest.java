@@ -35,7 +35,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullName() {
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         exception.expect(RemoteException.class);
         remoteRemove.setName(null).call();
@@ -43,7 +43,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyName() {
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         exception.expect(RemoteException.class);
         remoteRemove.setName("").call();
@@ -51,7 +51,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveNoRemotes() {
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         exception.expect(RemoteException.class);
         remoteRemove.setName("remote").call();
@@ -59,7 +59,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveNonexistentRemote() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -71,7 +71,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         exception.expect(RemoteException.class);
         remoteRemove.setName("nonexistent").call();
@@ -79,7 +79,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveRemote() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -91,7 +91,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         Remote deletedRemote = remoteRemove.setName(remoteName).call();
 
@@ -103,7 +103,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveRemoteWithRefs() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -116,13 +116,13 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         String refName = Ref.REMOTES_PREFIX + remoteName + "/branch1";
-        geogig.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).call();
+        repo.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).call();
 
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         Remote deletedRemote = remoteRemove.setName(remoteName).call();
 
-        Optional<Ref> remoteRef = geogig.command(RefParse.class).setName(refName).call();
+        Optional<Ref> remoteRef = repo.command(RefParse.class).setName(refName).call();
 
         assertFalse(remoteRef.isPresent());
 
@@ -134,7 +134,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveRemoteWithNoURL() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -146,10 +146,10 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
-        final ConfigOp config = geogig.command(ConfigOp.class);
+        final ConfigOp config = repo.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".url").call();
 
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         Remote deletedRemote = remoteRemove.setName(remoteName).call();
 
@@ -161,7 +161,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testRemoveRemoteWithNoFetch() {
-        final RemoteAddOp remoteAdd = geogig.command(RemoteAddOp.class);
+        final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
         String remoteName = "myremote";
         String remoteURL = "http://test.com";
@@ -173,11 +173,11 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
-        final ConfigOp config = geogig.command(ConfigOp.class);
+        final ConfigOp config = repo.command(ConfigOp.class);
         config.setAction(ConfigAction.CONFIG_UNSET).setName("remote." + remoteName + ".fetch")
                 .call();
 
-        final RemoteRemoveOp remoteRemove = geogig.command(RemoteRemoveOp.class);
+        final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
         Remote deletedRemote = remoteRemove.setName(remoteName).call();
 

@@ -25,7 +25,7 @@ import com.google.common.base.Throwables;
 public class StreamingPackBuilder extends AbstractPackBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(StreamingPackBuilder.class);
-    
+
     private StreamingPackIO packIO = new StreamingPackIO();
 
     private DataInputStream in;

@@ -14,14 +14,12 @@ import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
 public class HeapConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<HeapConflictsDatabase> {
 
-    @Override
-    protected HeapConflictsDatabase createConflictsDatabase() throws Exception {
+    protected @Override HeapConflictsDatabase createConflictsDatabase() throws Exception {
 
         return new HeapConflictsDatabase();
     }
 
-    @Override
-    protected void dispose(HeapConflictsDatabase conflicts) throws Exception {
+    protected @Override void dispose(HeapConflictsDatabase conflicts) throws Exception {
         // nothing to do
     }
 

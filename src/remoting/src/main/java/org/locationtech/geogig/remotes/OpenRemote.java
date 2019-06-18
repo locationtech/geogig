@@ -47,8 +47,7 @@ public class OpenRemote extends AbstractGeoGigOp<IRemoteRepo> {
         return this;
     }
 
-    @Override
-    protected IRemoteRepo _call() {
+    protected @Override IRemoteRepo _call() {
         Preconditions.checkNotNull(remote, "remote to connect to not provided");
         Optional<IRemoteRepo> opRemote = RemoteResolver.newRemote(remote, remoteHints);
         checkArgument(opRemote.isPresent(), "Unknown remote type: " + remote.getFetchURL());

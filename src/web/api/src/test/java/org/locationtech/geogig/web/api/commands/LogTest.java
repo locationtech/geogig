@@ -323,7 +323,7 @@ public class LogTest extends AbstractWebOpTest {
                 .addCommit(commit3.getId()).call();
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "summary", "true");
         buildCommand(options).run(testContext.get());
         LegacyResponse response = testContext.getCommandResponse();

@@ -36,7 +36,6 @@ public class RepositoryListControllerTest extends AbstractControllerTest {
                         .value("http://localhost/repos/repo2.json"))
                 .andExpect(jsonPath("$.repos.repo[?(@.name == \'repo3\')]").exists())
                 .andExpect(jsonPath("$.repos.repo[?(@.name == \'repo3\')].href")
-                        .value("http://localhost/repos/repo3.json"))
-        ;
+                        .value("http://localhost/repos/repo3.json"));
     }
 }

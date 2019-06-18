@@ -75,8 +75,7 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
      * @return a FeatureDiff object with the differences between the specified features
      * @see FeatureDiff
      */
-    @Override
-    protected FeatureDiff _call() throws IllegalArgumentException {
+    protected @Override FeatureDiff _call() throws IllegalArgumentException {
         checkNotNull(oldNodeRef, "old version not specified");
         checkNotNull(newNodeRef, "new version not specified");
         String oldPath = removeRef(oldNodeRef.path());

@@ -126,8 +126,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
         return postgresJars;
     }
 
-    @Override
-    protected DataSource connect(ConnectionConfig.Key connInfo) {
+    protected @Override DataSource connect(ConnectionConfig.Key connInfo) {
         if (!verifyDriverVersion()) {
             throw new IllegalStateException(
                     "PostgreSQL JDBC Driver version not supported by GeoGig: " + driverVersion);
@@ -198,8 +197,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
         return ds;
     }
 
-    @Override
-    protected void disconnect(DataSource ds) {
+    protected @Override void disconnect(DataSource ds) {
         ((HikariDataSource) ds).close();
     }
 }

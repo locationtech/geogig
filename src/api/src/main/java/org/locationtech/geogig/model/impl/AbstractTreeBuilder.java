@@ -47,30 +47,26 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
 
     protected abstract ClusteringStrategy clusteringStrategy();
 
-    @Override
-    public boolean put(final @NonNull Node node) {
+    public @Override boolean put(final @NonNull Node node) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         int delta = clusteringStrategy().put(node);
         checkState(delta != -1);
         return delta == 1;
     }
 
-    @Override
-    public boolean remove(@NonNull Node node) {
+    public @Override boolean remove(@NonNull Node node) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         boolean removed = clusteringStrategy().remove(node);
         return removed;
     }
 
-    @Override
-    public boolean update(@NonNull Node oldNode, @NonNull Node newNode) {
+    public @Override boolean update(@NonNull Node oldNode, @NonNull Node newNode) {
         checkState(!disposed.get(), "TreeBuilder is already disposed");
         int delta = clusteringStrategy().update(oldNode, newNode);
         return delta != 0;
     }
 
-    @Override
-    public RevTree build() {
+    public @Override RevTree build() {
         return build(() -> false);
     }
 
@@ -80,8 +76,7 @@ public abstract @Accessors(fluent = true) class AbstractTreeBuilder implements R
         }
     }
 
-    @Override
-    public final RevTree build(@NonNull BooleanSupplier abortFlag) {
+    public @Override final RevTree build(@NonNull BooleanSupplier abortFlag) {
         boolean alreadyDisposed = disposed.getAndSet(true);
 
         checkState(!alreadyDisposed, "TreeBuilder is already disposed");

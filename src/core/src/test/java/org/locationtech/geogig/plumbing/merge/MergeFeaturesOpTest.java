@@ -10,17 +10,16 @@
 package org.locationtech.geogig.plumbing.merge;
 
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
 
 public class MergeFeaturesOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
 
     }
 
@@ -42,26 +41,26 @@ public class MergeFeaturesOpTest extends RepositoryTestCase {
 
         super.insertAndAdd(ancestor);
         super.commit("common ancestor");
-        ancestorRef = geogig.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
+        ancestorRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
                 .setChildPath(childPath).call().get();
 
-        geogig.command(BranchCreateOp.class).setName("branch").call();
+        repo.command(BranchCreateOp.class).setName("branch").call();
 
         super.insertAndAdd(left);
         super.commit("master change");
 
-        masterChangeRef = geogig.command(FindTreeChild.class)
-                .setParent(repo.workingTree().getTree()).setChildPath(childPath).call().get();
+        masterChangeRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
+                .setChildPath(childPath).call().get();
 
-        assertEquals("branch", geogig.command(CheckoutOp.class).setSource("branch").call()
-                .getNewRef().localName());
+        assertEquals("branch",
+                repo.command(CheckoutOp.class).setSource("branch").call().getNewRef().localName());
         super.insertAndAdd(right);
         super.commit("branch change");
 
-        branchChangeRef = geogig.command(FindTreeChild.class)
-                .setParent(repo.workingTree().getTree()).setChildPath(childPath).call().get();
+        branchChangeRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
+                .setChildPath(childPath).call().get();
 
-        Feature merged = geogig.command(MergeFeaturesOp.class)//
+        Feature merged = repo.command(MergeFeaturesOp.class)//
                 .setAncestorFeature(ancestorRef)//
                 .setFirstFeature(masterChangeRef)//
                 .setSecondFeature(branchChangeRef)//

@@ -51,8 +51,8 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/filteredchanges");
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/filteredchanges");
         perform(post).andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(
@@ -71,12 +71,12 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
         String commitId = masterRevObject.get().getId().toString();
         JsonObject json = new JsonObject();
         json.addProperty("commitId", commitId);
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/filteredchanges").contentType(
-                        MediaType.APPLICATION_JSON).content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/filteredchanges").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         byte[] content = perform(post).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
-                .andReturn().getResponse().getContentAsByteArray();
+                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM)).andReturn()
+                .getResponse().getContentAsByteArray();
         // build an iterator for the content bytes
         FilteredChangesReader reader = new FilteredChangesReader(content,
                 DataStreamRevObjectSerializerV1.INSTANCE);
@@ -131,8 +131,11 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
     private static class FilteredChangesReader extends AbstractIterator<DiffPacket> {
 
         private final ByteArrayInputStream in;
+
         private final DataInput data;
+
         private boolean filtered;
+
         private final RevObjectSerializer serializer;
 
         private FilteredChangesReader(byte[] bytes, RevObjectSerializer serializer) {
@@ -154,29 +157,29 @@ public class FilteredChangesControllerTest extends AbstractControllerTest {
                 RevObject metadata = null;
 
                 switch (chunkType) {
-                    case DIFF_ENTRY:
-                        break;
-                    case OBJECT_AND_DIFF_ENTRY: {
-                        ObjectId id = readObjectId(data);
-                        revObj = serializer.read(id, in);
-                    }
+                case DIFF_ENTRY:
                     break;
-                    case METADATA_OBJECT_AND_DIFF_ENTRY: {
-                        ObjectId mdid = readObjectId(data);
-                        metadata = serializer.read(mdid, in);
-                        ObjectId id = readObjectId(data);
-                        revObj = serializer.read(id, in);
-                    }
+                case OBJECT_AND_DIFF_ENTRY: {
+                    ObjectId id = readObjectId(data);
+                    revObj = serializer.read(id, in);
+                }
                     break;
-                    case FILTER_FLAG: {
-                        int changesFiltered = in.read();
-                        if (changesFiltered != 0) {
-                            filtered = true;
-                        }
-                        return endOfData();
+                case METADATA_OBJECT_AND_DIFF_ENTRY: {
+                    ObjectId mdid = readObjectId(data);
+                    metadata = serializer.read(mdid, in);
+                    ObjectId id = readObjectId(data);
+                    revObj = serializer.read(id, in);
+                }
+                    break;
+                case FILTER_FLAG: {
+                    int changesFiltered = in.read();
+                    if (changesFiltered != 0) {
+                        filtered = true;
                     }
-                    default:
-                        throw new IllegalStateException("Unknown chunk type: " + chunkType);
+                    return endOfData();
+                }
+                default:
+                    throw new IllegalStateException("Unknown chunk type: " + chunkType);
                 }
 
                 DiffEntry diff = FormatCommonV1.readDiff(data);

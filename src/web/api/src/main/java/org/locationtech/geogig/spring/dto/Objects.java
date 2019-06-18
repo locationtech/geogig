@@ -29,8 +29,7 @@ import org.springframework.http.MediaType;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Objects extends LegacyRepoResponse {
 
-    private static final RevObjectSerializer SERIALIZER =
-            DataStreamRevObjectSerializerV1.INSTANCE;
+    private static final RevObjectSerializer SERIALIZER = DataStreamRevObjectSerializerV1.INSTANCE;
 
     @XmlElement
     private RevObject revObject;

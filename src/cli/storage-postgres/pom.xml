@@ -38,11 +38,6 @@
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-remoting</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -56,11 +51,6 @@
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
     </dependency>
 
     <dependency>

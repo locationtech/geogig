@@ -30,8 +30,7 @@ public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
             public @Override void preCall(AbstractGeoGigOp<?> command) {
             }
 
-            @Override
-            public void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+            public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
                     @Nullable RuntimeException exception) {
                 PRCommand.this.prCommandResult = (T) result;
                 PRCommand.this.error = exception;

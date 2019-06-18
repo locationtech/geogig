@@ -54,7 +54,7 @@ public class SendObjectController extends AbstractRepositoryController {
     @Autowired
     private LegacySendObjectService legacySendObjectService;
 
-    @RequestMapping(method = {GET, PUT, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { GET, PUT, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(POST.toString()));
@@ -78,8 +78,8 @@ public class SendObjectController extends AbstractRepositoryController {
             // the stream.
             try {
                 SendObject sendObject = legacySendObjectService.sendObject(provider, repoName,
-                        "gzip".equals(contentEncoding) ? new GZIPInputStream(requestInput):
-                                requestInput);
+                        "gzip".equals(contentEncoding) ? new GZIPInputStream(requestInput)
+                                : requestInput);
                 // encode to Stream
                 encodeToStream(sendObject, request, response);
             } catch (IOException ioe) {

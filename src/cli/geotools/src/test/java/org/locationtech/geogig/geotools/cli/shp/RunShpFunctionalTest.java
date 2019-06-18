@@ -26,6 +26,7 @@ import cucumber.api.junit.Cucumber;
         , glue = { "org.locationtech.geogig.cli.test.functional",
                 "org.locationtech.geogig.geotools.cli.test.functional" }//
         , features = { "src/test/resources/features/shp" }//
+        , tags = { "~@ignore" }//
 )
 public class RunShpFunctionalTest {
 

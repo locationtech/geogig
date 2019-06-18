@@ -52,8 +52,7 @@ class GetAllOp<T extends RevObject> implements Callable<List<T>> {
         this.sharedCache = db.sharedCache;
     }
 
-    @Override
-    public List<T> call() throws Exception {
+    public @Override List<T> call() throws Exception {
         checkState(db.isOpen(), "Database is closed");
         final TYPE objType = RevObject.class.equals(type) ? null : RevObject.TYPE.valueOf(type);
         final String tableName = db.tableNameForType(objType, null);

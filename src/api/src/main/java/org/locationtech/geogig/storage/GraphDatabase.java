@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +23,7 @@ import com.google.common.annotations.Beta;
  * @since 1.0
  */
 @Beta
-public interface GraphDatabase extends Closeable {
+public interface GraphDatabase extends Store {
 
     /**
      * Flag key that indicates if a node is sparse, or contains only partial data from the node it
@@ -75,8 +74,7 @@ public interface GraphDatabase extends Closeable {
         /**
          * @return a readable form of this edge
          */
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return "" + from + ":" + to;
         }
     }
@@ -107,8 +105,7 @@ public interface GraphDatabase extends Closeable {
         /**
          * Determine if this {@code GraphNode} is the same as another one.
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (obj == this) {
                 return true;
             }
@@ -124,27 +121,10 @@ public interface GraphDatabase extends Closeable {
         /**
          * Generate a hash code for this node.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return getIdentifier().hashCode();
         }
     };
-
-    /**
-     * Initializes/opens the database. It's safe to call this method multiple times, and only the
-     * first call shall take effect.
-     */
-    public void open();
-
-    /**
-     * @return true if the database is open, false otherwise
-     */
-    public boolean isOpen();
-
-    /**
-     * Closes the database.
-     */
-    public void close();
 
     /**
      * Determines if the given commit exists in the graph database.

@@ -9,15 +9,11 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
@@ -34,7 +30,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.impl.TransactionBlobStoreImpl;
@@ -43,7 +38,6 @@ import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Provides a method of performing concurrent operations on a single Geogig repository.
@@ -88,7 +82,7 @@ public class GeogigTransaction implements Context {
     }
 
     public void create() {
-        transactionRefDatabase.create();
+        transactionRefDatabase.open();
     }
 
     public void close() {
@@ -116,24 +110,15 @@ public class GeogigTransaction implements Context {
         return transactionId;
     }
 
-    @Override
-    public WorkingTree workingTree() {
+    public @Override WorkingTree workingTree() {
         return transactionWorkTree;
     }
 
-    @Override
-    @Deprecated
-    public StagingArea index() {
-        return stagingArea();
-    }
-
-    @Override
-    public StagingArea stagingArea() {
+    public @Override StagingArea stagingArea() {
         return transactionIndex;
     }
 
-    @Override
-    public RefDatabase refDatabase() {
+    public @Override RefDatabase refDatabase() {
         return transactionRefDatabase;
     }
 
@@ -143,15 +128,13 @@ public class GeogigTransaction implements Context {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    @Override
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         T instance = context.command(commandClass);
         instance.setContext(this);
         return instance;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return new StringBuilder(getClass().getSimpleName()).append('[').append(transactionId)
                 .append(']').toString();
     }
@@ -180,72 +163,44 @@ public class GeogigTransaction implements Context {
         context.command(TransactionEnd.class).setTransaction(this).setCancel(true).call();
     }
 
-    @Override
-    public Platform platform() {
+    public @Override Platform platform() {
         return context.platform();
     }
 
-    @Override
-    public ObjectDatabase objectDatabase() {
+    public @Override ObjectDatabase objectDatabase() {
         return context.objectDatabase();
     }
 
-    @Override
-    public IndexDatabase indexDatabase() {
+    public @Override IndexDatabase indexDatabase() {
         return context.indexDatabase();
     }
 
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
+    public @Override ConflictsDatabase conflictsDatabase() {
         return transactionIndex != null ? transactionIndex.conflictsDatabase()
                 : context.conflictsDatabase();
     }
 
-    @Override
-    public BlobStore blobStore() {
+    public @Override BlobStore blobStore() {
         return transactionBlobStore;
     }
 
-    @Override
-    public ConfigDatabase configDatabase() {
+    public @Override ConfigDatabase configDatabase() {
         return context.configDatabase();
     }
 
-    @Override
-    public GraphDatabase graphDatabase() {
+    public @Override GraphDatabase graphDatabase() {
         return context.graphDatabase();
     }
 
-    @Override
-    public Repository repository() {
+    public @Override Repository repository() {
         return context.repository();
-    }
-
-    @Override
-    public PluginDefaults pluginDefaults() {
-        return context.pluginDefaults();
     }
 
     public List<ChangedRef> changedRefs() {
         return transactionRefDatabase.changedRefs();
     }
 
-    /**
-     * The set of refs that have either changed since, or didn't exist at, the time the transaction
-     * was created.
-     */
-    public @Deprecated ImmutableSet<Ref> getChangedRefs() {
-        Set<String> changedRefNames = transactionRefDatabase.getChangedRefs();
-        Set<Ref> changedRefs = new HashSet<Ref>();
-        for (String name : changedRefNames) {
-            Ref ref = this.command(RefParse.class).setName(name).call().get();
-            changedRefs.add(ref);
-        }
-        return ImmutableSet.copyOf(changedRefs);
-    }
-
-    @Override
-    public Context snapshot() {
+    public @Override Context snapshot() {
         return this;
     }
 

@@ -9,14 +9,11 @@
  */
 package org.locationtech.geogig.rocksdb.performance;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.DefaultPlatform;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.RocksdbObjectStore;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.performance.RevTreeBuilderPerformanceTest;
@@ -26,18 +23,9 @@ public class RevTreeBuilderRocksObjectsPerformanceTest extends RevTreeBuilderPer
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Override
-    protected ObjectStore createObjectStore() throws IOException {
-        Platform platform = new DefaultPlatform();
-        platform.setWorkingDir(tmp.getRoot());
-        tmp.newFolder(".geogig");
-        Hints hints = Hints.readWrite().platform(platform);
-        try {
-            hints.set(Hints.REPOSITORY_URL, tmp.getRoot().toURI().toURL());
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-        return new RocksdbObjectStore(platform, hints);
+    protected @Override ObjectStore createObjectStore() throws IOException {
+        File dbdir = tmp.newFolder(".geogig");
+        return new RocksdbObjectStore(dbdir, false);
     }
 
     public static void main(String[] args) {

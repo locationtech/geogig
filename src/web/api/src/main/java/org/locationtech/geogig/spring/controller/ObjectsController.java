@@ -46,7 +46,7 @@ public class ObjectsController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ObjectsController.class);
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));
@@ -54,8 +54,8 @@ public class ObjectsController extends AbstractRepositoryController {
 
     @GetMapping(path = "/{id}")
     public void getObjects(@PathVariable(name = "repoName") String repoName,
-            @PathVariable(name = "id") String id,
-            HttpServletRequest request, HttpServletResponse response) {
+            @PathVariable(name = "id") String id, HttpServletRequest request,
+            HttpServletResponse response) {
         // get the provider
         Optional<RepositoryProvider> optional = getRepoProvider(request);
         if (optional.isPresent()) {

@@ -51,8 +51,7 @@ public class SymRef extends Ref {
         return target;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("%s -> [%s -> %s]", getName(), target, getObjectId());
     }
 

@@ -9,30 +9,24 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -49,26 +43,16 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.FeatureToDelete;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.geogig.test.TestRepository;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.Name;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -102,11 +86,11 @@ public abstract class RepositoryTestCase extends Assert {
 
     protected static final String modifiedPointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326,extra:String";
 
-    public static final Name pointsTypeName = new NameImpl("http://geogig.points", pointsName);
+    public static final Name pointsTypeName = Name.valueOf("http://geogig.points", pointsName);
 
-    protected SimpleFeatureType pointsType;
+    protected FeatureType pointsType;
 
-    protected SimpleFeatureType modifiedPointsType;
+    protected FeatureType modifiedPointsType;
 
     protected Feature points1;
 
@@ -130,9 +114,9 @@ public abstract class RepositoryTestCase extends Assert {
 
     public static final String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
 
-    public static final Name linesTypeName = new NameImpl("http://geogig.lines", linesName);
+    public static final Name linesTypeName = Name.valueOf("http://geogig.lines", linesName);
 
-    public SimpleFeatureType linesType;
+    public FeatureType linesType;
 
     public Feature lines1;
 
@@ -148,9 +132,9 @@ public abstract class RepositoryTestCase extends Assert {
 
     public static final String polyTypeSpec = "sp:String,ip:Integer,pp:Polygon:srid=4326";
 
-    public static final Name polyTypeName = new NameImpl("http://geogig.polygon", polyName);
+    public static final Name polyTypeName = Name.valueOf("http://geogig.polygon", polyName);
 
-    public SimpleFeatureType polyType;
+    public FeatureType polyType;
 
     public Feature poly1;
 
@@ -158,50 +142,33 @@ public abstract class RepositoryTestCase extends Assert {
 
     public Feature poly3;
 
-    protected GeoGIG geogig;
-
     protected Repository repo;
+
+    public @Rule TestRepository testRepository = new TestRepository();
 
     // prevent recursion
     private boolean setup = false;
-
-    protected File repositoryDirectory;
-
-    protected Context injector;
-
-    @Rule
-    public TemporaryFolder repositoryTempFolder = new TemporaryFolder();
 
     @Before
     public final void setUp() throws Exception {
         if (setup) {
             throw new IllegalStateException("Are you calling super.setUp()!?");
         }
-
         setup = true;
         doSetUp();
     }
 
-    /**
-     * In rare occasions a test fail for unknown reasons and it's definitely related to the
-     * temporary folder somehow resolving to the same directory in two different tests, which I
-     * thought was impossible and the whole point of {@link TemporaryFolder}. So although I didn't
-     * get to the root cause of the issue, appending a randon number to the repository directory
-     * name makes the trick for the time being.
-     */
-    private static final Random RANDOM = new Random();
+    @After
+    public final void tearDown() throws Exception {
+        setup = false;
+        tearDownInternal();
+        TestRepository.closeAndDelete(repo);
+    }
 
-    protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
-        repositoryDirectory = repositoryTempFolder.newFolder("repo" + RANDOM.nextInt());
-
-        injector = createInjector();
-
-        geogig = new GeoGIG(injector);
-        repo = geogig.getOrCreateRepository();
-        assertNotNull(repo);
+    protected final void doSetUp() throws IOException, ParseException, Exception {
+        repo = testRepository.repository();
         assertTrue(repo.isOpen());
         assertNotNull(repo.configDatabase());
-        assertSame(injector, repo.context());
         assertNotNull(repo.objectDatabase());
         assertNotNull(repo.graphDatabase());
         assertNotNull(repo.conflictsDatabase());
@@ -212,8 +179,10 @@ public abstract class RepositoryTestCase extends Assert {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("groldan@boundlessgeo.com").call();
 
-        pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
-        modifiedPointsType = DataUtilities.createType(pointsNs, pointsName, modifiedPointsTypeSpec);
+        pointsType = FeatureTypes.createType(pointsNs + "#" + pointsName,
+                pointsTypeSpec.split(","));
+        modifiedPointsType = FeatureTypes.createType(pointsNs + "#" + pointsName,
+                modifiedPointsTypeSpec.split(","));
 
         points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
         points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
@@ -227,7 +196,7 @@ public abstract class RepositoryTestCase extends Assert {
         points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
         points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
 
-        linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
+        linesType = FeatureTypes.createType(linesNs + "#" + linesName, linesTypeSpec.split(","));
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, 2 2)");
@@ -236,7 +205,7 @@ public abstract class RepositoryTestCase extends Assert {
         lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
                 "LINESTRING (5 5, 6 6)");
 
-        polyType = DataUtilities.createType(polyNs, polyName, polyTypeSpec);
+        polyType = FeatureTypes.createType(polyNs + "#" + polyName, polyTypeSpec.split(","));
 
         poly1 = feature(polyType, idPG1, "StringProp3_1", new Integer(1000),
                 "POLYGON ((1 1, 2 2, 3 3, 4 4, 1 1))");
@@ -257,29 +226,6 @@ public abstract class RepositoryTestCase extends Assert {
         setUpInternal();
     }
 
-    protected Context createInjector() {
-        Platform platform = createPlatform();
-        URI uri = repositoryDirectory.getAbsoluteFile().toURI();
-        Hints hints = new Hints().uri(uri).platform(platform);
-        return new TestContextBuilder().build(hints);
-    }
-
-    protected Platform createPlatform() {
-        Platform testPlatform = new TestPlatform(repositoryDirectory);
-        return testPlatform;
-    }
-
-    @After
-    public final void tearDown() throws Exception {
-        setup = false;
-        tearDownInternal();
-        if (repo != null) {
-            repo.close();
-        }
-        repo = null;
-        injector = null;
-    }
-
     /**
      * Called as the last step in {@link #setUp()}
      */
@@ -296,10 +242,6 @@ public abstract class RepositoryTestCase extends Assert {
         return repo;
     }
 
-    public GeoGIG getGeogig() {
-        return geogig;
-    }
-
     public FeatureInfo featureInfo(Feature f) {
         FeatureType type = f.getType();
         String treePath = type.getName().getLocalPart();
@@ -307,7 +249,7 @@ public abstract class RepositoryTestCase extends Assert {
     }
 
     public FeatureInfo featureInfo(String treePath, Feature f) {
-        final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+        final String path = NodeRef.appendChild(treePath, f.getId());
         RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
@@ -315,7 +257,7 @@ public abstract class RepositoryTestCase extends Assert {
         return FeatureInfo.insert(feature, ftype.getId(), path);
     }
 
-    protected FeatureInfo featureInfo(SimpleFeatureType type, String id, Object... values) {
+    protected FeatureInfo featureInfo(FeatureType type, String id, Object... values) {
         RevFeature feature = RevFeature.builder().build(feature(type, id, values));
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
         repo.objectDatabase().put(ftype);
@@ -327,23 +269,24 @@ public abstract class RepositoryTestCase extends Assert {
         return Iterators.transform(features, (f) -> featureInfo(f));
     }
 
-    protected SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    protected Feature feature(FeatureType type, String id, Object... values) {
+        Feature f = Feature.build(id, type);
+        f.setId(id);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     value = geom((String) value);
                 }
             }
-            builder.set(i, value);
+            f.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return f;
     }
 
     protected Geometry geom(String wkt) {
         try {
-            return new WKTReader2().read(wkt);
+            return new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -362,13 +305,12 @@ public abstract class RepositoryTestCase extends Assert {
         for (Feature f : features) {
             insertAndAdd(f);
             if (oneCommitPerFeature) {
-                commits.add(commit(f.getIdentifier().getID()));
+                commits.add(commit(f.getId()));
             }
         }
 
         if (!oneCommitPerFeature) {
-            String msg = Joiner.on(',')
-                    .join(Lists.transform(features, (f) -> f.getIdentifier().getID()));
+            String msg = features.stream().map(Feature::getId).collect(Collectors.joining(","));
             commits.add(commit(msg));
         }
 
@@ -400,7 +342,7 @@ public abstract class RepositoryTestCase extends Assert {
         if (transaction != null) {
             transaction.command(AddOp.class).call();
         } else {
-            geogig.command(AddOp.class).call();
+            repo.command(AddOp.class).call();
         }
         return objectId;
     }
@@ -418,7 +360,7 @@ public abstract class RepositoryTestCase extends Assert {
         List<FeatureInfo> rfIds = new ArrayList<>();
         List<FeatureInfo> infos = Lists.transform(features, (f) -> {
             final String path = NodeRef.appendChild(f.getType().getName().getLocalPart(),
-                    f.getIdentifier().getID());
+                    f.getId());
             FeatureInfo fi;
             if (f instanceof FeatureToDelete) {
                 fi = FeatureInfo.delete(path);
@@ -457,7 +399,7 @@ public abstract class RepositoryTestCase extends Assert {
 
     public void insertAndAdd(GeogigTransaction transaction, Feature... features) throws Exception {
         insert(transaction, features);
-        geogig.command(AddOp.class).call();
+        repo.command(AddOp.class).call();
     }
 
     public void insert(Feature... features) throws Exception {
@@ -495,7 +437,7 @@ public abstract class RepositoryTestCase extends Assert {
             if (transaction != null) {
                 transaction.command(AddOp.class).call();
             } else {
-                geogig.command(AddOp.class).call();
+                repo.command(AddOp.class).call();
             }
         }
 
@@ -511,7 +453,7 @@ public abstract class RepositoryTestCase extends Assert {
                 : repo.workingTree());
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
-        String id = f.getIdentifier().getID();
+        String id = f.getId();
         boolean existed = workTree.delete(localPart, id);
         return existed;
     }
@@ -531,33 +473,15 @@ public abstract class RepositoryTestCase extends Assert {
     /**
      * Computes the aggregated bounds of {@code features}, assuming all of them are in the same CRS
      */
-    public ReferencedEnvelope boundsOf(Feature... features) {
-        ReferencedEnvelope bounds = null;
+    public Envelope boundsOf(Feature... features) {
+        Envelope bounds = null;
         for (int i = 0; i < features.length; i++) {
             Feature f = features[i];
             if (bounds == null) {
-                bounds = (ReferencedEnvelope) f.getBounds();
+                bounds = f.getDefaultGeometryBounds();
             } else {
-                bounds.include(f.getBounds());
+                bounds.expandToInclude(f.getDefaultGeometryBounds());
             }
-        }
-        return bounds;
-    }
-
-    /**
-     * Computes the aggregated bounds of {@code features} in the {@code targetCrs}
-     */
-    public ReferencedEnvelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
-            throws Exception {
-        ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
-
-        for (int i = 0; i < features.length; i++) {
-            Feature f = features[i];
-            BoundingBox fbounds = f.getBounds();
-            if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
-                fbounds = fbounds.toBounds(targetCrs);
-            }
-            bounds.include(fbounds);
         }
         return bounds;
     }

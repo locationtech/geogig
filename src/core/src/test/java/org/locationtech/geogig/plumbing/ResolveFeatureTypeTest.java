@@ -25,18 +25,17 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+    protected @Override void setUpInternal() throws Exception {
+        repo.configDatabase().put("user.name", "groldan");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
     public void testResolveFeatureType() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
 
-        Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec(pointsName).call();
         assertTrue(featureType.isPresent());
         assertEquals(pointsName, featureType.get().getName().getLocalPart());
@@ -46,9 +45,9 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
     @Test
     public void testResolveFeatureTypeWithColonInFeatureTypeName() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
 
-        Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + pointsName).call();
         assertTrue(featureType.isPresent());
         assertEquals(pointsName, featureType.get().getName().getLocalPart());
@@ -58,15 +57,15 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
     @Test
     public void testNoFeatureTypeNameSpecified() {
         exception.expect(IllegalStateException.class);
-        geogig.command(ResolveFeatureType.class).call();
+        repo.command(ResolveFeatureType.class).call();
     }
 
     @Test
     public void testObjectNotInIndex() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
 
-        Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + linesName).call();
         assertFalse(featureType.isPresent());
     }
@@ -74,9 +73,9 @@ public class ResolveFeatureTypeTest extends RepositoryTestCase {
     @Test
     public void testResolveFeatureTypeFromFeatureRefspec() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
 
-        Optional<RevFeatureType> featureType = geogig.command(ResolveFeatureType.class)
+        Optional<RevFeatureType> featureType = repo.command(ResolveFeatureType.class)
                 .setRefSpec("WORK_HEAD:" + NodeRef.appendChild(pointsName, idP1)).call();
         assertTrue(featureType.isPresent());
     }

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.cli.geopkg;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
@@ -43,14 +42,15 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.ValidatingFeatureFactoryImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.cli.test.functional.TestFeatures;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
-import org.locationtech.geogig.test.MemoryDataStoreWithProvidedFIDSupport;
 import org.locationtech.geogig.test.TestData;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
@@ -60,6 +60,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /**
  * @see TestData
@@ -72,8 +74,7 @@ public class GeoPackageTestSupport {
         this(new File(System.getProperty("java.io.tmpdir")));
     }
 
-    public GeoPackageTestSupport(final File tmpFolder) {
-        checkNotNull(tmpFolder);
+    public GeoPackageTestSupport(final @NonNull File tmpFolder) {
         checkArgument(tmpFolder.exists() && tmpFolder.isDirectory() && tmpFolder.canWrite());
         this.tmpFolder = tmpFolder;
     }
@@ -130,8 +131,8 @@ public class GeoPackageTestSupport {
 
         MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
         TestFeatures.setupFeatures();
-        memStore.addFeatures(ImmutableList.of(points1, points2, points3));
-        memStore.addFeatures(ImmutableList.of(lines1, lines2, lines3));
+        memStore.addFeatures(GT.adapt(points1, points2, points3));
+        memStore.addFeatures(GT.adapt(lines1, lines2, lines3));
 
         DataStore gpkgStore = createDataStore(file);
         try {
@@ -185,7 +186,8 @@ public class GeoPackageTestSupport {
     }
 
     private SimpleFeature transformFeatureId(SimpleFeature feature) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(feature.getFeatureType());
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(feature.getFeatureType(),
+                new ValidatingFeatureFactoryImpl());
         for (Property property : feature.getProperties()) {
             if (property instanceof GeometryAttribute) {
                 builder.set(feature.getFeatureType().getGeometryDescriptor().getName(),

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.datastream.v2_3;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
@@ -40,6 +39,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 class NodeSet {
 
     static final NodeSet EMPTY_FEATURES = new NodeSet(NodesetHeader.EMPTY, DataBuffer.EMTPY,
@@ -58,8 +59,7 @@ class NodeSet {
 
         private SoftReference<CoordinateSequence> seq;
 
-        @Override
-        public CoordinateSequence get() {
+        public @Override CoordinateSequence get() {
             if (seq == null || seq.get() == null) {
                 CoordinateSequence coords = parseBoundsCoordinates();
                 seq = new SoftReference<CoordinateSequence>(coords);
@@ -308,8 +308,8 @@ class NodeSet {
         return oidIdx;
     }
 
-    public static NodeSet decode(final DataBuffer data, final int offset, final TYPE type) {
-        checkNotNull(data);
+    public static NodeSet decode(final @NonNull DataBuffer data, final int offset,
+            final @NonNull TYPE type) {
         checkArgument(offset >= 0);
         checkArgument(type == TYPE.FEATURE || type == TYPE.TREE);
 

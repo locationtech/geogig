@@ -28,8 +28,7 @@ public class ArgumentTokenizer {
 
         private boolean inQuotes = false;
 
-        @Override
-        public boolean matches(char c) {
+        public @Override boolean matches(char c) {
             if ('"' == c) {
                 inQuotes = !inQuotes;
             }

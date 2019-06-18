@@ -36,8 +36,7 @@ class DataBuffer {
 
         private SoftReference<StringTable> stringTableRef;
 
-        @Override
-        public StringTable get() {
+        public @Override StringTable get() {
             if (null == stringTableRef || null == stringTableRef.get()) {
                 final int offset = tail.getOffsetOfStringTable();
                 StringTable st = StringTable.EMPTY;

@@ -51,8 +51,7 @@ public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
      *         reference (i.e. under the {@link Ref#HEADS_PREFIX heads} or {@link Ref#REMOTES_PREFIX
      *         remotes} namespace)
      */
-    @Override
-    protected Optional<? extends Ref> _call() {
+    protected @Override Optional<? extends Ref> _call() {
         checkState(branchName != null, "Branch name not provided");
         Optional<Ref> branchRef = command(RefParse.class).setName(branchName).call();
         if (branchRef.isPresent()) {

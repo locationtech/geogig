@@ -29,7 +29,7 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
@@ -93,8 +93,7 @@ public class Config extends AbstractCommand implements CLICommand {
     /**
      * Executes the config command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         GeoGIG geogig = cli.getGeogig();
         boolean closeIt = geogig == null;
@@ -134,10 +133,10 @@ public class Config extends AbstractCommand implements CLICommand {
 
             if (rootUri != null) {
                 try {
-                    URI repoURI = RepositoryResolver.resolveRepoUriFromString(geogig.getPlatform(),
-                            rootUri);
-                    ConfigDatabase configDb = RepositoryResolver.resolveConfigDatabase(repoURI,
-                            geogig.getContext(), true);
+                    URI repoURI = RepositoryFinder.INSTANCE
+                            .resolveRepoUriFromString(geogig.getPlatform(), rootUri);
+                    ConfigDatabase configDb = RepositoryFinder.INSTANCE
+                            .resolveConfigDatabase(repoURI, geogig.getContext(), true);
                     configOp.setConfigDatabase(configDb);
                 } catch (URISyntaxException e) {
                     throw new IllegalArgumentException("Unable to parse global config URI.", e);

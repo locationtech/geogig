@@ -26,23 +26,23 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.StreamSupport;
 
-import org.geotools.util.TableWriter;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.beust.jcommander.Parameter;
@@ -71,7 +71,7 @@ public class LsRepos extends AbstractCommand implements CLICommand {
                 "Usage: geogig ls-repos <base URI> (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)");
 
         URI baseURI = baseuri.get(0);
-        RepositoryResolver resolver = RepositoryResolver.lookup(baseURI);
+        RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(baseURI);
         List<String> repoNames = new ArrayList<>(resolver.listRepoNamesUnderRootURI(baseURI));
         Collections.sort(repoNames);
         Console console = cli.getConsole();

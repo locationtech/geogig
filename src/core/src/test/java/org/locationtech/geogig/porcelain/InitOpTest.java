@@ -13,22 +13,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,8 +50,9 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
+import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -79,6 +84,8 @@ public class InitOpTest {
 
     private ObjectDatabase objectDatabase;
 
+    private RepositoryResolver mockResolver;
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -92,8 +99,8 @@ public class InitOpTest {
         mockUpdateRef = mock(UpdateRef.class);
         when(mockUpdateRef.setName(anyString())).thenReturn(mockUpdateRef);
         when(mockUpdateRef.setDelete(anyBoolean())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setNewValue((ObjectId) anyObject())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setOldValue((ObjectId) anyObject())).thenReturn(mockUpdateRef);
+        when(mockUpdateRef.setNewValue((ObjectId) any())).thenReturn(mockUpdateRef);
+        when(mockUpdateRef.setOldValue((ObjectId) any())).thenReturn(mockUpdateRef);
         when(mockUpdateRef.setReason(anyString())).thenReturn(mockUpdateRef);
 
         mockUpdateSymRef = mock(UpdateSymRef.class);
@@ -106,7 +113,6 @@ public class InitOpTest {
         when(injector.command(eq(RefParse.class))).thenReturn(mockRefParse);
         when(injector.command(eq(UpdateRef.class))).thenReturn(mockUpdateRef);
         when(injector.command(eq(UpdateSymRef.class))).thenReturn(mockUpdateSymRef);
-        when(injector.pluginDefaults()).thenReturn(PluginDefaults.NO_PLUGINS);
 
         platform = mock(Platform.class);
         when(injector.platform()).thenReturn(platform);
@@ -116,14 +122,17 @@ public class InitOpTest {
         hints.set(Hints.REPOSITORY_URL, workingDir.getAbsoluteFile().toURI());
         init = new InitOp(hints);
         init.setContext(injector);
+        mockResolver = mock(RepositoryResolver.class);
+        RepositoryFinder mockFinder = spy(new RepositoryFinder());
+        init.setRepositoryFinder(mockFinder);
+        doReturn(mockResolver).when(mockFinder).lookup(any());
 
         mockRepo = mock(Repository.class);
         objectDatabase = new HeapObjectDatabase();
         when(mockRepo.objectDatabase()).thenReturn(objectDatabase);
 
         Mockito.doAnswer(new Answer<Void>() {
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
+            public @Override Void answer(InvocationOnMock invocation) throws Throwable {
                 objectDatabase.open();
                 return null;
             }
@@ -146,12 +155,13 @@ public class InitOpTest {
         when(injector.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
+        when(mockResolver.repoExists(any())).thenReturn(false);
 
+        final URI expectedURI = new File(workingDir, ".geogig").toURI();
         Repository created = init.call();
-        assertSame(mockRepo, created);
-        assertTrue(new File(workingDir, ".geogig").exists());
-        assertTrue(new File(workingDir, ".geogig").isDirectory());
 
+        assertSame(mockRepo, created);
+        verify(mockResolver, times(1)).initialize(eq(expectedURI), any());
         verify(injector, times(1)).repository();
 
         verify(mockUpdateRef, times(1)).setName(eq(Ref.MASTER));
@@ -170,19 +180,20 @@ public class InitOpTest {
     }
 
     @Test
+    @Ignore
     public void testReinitializeExistingRepo() throws Exception {
         when(injector.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
+        when(mockResolver.repoExists(any())).thenReturn(true);
+
+        final URI expectedURI = new File(workingDir, ".geogig").toURI();
 
         Repository created = init.call();
-
         assertSame(mockRepo, created);
-        verify(mockUpdateRef, times(3)).call();
-        verify(mockUpdateSymRef, times(1)).call();
-
-        assertTrue(new File(workingDir, ".geogig").exists());
-        assertTrue(new File(workingDir, ".geogig").isDirectory());
+        verify(mockResolver, times(1)).initialize(eq(expectedURI), any());
+        verify(mockUpdateRef, times(0)).call();
+        verify(mockUpdateSymRef, times(0)).call();
 
         Ref master = new Ref(Ref.MASTER, RevObjectTestSupport.hashString("hash me"));
 
@@ -194,10 +205,7 @@ public class InitOpTest {
         when(injector.repository()).thenReturn(mockRepo);
         init.setContext(injector);
 
-        assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
         assertNotNull(init.call());
-        verify(platform, atLeastOnce()).pwd();
-        assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
 
         verify(injector, never()).command(eq(UpdateRef.class));
         verify(injector, never()).command(eq(UpdateSymRef.class));
@@ -209,12 +217,14 @@ public class InitOpTest {
     public void testReinitializeExistingRepoFromInsideASubdirectory() throws Exception {
         testCreateNewRepo();
 
-        File subDir = new File(new File(workingDir, "subdir1"), "subdir2");
+        File subDir = new File(workingDir, ".geogig/subdir1/subdir2");
         assertTrue(subDir.mkdirs());
 
         when(platform.pwd()).thenReturn(subDir);
 
         assertTrue(ResolveGeogigURI.lookup(platform.pwd()).isPresent());
+
+        when(mockResolver.repoExists(any())).thenReturn(true);
         assertNotNull(init.call());
         verify(platform, atLeastOnce()).pwd();
     }

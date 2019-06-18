@@ -25,6 +25,7 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
@@ -33,6 +34,8 @@ import com.beust.jcommander.Parameters;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * This command creates an empty geogig repository - basically a .geogig directory with
@@ -62,8 +65,7 @@ public class Init extends AbstractCommand implements CLICommand {
     /**
      * Executes the init command.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         final String providedUri = location.isEmpty() ? null : location.get(0);
 
         final URI targetURI;
@@ -104,7 +106,8 @@ public class Init extends AbstractCommand implements CLICommand {
             }
         }
 
-        final boolean repoExisted = RepositoryResolver.lookup(targetURI).repoExists(targetURI);
+        final RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(targetURI);
+        final boolean repoExisted = resolver.repoExists(targetURI);
 
         // let cli set up Hints with the appropriate URI
         Hints hints = new Hints();

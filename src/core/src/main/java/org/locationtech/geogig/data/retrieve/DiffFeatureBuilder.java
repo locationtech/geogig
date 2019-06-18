@@ -11,32 +11,30 @@ package org.locationtech.geogig.data.retrieve;
 
 import java.util.function.Function;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
-class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleFeature> {
-
-    private FeatureBuilder valueBuilder;
-
-    private SimpleFeatureBuilder diffFeatureBuilder;
+class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, Feature> {
 
     private GeometryFactory geometryFactory;
 
-    public DiffFeatureBuilder(SimpleFeatureType diffType, FeatureBuilder valueBuilder,
+    private FeatureType diffType;
+
+    private FeatureType valueType;
+
+    public DiffFeatureBuilder(FeatureType diffType, FeatureType valueType,
             GeometryFactory geometryFactory) {
-        this.valueBuilder = valueBuilder;
+        this.diffType = diffType;
+        this.valueType = valueType;
         this.geometryFactory = geometryFactory;
-        this.diffFeatureBuilder = new SimpleFeatureBuilder(diffType);
     }
 
-    public @Override SimpleFeature apply(DiffObjectInfo<RevFeature> info) {
+    public @Override Feature apply(DiffObjectInfo<RevFeature> info) {
         DiffEntry entry = info.entry();
 
         final String id = entry.name();
@@ -44,23 +42,18 @@ class DiffFeatureBuilder implements Function<DiffObjectInfo<RevFeature>, SimpleF
         RevFeature oldFeature = info.oldValue().orElse(null);
         RevFeature newFeature = info.newValue().orElse(null);
 
-        SimpleFeature oldValue;
-        SimpleFeature newValue;
-        oldValue = (SimpleFeature) (oldFeature == null ? null
-                : valueBuilder.build(id, oldFeature, geometryFactory));
-        newValue = (SimpleFeature) (newFeature == null ? null
-                : valueBuilder.build(id, newFeature, geometryFactory));
+        Feature oldValue = oldFeature == null ? null
+                : Feature.build(id, valueType, oldFeature, geometryFactory);
+        Feature newValue = newFeature == null ? null
+                : Feature.build(id, valueType, newFeature, geometryFactory);
 
-        SimpleFeature diffFeature;
-        diffFeatureBuilder.reset();
-
+        Feature diffFeature = Feature.build(id, diffType);
         final ChangeType changeType = info.entry().changeType();
-        diffFeatureBuilder.set(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
+        diffFeature.setAttribute(BulkFeatureRetriever.DIFF_FEATURE_CHANGETYPE_ATTNAME,
                 Integer.valueOf(changeType.value()));
 
-        diffFeatureBuilder.set("old", oldValue);
-        diffFeatureBuilder.set("new", newValue);
-        diffFeature = diffFeatureBuilder.buildFeature(id);
+        diffFeature.setAttribute("old", oldValue);
+        diffFeature.setAttribute("new", newValue);
         return diffFeature;
     }
 }

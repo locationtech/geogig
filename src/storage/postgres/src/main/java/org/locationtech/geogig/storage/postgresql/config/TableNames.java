@@ -14,6 +14,8 @@ import java.util.List;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 public class TableNames implements Cloneable {
 
     public static final String DEFAULT_SCHEMA = "public";
@@ -32,9 +34,7 @@ public class TableNames implements Cloneable {
         this(schema, DEFAULT_TABLE_PREFIX);
     }
 
-    public TableNames(String schema, String prefix) {
-        Preconditions.checkNotNull(schema);
-        Preconditions.checkNotNull(prefix);
+    public TableNames(@NonNull String schema, @NonNull String prefix) {
         this.schema = schema;
         this.prefix = prefix;
     }

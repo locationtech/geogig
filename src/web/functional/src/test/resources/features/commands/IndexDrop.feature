@@ -22,7 +22,7 @@ Feature: IndexDrop
   Scenario: Verify dropping spatial index
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points"
-     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:
@@ -37,7 +37,7 @@ Feature: IndexDrop
   Scenario: Verify 500 status code when tree ref spec is not provided
     Given There is a repo with some data
      When I call "PUT /repos/repo1/index/create?treeRefSpec=Points&extraAttributes=sp"
-     Then the repo1 repository's "HEAD:Points" index bounds should be "-90,-180,90,180"
+     Then the repo1 repository's "HEAD:Points" index bounds should be "-180,-90,180,90"
       And the repo1 repository's "HEAD:Points" index should track the extra attribute "sp"
       And the repo1 repository's "HEAD:Points" index should not track the extra attribute "ip"
       And the repo1 repository's "HEAD:Points" index should have the following features:

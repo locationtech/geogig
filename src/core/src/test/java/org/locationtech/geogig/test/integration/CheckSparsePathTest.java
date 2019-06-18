@@ -26,8 +26,7 @@ public class CheckSparsePathTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
@@ -60,41 +59,40 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         // |/
         // o - commit10
         insertAndAdd(points1);
-        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("commit1").call();
+        RevCommit commit1 = repo.command(CommitOp.class).setMessage("commit1").call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("commit2").call();
+        RevCommit commit2 = repo.command(CommitOp.class).setMessage("commit2").call();
         insertAndAdd(points3);
-        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("commit3").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        RevCommit commit3 = repo.command(CommitOp.class).setMessage("commit3").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
         insertAndAdd(lines1);
-        RevCommit commit4 = geogig.command(CommitOp.class).setMessage("commit4").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
+        RevCommit commit4 = repo.command(CommitOp.class).setMessage("commit4").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
-        RevCommit commit5 = geogig.command(CommitOp.class).setMessage("commit5").call();
-        geogig.getRepository().graphDatabase().setProperty(commit5.getId(),
-                GraphDatabase.SPARSE_FLAG, "true");
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        RevCommit commit5 = repo.command(CommitOp.class).setMessage("commit5").call();
+        repo.graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
-        RevCommit commit6 = geogig.command(CommitOp.class).setMessage("commit6").call();
-        RevCommit commit7 = geogig.command(MergeOp.class).setMessage("commit7")
+        RevCommit commit6 = repo.command(CommitOp.class).setMessage("commit6").call();
+        RevCommit commit7 = repo.command(MergeOp.class).setMessage("commit7")
                 .addCommit(commit5.getId()).call().getMergeCommit();
 
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
-        RevCommit commit9 = geogig.command(CommitOp.class).setMessage("commit9").call();
+        RevCommit commit9 = repo.command(CommitOp.class).setMessage("commit9").call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines2);
-        RevCommit commit8 = geogig.command(CommitOp.class).setMessage("commit8").call();
+        RevCommit commit8 = repo.command(CommitOp.class).setMessage("commit8").call();
 
-        RevCommit commit10 = geogig.command(MergeOp.class).setMessage("commit10")
+        RevCommit commit10 = repo.command(MergeOp.class).setMessage("commit10")
                 .addCommit(commit9.getId()).call().getMergeCommit();
 
-        CheckSparsePath command = geogig.command(CheckSparsePath.class);
+        CheckSparsePath command = repo.command(CheckSparsePath.class);
 
         assertTrue(command.setStart(commit7.getId()).setEnd(commit1.getId()).call());
         assertFalse(command.setStart(commit6.getId()).setEnd(commit1.getId()).call());
@@ -130,43 +128,41 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         // |/
         // o - commit10
         insertAndAdd(points1);
-        RevCommit commit1 = geogig.command(CommitOp.class).setMessage("commit1").call();
+        RevCommit commit1 = repo.command(CommitOp.class).setMessage("commit1").call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        RevCommit commit2 = geogig.command(CommitOp.class).setMessage("commit2").call();
-        geogig.getRepository().graphDatabase().setProperty(commit2.getId(),
-                GraphDatabase.SPARSE_FLAG, "true");
+        RevCommit commit2 = repo.command(CommitOp.class).setMessage("commit2").call();
+        repo.graphDatabase().setProperty(commit2.getId(), GraphDatabase.SPARSE_FLAG, "true");
         insertAndAdd(points3);
-        RevCommit commit3 = geogig.command(CommitOp.class).setMessage("commit3").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        RevCommit commit3 = repo.command(CommitOp.class).setMessage("commit3").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
         insertAndAdd(lines1);
-        RevCommit commit4 = geogig.command(CommitOp.class).setMessage("commit4").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
+        RevCommit commit4 = repo.command(CommitOp.class).setMessage("commit4").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
-        RevCommit commit5 = geogig.command(CommitOp.class).setMessage("commit5").call();
-        geogig.getRepository().graphDatabase().setProperty(commit5.getId(),
-                GraphDatabase.SPARSE_FLAG, "true");
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        RevCommit commit5 = repo.command(CommitOp.class).setMessage("commit5").call();
+        repo.graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
-        RevCommit commit6 = geogig.command(CommitOp.class).setMessage("commit6").call();
-        RevCommit commit7 = geogig.command(MergeOp.class).setMessage("commit7")
+        RevCommit commit6 = repo.command(CommitOp.class).setMessage("commit6").call();
+        RevCommit commit7 = repo.command(MergeOp.class).setMessage("commit7")
                 .addCommit(commit5.getId()).call().getMergeCommit();
 
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
-        RevCommit commit9 = geogig.command(CommitOp.class).setMessage("commit9").call();
+        RevCommit commit9 = repo.command(CommitOp.class).setMessage("commit9").call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines2);
-        RevCommit commit8 = geogig.command(CommitOp.class).setMessage("commit8").call();
+        RevCommit commit8 = repo.command(CommitOp.class).setMessage("commit8").call();
 
-        RevCommit commit10 = geogig.command(MergeOp.class).setMessage("commit10")
+        RevCommit commit10 = repo.command(MergeOp.class).setMessage("commit10")
                 .addCommit(commit9.getId()).call().getMergeCommit();
 
-        CheckSparsePath command = geogig.command(CheckSparsePath.class);
+        CheckSparsePath command = repo.command(CheckSparsePath.class);
 
         assertTrue(command.setStart(commit7.getId()).setEnd(commit1.getId()).call());
         assertTrue(command.setStart(commit6.getId()).setEnd(commit1.getId()).call());

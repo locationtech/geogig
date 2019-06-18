@@ -27,7 +27,8 @@ import cucumber.api.junit.Cucumber;
         // the glue option tells cucumber where else to look for step definitions
         , glue = { "org.locationtech.geogig.storage.postgresql.functional",
                 "org.locationtech.geogig.cli.test.functional" } //
-        , features = { "../../cli/core/src/test/resources/features/porcelain" })
+        , features = { "../../cli/core/src/test/resources/features/porcelain" }//
+        , tags = { "~@FileSystemReposOnly", "~@ignore" })
 public class RunPGPorcelainFunctionalTest {
 
     @org.junit.BeforeClass

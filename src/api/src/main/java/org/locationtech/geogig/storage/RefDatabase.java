@@ -9,19 +9,17 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.io.Closeable;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 
 /**
  * Provides an interface for GeoGig reference databases.
  * 
  * @since 1.0
  */
-public interface RefDatabase extends Closeable {
+public interface RefDatabase extends Store {
 
     /**
      * Locks access to the main repository refs.
@@ -29,32 +27,9 @@ public interface RefDatabase extends Closeable {
     public abstract void lock() throws TimeoutException;
 
     /**
-     * Performs any setup required before first open() including default configuration
-     */
-    public abstract void configure() throws RepositoryConnectionException;
-
-    /**
-     * Verify the configuration before opening.
-     * 
-     * @return {@code true} if the config was set, {@code false} otherwise
-     * @throws RepositoryConnectionException if the config is incompatible
-     */
-    public abstract boolean checkConfig() throws RepositoryConnectionException;
-
-    /**
      * Unlocks access to the main repository refs.
      */
     public abstract void unlock();
-
-    /**
-     * Creates the reference database.
-     */
-    public abstract void create();
-
-    /**
-     * Closes the reference database.
-     */
-    public abstract void close();
 
     /**
      * Retrieves a ref with the specified name.

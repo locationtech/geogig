@@ -28,8 +28,6 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableSortedMap;
-
 public class RevTreeTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -63,38 +61,27 @@ public class RevTreeTest {
                 new Envelope(0, 0, 1, 1));
 
         RevTree testTree = new RevTree() {
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return RevTree.EMPTY_TREE_ID;
             }
 
-            @Override
-            public long size() {
+            public @Override long size() {
                 return 0;
             }
 
-            @Override
-            public int numTrees() {
+            public @Override int numTrees() {
                 return 0;
             }
 
-            @Override
-            public List<Node> trees() {
+            public @Override List<Node> trees() {
                 return new ArrayList<>(trees);
             }
 
-            @Override
-            public List<Node> features() {
+            public @Override List<Node> features() {
                 return new ArrayList<>(features);
             }
 
-            @Override
-            public SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.copyOf(buckets);
-            }
-
-            @Override
-            public Iterable<Bucket> getBuckets() {
+            public @Override Iterable<Bucket> getBuckets() {
                 return buckets.values();
             }
         };
@@ -115,38 +102,27 @@ public class RevTreeTest {
     @Test
     public void testEmptyTreeWithDifferentObjectId() {
         RevTree testTree = new RevTree() {
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
             }
 
-            @Override
-            public long size() {
+            public @Override long size() {
                 return 0;
             }
 
-            @Override
-            public int numTrees() {
+            public @Override int numTrees() {
                 return 0;
             }
 
-            @Override
-            public List<Node> trees() {
+            public @Override List<Node> trees() {
                 return Collections.emptyList();
             }
 
-            @Override
-            public List<Node> features() {
+            public @Override List<Node> features() {
                 return Collections.emptyList();
             }
 
-            @Override
-            public SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
-            }
-
-            @Override
-            public Iterable<Bucket> getBuckets() {
+            public @Override Iterable<Bucket> getBuckets() {
                 return Collections.emptySet();
             }
         };
@@ -159,38 +135,27 @@ public class RevTreeTest {
     @Test
     public void testEmptyTreeWithNonZeroSize() {
         RevTree testTree = new RevTree() {
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return RevTree.EMPTY_TREE_ID;
             }
 
-            @Override
-            public long size() {
+            public @Override long size() {
                 return 1;
             }
 
-            @Override
-            public int numTrees() {
+            public @Override int numTrees() {
                 return 0;
             }
 
-            @Override
-            public List<Node> trees() {
+            public @Override List<Node> trees() {
                 return Collections.emptyList();
             }
 
-            @Override
-            public List<Node> features() {
+            public @Override List<Node> features() {
                 return Collections.emptyList();
             }
 
-            @Override
-            public SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
-            }
-
-            @Override
-            public Iterable<Bucket> getBuckets() {
+            public @Override Iterable<Bucket> getBuckets() {
                 return Collections.emptySet();
             }
         };
@@ -213,45 +178,33 @@ public class RevTreeTest {
                 TYPE.FEATURE, null, null);
 
         Comparator<Node> comparator = new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
+            public @Override int compare(Node o1, Node o2) {
                 return o1.compareTo(o2);
             }
         };
 
         RevTree testTree = new RevTree() {
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return RevTree.EMPTY_TREE_ID;
             }
 
-            @Override
-            public long size() {
+            public @Override long size() {
                 return 0;
             }
 
-            @Override
-            public int numTrees() {
+            public @Override int numTrees() {
                 return 0;
             }
 
-            @Override
-            public List<Node> trees() {
+            public @Override List<Node> trees() {
                 return new ArrayList<>(trees);
             }
 
-            @Override
-            public List<Node> features() {
+            public @Override List<Node> features() {
                 return new ArrayList<>(features);
             }
 
-            @Override
-            public SortedMap<Integer, Bucket> buckets() {
-                return ImmutableSortedMap.of();
-            }
-
-            @Override
-            public Iterable<Bucket> getBuckets() {
+            public @Override Iterable<Bucket> getBuckets() {
                 return Collections.emptySet();
             }
         };
@@ -280,8 +233,7 @@ public class RevTreeTest {
 
         // Try reversing the comparator
         Comparator<Node> comparator2 = new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
+            public @Override int compare(Node o1, Node o2) {
                 return -o1.compareTo(o2);
             }
         };

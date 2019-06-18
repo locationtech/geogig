@@ -26,6 +26,7 @@ import java.util.Set;
 import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.AnsiDecorator;
 import org.locationtech.geogig.cli.Console;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
@@ -42,7 +43,6 @@ import org.locationtech.geogig.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Suppliers;
 
@@ -60,8 +60,8 @@ interface DiffPrinter {
 
 class SummaryDiffPrinter implements DiffPrinter {
 
-    @Override
-    public void print(GeoGIG geogig, Console console, DiffEntry entry) throws IOException {
+    public @Override void print(GeoGIG geogig, Console console, DiffEntry entry)
+            throws IOException {
 
         Ansi ansi = AnsiDecorator.newAnsi(console.isAnsiSupported());
 
@@ -127,8 +127,8 @@ class FullDiffPrinter implements DiffPrinter {
         this.noHeader = noHeader;
     }
 
-    @Override
-    public void print(GeoGIG geogig, Console console, DiffEntry diffEntry) throws IOException {
+    public @Override void print(GeoGIG geogig, Console console, DiffEntry diffEntry)
+            throws IOException {
 
         if (!noHeader) {
             summaryPrinter.print(geogig, console, diffEntry);

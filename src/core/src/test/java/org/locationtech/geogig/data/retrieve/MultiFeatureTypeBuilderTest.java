@@ -12,10 +12,10 @@ package org.locationtech.geogig.data.retrieve;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
-import org.locationtech.geogig.data.FeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,9 +27,8 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.util.Assert;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 public class MultiFeatureTypeBuilderTest {
 
@@ -38,12 +37,12 @@ public class MultiFeatureTypeBuilderTest {
         ObjectId meta1 = getOID(1);
         ObjectId meta2 = getOID(2);
 
-        SimpleFeatureType fType1 = DataUtilities.createType("location",
-                "the_geom:Point:srid=4326,name:String,name2:String");
+        FeatureType fType1 = FeatureTypes.createType("location", "the_geom:Point:srid=4326",
+                "name:String", "name2:String");
         RevFeatureType revft1 = RevFeatureType.builder().id(getOID(1)).type(fType1).build();
 
-        SimpleFeatureType fType2 = DataUtilities.createType("location",
-                "the_geom:Point:srid=4326,name3:String,name4:String");
+        FeatureType fType2 = FeatureTypes.createType("location", "the_geom:Point:srid=4326",
+                "name3:String", "name4:String");
         RevFeatureType revft2 = RevFeatureType.builder().id(getOID(1)).type(fType2).build();
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
@@ -51,14 +50,14 @@ public class MultiFeatureTypeBuilderTest {
         when(odb.getFeatureType(meta2)).thenReturn(revft2);
 
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
-        FeatureBuilder fb1 = builder.get(meta1);
-        FeatureBuilder fb2 = builder.get(meta2);
+        FeatureType ft1 = builder.get(meta1);
+        FeatureType ft2 = builder.get(meta2);
 
-        Assert.isTrue(fb1 == builder.get(meta1)); // not rebuilt
-        Assert.isTrue(fb2 == builder.get(meta2)); // not rebuilt
+        Assert.isTrue(ft1 == builder.get(meta1)); // not rebuilt
+        Assert.isTrue(ft2 == builder.get(meta2)); // not rebuilt
 
-        Assert.isTrue(fb1.getType().equals(revft1));
-        Assert.isTrue(fb2.getType().equals(revft2));
+        Assert.isTrue(ft1.equals(revft1.type()));
+        Assert.isTrue(ft2.equals(revft2.type()));
     }
 
     @Test
@@ -66,14 +65,14 @@ public class MultiFeatureTypeBuilderTest {
 
         ObjectId meta1 = getOID(1);
 
-        SimpleFeatureType fType1 = DataUtilities.createType("location",
-                "the_geom:Point:srid=4326,name:String,name2:String");
+        org.locationtech.geogig.feature.FeatureType fType1 = FeatureTypes.createType("location",
+                "the_geom:Point:srid=4326", "name:String", "name2:String");
         RevFeatureType revft1 = RevFeatureType.builder().id(getOID(1)).type(fType1).build();
 
         ObjectDatabase odb = mock(ObjectDatabase.class);
         when(odb.getFeatureType(meta1)).thenReturn(revft1);
 
-        WKTReader2 wkt = new WKTReader2();
+        WKTReader wkt = new WKTReader();
         RevFeature feat = RevObjectTestSupport.feature(wkt.read("POINT(0 0)"), "abc", "def");
 
         Node n1 = RevObjectFactory.defaultInstance().createNode("name1", getOID(2), meta1,
@@ -83,7 +82,7 @@ public class MultiFeatureTypeBuilderTest {
         ObjectInfo<RevFeature> fi = ObjectInfo.of(nr1, feat);
 
         MultiFeatureTypeBuilder builder = new MultiFeatureTypeBuilder(odb);
-        SimpleFeature sf = builder.apply(fi);
+        Feature sf = builder.apply(fi);
 
         Assert.isTrue(sf.getAttribute("name").equals("abc"));
         Assert.isTrue(sf.getAttribute("name2").equals("def"));

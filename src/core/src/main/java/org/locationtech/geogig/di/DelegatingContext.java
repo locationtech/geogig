@@ -23,7 +23,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
 public class DelegatingContext implements Context {
@@ -42,10 +41,6 @@ public class DelegatingContext implements Context {
 
     public @Override WorkingTree workingTree() {
         return new WorkingTreeImpl(this);
-    }
-
-    public @Override StagingArea index() {
-        return stagingArea();
     }
 
     public @Override StagingArea stagingArea() {
@@ -90,9 +85,5 @@ public class DelegatingContext implements Context {
 
     public @Override BlobStore blobStore() {
         return context.blobStore();
-    }
-
-    public @Override PluginDefaults pluginDefaults() {
-        return context.pluginDefaults();
     }
 }

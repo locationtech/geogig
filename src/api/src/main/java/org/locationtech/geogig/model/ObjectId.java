@@ -122,13 +122,6 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         return h;
     }
 
-    /**
-     * @deprecated use #create
-     */
-    public static ObjectId createNoClone(byte[] rawHash) {
-        return new ObjectId(rawHash);
-    }
-
     public static ObjectId create(byte[] raw) {
         return new ObjectId(raw);
     }
@@ -149,8 +142,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * 
      * @param o the object id to compare against
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof ObjectId) {
             ObjectId i = (ObjectId) o;
             return this == o || (h1 == i.h1 && h2 == i.h2 && h3 == i.h3);
@@ -161,8 +153,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
     /**
      * @return a hash code based on the contents of the byte array.
      */
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return 31 ^ (h1 == 0 ? 1 : h1);
     }
 
@@ -170,8 +161,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
      * @return a human friendly representation of this SHA1
      * @see java.lang.Object#toString()
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return RevObjects.toString(this);
     }
 

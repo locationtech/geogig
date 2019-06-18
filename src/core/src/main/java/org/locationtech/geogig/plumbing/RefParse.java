@@ -61,8 +61,7 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
      * @throws IllegalArgumentException if {@code refSpec} resolves to more than one ref on the same
      *         namespace
      */
-    @Override
-    protected Optional<Ref> _call() {
+    protected @Override Optional<Ref> _call() {
         Preconditions.checkState(refSpec != null, "name has not been set");
 
         if (STANDARD_REFS.contains(refSpec) || refSpec.startsWith("refs/")) {
@@ -90,8 +89,7 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
                 this.suffix = suffix;
             }
 
-            @Override
-            public boolean apply(String refName) {
+            public @Override boolean apply(String refName) {
                 boolean applies = refName.startsWith(prefix) && refName.endsWith(suffix);
                 return applies;
             }

@@ -25,20 +25,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateIndexesHook implements CommandHook {
 
-    @Override
-    public boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz) {
+    public @Override boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz) {
         return UpdateRef.class.equals(clazz);
     }
 
-    @Override
-    public <C extends AbstractGeoGigOp<?>> C pre(C command)
+    public @Override <C extends AbstractGeoGigOp<?>> C pre(C command)
             throws CannotRunGeogigOperationException {
         return command;
     }
 
     @SuppressWarnings("unchecked")
-    @Override
-    public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+    public @Override <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
             @Nullable RuntimeException exception) throws Exception {
 
         final UpdateRef op = (UpdateRef) command;

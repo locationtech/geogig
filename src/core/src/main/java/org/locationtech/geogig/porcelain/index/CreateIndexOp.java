@@ -51,8 +51,7 @@ public class CreateIndexOp extends AbstractGeoGigOp<Index> {
      * 
      * @return an {@link Index} that represents the newly created index
      */
-    @Override
-    protected Index _call() {
+    protected @Override Index _call() {
         checkArgument(treeName != null, "treeName not provided");
         checkArgument(attributeName != null, "attributeName not provided");
         checkArgument(indexType != null, "indexType not provided");

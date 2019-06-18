@@ -30,9 +30,11 @@ import java.util.Optional;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.util.Converters;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
@@ -53,16 +55,6 @@ import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.FeatureTypeFactory;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.filter.Filter;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.InternationalString;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -162,8 +154,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             REF, BUCKET;
         }
 
-        @Override
-        public void write(T object, OutputStream out) throws IOException {
+        public @Override void write(T object, OutputStream out) throws IOException {
             OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8");
             println(writer, object.getType().name());
             print(object, writer);
@@ -203,7 +194,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             writeBBox(w, node, envHelper);
             Map<String, Object> extraData = node.getExtraData();
             if (!extraData.isEmpty()) {
-                String extraDataAsString = Converters.convert(extraData, String.class);
+                String extraDataAsString = FieldType.MAP.toString(extraData);
                 print(w, "\t");
                 print(w, extraDataAsString);
             }
@@ -251,8 +242,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextWriter<RevCommit> COMMIT_WRITER = new TextWriter<RevCommit>() {
 
-        @Override
-        protected void print(RevCommit commit, Writer w) throws IOException {
+        protected @Override void print(RevCommit commit, Writer w) throws IOException {
             println(w, "tree\t", commit.getTreeId().toString());
             print(w, "parents\t");
             for (Iterator<ObjectId> it = commit.getParentIds().iterator(); it.hasNext();) {
@@ -300,8 +290,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextWriter<RevFeature> FEATURE_WRITER = new TextWriter<RevFeature>() {
 
-        @Override
-        protected void print(RevFeature feature, Writer w) throws IOException {
+        protected @Override void print(RevFeature feature, Writer w) throws IOException {
             for (int i = 0; i < feature.size(); i++) {
                 Optional<Object> opt = feature.get(i);
                 final FieldType type = FieldType.forValue(opt);
@@ -335,8 +324,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextWriter<RevFeatureType> FEATURETYPE_WRITER = new TextWriter<RevFeatureType>() {
 
-        @Override
-        protected void print(RevFeatureType featureType, Writer w) throws IOException {
+        protected @Override void print(RevFeatureType featureType, Writer w) throws IOException {
             println(w, "name\t", featureType.getName().toString());
             Collection<PropertyDescriptor> attribs = featureType.type().getDescriptors();
             for (PropertyDescriptor attrib : attribs) {
@@ -347,20 +335,20 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
 
         private void printAttributeDescriptor(Writer w, PropertyDescriptor attrib)
                 throws IOException {
-            print(w, attrib.getName().toString());
+
+            String name = attrib.getName().toString();
+
+            print(w, name);
             print(w, "\t");
-            print(w, FieldType.forBinding(attrib.getType().getBinding()).name());
+            print(w, FieldType.forBinding(attrib.getBinding()).name());
             print(w, "\t");
             print(w, Integer.toString(attrib.getMinOccurs()));
             print(w, "\t");
             print(w, Integer.toString(attrib.getMaxOccurs()));
             print(w, "\t");
             print(w, Boolean.toString(attrib.isNillable()));
-            PropertyType attrType = attrib.getType();
-            if (attrType instanceof GeometryType) {
-                GeometryType gt = (GeometryType) attrType;
-                CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
-                String crsText = CrsTextSerializer.serialize(crs);
+            if (attrib.isGeometryDescriptor()) {
+                String crsText = CrsTextSerializer.serialize(attrib.coordinateReferenceSystem());
                 print(w, "\t");
                 println(w, crsText);
             } else {
@@ -391,8 +379,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextWriter<RevTree> TREE_WRITER = new TextWriter<RevTree>() {
 
-        @Override
-        protected void print(RevTree revTree, Writer w) throws IOException {
+        protected @Override void print(RevTree revTree, Writer w) throws IOException {
             println(w, "size\t", Long.toString(revTree.size()));
             println(w, "numtrees\t", Integer.toString(revTree.numTrees()));
 
@@ -443,8 +430,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextWriter<RevTag> TAG_WRITER = new TextWriter<RevTag>() {
 
-        @Override
-        protected void print(RevTag tag, Writer w) throws IOException {
+        protected @Override void print(RevTag tag, Writer w) throws IOException {
             println(w, "name\t", tag.getName());
             println(w, "commitid\t", tag.getCommitId().toString());
             println(w, "message\t", tag.getMessage());
@@ -465,8 +451,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
 
     private abstract static class TextReader<T extends RevObject> implements ObjectReader<T> {
 
-        @Override
-        public T read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override T read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
             try {
                 BufferedReader reader;
                 reader = new BufferedReader(new InputStreamReader(rawData, "UTF-8"));
@@ -511,7 +496,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             Map<String, Object> extraData = null;
             if (numTokens == 7) {
                 String extraDataAsString = tokens.get(6);
-                extraData = Converters.convert(extraDataAsString, Map.class);
+                extraData = FieldType.unmarshall(extraDataAsString, Map.class);
             }
 
             return org.locationtech.geogig.model.RevObjectFactory.defaultInstance().createNode(name,
@@ -538,8 +523,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
 
     private static final TextReader<RevObject> OBJECT_READER = new TextReader<RevObject>() {
 
-        @Override
-        protected RevObject read(ObjectId id, BufferedReader read, TYPE type) throws IOException {
+        protected @Override RevObject read(ObjectId id, BufferedReader read, TYPE type)
+                throws IOException {
             switch (type) {
             case COMMIT:
                 return COMMIT_READER.read(id, read, type);
@@ -575,8 +560,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextReader<RevCommit> COMMIT_READER = new TextReader<RevCommit>() {
 
-        @Override
-        protected RevCommit read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
+        protected @Override RevCommit read(ObjectId id, BufferedReader reader, TYPE type)
+                throws IOException {
             Preconditions.checkArgument(TYPE.COMMIT.equals(type), "Wrong type: %s", type.name());
             String tree = parseLine(requireLine(reader), "tree");
             List<String> parents = newArrayList(Splitter.on(' ').omitEmptyStrings()
@@ -642,8 +627,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextReader<RevFeature> FEATURE_READER = new TextReader<RevFeature>() {
 
-        @Override
-        protected RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
+        protected @Override RevFeature read(ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.FEATURE.equals(type), "Wrong type: %s", type.name());
 
@@ -690,43 +674,31 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      * 
      */
     private static final TextReader<RevFeatureType> FEATURETYPE_READER = new TextReader<RevFeatureType>() {
-
-        private SimpleFeatureTypeBuilder builder;
-
-        private FeatureTypeFactory typeFactory;
-
-        @Override
-        protected RevFeatureType read(@Nullable ObjectId id, BufferedReader reader, TYPE type)
-                throws IOException {
+        protected @Override RevFeatureType read(@Nullable ObjectId id, BufferedReader reader,
+                TYPE type) throws IOException {
             Preconditions.checkArgument(TYPE.FEATURETYPE.equals(type), "Wrong type: %s",
                     type.name());
-            builder = new SimpleFeatureTypeBuilder();
-            typeFactory = builder.getFeatureTypeFactory();
+            FeatureTypeBuilder builder = FeatureType.builder();
             String name = parseLine(requireLine(reader), "name");
-            SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-            if (name.contains(":")) {
-                int idx = name.lastIndexOf(':');
-                String namespace = name.substring(0, idx);
-                String local = name.substring(idx + 1);
-                builder.setName(new NameImpl(namespace, local));
-            } else {
-                builder.setName(new NameImpl(name));
-            }
+            builder.name(Name.valueOf(name));
 
             String line;
+            List<PropertyDescriptor> props = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
-                builder.add(parseAttributeDescriptor(line));
+                props.add(parseAttributeDescriptor(line));
             }
-            SimpleFeatureType sft = builder.buildFeatureType();
+            builder.descriptors(props);
+            FeatureType sft = builder.build();
             return RevFeatureType.builder().id(id).type(sft).build();
-
         }
 
-        private AttributeDescriptor parseAttributeDescriptor(String line) {
+        private PropertyDescriptor parseAttributeDescriptor(String line) {
             ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
             Preconditions.checkArgument(tokens.size() == 5 || tokens.size() == 6,
                     "Wrong attribute definition: %s", line);
-            NameImpl name = new NameImpl(tokens.get(0));
+
+            String namestr = tokens.get(0);
+            Name name = Name.valueOf(namestr);
             Class<?> type;
             try {
                 type = FieldType.valueOf(tokens.get(1)).getBinding();
@@ -736,34 +708,15 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             int min = Integer.parseInt(tokens.get(2));
             int max = Integer.parseInt(tokens.get(3));
             boolean nillable = Boolean.parseBoolean(tokens.get(4));
+            CoordinateReferenceSystem crs = null;
 
-            /*
-             * Default values that are currently not encoded.
-             */
-            boolean isIdentifiable = false;
-            boolean isAbstract = false;
-            List<Filter> restrictions = null;
-            AttributeType superType = null;
-            InternationalString description = null;
-            Object defaultValue = null;
-
-            AttributeType attributeType;
-            AttributeDescriptor attributeDescriptor;
             if (Geometry.class.isAssignableFrom(type)) {
                 String crsText = tokens.get(5);
-                CoordinateReferenceSystem crs = CrsTextSerializer.deserialize(crsText);
-
-                attributeType = typeFactory.createGeometryType(name, type, crs, isIdentifiable,
-                        isAbstract, restrictions, superType, description);
-                attributeDescriptor = typeFactory.createGeometryDescriptor(
-                        (GeometryType) attributeType, name, min, max, nillable, defaultValue);
-            } else {
-                attributeType = typeFactory.createAttributeType(name, type, isIdentifiable,
-                        isAbstract, restrictions, superType, description);
-                attributeDescriptor = typeFactory.createAttributeDescriptor(attributeType, name,
-                        min, max, nillable, defaultValue);
+                crs = CrsTextSerializer.deserialize(crsText);
             }
-            return attributeDescriptor;
+            return PropertyDescriptor.builder().name(name).typeName(name).binding(type)
+                    .minOccurs(min).maxOccurs(max).nillable(nillable).coordinateReferenceSystem(crs)
+                    .build();
         }
     };
 
@@ -786,8 +739,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextReader<RevTree> TREE_READER = new TextReader<RevTree>() {
 
-        @Override
-        protected RevTree read(ObjectId id, BufferedReader reader, TYPE type) throws IOException {
+        protected @Override RevTree read(ObjectId id, BufferedReader reader, TYPE type)
+                throws IOException {
             Preconditions.checkArgument(TYPE.TREE.equals(type), "Wrong type: %s", type.name());
             Builder<Node> features = ImmutableList.builder();
             Builder<Node> trees = ImmutableList.builder();
@@ -844,8 +797,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
      */
     private static final TextReader<RevTag> TAG_READER = new TextReader<RevTag>() {
 
-        @Override
-        protected RevTag read(@Nullable ObjectId id, BufferedReader reader, TYPE type)
+        protected @Override RevTag read(@Nullable ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.TAG.equals(type), "Wrong type: %s", type.name());
             String name = parseLine(requireLine(reader), "name");
@@ -887,19 +839,16 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         serializers.put(TYPE.TREE, TREE_WRITER);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
+    public @Override RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
         return OBJECT_READER.read(id, in);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         return read(id, new ByteArrayInputStream(data, offset, length));
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         writer(o.getType()).write(o, out);
     }
 
@@ -912,8 +861,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         return (TextWriter<T>) serializer;
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return "Text 1.0";
     }
 }

@@ -51,8 +51,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
@@ -87,7 +86,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         Envelope bounds = new Envelope(-180, 180, -90, 90);
         Map<String, Object> metadata = new HashMap<String, Object>();
         metadata.put(IndexInfo.MD_QUAD_MAX_BOUNDS, bounds);
-        Index index = geogig.command(CreateIndexOp.class)//
+        Index index = repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -111,7 +110,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
 
-        IndexTestSupport.verifyIndex(geogig, index.indexTreeId(), worldPointsTree.getId());
+        IndexTestSupport.verifyIndex(repo.context(), index.indexTreeId(), worldPointsTree.getId());
     }
 
     public @Test void testAbortsCleanly() {
@@ -128,7 +127,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         final String treeName = worldPointsLayer.getName();
         final String attributeName = "geom";
         try {
-            CreateIndexOp createIndex = geogig.command(CreateIndexOp.class);
+            CreateIndexOp createIndex = repo.command(CreateIndexOp.class);
             createIndex = spy(createIndex);
             doReturn(failingOp).when(createIndex).command(eq(BuildIndexOp.class));
 
@@ -152,7 +151,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         Map<String, Object> metadata = new HashMap<String, Object>();
         metadata.put(IndexInfo.MD_QUAD_MAX_BOUNDS, bounds);
         metadata.put("SomeKey", "SomeValue");
-        Index index = geogig.command(CreateIndexOp.class)//
+        Index index = repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -178,7 +177,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
 
-        IndexTestSupport.verifyIndex(geogig, index.indexTreeId(), worldPointsTree.getId());
+        IndexTestSupport.verifyIndex(repo.context(), index.indexTreeId(), worldPointsTree.getId());
     }
 
     @Test
@@ -188,7 +187,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         Map<String, Object> metadata = new HashMap<String, Object>();
         metadata.put(IndexInfo.MD_QUAD_MAX_BOUNDS, bounds);
         metadata.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, extraAttributes);
-        Index index = geogig.command(CreateIndexOp.class)//
+        Index index = repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -216,43 +215,48 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
         assertEquals(indexedTreeId.get(), index.indexTreeId());
 
-        IndexTestSupport.verifyIndex(geogig, index.indexTreeId(), worldPointsTree.getId(), "x");
+        IndexTestSupport.verifyIndex(repo.context(), index.indexTreeId(), worldPointsTree.getId(),
+                "x");
 
         // make sure old commits are indexed
-        ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        ObjectId canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("HEAD~2:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x");
 
-        canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
+        canonicalFeatureTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish("branch1:" + worldPointsLayer.getName()).call().get();
         indexedTreeId = indexdb.resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
-        IndexTestSupport.verifyIndex(geogig, indexedTreeId.get(), canonicalFeatureTreeId, "x");
+        IndexTestSupport.verifyIndex(repo.context(), indexedTreeId.get(), canonicalFeatureTreeId,
+                "x");
     }
 
     @Test
     public void testCreateIndexNoTreeName() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("treeName not provided");
-        geogig.command(CreateIndexOp.class)//
+        repo.command(CreateIndexOp.class)//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setAttributeName("geom")//
@@ -264,7 +268,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     public void testCreateIndexNoCanonicalTypeTree() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("canonicalTypeTree not provided");
-        geogig.command(CreateIndexOp.class)//
+        repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setAttributeName("geom")//
@@ -276,7 +280,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     public void testCreateIndexNoFeatureTypeId() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("featureTypeId not provided");
-        geogig.command(CreateIndexOp.class)//
+        repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setAttributeName("geom")//
@@ -288,7 +292,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     public void testCreateIndexNoAttributeName() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("attributeName not provided");
-        geogig.command(CreateIndexOp.class)//
+        repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -300,7 +304,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     public void testCreateIndexNoIndexType() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("indexType not provided");
-        geogig.command(CreateIndexOp.class)//
+        repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//

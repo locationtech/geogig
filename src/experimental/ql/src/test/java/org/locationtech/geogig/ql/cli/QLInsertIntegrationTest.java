@@ -29,6 +29,7 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLInsert;
 import org.locationtech.geogig.repository.DiffObjectCount;
@@ -58,11 +59,11 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         insertAndAdd(lines1, lines2, lines3);
         insertAndAdd(poly1, poly2, poly3);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
         insertAndAdd(points1_modified);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
-        helper = new QLTestHelper(geogig);
+        helper = new QLTestHelper(repo);
     }
 
     @After
@@ -114,7 +115,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
     }
 
     private DiffObjectCount insert(String sql) {
-        DiffObjectCount count = geogig.command(QLInsert.class).setStatement(sql).call().get();
+        DiffObjectCount count = repo.command(QLInsert.class).setStatement(sql).call().get();
         return count;
     }
 
@@ -192,8 +193,8 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
     @Test
     public void insertSelectAllOntoEmptyTree() throws Exception {
         SimpleFeatureType newType = DataUtilities.createType("Points2", pointsTypeSpec);
-        WorkingTree workingTree = geogig.getRepository().workingTree();
-        workingTree.createTypeTree("Points2", newType);
+        WorkingTree workingTree = repo.workingTree();
+        workingTree.createTypeTree("Points2", GT.adapt(newType));
 
         String sql = "insert into Points2 (ip, sp) select * from Points";
         assertEquals(3, insert(sql).getFeaturesAdded());

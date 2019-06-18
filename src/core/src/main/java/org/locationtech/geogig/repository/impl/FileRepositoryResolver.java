@@ -27,21 +27,24 @@ import java.util.Optional;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
-import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
+import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.IndexDatabase;
+import org.locationtech.geogig.storage.ObjectDatabase;
+import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 
-public class FileRepositoryResolver extends RepositoryResolver {
+import lombok.NonNull;
 
-    @Override
-    public boolean canHandle(URI repoURI) {
+public abstract class FileRepositoryResolver implements RepositoryResolver {
+
+    public @Override boolean canHandle(@NonNull URI repoURI) {
         String scheme = repoURI.getScheme();
         if (null == scheme) {
             File file = toFile(repoURI);
@@ -54,8 +57,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return canHandleURIScheme(scheme);
     }
 
-    @Override
-    public boolean canHandleURIScheme(String scheme) {
+    public @Override boolean canHandleURIScheme(String scheme) {
         return "file".equals(scheme);
     }
 
@@ -70,8 +72,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return file;
     }
 
-    @Override
-    public boolean repoExists(URI repoURI) {
+    public @Override boolean repoExists(@NonNull URI repoURI) {
         File directory = toFile(repoURI);
         Optional<URI> lookup = ResolveGeogigURI.lookup(directory);
         return lookup.isPresent();
@@ -83,9 +84,8 @@ public class FileRepositoryResolver extends RepositoryResolver {
         final List<Path> subdirs = new ArrayList<Path>();
         try {
             Files.walkFileTree(basePath, new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-                        throws IOException {
+                public @Override FileVisitResult preVisitDirectory(Path dir,
+                        BasicFileAttributes attrs) throws IOException {
                     if (dir.equals(basePath)) {
                         return FileVisitResult.CONTINUE;
                     }
@@ -109,8 +109,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return repoNameToRepoIds;
     }
 
-    @Override
-    public URI buildRepoURI(URI rootRepoURI, String repoName) {
+    public @Override URI buildRepoURI(@NonNull URI rootRepoURI, @NonNull String repoName) {
         final File rootDirectory = toFile(rootRepoURI);
         // Look up repo ID for repo name, if it does not exist, generate a new one
         String repoId = reposUnderRootDirectory(rootDirectory).get(repoName);
@@ -125,15 +124,13 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return repoDirectory.toURI();
     }
 
-    @Override
-    public List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
+    public @Override List<String> listRepoNamesUnderRootURI(@NonNull URI rootRepoURI) {
         final File rootDirectory = toFile(rootRepoURI);
 
         return Lists.newLinkedList(reposUnderRootDirectory(rootDirectory).keySet());
     }
 
-    @Override
-    public String getName(URI repoURI) {
+    public @Override String getName(@NonNull URI repoURI) {
         String repoName = null;
 
         // if the repo exists, get the name from it
@@ -162,8 +159,8 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return repoName;
     }
 
-    @Override
-    public void initialize(URI repoURI, Context repoContext) throws IllegalArgumentException {
+    public @Override void initialize(@NonNull URI repoURI, @NonNull Context repoContext)
+            throws IllegalArgumentException {
 
         final boolean repoExisted = repoExists(repoURI);
 
@@ -191,15 +188,13 @@ public class FileRepositoryResolver extends RepositoryResolver {
         }
     }
 
-    @Override
-    public ConfigDatabase getConfigDatabase(URI repoURI, Context repoContext, boolean rootUri) {
-        Hints hints = new Hints().uri(repoURI);
-        Platform platform = repoContext.platform();
-        return new IniFileConfigDatabase(platform, hints, rootUri);
+    public @Override Repository open(@NonNull URI repositoryURI)
+            throws RepositoryConnectionException {
+        return open(repositoryURI, Hints.readWrite());
     }
 
-    @Override
-    public Repository open(URI repositoryLocation) throws RepositoryConnectionException {
+    public @Override Repository open(@NonNull URI repositoryLocation, @NonNull Hints hints)
+            throws RepositoryConnectionException {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a file repository: %s",
                 repositoryLocation.getScheme());
 
@@ -208,7 +203,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
                     "The provided location is not a geogig repository");
         }
 
-        Context context = GlobalContextBuilder.builder().build(new Hints().uri(repositoryLocation));
+        Context context = GlobalContextBuilder.builder().build(hints.uri(repositoryLocation));
         GeoGIG geoGIG = new GeoGIG(context);
 
         Repository repository = geoGIG.getRepository();
@@ -217,8 +212,7 @@ public class FileRepositoryResolver extends RepositoryResolver {
         return repository;
     }
 
-    @Override
-    public boolean delete(URI repositoryLocation) throws Exception {
+    public @Override boolean delete(@NonNull URI repositoryLocation) throws Exception {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a file repository: %s",
                 repositoryLocation);
 
@@ -253,4 +247,34 @@ public class FileRepositoryResolver extends RepositoryResolver {
             throw new IOException("Unable to delete directory: " + directory.getCanonicalPath());
         }
     }
+
+    public @Override URI getRootURI(@NonNull URI repoURI) {
+        File dotgig = resolveDotGeogigDirectory(repoURI);
+        return dotgig.getParentFile().getParentFile().toURI();
+    }
+
+    protected File resolveDotGeogigDirectory(@NonNull URI repoURI) {
+        File dir = toFile(repoURI);
+        if (!".geogig".equals(dir.getName())) {
+            dir = new File(dir, ".geogig");
+            if (!dir.isDirectory()) {
+                throw new IllegalArgumentException(
+                        String.format("Not a geogig directory: %s", repoURI));
+            }
+        }
+        return dir;
+    }
+
+    public abstract @Override ConfigDatabase resolveConfigDatabase(@NonNull URI repoURI,
+            @NonNull Context repoContext, boolean rootUri);
+
+    public abstract @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI,
+            Hints hints);
+
+    public abstract @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints);
+
+    public abstract @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints);
+
+    public abstract @Override ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI,
+            Hints hints);
 }

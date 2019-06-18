@@ -24,8 +24,7 @@ public class SaveMergeCommitMessageOp extends AbstractGeoGigOp<Void> {
         return this;
     }
 
-    @Override
-    protected Void _call() {
+    protected @Override Void _call() {
         BlobStore blobStore = context().blobStore();
         byte[] blob = message.getBytes(Charsets.UTF_8);
         blobStore.putBlob(MergeOp.MERGE_MSG, blob);

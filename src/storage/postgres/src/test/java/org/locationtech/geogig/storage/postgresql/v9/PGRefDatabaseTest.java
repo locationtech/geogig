@@ -11,19 +11,18 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
@@ -38,44 +37,27 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    ConfigDatabase configdb;
-
     Environment mainEnvironment;
 
-    @Override
-    protected RefDatabase createDatabase(Platform platform) throws Exception {
+    protected @Override RefDatabase createDatabase(Platform platform) throws Exception {
         mainEnvironment = testConfig.getEnvironment();
         PGStorage.createNewRepo(mainEnvironment);
-        closeConfigDb();
-        configdb = new PGConfigDatabase(mainEnvironment);
-        return new PGRefDatabase(configdb, mainEnvironment);
-    }
-
-    @After
-    public void closeConfigDb() {
-        if (configdb != null) {
-            try {
-                configdb.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            configdb = null;
-        }
+        URI uri = mainEnvironment.toURI();
+        Hints hints = new Hints().uri(uri);
+        return new PGRefDatabase(hints);
     }
 
     @Test
     public void testLockSingleRepo() throws Exception {
         PGRefDatabase pgRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockTask = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 pgRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockTask = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 pgRefDb.unlock();
                 return 0L;
             }
@@ -114,34 +96,30 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
                 mainEnvironment.getPassword(), getClass().getSimpleName() + "2",
                 mainEnvironment.getTables().getPrefix());
         PGStorage.createNewRepo(secondEnvironment);
-        PGConfigDatabase secondConfigDb = new PGConfigDatabase(secondEnvironment);
-        PGRefDatabase secondRefDb = new PGRefDatabase(secondConfigDb, secondEnvironment);
-        secondRefDb.create();
+
+        PGRefDatabase secondRefDb = new PGRefDatabase(new Hints().uri(secondEnvironment.toURI()));
+        secondRefDb.open();
         PGRefDatabase firstRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockFirstRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 firstRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockFirstRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 firstRefDb.unlock();
                 return 0L;
             }
         };
         Callable<Long> lockSecondRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 secondRefDb.lockWithTimeout(5);
                 return 0L;
             }
         };
         Callable<Long> unlockSecondRepo = new Callable<Long>() {
-            @Override
-            public Long call() throws TimeoutException {
+            public @Override Long call() throws TimeoutException {
                 secondRefDb.unlock();
                 return 0L;
             }
@@ -163,7 +141,6 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
         firstThread.shutdown();
         secondThread.shutdown();
 
-        secondConfigDb.close();
         secondRefDb.close();
 
     }

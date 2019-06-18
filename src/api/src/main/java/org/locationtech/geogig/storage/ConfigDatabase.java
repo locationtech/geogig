@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -22,7 +21,7 @@ import lombok.NonNull;
  * 
  * @since 1.0
  */
-public interface ConfigDatabase extends Closeable {
+public interface ConfigDatabase extends Store {
 
     /**
      * Queries the repository config file for a particular name.

@@ -60,8 +60,7 @@ public class Ls extends AbstractCommand implements CLICommand {
                     + "Non default number of digits can be specified with --abbrev <n>.")
     private Integer abbrev;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         String ref;
         if (refList.isEmpty()) {
             ref = null;
@@ -107,8 +106,7 @@ public class Ls extends AbstractCommand implements CLICommand {
 
         Function<NodeRef, CharSequence> printFunctor = new Function<NodeRef, CharSequence>() {
 
-            @Override
-            public CharSequence apply(NodeRef input) {
+            public @Override CharSequence apply(NodeRef input) {
                 String path = input.path();
                 int depth = path.split("/").length - rootDepth;
                 StringBuilder sb = new StringBuilder();

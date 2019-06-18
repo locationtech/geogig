@@ -33,8 +33,8 @@ public class EndPush extends PushResponse {
                 out.write("Push succeeded for address: " + getCombinedAddress());
                 out.flush();
             } else {
-                out.write("Push aborted for address: " + getCombinedAddress() +
-                        ". The ref was changed during push.");
+                out.write("Push aborted for address: " + getCombinedAddress()
+                        + ". The ref was changed during push.");
                 out.flush();
             }
         } catch (Exception ex) {

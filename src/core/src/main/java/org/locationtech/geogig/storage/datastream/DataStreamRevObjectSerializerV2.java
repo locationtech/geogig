@@ -31,8 +31,9 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
+
+import lombok.NonNull;
 
 /**
  * Serialization factory for serial version 2
@@ -51,8 +52,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
         this(FormatCommonV2.INSTANCE);
     }
 
-    protected DataStreamRevObjectSerializerV2(FormatCommonV2 format) {
-        Preconditions.checkNotNull(format);
+    protected DataStreamRevObjectSerializerV2(@NonNull FormatCommonV2 format) {
         this.format = format;
         serializers[TYPE.COMMIT.ordinal()] = new CommitSerializer(format);
         serializers[TYPE.FEATURE.ordinal()] = new FeatureSerializer(format);
@@ -65,8 +65,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
         return read(null, rawData);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, InputStream rawData) throws IOException {
+    public @Override RevObject read(@Nullable ObjectId id, InputStream rawData) throws IOException {
         return readInternal(id, newDataInput(rawData));
     }
 
@@ -77,8 +76,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
         return new DataInputStream(in);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         return readInternal(id, ByteStreams.newDataInput(data, offset));
     }
@@ -90,8 +88,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
         return object;
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         serializer(o.getType()).write(o, out);
     }
 
@@ -116,8 +113,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             this.format = format;
         }
 
-        @Override
-        public T read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override T read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 format.requireHeader(in, header);
@@ -135,8 +131,7 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
          * , readers must not, in order for {@link ObjectReaderV2} to be able of parsing the header
          * and call the appropriate read method.
          */
-        @Override
-        public void write(T object, OutputStream out) throws IOException {
+        public @Override void write(T object, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 format.writeHeader(data, object.getType());
@@ -155,13 +150,12 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             super(TYPE.COMMIT, format);
         }
 
-        @Override
-        public RevCommit readBody(@Nullable ObjectId id, DataInput in) throws IOException {
+        public @Override RevCommit readBody(@Nullable ObjectId id, DataInput in)
+                throws IOException {
             return format.readCommit(id, in);
         }
 
-        @Override
-        public void writeBody(RevCommit commit, DataOutput data) throws IOException {
+        public @Override void writeBody(RevCommit commit, DataOutput data) throws IOException {
             format.writeCommit(commit, data);
         }
     }
@@ -172,13 +166,12 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             super(TYPE.FEATURE, format);
         }
 
-        @Override
-        public RevFeature readBody(@Nullable ObjectId id, DataInput in) throws IOException {
+        public @Override RevFeature readBody(@Nullable ObjectId id, DataInput in)
+                throws IOException {
             return format.readFeature(id, in);
         }
 
-        @Override
-        public void writeBody(RevFeature feature, DataOutput data) throws IOException {
+        public @Override void writeBody(RevFeature feature, DataOutput data) throws IOException {
             format.writeFeature(feature, data);
         }
     }
@@ -189,13 +182,12 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             super(TYPE.FEATURETYPE, format);
         }
 
-        @Override
-        public RevFeatureType readBody(@Nullable ObjectId id, DataInput in) throws IOException {
+        public @Override RevFeatureType readBody(@Nullable ObjectId id, DataInput in)
+                throws IOException {
             return format.readFeatureType(id, in);
         }
 
-        @Override
-        public void writeBody(RevFeatureType object, DataOutput data) throws IOException {
+        public @Override void writeBody(RevFeatureType object, DataOutput data) throws IOException {
             format.writeFeatureType(object, data);
         }
     }
@@ -206,13 +198,11 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             super(TYPE.TAG, format);
         }
 
-        @Override
-        public RevTag readBody(@Nullable ObjectId id, DataInput in) throws IOException {
+        public @Override RevTag readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return format.readTag(id, in);
         }
 
-        @Override
-        public void writeBody(RevTag tag, DataOutput data) throws IOException {
+        public @Override void writeBody(RevTag tag, DataOutput data) throws IOException {
             format.writeTag(tag, data);
         }
     }
@@ -223,19 +213,16 @@ public class DataStreamRevObjectSerializerV2 implements RevObjectSerializer {
             super(TYPE.TREE, format);
         }
 
-        @Override
-        public RevTree readBody(@Nullable ObjectId id, DataInput in) throws IOException {
+        public @Override RevTree readBody(@Nullable ObjectId id, DataInput in) throws IOException {
             return format.readTree(id, in);
         }
 
-        @Override
-        public void writeBody(RevTree tree, DataOutput data) throws IOException {
+        public @Override void writeBody(RevTree tree, DataOutput data) throws IOException {
             format.writeTree(tree, data);
         }
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return "Binary 2.0";
     }
 }

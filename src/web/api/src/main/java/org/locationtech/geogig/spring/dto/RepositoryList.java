@@ -52,7 +52,7 @@ public class RepositoryList extends LegacyResponse {
     @Override
     public void encodeInternal(StreamingWriter writer, MediaType format, String baseURL) {
         writer.writeStartElement("repos");
-        //Iterator<String> repos = repoProvider.findRepositories();
+        // Iterator<String> repos = repoProvider.findRepositories();
         writer.writeStartArray("repo");
         if (repos != null) {
             for (RepositoryListRepo repo : repos) {

@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
@@ -50,13 +51,14 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * Base class for PostgreSQL based graph database.
  * 
  */
-public class PGGraphDatabase implements GraphDatabase {
+public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     static Logger LOG = LoggerFactory.getLogger(PGGraphDatabase.class);
 
     private final String EDGES;
@@ -71,13 +73,12 @@ public class PGGraphDatabase implements GraphDatabase {
 
     private Version serverVersion;
 
-    @Inject
     public PGGraphDatabase(Hints hints) throws URISyntaxException {
-        this(Environment.get(hints));
+        this(Environment.get(hints), Hints.isRepoReadOnly(hints));
     }
 
-    public PGGraphDatabase(Environment config) {
-        Preconditions.checkNotNull(config);
+    public PGGraphDatabase(@NonNull Environment config, boolean readOnly) {
+        super(readOnly);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         this.config = config;
@@ -87,21 +88,16 @@ public class PGGraphDatabase implements GraphDatabase {
         this.MAPPINGS = tables.graphMappings();
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (dataSource == null) {
             dataSource = newDataSource(config);
             serverVersion = PGStorage.getServerVersion(config);
+            super.open();
         }
     }
 
-    @Override
-    public boolean isOpen() {
-        return dataSource != null;
-    }
-
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
+        super.close();
         if (dataSource != null) {
             closeDataSource(dataSource);
             dataSource = null;
@@ -113,8 +109,7 @@ public class PGGraphDatabase implements GraphDatabase {
      * <p>
      * A node exists if there's at least one relationship pointing to it in the edges table.
      */
-    @Override
-    public boolean exists(ObjectId commitId) {
+    public @Override boolean exists(ObjectId commitId) {
         final PGId node = PGId.valueOf(commitId);
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return exists(node, cx);
@@ -139,20 +134,17 @@ public class PGGraphDatabase implements GraphDatabase {
         return exists;
     }
 
-    @Override
-    public List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         final PGId node = PGId.valueOf(commitId);
         return ImmutableList.copyOf(Iterables.transform(outgoing(node), PGId::toObjectId));
     }
 
-    @Override
-    public List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
+    public @Override List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         return ImmutableList
                 .copyOf(Iterables.transform(incoming(PGId.valueOf(commitId)), PGId::toObjectId));
     }
 
-    @Override
-    public boolean put(ObjectId commitId, List<ObjectId> parentIds) {
+    public @Override boolean put(ObjectId commitId, List<ObjectId> parentIds) {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             return put(cx, commitId, parentIds);
         } catch (SQLException e) {
@@ -315,8 +307,7 @@ public class PGGraphDatabase implements GraphDatabase {
      * @param from The node being mapped from.
      * @param to The node being mapped to.
      */
-    @Override
-    public void map(ObjectId mapped, ObjectId original) {
+    public @Override void map(ObjectId mapped, ObjectId original) {
         final PGId from = PGId.valueOf(mapped);
         final PGId to = PGId.valueOf(original);
         // lacking upsert...
@@ -356,8 +347,7 @@ public class PGGraphDatabase implements GraphDatabase {
      * </p>
      */
     @Nullable
-    @Override
-    public ObjectId getMapping(ObjectId commitId) {
+    public @Override ObjectId getMapping(ObjectId commitId) {
         final PGId node = PGId.valueOf(commitId);
 
         final String sql = format(
@@ -379,8 +369,7 @@ public class PGGraphDatabase implements GraphDatabase {
         return mapped;
     }
 
-    @Override
-    public int getDepth(ObjectId commitId) {
+    public @Override int getDepth(ObjectId commitId) {
         int depth = 0;
 
         Queue<PGId> q = Lists.newLinkedList();
@@ -413,8 +402,7 @@ public class PGGraphDatabase implements GraphDatabase {
     /**
      * Assigns a property key/value pair to a node.
      */
-    @Override
-    public void setProperty(ObjectId commitId, String name, String value) {
+    public @Override void setProperty(ObjectId commitId, String name, String value) {
         final PGId node = PGId.valueOf(commitId);
         final String delete = format(
                 "DELETE FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND  key = ?", PROPS);
@@ -447,8 +435,7 @@ public class PGGraphDatabase implements GraphDatabase {
         }
     }
 
-    @Override
-    public void truncate() {
+    public @Override void truncate() {
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);
             try {
@@ -470,8 +457,7 @@ public class PGGraphDatabase implements GraphDatabase {
         }
     }
 
-    @Override
-    public GraphNode getNode(ObjectId id) {
+    public @Override GraphNode getNode(ObjectId id) {
         return new PGGraphNode(id);
     }
 
@@ -568,13 +554,11 @@ public class PGGraphDatabase implements GraphDatabase {
             this.id = id;
         }
 
-        @Override
-        public ObjectId getIdentifier() {
+        public @Override ObjectId getIdentifier() {
             return id;
         }
 
-        @Override
-        public Iterator<GraphEdge> getEdges(final Direction direction) {
+        public @Override Iterator<GraphEdge> getEdges(final Direction direction) {
             List<GraphEdge> edges = new LinkedList<GraphEdge>();
 
             final PGId pgId = PGId.valueOf(id);
@@ -596,8 +580,7 @@ public class PGGraphDatabase implements GraphDatabase {
             return edges.iterator();
         }
 
-        @Override
-        public boolean isSparse() {
+        public @Override boolean isSparse() {
             @Nullable
             String sparse = property(PGId.valueOf(id), SPARSE_FLAG, dataSource);
             return Boolean.parseBoolean(sparse);

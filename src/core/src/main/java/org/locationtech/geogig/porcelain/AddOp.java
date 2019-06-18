@@ -59,8 +59,7 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
      * 
      * @return the modified {@link WorkingTree working tree}.
      */
-    @Override
-    protected WorkingTree _call() {
+    protected @Override WorkingTree _call() {
         // this is add all, TODO: implement partial adds
         String path = null;
         if (patterns.size() == 1) {
@@ -112,8 +111,7 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
             if (updateOnly) {
                 updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
-                    @Override
-                    public boolean apply(@Nullable DiffEntry input) {
+                    public @Override boolean apply(@Nullable DiffEntry input) {
                         // HACK: avoid reporting changed trees
                         if (input.isChange() && input.getOldObject().getType().equals(TYPE.TREE)) {
                             return false;

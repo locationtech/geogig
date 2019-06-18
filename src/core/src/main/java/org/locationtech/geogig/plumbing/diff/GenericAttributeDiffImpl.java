@@ -50,8 +50,7 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         this.newValue = newValue;
     }
 
-    @Override
-    public TYPE getType() {
+    public @Override TYPE getType() {
         TYPE type;
         if (java.util.Objects.equals(oldValue, newValue)) {
             type = TYPE.NO_CHANGE;
@@ -65,13 +64,11 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         return type;
     }
 
-    @Override
-    public Object getOldValue() {
+    public @Override Object getOldValue() {
         return oldValue;
     }
 
-    @Override
-    public Object getNewValue() {
+    public @Override Object getNewValue() {
         return newValue;
     }
 
@@ -94,25 +91,21 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         return TextValueSerializer.asString(value);
     }
 
-    @Override
-    public AttributeDiff reversed() {
+    public @Override AttributeDiff reversed() {
         return new GenericAttributeDiffImpl(newValue, oldValue);
     }
 
-    @Override
-    public Object applyOn(@Nullable Object obj) {
+    public @Override Object applyOn(@Nullable Object obj) {
         Preconditions.checkState(canBeAppliedOn(obj));
         return newValue;
     }
 
-    @Override
-    public boolean canBeAppliedOn(@Nullable Object obj) {
+    public @Override boolean canBeAppliedOn(@Nullable Object obj) {
         checkArgument(!(obj instanceof Optional));
         return Objects.equal(obj, oldValue) || Objects.equal(obj, newValue);
     }
 
-    @Override
-    public String asText() {
+    public @Override String asText() {
         if (getType().equals(TYPE.MODIFIED)) {
             return getType().name().toCharArray()[0] + "\t" + attributeValueAsString(oldValue)
                     + "\t" + attributeValueAsString(newValue);
@@ -123,8 +116,7 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // TODO: this is a temporary simple comparison. Should be more elaborate
         if (!(o instanceof GenericAttributeDiffImpl)) {
             return false;
@@ -133,8 +125,7 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
         return d.oldValue.equals(oldValue) && d.newValue.equals(newValue);
     }
 
-    @Override
-    public boolean conflicts(AttributeDiff ad) {
+    public @Override boolean conflicts(AttributeDiff ad) {
         if (ad instanceof GenericAttributeDiffImpl) {
             GenericAttributeDiffImpl gad = (GenericAttributeDiffImpl) ad;
             return !Objects.equal(gad.newValue, newValue);

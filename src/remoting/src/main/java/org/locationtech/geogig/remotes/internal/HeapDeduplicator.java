@@ -45,28 +45,23 @@ public class HeapDeduplicator implements Deduplicator {
 
     private Set<IdTuple> seen = Sets.newConcurrentHashSet();
 
-    @Override
-    public boolean visit(ObjectId right) {
+    public @Override boolean visit(ObjectId right) {
         return visit(ObjectId.NULL, right);
     }
 
-    @Override
-    public boolean visit(ObjectId left, ObjectId right) {
+    public @Override boolean visit(ObjectId left, ObjectId right) {
         return seen.add(IdTuple.of(left, right));
     }
 
-    @Override
-    public boolean isDuplicate(ObjectId id) {
+    public @Override boolean isDuplicate(ObjectId id) {
         return isDuplicate(ObjectId.NULL, id);
     }
 
-    @Override
-    public boolean isDuplicate(ObjectId left, ObjectId right) {
+    public @Override boolean isDuplicate(ObjectId left, ObjectId right) {
         return seen.contains(IdTuple.of(left, right));
     }
 
-    @Override
-    public void removeDuplicates(List<ObjectId> ids) {
+    public @Override void removeDuplicates(List<ObjectId> ids) {
         Iterator<ObjectId> iterator = ids.iterator();
         while (iterator.hasNext()) {
             ObjectId id = iterator.next();
@@ -76,13 +71,11 @@ public class HeapDeduplicator implements Deduplicator {
         }
     }
 
-    @Override
-    public void reset() {
+    public @Override void reset() {
         seen.clear();
     }
 
-    @Override
-    public void release() {
+    public @Override void release() {
         seen = null;
     }
 }

@@ -36,8 +36,7 @@ public class TagRemoveOp extends AbstractGeoGigOp<RevTag> {
      * @return the tag to remove
      * 
      */
-    @Override
-    protected RevTag _call() throws RuntimeException {
+    protected @Override RevTag _call() throws RuntimeException {
         String fullPath = Ref.TAGS_PREFIX + name;
         Optional<RevObject> revTag = command(RevObjectParse.class).setRefSpec(fullPath).call();
         Preconditions.checkArgument(revTag.isPresent(), "Wrong tag name: " + name);

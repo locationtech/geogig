@@ -89,8 +89,7 @@ public class Merge extends AbstractCommand implements CLICommand {
     /**
      * Executes the merge command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(commits.size() > 0 || abort, "No commits provided to merge.");
 
         Console console = cli.getConsole();

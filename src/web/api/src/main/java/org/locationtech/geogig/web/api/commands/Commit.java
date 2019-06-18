@@ -91,8 +91,9 @@ public class Commit extends AbstractWebAPICommand {
     protected void runInternal(CommandContext context) {
         final Context geogig = this.getRepositoryContext(context);
         RevCommit commit;
-        commit = geogig.command(CommitOp.class).setAuthor(authorName.orElse(null), authorEmail.orElse(null))
-                .setMessage(message).setAllowEmpty(true).setAll(all).call();
+        commit = geogig.command(CommitOp.class)
+                .setAuthor(authorName.orElse(null), authorEmail.orElse(null)).setMessage(message)
+                .setAllowEmpty(true).setAll(all).call();
 
         final RevCommit commitToWrite = commit;
         final ObjectId parentId = commit.parentN(0).orElse(ObjectId.NULL);

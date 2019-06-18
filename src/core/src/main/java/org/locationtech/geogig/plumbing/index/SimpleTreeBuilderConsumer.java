@@ -36,19 +36,16 @@ class SimpleTreeBuilderConsumer extends AbstractConsumer implements Consumer {
         this.progress = listener;
     }
 
-    @Override
-    public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+    public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
         return !progress.isCanceled();
     }
 
-    @Override
-    public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-            @Nullable Bucket left, @Nullable Bucket right) {
+    public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+            BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
         return !progress.isCanceled();
     }
 
-    @Override
-    public boolean feature(final @Nullable NodeRef left, @Nullable final NodeRef right) {
+    public @Override boolean feature(final @Nullable NodeRef left, @Nullable final NodeRef right) {
         final boolean cancelled = progress.isCanceled();
         if (!cancelled) {
             if (left == null) {

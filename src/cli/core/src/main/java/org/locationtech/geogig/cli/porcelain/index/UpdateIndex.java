@@ -56,8 +56,7 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
     @Parameter(names = "--index-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
     private boolean indexHistory = false;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();

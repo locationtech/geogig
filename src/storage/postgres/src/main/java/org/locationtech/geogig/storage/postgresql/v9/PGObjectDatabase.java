@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
-
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,17 +19,14 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link ObjectDatabase}.
@@ -45,10 +39,9 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     private PGGraphDatabase graph;
 
-    @Inject
     public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
-        this(configdb, Environment.get(hints), readOnly(hints));
+        this(configdb, Environment.get(hints), Hints.isRepoReadOnly(hints));
     }
 
     protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
@@ -56,63 +49,42 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         return cacheIdentifier;
     }
 
-    private static boolean readOnly(Hints hints) {
-        return hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-    }
-
     public PGObjectDatabase(final ConfigDatabase configdb, final Environment config,
             final boolean readOnly) {
         super(configdb, config, readOnly);
     }
 
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
+    public @Override void open() {
+        if (!isOpen()) {
+            super.open();
+            Preconditions.checkState(super.dataSource != null);
+            final int repositoryId = config.getRepositoryId();
+            final String blobsTable = config.getTables().blobs();
+
+            blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
+            graph = new PGGraphDatabase(config, isReadOnly());
+            graph.open();
+        }
     }
 
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public void open() {
-        super.open();
-        Preconditions.checkState(super.dataSource != null);
-        final int repositoryId = config.getRepositoryId();
-        final String blobsTable = config.getTables().blobs();
-
-        blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
-        graph = new PGGraphDatabase(config);
-        graph.open();
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    @Override
-    public void close() {
+    public @Override void close() {
         if (isOpen()) {
+            super.close();
             try {
                 graph.close();
-                graph = null;
             } finally {
-                super.close();
+                graph = null;
             }
         }
     }
 
-    @Override
-    public PGBlobStore getBlobStore() {
+    public @Override PGBlobStore getBlobStore() {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return blobStore;
     }
 
-    @Override
-    public GraphDatabase getGraphDatabase() {
+    public @Override GraphDatabase getGraphDatabase() {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
         return new SynchronizedGraphDatabase(graph);

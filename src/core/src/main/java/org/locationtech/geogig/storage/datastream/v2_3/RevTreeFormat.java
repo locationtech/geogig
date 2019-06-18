@@ -192,7 +192,7 @@ class RevTreeFormat {
             List<Node> trees = RevTreeFormat.trees(dataBuffer);
             List<Node> features = RevTreeFormat.features(dataBuffer);
             SortedMap<Integer, Bucket> buckets = RevTreeFormat.buckets(dataBuffer);
-            id = HashObject.hashTree(trees, features, buckets);
+            id = HashObject.hashTree(trees, features, buckets.values());
         }
         return new RevTreeImpl(id, dataBuffer);
     }

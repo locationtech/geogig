@@ -26,6 +26,7 @@ import cucumber.api.junit.Cucumber;
         , glue = { "org.locationtech.geogig.cli.test.functional",
                 "org.locationtech.geogig.geotools.cli.geopkg" }//
         , features = { "src/test/resources/features/geopkg" }//
+        , tags = { "~@ignore" }//
 )
 public class RunGeoPkgFunctionalTest {
 

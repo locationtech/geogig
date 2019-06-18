@@ -25,8 +25,7 @@ import com.google.common.io.CharStreams;
 
 public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {
 
-    @Override
-    protected String _call() {
+    protected @Override String _call() {
         BlobStore blobStore = context.blobStore();
 
         Optional<InputStream> blobAsStream = blobStore.getBlobAsStream(MergeOp.MERGE_MSG);

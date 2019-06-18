@@ -44,8 +44,8 @@ public class Diff extends AbstractWebAPICommand {
         setOldRefSpec(options.getRequiredValue("oldRefSpec"));
         setNewRefSpec(options.getFirstValue("newRefSpec", null));
         setPathFilter(options.getFirstValue("pathFilter", null));
-        setShowGeometryChanges(Boolean.parseBoolean(options.getFirstValue("showGeometryChanges",
-                "false")));
+        setShowGeometryChanges(
+                Boolean.parseBoolean(options.getFirstValue("showGeometryChanges", "false")));
         setPage(parseInt(options, "page", 0));
         setElementsPerPage(parseInt(options, "show", 30));
     }

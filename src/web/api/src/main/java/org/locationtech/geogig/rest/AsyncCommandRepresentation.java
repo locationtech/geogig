@@ -117,6 +117,7 @@ public abstract class AsyncCommandRepresentation<T> extends LegacyResponse {
         w.writeEndElement();
     }
 
-    protected abstract void writeResultBody(StreamingWriter w, T result) throws StreamWriterException;
+    protected abstract void writeResultBody(StreamingWriter w, T result)
+            throws StreamWriterException;
 
 }

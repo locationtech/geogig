@@ -19,8 +19,7 @@ import com.google.inject.AbstractModule;
  */
 public class RemotingCommandsModule extends AbstractModule implements CLIModule {
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(RemoteExtension.class);
         bind(Clone.class);
         bind(Fetch.class);

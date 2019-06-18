@@ -26,23 +26,22 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+    protected @Override void setUpInternal() throws Exception {
+        repo.configDatabase().put("user.name", "groldan");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
     public void testCreateBranch() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
 
-        Optional<Ref> branch1 = geogig.command(RefParse.class).setName("branch1").call();
+        Optional<Ref> branch1 = repo.command(RefParse.class).setName("branch1").call();
 
         assertTrue(branch1.isPresent());
 
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
         assertEquals(master.get().getObjectId(), branch1.get().getObjectId());
     }
@@ -50,35 +49,35 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Test
     public void testNullNameForBranch() {
         exception.expect(IllegalStateException.class);
-        geogig.command(BranchCreateOp.class).setName(null).call();
+        repo.command(BranchCreateOp.class).setName(null).call();
     }
 
     @Test
     public void testInvalidNameForBranch() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        geogig.command(BranchCreateOp.class).setName("ma..er").call();
+        repo.command(BranchCreateOp.class).setName("ma..er").call();
     }
 
     @Test
     public void testCreateBranchWithTheSameNameAsExistingBranch() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
 
         exception.expect(IllegalArgumentException.class);
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
     }
 
     @Test
     public void testCreateBranchWithTheSameNameAsExistingBranchAndForce() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         insertAndAdd(points2);
-        RevCommit newCommit = geogig.command(CommitOp.class).setMessage("Commit2").call();
-        geogig.command(BranchCreateOp.class).setName("branch1").setForce(true).call();
-        Optional<Ref> branch1 = geogig.command(RefParse.class).setName("branch1").call();
+        RevCommit newCommit = repo.command(CommitOp.class).setMessage("Commit2").call();
+        repo.command(BranchCreateOp.class).setName("branch1").setForce(true).call();
+        Optional<Ref> branch1 = repo.command(RefParse.class).setName("branch1").call();
         assertTrue(branch1.isPresent());
         assertEquals(branch1.get().getObjectId(), newCommit.getId());
     }
@@ -86,25 +85,25 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Test
     public void testCreateBranchFromMasterWithNoCommitsMade() {
         exception.expect(IllegalArgumentException.class);
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
     }
 
     @Test
     public void testCreateBranchFromBranchOtherThanMaster() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(false).call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(false).call();
 
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("Commit2").call();
-        geogig.command(BranchCreateOp.class).setName("branch2").setAutoCheckout(true)
+        repo.command(CommitOp.class).setMessage("Commit2").call();
+        repo.command(BranchCreateOp.class).setName("branch2").setAutoCheckout(true)
                 .setSource("branch1").call();
 
-        Optional<Ref> branch1 = geogig.command(RefParse.class).setName("branch1").call();
+        Optional<Ref> branch1 = repo.command(RefParse.class).setName("branch1").call();
 
         assertTrue(branch1.isPresent());
 
-        Optional<Ref> branch2 = geogig.command(RefParse.class).setName("branch2").call();
+        Optional<Ref> branch2 = repo.command(RefParse.class).setName("branch2").call();
 
         assertTrue(branch2.isPresent());
 
@@ -114,22 +113,22 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Test
     public void testCreateBranchFromCommit() throws Exception {
         insertAndAdd(points1);
-        RevCommit c1 = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit c1 = repo.command(CommitOp.class).setMessage("Commit1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("Commit2").call();
+        repo.command(CommitOp.class).setMessage("Commit2").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("Commit3").call();
+        repo.command(CommitOp.class).setMessage("Commit3").call();
 
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
                 .setSource(c1.getId().toString()).call();
 
-        Optional<Ref> branch1 = geogig.command(RefParse.class).setName("branch1").call();
+        Optional<Ref> branch1 = repo.command(RefParse.class).setName("branch1").call();
 
         assertTrue(branch1.isPresent());
 
         assertEquals(c1.getId(), branch1.get().getObjectId());
 
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
         assertFalse(master.get().getObjectId().equals(branch1.get().getObjectId()));
     }
@@ -137,32 +136,32 @@ public class BranchCreateOpTest extends RepositoryTestCase {
     @Test
     public void testCreateBranchFromNonExistentCommit() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
+        repo.command(CommitOp.class).setMessage("Commit1").call();
 
         exception.expect(IllegalArgumentException.class);
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
                 .setSource("Nonexistent Commit").call();
     }
 
     @Test
     public void testCreateBranchFromSomethingOtherThanCommit() throws Exception {
         insertAndAdd(points1);
-        RevCommit c1 = geogig.command(CommitOp.class).setMessage("Commit1").call();
+        RevCommit c1 = repo.command(CommitOp.class).setMessage("Commit1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("Commit2").call();
+        repo.command(CommitOp.class).setMessage("Commit2").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("Commit3").call();
+        repo.command(CommitOp.class).setMessage("Commit3").call();
 
         exception.expect(IllegalArgumentException.class);
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
                 .setSource(c1.getTreeId().toString()).call();
     }
 
     @Test
     public void testOrphan() throws Exception {
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("Commit1").call();
-        Ref branch1 = geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
+        repo.command(CommitOp.class).setMessage("Commit1").call();
+        Ref branch1 = repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
                 .setOrphan(true).call();
 
         assertEquals(ObjectId.NULL, branch1.getObjectId());

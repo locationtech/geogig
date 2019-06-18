@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * Hints that guice created dependencies can accept on their constructors, contains flags to
  * enable/disable operational modes on databases. In the future may provide other kind of hints to
@@ -90,16 +92,14 @@ public class Hints implements Serializable {
     /**
      * @return the String representation of the hints
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return hintsMap.toString();
     }
 
     /**
      * Determines if this {@code Hints} object is equal to another one.
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o == this) {
             return true;
         }
@@ -120,10 +120,18 @@ public class Hints implements Serializable {
      * @return a new {@code Hints} object with the hints for a read only repository
      */
     public static Hints readOnly() {
+        return new Hints().readOnly(true);
+    }
+
+    public Hints readOnly(boolean ro) {
         Hints hints = new Hints();
-        hints.set(Hints.OBJECTS_READ_ONLY, Boolean.TRUE);
-        hints.set(Hints.REMOTES_READ_ONLY, Boolean.TRUE);
+        hints.set(Hints.OBJECTS_READ_ONLY, ro);
+        hints.set(Hints.REMOTES_READ_ONLY, ro);
         return hints;
+    }
+
+    public static boolean isRepoReadOnly(Hints hints) {
+        return hints == null ? false : hints.getBoolean(OBJECTS_READ_ONLY);
     }
 
     /**
@@ -134,6 +142,11 @@ public class Hints implements Serializable {
         hints.set(Hints.OBJECTS_READ_ONLY, Boolean.FALSE);
         hints.set(Hints.REMOTES_READ_ONLY, Boolean.FALSE);
         return hints;
+    }
+
+    public static Hints repository(@NonNull URI repoURI) {
+        Hints hints = new Hints();
+        return hints.uri(repoURI);
     }
 
     /**

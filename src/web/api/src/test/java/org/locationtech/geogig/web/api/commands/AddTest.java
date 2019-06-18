@@ -78,8 +78,8 @@ public class AddTest extends AbstractWebOpTest {
         testData.insert(TestData.point1);
         testData.insert(TestData.point2);
         assertEquals(0, staging.countStaged(null).featureCount());
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "transactionId",
                 transaction.getTransactionId().toString());
 

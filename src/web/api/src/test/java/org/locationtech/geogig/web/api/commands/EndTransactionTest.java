@@ -136,8 +136,8 @@ public class EndTransactionTest extends AbstractWebOpTest {
         testData.init();
         testData.checkout("master");
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
 
         testData.insert(TestData.point1);
         testData.add();

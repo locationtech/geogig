@@ -17,8 +17,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class INIBlobTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test
@@ -34,21 +33,18 @@ public class INIBlobTest extends RepositoryTestCase {
 
         final String filterFile = filterFileBuilder.toString();
 
-        geogig.getRepository().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
-                filterFile.getBytes());
+        repo.blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY, filterFile.getBytes());
 
         INIBlob test = new INIBlob() {
 
             public byte[] bytes = filterFile.getBytes();
 
-            @Override
-            public byte[] iniBytes() throws IOException {
+            public @Override byte[] iniBytes() throws IOException {
                 // TODO Auto-generated method stub
                 return this.bytes;
             }
 
-            @Override
-            public void setBytes(byte[] bytes) throws IOException {
+            public @Override void setBytes(byte[] bytes) throws IOException {
                 this.bytes = bytes;
             }
         };

@@ -34,6 +34,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
@@ -44,7 +45,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * {@link ConflictsDatabase} implementation for PostgreSQL.
@@ -71,7 +73,7 @@ import com.google.inject.Inject;
  * conflicts are encountered, and default to the empty string if the conflicts are on the
  * repository's head instead of inside a transaction.
  */
-public class PGConflictsDatabase implements ConflictsDatabase {
+public class PGConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
     final static Logger LOG = LoggerFactory.getLogger(PGConflictsDatabase.class);
 
@@ -91,9 +93,9 @@ public class PGConflictsDatabase implements ConflictsDatabase {
      * @throws IllegalArgumentException if {@link Hints#REPOSITORY_URL} is not given in hints
      * @throws URISyntaxException
      */
-    @Inject
-    public PGConflictsDatabase(Hints hints) throws IllegalArgumentException, URISyntaxException {
-        checkNotNull(hints);
+    public PGConflictsDatabase(@NonNull Hints hints)
+            throws IllegalArgumentException, URISyntaxException {
+        super(Hints.isRepoReadOnly(hints));
         environment = Environment.get(hints);
         Preconditions.checkNotNull(environment.getRepositoryName(), "Repository id not provided");
         conflictsTable = environment.getTables().conflicts();
@@ -102,6 +104,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
 
     @VisibleForTesting
     PGConflictsDatabase(DataSource mockSource) {
+        super(false);
         dataSource = mockSource;
         environment = null;
         conflictsTable = "geogig_conflicts";
@@ -117,10 +120,12 @@ public class PGConflictsDatabase implements ConflictsDatabase {
                         environment.getRepositoryName()));
             }
             repositoryId = environment.getRepositoryId();
+            super.open();
         }
     }
 
     public @Override synchronized void close() {
+        super.close();
         if (dataSource != null) {
             try {
                 PGStorage.closeDataSource(dataSource);
@@ -130,9 +135,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public void addConflict(@Nullable String ns, final Conflict conflict) {
-        Preconditions.checkNotNull(conflict);
+    public @Override void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
         final String path = conflict.getPath();
         Preconditions.checkNotNull(path);
 
@@ -170,9 +173,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public void addConflicts(@Nullable String ns, Iterable<Conflict> conflicts) {
-        Preconditions.checkNotNull(conflicts);
+    public @Override void addConflicts(@Nullable String ns, @NonNull Iterable<Conflict> conflicts) {
         final String namespace = namespace(ns);
 
         final String sql = format(
@@ -212,9 +213,8 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
-        checkNotNull(path);
+    public @Override Optional<Conflict> getConflict(@Nullable String namespace,
+            @NonNull String path) {
         namespace = namespace(namespace);
         final String sql;
         {
@@ -249,8 +249,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         return Optional.ofNullable(conflict);
     }
 
-    @Override
-    public boolean hasConflicts(@Nullable final String namespace) {
+    public @Override boolean hasConflicts(@Nullable final String namespace) {
         final String sql = format(
                 "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE repository = ? AND namespace = ? )",
                 conflictsTable);
@@ -270,8 +269,8 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         return hasConflicts;
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String namespace,
+            @Nullable String treePath) {
         return new ConflictsIterator(this, namespace, treePath);
     }
 
@@ -344,8 +343,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
             this.page = nextPage();
         }
 
-        @Override
-        protected Conflict computeNext() {
+        protected @Override Conflict computeNext() {
             if (page.hasNext()) {
                 return page.next();
             }
@@ -369,8 +367,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
         namespace = namespace(namespace);
 
         final String sql;
@@ -407,8 +404,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         return namespace == null ? NULL_NAMESPACE : namespace;
     }
 
-    @Override
-    public void removeConflict(final @Nullable String ns, final String path) {
+    public @Override void removeConflict(final @Nullable String ns, final String path) {
         checkNotNull(path, "path is null");
         final String namespace = namespace(ns);
 
@@ -436,8 +432,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
+    public @Override void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
         checkNotNull(paths, "paths is null");
         final String namespace = namespace(ns);
 
@@ -472,8 +467,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public void removeConflicts(@Nullable final String ns) {
+    public @Override void removeConflicts(@Nullable final String ns) {
         final String namespace = namespace(ns);
         final String sql;
         sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
@@ -497,8 +491,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         }
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
         checkNotNull(paths, "paths is null");
 
         Set<String> matches = new HashSet<>();
@@ -539,8 +532,7 @@ public class PGConflictsDatabase implements ConflictsDatabase {
         return matches;
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
 
         namespace = namespace(namespace);
 

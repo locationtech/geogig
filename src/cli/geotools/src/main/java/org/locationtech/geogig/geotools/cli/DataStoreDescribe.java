@@ -45,8 +45,7 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
     /**
      * Executes the describe command using the provided options.
      */
-    @Override
-    protected final void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override final void runInternal(GeogigCLI cli) throws IOException {
 
         DataStore dataStore = getDataStore();
 

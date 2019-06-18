@@ -79,8 +79,7 @@ public class DAG implements Cloneable, Serializable {
      */
     private transient boolean mutated;
 
-    @Override
-    public DAG clone() {
+    public @Override DAG clone() {
         DAG c = new DAG(id, originalTreeId);
         c.init(this);
         return c;
@@ -200,8 +199,7 @@ public class DAG implements Cloneable, Serializable {
         return changed;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof DAG)) {
             return false;
         }
@@ -211,8 +209,7 @@ public class DAG implements Cloneable, Serializable {
                 && equal(children, d.children) && equal(buckets, d.buckets);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         String revTreeId = originalTreeId.equals(RevTree.EMPTY_TREE_ID) ? "EMPTY"
                 : originalTreeId.toString().substring(0, 8);
         return String.format(

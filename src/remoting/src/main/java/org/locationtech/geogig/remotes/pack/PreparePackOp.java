@@ -72,8 +72,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
         return builder;
     }
 
-    @Override
-    protected Pack _call() {
+    protected @Override Pack _call() {
         final PackRequest request = getRequest();
         final PackBuilder builder = getBuilder();
         checkState(request != null, "no request provided");
@@ -109,8 +108,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         // (o) -> o.want
         Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
-            @Override
-            public ObjectId apply(RefRequest o) {
+            public @Override ObjectId apply(RefRequest o) {
                 return o.want;
             }
         };
@@ -122,16 +120,14 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         // (o) -> o.have.get()
         Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
-            @Override
-            public ObjectId apply(RefRequest o) {
+            public @Override ObjectId apply(RefRequest o) {
                 return o.have.get();
             }
         };
 
         // (r) -> r.have.isPresent()
         Predicate<RefRequest> fn2 = new Predicate<RefRequest>() {
-            @Override
-            public boolean apply(RefRequest r) {
+            public @Override boolean apply(RefRequest r) {
                 return r.have.isPresent();
             }
         };
@@ -166,8 +162,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         // (r) -> r.name.startsWith(Ref.TAGS_PREFIX)
         Predicate<RefRequest> fn = new Predicate<RefRequest>() {
-            @Override
-            public boolean apply(RefRequest r) {
+            public @Override boolean apply(RefRequest r) {
                 return r.name.startsWith(Ref.TAGS_PREFIX);
             }
         };
@@ -184,8 +179,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
 
         // (r) -> !r.name.startsWith(Ref.TAGS_PREFIX)
         Predicate<RefRequest> fn = new Predicate<RefRequest>() {
-            @Override
-            public boolean apply(RefRequest r) {
+            public @Override boolean apply(RefRequest r) {
                 return !r.name.startsWith(Ref.TAGS_PREFIX);
             }
         };

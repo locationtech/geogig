@@ -57,7 +57,7 @@ public class MergeFeatureController extends AbstractRepositoryController {
     @Autowired
     private LegacyMergeFeatureService legacyMergeFeatureService;
 
-    @RequestMapping(method = {GET, PUT, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { GET, PUT, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(SUPPORTED_METHODS);
@@ -82,8 +82,8 @@ public class MergeFeatureController extends AbstractRepositoryController {
     // API V2 version, not currently used
     @PostMapping(consumes = APPLICATION_JSON_VALUE, params = API_V2)
     public void postMerge(@PathVariable(name = "repoName") String repoName,
-            @RequestBody MergeFeatureRequest mergeRequest,
-            HttpServletRequest request, HttpServletResponse response) {
+            @RequestBody MergeFeatureRequest mergeRequest, HttpServletRequest request,
+            HttpServletResponse response) {
         // get the provider
         Optional<RepositoryProvider> optional = getRepoProvider(request);
         if (optional.isPresent()) {
@@ -95,16 +95,16 @@ public class MergeFeatureController extends AbstractRepositoryController {
             }
             // mergeRequest won't be null as Spring will instantiate one by this point
             // if any of the pieces are not set/missing in the request, we have bad post data
-            if (mergeRequest.getMerges() == null || mergeRequest.getOurs() == null ||
-                mergeRequest.getPath() == null || mergeRequest.getTheirs() == null) {
+            if (mergeRequest.getMerges() == null || mergeRequest.getOurs() == null
+                    || mergeRequest.getPath() == null || mergeRequest.getTheirs() == null) {
                 throw new IllegalArgumentException("Invalid POST data.");
             }
             // merge the features
             RevFeature mergeFeatures = repositoryService.mergeFeatures(provider, repoName,
                     mergeRequest);
             // build the response
-            MergeFeatureResponse mfResponse = new MergeFeatureResponse().setMergedFeature(
-                    mergeFeatures);
+            MergeFeatureResponse mfResponse = new MergeFeatureResponse()
+                    .setMergedFeature(mergeFeatures);
             // encode the response
             encode(mfResponse, request, response);
         } else {
@@ -114,8 +114,8 @@ public class MergeFeatureController extends AbstractRepositoryController {
 
     @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public void postMerge(@PathVariable(name = "repoName") String repoName,
-            @RequestBody String mergeRequest,
-            HttpServletRequest request, HttpServletResponse response) {
+            @RequestBody String mergeRequest, HttpServletRequest request,
+            HttpServletResponse response) {
         // get the provider
         Optional<RepositoryProvider> optional = getRepoProvider(request);
         if (optional.isPresent()) {
@@ -132,8 +132,8 @@ public class MergeFeatureController extends AbstractRepositoryController {
             RevFeature mergeFeatures = legacyMergeFeatureService.mergeFeatures(provider, repoName,
                     mergeRequest);
             // build the response
-            MergeFeatureResponse mfResponse = new MergeFeatureResponse().setMergedFeature(
-                    mergeFeatures);
+            MergeFeatureResponse mfResponse = new MergeFeatureResponse()
+                    .setMergedFeature(mergeFeatures);
             // encode the response
             encode(mfResponse, request, response);
         } else {

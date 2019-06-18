@@ -61,15 +61,13 @@ class PGObjectStoreObjectIterator<T extends RevObject>
         cache = store.sharedCache;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         closed = true;
         nodes = null;
         nextBatch = null;
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         if (closed) {
             return false;
         }
@@ -79,8 +77,7 @@ class PGObjectStoreObjectIterator<T extends RevObject>
         return next != null;
     }
 
-    @Override
-    public ObjectInfo<T> next() {
+    public @Override ObjectInfo<T> next() {
         if (closed) {
             throw new NoSuchElementException("Iterator is closed");
         }

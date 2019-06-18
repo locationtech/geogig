@@ -132,8 +132,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
      * 
      * @return an {@link Index} that represents the updated index
      */
-    @Override
-    protected Index _call() {
+    protected @Override Index _call() {
         checkArgument(treeRefSpec != null, "Tree ref spec not provided.");
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);

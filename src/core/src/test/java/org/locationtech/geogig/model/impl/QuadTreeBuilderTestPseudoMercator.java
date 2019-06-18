@@ -15,8 +15,7 @@ import org.locationtech.jts.geom.Envelope;
 
 public class QuadTreeBuilderTestPseudoMercator extends QuadTreeBuilderTest {
 
-    @Override
-    protected Envelope createMaxBounds() {
+    protected @Override Envelope createMaxBounds() {
         return RevObjects.makePrecise(QuadTreeTestSupport.epsg3857Bounds());
     }
 

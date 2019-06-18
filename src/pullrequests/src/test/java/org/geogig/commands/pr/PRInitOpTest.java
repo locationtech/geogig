@@ -38,7 +38,7 @@ public class PRInitOpTest {
 
     public @Rule ExpectedException ex = ExpectedException.none();
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     /**
      * <pre>

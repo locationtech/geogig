@@ -28,6 +28,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
@@ -187,7 +188,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
             try {
                 targetSchema = DataUtilities.createSubType(sourceSchema,
                         DataUtilities.attributeNames(sourceSchema), null, targetTableName, null);
-                workingTree().createTypeTree(targetTableName, targetSchema);
+                workingTree().createTypeTree(targetTableName, GT.adapt(targetSchema));
                 targetSchemaCreated = true;
 
                 features = new ReTypingFeatureCollection(features, targetSchema);
@@ -466,7 +467,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
             checkArgument(stmt instanceof Select, "Expected SELECT statement: %s", statement);
             select = (Select) stmt;
         } catch (JSQLParserException e) {
-            Throwables.propagateIfInstanceOf(Throwables.getRootCause(e),
+            Throwables.throwIfInstanceOf(Throwables.getRootCause(e),
                     IllegalArgumentException.class);
             throw new IllegalArgumentException("Unable to parse query: " + e.getMessage(), e);
         }

@@ -37,8 +37,7 @@ public class UpdateTreeTest extends RepositoryTestCase {
 
     private ObjectDatabase odb;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         context = super.repo.context();
         odb = context.objectDatabase();
     }

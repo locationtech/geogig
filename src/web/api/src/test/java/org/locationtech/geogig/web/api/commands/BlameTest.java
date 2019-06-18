@@ -63,7 +63,7 @@ public class BlameTest extends AbstractWebOpTest {
         ex.expectMessage("Could not resolve branch or commit");
         buildCommand(options).run(testContext.get());
     }
-    
+
     @Test
     public void testBlameNoPath() throws Exception {
         TestData testData = new TestData(testContext.get().getRepository());
@@ -96,7 +96,7 @@ public class BlameTest extends AbstractWebOpTest {
         testData.loadDefaultData();
 
         ParameterSet options = TestParams.of("commit", "branch1", "path",
-                TestData.pointsType.getTypeName());
+                TestData.pointsType.getName().getLocalPart());
         ex.expect(CommandSpecException.class);
         ex.expectMessage("The supplied path does not resolve to a feature");
         buildCommand(options).run(testContext.get());
@@ -108,8 +108,8 @@ public class BlameTest extends AbstractWebOpTest {
         testData.init("User", "user@example.com");
         testData.loadDefaultData();
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point2.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point2.getId());
         ParameterSet options = TestParams.of("commit", "branch1", "path", path);
         buildCommand(options).run(testContext.get());
         JsonObject response = getJSONResponse().getJsonObject("response");

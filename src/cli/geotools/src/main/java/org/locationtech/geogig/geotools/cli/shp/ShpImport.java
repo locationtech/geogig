@@ -99,8 +99,7 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     /**
      * Executes the import command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(shapeFile != null && !shapeFile.isEmpty(), "No shapefile specified");
 
         final ProgressListener progressListener = cli.getProgressListener();

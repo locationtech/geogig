@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
@@ -37,8 +37,7 @@ public class DescribeFeatureType extends AbstractGeoGigOp<ImmutableSet<PropertyD
      * 
      * @return a sorted set of all the property descriptors of the feature type.
      */
-    @Override
-    protected ImmutableSet<PropertyDescriptor> _call() {
+    protected @Override ImmutableSet<PropertyDescriptor> _call() {
         Preconditions.checkState(featureType != null, "FeatureType has not been set.");
 
         FeatureType type = featureType.type();

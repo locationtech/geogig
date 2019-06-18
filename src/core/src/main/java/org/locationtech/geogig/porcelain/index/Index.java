@@ -1,13 +1,13 @@
 package org.locationtech.geogig.porcelain.index;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Objects;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.IndexDatabase;
+
+import lombok.NonNull;
 
 /**
  * A value object resulting of creating or updating an index, that provides access to the
@@ -29,9 +29,8 @@ public final class Index {
      * @param indexTree the {@link ObjectId} of the indexed tree
      * @param indexdb the index database
      */
-    public Index(IndexInfo indexInfo, ObjectId indexTree, IndexDatabase indexdb) {
-        checkNotNull(indexInfo);
-        checkNotNull(indexTree);
+    public Index(@NonNull IndexInfo indexInfo, @NonNull ObjectId indexTree,
+            @NonNull IndexDatabase indexdb) {
         this.indexInfo = indexInfo;
         this.indexTree = indexTree;
         this.indexdb = indexdb;
@@ -58,8 +57,7 @@ public final class Index {
         return indexdb.getTree(indexTree);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (o instanceof Index) {
             Index i = (Index) o;
             return info().equals(i.info()) && indexTreeId().equals(i.indexTreeId());
@@ -67,13 +65,11 @@ public final class Index {
         return false;
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hash(indexInfo, indexTree);
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("Index(%s) %s on %s(%s)", indexTree.toString().substring(0, 8),
                 indexInfo.getIndexType(), indexInfo.getTreeName(), indexInfo.getAttributeName());
     }

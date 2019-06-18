@@ -1,3 +1,4 @@
+@ignore
 Feature: "geopkg pull" command
     In order to import data to Geogig
     As a Geogig User

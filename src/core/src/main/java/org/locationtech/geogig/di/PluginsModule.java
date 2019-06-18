@@ -10,22 +10,20 @@
 package org.locationtech.geogig.di;
 
 import java.net.URI;
-import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StorageProvider;
-import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.inject.AbstractModule;
@@ -35,8 +33,7 @@ import com.google.inject.Scopes;
 
 public class PluginsModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
 
         bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class)
                 .in(Scopes.SINGLETON);
@@ -61,14 +58,13 @@ public class PluginsModule extends AbstractModule {
             this.hints = hints;
         }
 
-        @Override
-        public ConfigDatabase get() {
+        public @Override ConfigDatabase get() {
             Platform platform = context.platform();
 
             Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
             ConfigDatabase config = null;
             if (uri.isPresent()) {
-                config = RepositoryResolver.resolveConfigDatabase(uri.get(), context, false);
+                config = RepositoryFinder.INSTANCE.resolveConfigDatabase(uri.get(), context, false);
             } else {
                 // if there's no repository URI, then we can only do global operations
                 config = IniFileConfigDatabase.globalOnly(platform);
@@ -77,189 +73,64 @@ public class PluginsModule extends AbstractModule {
         }
     }
 
-    private static class PluginObjectDatabaseProvider extends FormatSelector<ObjectDatabase> {
-        private final PluginDefaults defaults;
+    private static class PluginObjectDatabaseProvider implements Provider<ObjectDatabase> {
 
-        @Inject
-        public PluginObjectDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<ObjectDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
+        private @Inject Platform platform;
 
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            final String formatKey = "storage.objects";
-            String versionKey = null;
-            String format = null, version = null;
-            try {
-                format = getConfig(formatKey, config).orElse(null);
-                if (format != null) {
-                    versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orElse(null);
-                }
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this.
-            }
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getObjects().get();
-            }
+        private @Inject Hints hints;
 
-            for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat objectFormat = p.getObjectDatabaseFormat();
-                if (objectFormat != null && format.equals(objectFormat.getFormat())
-                        && version.equals(objectFormat.getVersion())) {
-                    return objectFormat;
-                }
-            }
-            throw new IllegalStateException(
-                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
-                            format, versionKey, version));
+        public @Override ObjectDatabase get() {
+            URI repoURI = new ResolveGeogigURI(platform, hints).call()
+                    .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
+
+            RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
+            return resolver.resolveObjectDatabase(repoURI, hints);
         }
 
     }
 
-    private static class PluginIndexDatabaseProvider extends FormatSelector<IndexDatabase> {
-        private final PluginDefaults defaults;
+    private static class PluginIndexDatabaseProvider implements Provider<IndexDatabase> {
 
-        @Inject
-        public PluginIndexDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<IndexDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
+        private @Inject Platform platform;
 
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            final String formatKey = "storage.index";
-            String versionKey = null;
+        private @Inject Hints hints;
 
-            String format = null, version = null;
-            try {
-                format = getConfig(formatKey, config).orElse(null);
-                if (format != null) {
-                    versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orElse(null);
-                }
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this.
-            }
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getIndex().get();
-            }
+        public @Override IndexDatabase get() {
+            URI repoURI = new ResolveGeogigURI(platform, hints).call()
+                    .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
-            for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat indexFormat = p.getIndexDatabaseFormat();
-                if (indexFormat != null && format.equals(indexFormat.getFormat())
-                        && version.equals(indexFormat.getVersion())) {
-                    return indexFormat;
-                }
-            }
-            throw new IllegalStateException(
-                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
-                            format, versionKey, version));
+            RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
+            return resolver.resolveIndexDatabase(repoURI, hints);
         }
 
     }
 
-    private static class PluginRefDatabaseProvider extends FormatSelector<RefDatabase> {
-        private final PluginDefaults defaults;
+    private static class PluginRefDatabaseProvider implements Provider<RefDatabase> {
 
-        @Inject
-        public PluginRefDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<RefDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
+        private @Inject Platform platform;
 
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            final String formatKey = "storage.refs";
-            String versionKey = null;
-            String format = null, version = null;
-            try {
-                format = getConfig(formatKey, config).orElse(null);
-                if (format != null) {
-                    versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orElse(null);
-                }
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this.
-            }
+        private @Inject Hints hints;
 
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getRefs().get();
-            }
+        public @Override RefDatabase get() {
+            URI repoURI = new ResolveGeogigURI(platform, hints).call()
+                    .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
-            for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat refsFormat = p.getRefsDatabaseFormat();
-                if (refsFormat != null && format.equals(refsFormat.getFormat())
-                        && version.equals(refsFormat.getVersion())) {
-                    return refsFormat;
-                }
-            }
-
-            throw new IllegalStateException(
-                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
-                            format, versionKey, version));
+            RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
+            return resolver.resolveRefDatabase(repoURI, hints);
         }
     }
 
-    private static class PluginConflictsDatabaseProvider extends FormatSelector<ConflictsDatabase> {
+    private static class PluginConflictsDatabaseProvider implements Provider<ConflictsDatabase> {
+        private @Inject Platform platform;
 
-        private PluginDefaults defaults;
+        private @Inject Hints hints;
 
-        @Inject
-        public PluginConflictsDatabaseProvider(PluginDefaults defaults, ConfigDatabase config,
-                Map<VersionedFormat, Provider<ConflictsDatabase>> plugins) {
-            super(config, plugins);
-            this.defaults = defaults;
-        }
+        public @Override ConflictsDatabase get() {
+            URI repoURI = new ResolveGeogigURI(platform, hints).call()
+                    .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
-        @Override
-        protected final VersionedFormat readConfig(ConfigDatabase config) {
-            // reuse storage.objects config key in order to resolve the StorageProvider, instead of
-            // introducing a new config key. The plugin mechanism will be simplified to use
-            // RepositoryResolver to load the StorageProvider based on the repository URI so it
-            // makes no sense to introduce a new config key and deal with the backward
-            // compatibility issues now.
-            final String formatKey = "storage.objects";
-            String versionKey = null;
-            String format = null, version = null;
-            try {
-                format = getConfig(formatKey, config).orElse(null);
-                if (format != null) {
-                    versionKey = format + ".version";
-                    version = getConfig(versionKey, config).orElse(null);
-                }
-            } catch (RuntimeException e) {
-                // ignore, the config may not be available when we need this.
-            }
-
-            if (format == null || version == null) {
-                // .get, not .orNull. we should only be using the plugin providers when there are
-                // plugins set up
-                return defaults.getRefs().get();
-            }
-
-            for (StorageProvider p : StorageProvider.findProviders()) {
-                VersionedFormat conflictsFormat = p.getConflictsDatabaseFormat();
-                final String fmt = conflictsFormat.getFormat();
-                final String v = conflictsFormat.getVersion();
-                if (format.equals(fmt) && version.equals(v)) {
-                    return conflictsFormat;
-                }
-            }
-
-            throw new IllegalStateException(
-                    String.format("No storage provider found for %s='%s' and %s='%s'", formatKey,
-                            format, versionKey, version));
+            RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
+            return resolver.resolveConflictsDatabase(repoURI, hints);
         }
     }
 }

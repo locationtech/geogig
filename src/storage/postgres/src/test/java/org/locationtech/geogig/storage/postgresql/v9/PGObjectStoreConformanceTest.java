@@ -44,8 +44,7 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
     ConfigDatabase configdb;
 
-    @Override
-    protected PGObjectStore createOpen() throws IOException {
+    protected @Override PGObjectStore createOpen() throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 

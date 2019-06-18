@@ -28,8 +28,7 @@ public class ConflictsQueryOp extends AbstractGeoGigOp<Iterator<Conflict>>
 
     private String parentPathFilter = null;
 
-    @Override
-    protected Iterator<Conflict> _call() {
+    protected @Override Iterator<Conflict> _call() {
         if (repository().isOpen()) {
             return conflictsDatabase().getByPrefix(null, parentPathFilter);
         }
@@ -41,8 +40,7 @@ public class ConflictsQueryOp extends AbstractGeoGigOp<Iterator<Conflict>>
         return this;
     }
 
-    @Override
-    public Iterator<Conflict> get() {
+    public @Override Iterator<Conflict> get() {
         return call();
     }
 }

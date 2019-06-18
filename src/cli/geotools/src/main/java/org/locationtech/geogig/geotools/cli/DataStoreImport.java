@@ -90,8 +90,7 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
     /**
      * Executes the import command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         DataStore dataStore = getDataStore();
 
         try {

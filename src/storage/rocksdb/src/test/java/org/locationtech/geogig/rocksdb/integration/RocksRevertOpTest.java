@@ -9,12 +9,14 @@
  */
 package org.locationtech.geogig.rocksdb.integration;
 
-import org.locationtech.geogig.repository.Context;
+import org.junit.Before;
+import org.junit.Rule;
 import org.locationtech.geogig.test.integration.RevertOpTest;
 
 public class RocksRevertOpTest extends RevertOpTest {
+    public @Rule RocksdbTestRepositoryURIBuilder uriBuilder = new RocksdbTestRepositoryURIBuilder();
 
-    protected @Override Context createInjector() {
-        return RocksStorageModule.createContext(repositoryDirectory);
+    public @Before void before() {
+        testRepository.setURIBuilder(uriBuilder);
     }
 }

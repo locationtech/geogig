@@ -8,6 +8,7 @@
  * Erik Merkle (Boundless) - initial implementation
  */
 package org.locationtech.geogig.web.api;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,28 +41,28 @@ public class JSONStreaminWriterTest extends AbstractStreamingWriterTest {
             obj = obj.getJsonObject(paths[i]);
         }
         // get the last one
-        return obj.get(paths[paths.length-1]);
+        return obj.get(paths[paths.length - 1]);
     }
 
     private boolean jsonValueMatches(JsonValue jsonValue, String expectedValue) {
         switch (jsonValue.getValueType()) {
-            case FALSE:
-                return !Boolean.valueOf(expectedValue);
-            case TRUE:
-                return Boolean.valueOf(expectedValue);
-            case STRING:
-                return expectedValue.equals(((JsonString)jsonValue).getString());
-            case NUMBER:
-                return expectedValue.equals(((JsonNumber)jsonValue).toString());
-            case NULL:
-                return "null".equals(expectedValue);
+        case FALSE:
+            return !Boolean.valueOf(expectedValue);
+        case TRUE:
+            return Boolean.valueOf(expectedValue);
+        case STRING:
+            return expectedValue.equals(((JsonString) jsonValue).getString());
+        case NUMBER:
+            return expectedValue.equals(((JsonNumber) jsonValue).toString());
+        case NULL:
+            return "null".equals(expectedValue);
         }
         return false;
     }
 
     private void assertJsonArrayContainsValue(JsonArray jsonArray, String expectedValue) {
         for (JsonValue jsonValue : jsonArray) {
-            if (jsonValueMatches(jsonValue, (expectedValue !=null) ? expectedValue : "null")) {
+            if (jsonValueMatches(jsonValue, (expectedValue != null) ? expectedValue : "null")) {
                 // found it
                 return;
             }
@@ -70,7 +71,8 @@ public class JSONStreaminWriterTest extends AbstractStreamingWriterTest {
     }
 
     @Override
-    protected void verifyInternal(String[] paths, String expectedValue, String actualBuffer) throws IOException {
+    protected void verifyInternal(String[] paths, String expectedValue, String actualBuffer)
+            throws IOException {
         // get the JsonValue from the paths
         JsonValue jsonValue = getJsonValue(paths, actualBuffer);
         jsonValueMatches(jsonValue, expectedValue);
@@ -91,13 +93,15 @@ public class JSONStreaminWriterTest extends AbstractStreamingWriterTest {
     }
 
     @Override
-    protected void verifyAttributeInternal(String[] paths, String value, String actualBuffer) throws IOException {
+    protected void verifyAttributeInternal(String[] paths, String value, String actualBuffer)
+            throws IOException {
         // JSON attributes are just regular elements
         verifyInternal(paths, value, actualBuffer);
     }
 
     @Override
-    protected void verifyArrayElementInternal(String[] paths, String value, String actualBuffer) throws IOException {
+    protected void verifyArrayElementInternal(String[] paths, String value, String actualBuffer)
+            throws IOException {
         // the last element of the path is an array element
         final String elementName = paths[paths.length - 1];
         String[] newPaths = new String[paths.length - 1];
@@ -115,7 +119,8 @@ public class JSONStreaminWriterTest extends AbstractStreamingWriterTest {
                 return;
             }
         }
-        fail("JsonArray does not contain an element named \"" + elementName + "\" with a value of \"" + value + "\"");
+        fail("JsonArray does not contain an element named \"" + elementName
+                + "\" with a value of \"" + value + "\"");
     }
 
 }

@@ -19,6 +19,8 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -29,14 +31,10 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.FeatureToDelete;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
-import org.opengis.feature.type.Name;
 
 import com.google.common.collect.Iterators;
 
@@ -50,20 +48,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected Platform createPlatform() {
-        @SuppressWarnings("serial")
-        Platform testPlatform = new TestPlatform(repositoryDirectory) {
-            @Override
-            public int availableProcessors() {
-                return 2;
-            }
-        };
-        return testPlatform;
-    }
-
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         workTree = repo.workingTree();
     }
 
@@ -113,7 +98,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
                 workTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
 
         featureList.clear();
-        featureList.add(new FeatureToDelete(pointsType, idP1));
+        featureList.add(new FeatureToDelete(idP1, pointsType));
         featureList.add(points2);
         featureList.add(points3);
 
@@ -292,7 +277,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     @Test
     public void testHasRoot() throws Exception {
         insert(points1);
-        Name typeName = points1.getName();
+        Name typeName = points1.getType().getName();
         assertFalse(workTree.hasRoot(typeName.getLocalPart()));
     }
 
@@ -436,13 +421,13 @@ public class WorkingTreeTest extends RepositoryTestCase {
                 RevFeatureType.builder().type(pointsType).build().getId());
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
-        Optional<NodeRef> featureBlobId = geogig.command(FindTreeChild.class).setParent(root)
+        String path = NodeRef.appendChild(pointsName, points1.getId());
+        Optional<NodeRef> featureBlobId = repo.command(FindTreeChild.class).setParent(root)
                 .setChildPath(path).call();
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
                 featureBlobId.get().getMetadataId());
-        path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
+        path = NodeRef.appendChild(pointsName, points3.getId());
     }
 
     @Test
@@ -456,12 +441,12 @@ public class WorkingTreeTest extends RepositoryTestCase {
                 RevFeatureType.builder().type(pointsType).build().getId());
         RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
                 featureBlobId.get().getMetadataId().orElse(null));
-        path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
+        path = NodeRef.appendChild(pointsName, points3.getId());
         featureBlobId = findTreeChild(root, path);
         assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
 
@@ -472,11 +457,11 @@ public class WorkingTreeTest extends RepositoryTestCase {
                 RevFeatureType.builder().type(modifiedPointsType).build().getId());
         typeTree = repo.getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
-        path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        path = NodeRef.appendChild(pointsName, points1.getId());
         featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
         assertEquals(null, featureBlobId.get().getMetadataId().orElse(null));
-        path = NodeRef.appendChild(pointsName, points3.getIdentifier().getID());
+        path = NodeRef.appendChild(pointsName, points3.getId());
         featureBlobId = findTreeChild(root, path);
         assertEquals(RevFeatureType.builder().type(pointsType).build().getId(),
                 featureBlobId.get().getMetadataId().orElse(null));
@@ -509,7 +494,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
     }
 
     private Optional<Node> findTreeChild(RevTree root, String pathRemove) {
-        Optional<NodeRef> nodeRef = geogig.command(FindTreeChild.class).setParent(root)
+        Optional<NodeRef> nodeRef = repo.command(FindTreeChild.class).setParent(root)
                 .setChildPath(pathRemove).call();
         Optional<Node> node = Optional.empty();
         if (nodeRef.isPresent()) {

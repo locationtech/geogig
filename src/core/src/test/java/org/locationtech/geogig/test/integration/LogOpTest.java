@@ -20,10 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.geotools.util.Range;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -38,11 +38,11 @@ import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Range;
 
 public class LogOpTest extends RepositoryTestCase {
 
@@ -51,9 +51,8 @@ public class LogOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        logOp = geogig.command(LogOp.class);
+    protected @Override void setUpInternal() throws Exception {
+        logOp = repo.command(LogOp.class);
     }
 
     @Test
@@ -65,7 +64,7 @@ public class LogOpTest extends RepositoryTestCase {
             insertAndAdd(f);
         }
 
-        geogig.command(CommitOp.class).setMessage("initial commit").call();
+        repo.command(CommitOp.class).setMessage("initial commit").call();
 
         createBranch("branch1");
         checkout("master");
@@ -94,7 +93,7 @@ public class LogOpTest extends RepositoryTestCase {
         MergeReport merge2_left = mergeNoFF("master", "merge 2 left", true);
 
         checkout("master");
-        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+        repo.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
                 .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
 
         checkout("branch1");
@@ -107,7 +106,7 @@ public class LogOpTest extends RepositoryTestCase {
         MergeReport merge2_right = mergeNoFF("branch1", "merge 2 right", true);
 
         checkout("branch1");
-        geogig.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
+        repo.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
                 .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
 
         checkout("master");
@@ -116,12 +115,12 @@ public class LogOpTest extends RepositoryTestCase {
 
         // both arrays should have 9 elements and contain the same commits (in different order)
         List<RevCommit> log_topo = newArrayList(
-                geogig.command(LogOp.class).setTopoOrder(true).call());
+                repo.command(LogOp.class).setTopoOrder(true).call());
 
         assertEquals(log_topo.size(), 9);
 
         List<RevCommit> log_chrono = newArrayList(
-                geogig.command(LogOp.class).setTopoOrder(false).call());
+                repo.command(LogOp.class).setTopoOrder(false).call());
 
         assertEquals(log_chrono.size(), 9);
 
@@ -140,14 +139,14 @@ public class LogOpTest extends RepositoryTestCase {
     };
 
     protected void createBranch(String branch) {
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName(branch)
                 .setProgressListener(SIMPLE_PROGRESS).call();
     }
 
     protected MergeReport mergeNoFF(String branch, String mergeMessage, boolean mergeOurs) {
-        Ref branchRef = geogig.command(RefParse.class).setName(branch).call().get();
+        Ref branchRef = repo.command(RefParse.class).setName(branch).call().get();
         ObjectId updatesBranchTip = branchRef.getObjectId();
-        MergeReport mergeReport = geogig.command(MergeOp.class)//
+        MergeReport mergeReport = repo.command(MergeOp.class)//
                 .setMessage(mergeMessage)//
                 .setNoFastForward(true)//
                 .addCommit(updatesBranchTip)//
@@ -169,7 +168,7 @@ public class LogOpTest extends RepositoryTestCase {
     public void testHeadWithSingleCommit() throws Exception {
 
         insertAndAdd(points1);
-        final RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        final RevCommit firstCommit = repo.command(CommitOp.class).call();
 
         Iterator<RevCommit> iterator = logOp.call();
         assertNotNull(iterator);
@@ -183,10 +182,10 @@ public class LogOpTest extends RepositoryTestCase {
     public void testHeadWithTwoCommits() throws Exception {
 
         insertAndAdd(points1);
-        final RevCommit firstCommit = geogig.command(CommitOp.class).call();
+        final RevCommit firstCommit = repo.command(CommitOp.class).call();
 
         insertAndAdd(lines1);
-        final RevCommit secondCommit = geogig.command(CommitOp.class).call();
+        final RevCommit secondCommit = repo.command(CommitOp.class).call();
 
         Iterator<RevCommit> iterator = logOp.call();
         assertNotNull(iterator);
@@ -209,7 +208,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).call();
+            final RevCommit commit = repo.command(CommitOp.class).call();
             expected.addFirst(commit);
         }
 
@@ -231,15 +230,15 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            String id = f.getIdentifier().getID();
-            final RevCommit commit = geogig.command(CommitOp.class).call();
-            if (id.equals(lines1.getIdentifier().getID())) {
+            String id = f.getId();
+            final RevCommit commit = repo.command(CommitOp.class).call();
+            if (id.equals(lines1.getId())) {
                 expectedCommit = commit;
             }
             allCommits.add(commit);
         }
 
-        String path = NodeRef.appendChild(linesName, lines1.getIdentifier().getID());
+        String path = NodeRef.appendChild(linesName, lines1.getId());
 
         List<RevCommit> feature2_1Commits = toList(logOp.addPath(path).call());
         assertEquals(1, feature2_1Commits.size());
@@ -254,18 +253,18 @@ public class LogOpTest extends RepositoryTestCase {
         RevCommit expectedPointCommit = null;
         for (Feature f : features) {
             insertAndAdd(f);
-            String id = f.getIdentifier().getID();
-            final RevCommit commit = geogig.command(CommitOp.class).call();
-            if (id.equals(lines1.getIdentifier().getID())) {
+            String id = f.getId();
+            final RevCommit commit = repo.command(CommitOp.class).call();
+            if (id.equals(lines1.getId())) {
                 expectedLineCommit = commit;
-            } else if (id.equals(points1.getIdentifier().getID())) {
+            } else if (id.equals(points1.getId())) {
                 expectedPointCommit = commit;
             }
             allCommits.add(commit);
         }
 
-        String linesPath = NodeRef.appendChild(linesName, lines1.getIdentifier().getID());
-        String pointsPath = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String linesPath = NodeRef.appendChild(linesName, lines1.getId());
+        String pointsPath = NodeRef.appendChild(pointsName, points1.getId());
 
         List<RevCommit> feature2_1Commits = toList(logOp.addPath(linesPath).call());
         List<RevCommit> featureCommits = toList(logOp.addPath(pointsPath).call());
@@ -288,8 +287,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().toString()).call();
+            final RevCommit commit = repo.command(CommitOp.class).setMessage(f.getId()).call();
             commits.addFirst(commit);
             if (pointsName.equals(f.getType().getName().getLocalPart())) {
                 typeName1Commits.addFirst(commit);
@@ -311,7 +309,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            geogig.command(CommitOp.class).call();
+            repo.command(CommitOp.class).call();
         }
 
         assertEquals(3, Iterators.size(logOp.setLimit(3).call()));
@@ -328,7 +326,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         for (Feature f : features) {
             insertAndAdd(f);
-            geogig.command(CommitOp.class).call();
+            repo.command(CommitOp.class).call();
         }
 
         logOp.setSkip(2).call();
@@ -350,16 +348,13 @@ public class LogOpTest extends RepositoryTestCase {
             Feature f = features.get(i);
             Long timestamp = timestamps.get(i);
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).setCommitterTimestamp(timestamp)
+            final RevCommit commit = repo.command(CommitOp.class).setCommitterTimestamp(timestamp)
                     .call();
             allCommits.addFirst(commit);
         }
 
         // test time range exclusive
-        boolean minInclusive = false;
-        boolean maxInclusive = false;
-        Range<Date> commitRange = new Range<Date>(Date.class, new Date(2000), minInclusive,
-                new Date(5000), maxInclusive);
+        Range<Date> commitRange = Range.open(new Date(2000), new Date(5000));
         logOp.setTimeRange(commitRange);
 
         List<RevCommit> logged = toList(logOp.call());
@@ -367,18 +362,15 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(expected, logged);
 
         // test time range inclusive
-        minInclusive = true;
-        maxInclusive = true;
-        commitRange = new Range<Date>(Date.class, new Date(2000), minInclusive, new Date(5000),
-                maxInclusive);
-        logOp = geogig.command(LogOp.class).setTimeRange(commitRange);
+        commitRange = Range.closed(new Date(2000), new Date(5000));
+        logOp = repo.command(LogOp.class).setTimeRange(commitRange);
 
         logged = toList(logOp.call());
         expected = allCommits.subList(1, 5);
         assertEquals(expected, logged);
 
         // test reset time range
-        logOp = geogig.command(LogOp.class).setTimeRange(commitRange).setTimeRange(null);
+        logOp = repo.command(LogOp.class).setTimeRange(commitRange).setTimeRange(null);
         logged = toList(logOp.call());
         expected = allCommits;
         assertEquals(expected, logged);
@@ -387,19 +379,19 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testSinceUntil() throws Exception {
         final ObjectId oid1_1 = insertAndAdd(points1);
-        final RevCommit commit1_1 = geogig.command(CommitOp.class).call();
+        final RevCommit commit1_1 = repo.command(CommitOp.class).call();
 
         insertAndAdd(points2);
-        final RevCommit commit1_2 = geogig.command(CommitOp.class).call();
+        final RevCommit commit1_2 = repo.command(CommitOp.class).call();
 
         insertAndAdd(lines1);
-        final RevCommit commit2_1 = geogig.command(CommitOp.class).call();
+        final RevCommit commit2_1 = repo.command(CommitOp.class).call();
 
         final ObjectId oid2_2 = insertAndAdd(lines2);
-        final RevCommit commit2_2 = geogig.command(CommitOp.class).call();
+        final RevCommit commit2_2 = repo.command(CommitOp.class).call();
 
         try {
-            logOp = geogig.command(LogOp.class);
+            logOp = repo.command(LogOp.class);
             logOp.setSince(oid1_1).call();
             fail("Expected ISE as since is not a commit");
         } catch (IllegalArgumentException e) {
@@ -407,7 +399,7 @@ public class LogOpTest extends RepositoryTestCase {
         }
 
         try {
-            logOp = geogig.command(LogOp.class);
+            logOp = repo.command(LogOp.class);
             logOp.setSince(null).setUntil(oid2_2).call();
             fail("Expected ISE as until is not a commit");
         } catch (IllegalArgumentException e) {
@@ -417,22 +409,22 @@ public class LogOpTest extends RepositoryTestCase {
         List<RevCommit> logs;
         List<RevCommit> expected;
 
-        logOp = geogig.command(LogOp.class);
+        logOp = repo.command(LogOp.class);
         logs = toList(logOp.setSince(commit1_2.getId()).setUntil(null).call());
         expected = Arrays.asList(commit2_2, commit2_1);
         assertEquals(expected, logs);
 
-        logOp = geogig.command(LogOp.class);
+        logOp = repo.command(LogOp.class);
         logs = toList(logOp.setSince(commit2_2.getId()).setUntil(null).call());
         expected = Collections.emptyList();
         assertEquals(expected, logs);
 
-        logOp = geogig.command(LogOp.class);
+        logOp = repo.command(LogOp.class);
         logs = toList(logOp.setSince(commit1_2.getId()).setUntil(commit2_1.getId()).call());
         expected = Arrays.asList(commit2_1);
         assertEquals(expected, logs);
 
-        logOp = geogig.command(LogOp.class);
+        logOp = repo.command(LogOp.class);
         logs = toList(logOp.setSince(null).setUntil(commit2_1.getId()).call());
         expected = Arrays.asList(commit2_1, commit1_2, commit1_1);
         assertEquals(expected, logs);
@@ -451,19 +443,19 @@ public class LogOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // Merge branch1 into master to create the following revision graph
         // o
@@ -478,8 +470,8 @@ public class LogOpTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge commit
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();
@@ -498,7 +490,7 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(c1, iterator.next());
 
         // test log using first parent only. It should not contain commit 2)
-        LogOp op = geogig.command(LogOp.class).setFirstParentOnly(true);
+        LogOp op = repo.command(LogOp.class).setFirstParentOnly(true);
         iterator = op.call();
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
@@ -512,7 +504,7 @@ public class LogOpTest extends RepositoryTestCase {
         assertFalse(iterator.hasNext());
 
         // Test topological order
-        op = geogig.command(LogOp.class).setTopoOrder(true);
+        op = repo.command(LogOp.class).setTopoOrder(true);
         iterator = op.call();
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
@@ -542,19 +534,19 @@ public class LogOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // Merge branch1 into master to create the following revision graph
         // o
@@ -569,8 +561,8 @@ public class LogOpTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge commit
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();
@@ -583,7 +575,7 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(c2, iterator.next());
 
         // test log using first parent only. It should not contain commit 2)
-        LogOp op = geogig.command(LogOp.class).addPath(pointsName + "/" + idP2)
+        LogOp op = repo.command(LogOp.class).addPath(pointsName + "/" + idP2)
                 .setFirstParentOnly(true);
         iterator = op.call();
         assertNotNull(iterator);
@@ -605,21 +597,21 @@ public class LogOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit points2Added = geogig.command(CommitOp.class)
-                .setMessage("commit for " + idP2).call();
+        final RevCommit points2Added = repo.command(CommitOp.class).setMessage("commit for " + idP2)
+                .call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        RevCommit sinceCommit = geogig.command(CommitOp.class).setMessage("commit for " + idP3)
+        RevCommit sinceCommit = repo.command(CommitOp.class).setMessage("commit for " + idP3)
                 .call();
         insertAndAdd(lines1);
-        RevCommit lines1Added = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+        RevCommit lines1Added = repo.command(CommitOp.class).setMessage("commit for " + idL1)
                 .call();
 
         // Merge branch1 into master to create the following revision graph
@@ -635,8 +627,8 @@ public class LogOpTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge commit
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();
@@ -668,21 +660,21 @@ public class LogOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
-        LogOp op = geogig.command(LogOp.class);
+        LogOp op = repo.command(LogOp.class);
         op.addCommit(c2.getId());
         op.addCommit(c4.getId());
         Iterator<RevCommit> iterator = op.call();
@@ -711,21 +703,21 @@ public class LogOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
-        LogOp op = geogig.command(LogOp.class).addCommit(c2.getId());
+        LogOp op = repo.command(LogOp.class).addCommit(c2.getId());
         Iterator<RevCommit> iterator = op.call();
         assertNotNull(iterator);
         assertTrue(iterator.hasNext());
@@ -738,11 +730,11 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testAuthorFilter() throws Exception {
         insertAndAdd(points1);
-        final RevCommit firstCommit = geogig.command(CommitOp.class)
+        final RevCommit firstCommit = repo.command(CommitOp.class)
                 .setAuthor("firstauthor", "firstauthor@boundlessgeo.com").call();
 
         insertAndAdd(lines1);
-        final RevCommit secondCommit = geogig.command(CommitOp.class)
+        final RevCommit secondCommit = repo.command(CommitOp.class)
                 .setAuthor("secondauthor", "secondauthor@boundlessgeo.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstauthor").call();
@@ -761,11 +753,11 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testCommitterFilter() throws Exception {
         insertAndAdd(points1);
-        final RevCommit firstCommit = geogig.command(CommitOp.class)
+        final RevCommit firstCommit = repo.command(CommitOp.class)
                 .setCommitter("firstcommitter", "firstcommitter@boundlessgeo.com").call();
 
         insertAndAdd(lines1);
-        final RevCommit secondCommit = geogig.command(CommitOp.class)
+        final RevCommit secondCommit = repo.command(CommitOp.class)
                 .setAuthor("secondcommitter", "secondcommitter@boundlessgeo.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstcommitter").call();

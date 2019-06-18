@@ -51,8 +51,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         return new File(path).exists();
     }
 
-    @Override
-    protected DBHandle connect(DBConfig dbconfig) {
+    protected @Override DBHandle connect(DBConfig dbconfig) {
 
         LOG.debug("opening {}", dbconfig);
 
@@ -74,8 +73,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         final List<String> colFamilyNames;
         try {
             Function<byte[], String> fn = new Function<byte[], String>() {
-                @Override
-                public String apply(byte[] ba) {
+                public @Override String apply(byte[] ba) {
                     return new String(ba, Charsets.UTF_8);
                 }
             };
@@ -199,8 +197,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         return colFamilyOptions;
     }
 
-    @Override
-    protected void disconnect(DBHandle connection) {
+    protected @Override void disconnect(DBHandle connection) {
         LOG.debug("closing {}", connection.config);
         connection.close();
     }

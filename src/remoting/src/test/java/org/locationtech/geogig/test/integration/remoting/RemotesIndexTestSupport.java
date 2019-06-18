@@ -22,13 +22,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.BranchListOp;
@@ -76,7 +76,7 @@ public class RemotesIndexTestSupport {
             } else {
                 Index index = repo.command(CreateQuadTree.class).setBounds(bounds)
                         .setIndexHistory(true).setTypeTreeRef(treeRef).call();
-                log.info("Created index {} before cloning", index);
+                log.debug("Created index {} before cloning", index);
                 indexes.add(index);
             }
         }
@@ -127,7 +127,7 @@ public class RemotesIndexTestSupport {
             }
             assertEquals(allRemoteIndexContents, allLocalIndexContents);
         });
-        log.info("Index {} cloned correctly", indexInfo);
+        log.debug("Index {} cloned correctly", indexInfo);
     }
 
     private static Set<IndexTreeMapping> getIndexMappings(IndexInfo indexInfo, Repository repo,

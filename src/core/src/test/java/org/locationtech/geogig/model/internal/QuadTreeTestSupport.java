@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
 import org.locationtech.geogig.model.Node;
@@ -35,6 +34,7 @@ import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
+import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Coordinate;
@@ -49,6 +49,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
+
+import lombok.NonNull;
 
 public class QuadTreeTestSupport extends ExternalResource {
 
@@ -67,16 +69,14 @@ public class QuadTreeTestSupport extends ExternalResource {
 
     private int maxDepth = -1;
 
-    @Override
-    public void before() {
+    public @Override void before() {
         store = new HeapObjectStore();
         store.open();
 
         maxBoundsFloat64 = QuadTreeTestSupport.wgs84Bounds();
     }
 
-    @Override
-    public void after() {
+    public @Override void after() {
         store.close();
     }
 
@@ -205,9 +205,9 @@ public class QuadTreeTestSupport extends ExternalResource {
 
         if (!quadBounds.contains(nodeBounds)) {
             GeometryFactory gf = new GeometryFactory();
-            Polygon qgeom = JTS.toGeometry(quadBounds, gf);
+            Polygon qgeom = SpatialOps.toGeometry(quadBounds);
             ArrayList<Geometry> pointGeoms = Lists.newArrayList(gf.createPoint(center),
-                    JTS.toGeometry(nodeBounds, gf));
+                    SpatialOps.toGeometry(nodeBounds));
             Geometry point = gf.buildGeometry(pointGeoms);
             String msg = qgeom + " does not contain " + point;
             Assert.fail(msg);
@@ -297,8 +297,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         return nodeBounds;
     }
 
-    public Node putNode(QuadTreeClusteringStrategy quad, Quadrant... location) {
-        Preconditions.checkNotNull(location);
+    public Node putNode(QuadTreeClusteringStrategy quad, @NonNull Quadrant... location) {
         long fnumb = quad.root == null ? 0 : quad.root.getTotalChildCount();
         String quadInfo = Arrays.toString(location);
 
@@ -309,14 +308,12 @@ public class QuadTreeTestSupport extends ExternalResource {
     }
 
     public List<Node> putNodes(int numNodes, QuadTreeClusteringStrategy quad,
-            List<Quadrant> location) {
-        Preconditions.checkNotNull(location);
+            @NonNull List<Quadrant> location) {
         return putNodes(numNodes, quad, location.toArray(new Quadrant[location.size()]));
     }
 
     public List<Node> putNodes(int numNodes, QuadTreeClusteringStrategy quad,
-            Quadrant... location) {
-        Preconditions.checkNotNull(location);
+            @NonNull Quadrant... location) {
         Preconditions.checkArgument(location.length > 0);
         List<Node> result = new ArrayList<>(numNodes);
         for (int t = 0; t < numNodes; t++) {

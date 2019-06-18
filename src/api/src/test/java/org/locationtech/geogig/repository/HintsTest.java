@@ -60,42 +60,34 @@ public class HintsTest {
     public void testPlatform() {
         @SuppressWarnings("serial")
         Platform platform = new Platform() {
-            @Override
-            public File pwd() {
+            public @Override File pwd() {
                 return null;
             }
 
-            @Override
-            public void setWorkingDir(File workingDir) {
+            public @Override void setWorkingDir(File workingDir) {
             }
 
-            @Override
-            public String whoami() {
+            public @Override String whoami() {
                 return null;
             }
 
-            @Override
-            public long currentTimeMillis() {
+            public @Override long currentTimeMillis() {
                 return 0;
             }
 
-            @Override
-            public long nanoTime() {
+            public @Override long nanoTime() {
                 return 0;
             }
 
-            @Override
-            public File getUserHome() {
+            public @Override File getUserHome() {
                 return null;
             }
 
-            @Override
-            public int timeZoneOffset(long timeStamp) {
+            public @Override int timeZoneOffset(long timeStamp) {
                 return 0;
             }
 
-            @Override
-            public int availableProcessors() {
+            public @Override int availableProcessors() {
                 return 0;
             }
         };

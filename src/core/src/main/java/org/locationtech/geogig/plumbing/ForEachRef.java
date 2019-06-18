@@ -34,8 +34,7 @@ public class ForEachRef extends AbstractGeoGigOp<ImmutableSet<Ref>> {
 
     public ForEachRef setPrefixFilter(final String prefix) {
         this.filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref ref) {
+            public @Override boolean apply(Ref ref) {
                 return ref != null && ref.getName().startsWith(prefix);
             }
         };
@@ -45,8 +44,7 @@ public class ForEachRef extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     /**
      * @return the new value of the ref
      */
-    @Override
-    protected ImmutableSet<Ref> _call() {
+    protected @Override ImmutableSet<Ref> _call() {
 
         @SuppressWarnings("unchecked")
         final Predicate<Ref> filter = (Predicate<Ref>) (this.filter == null

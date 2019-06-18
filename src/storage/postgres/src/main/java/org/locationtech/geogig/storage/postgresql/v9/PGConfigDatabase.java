@@ -32,8 +32,9 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.util.Converters;
+import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
@@ -46,7 +47,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * PostgreSQL based config database.
@@ -73,7 +75,7 @@ import com.google.inject.Inject;
  * @implNote {@link #putGlobal(String, Object) global} values are stored under the {@code -1} key
  *           for the {@code repository} column.
  */
-public class PGConfigDatabase implements ConfigDatabase {
+public class PGConfigDatabase extends AbstractStore implements ConfigDatabase {
 
     static final Logger LOG = LoggerFactory.getLogger(PGConfigDatabase.class);
 
@@ -83,12 +85,12 @@ public class PGConfigDatabase implements ConfigDatabase {
 
     private Version _serverVersion;
 
-    @Inject
     public PGConfigDatabase(Hints hints) throws URISyntaxException {
         this(Environment.get(hints));
     }
 
     public PGConfigDatabase(Environment environment) {
+        super(false);
         this.config = environment;
     }
 
@@ -99,8 +101,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         return _serverVersion;
     }
 
-    @Override
-    public Optional<String> get(String key) {
+    public @Override Optional<String> get(String key) {
         try {
             return get(new Entry(key), String.class, local());
         } catch (IllegalArgumentException e) {
@@ -108,48 +109,39 @@ public class PGConfigDatabase implements ConfigDatabase {
         }
     }
 
-    @Override
-    public Optional<String> getGlobal(String key) {
+    public @Override Optional<String> getGlobal(String key) {
         return get(new Entry(key), String.class, global());
     }
 
-    @Override
-    public <T> Optional<T> get(String key, Class<T> c) {
+    public @Override <T> Optional<T> get(String key, Class<T> c) {
         return get(new Entry(key), c, local());
     }
 
-    @Override
-    public <T> Optional<T> getGlobal(String key, Class<T> c) {
+    public @Override <T> Optional<T> getGlobal(String key, Class<T> c) {
         return get(new Entry(key), c, global());
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return all(local());
     }
 
-    @Override
-    public Map<String, String> getAllGlobal() {
+    public @Override Map<String, String> getAllGlobal() {
         return all(global());
     }
 
-    @Override
-    public Map<String, String> getAllSection(String section) {
+    public @Override Map<String, String> getAllSection(String section) {
         return all(section, local());
     }
 
-    @Override
-    public Map<String, String> getAllSectionGlobal(String section) {
+    public @Override Map<String, String> getAllSectionGlobal(String section) {
         return all(section, global());
     }
 
-    @Override
-    public List<String> getAllSubsections(String section) {
+    public @Override List<String> getAllSubsections(String section) {
         return list(section, local());
     }
 
-    @Override
-    public List<String> getAllSubsectionsGlobal(String section) {
+    public @Override List<String> getAllSubsectionsGlobal(String section) {
         return list(section, global());
     }
 
@@ -158,36 +150,30 @@ public class PGConfigDatabase implements ConfigDatabase {
      *           changed), this method ensures no other repository in the same database is named the
      *           same as {@code value}, and throws an {@link IllegalArgumentException} if there is.
      */
-    @Override
-    public void put(String key, Object value) {
+    public @Override void put(String key, Object value) {
         put(new Entry(key), value, local());
     }
 
-    @Override
-    public void putGlobal(String key, Object value) {
+    public @Override void putGlobal(String key, Object value) {
         put(new Entry(key), value, global());
     }
 
-    public @Override void putSection(final String section, final Map<String, String> kvp) {
-        checkNotNull(section);
-        checkNotNull(kvp);
+    public @Override void putSection(final @NonNull String section,
+            final @NonNull Map<String, String> kvp) {
         Map<Entry, String> entries = new HashMap<>();
         kvp.forEach((k, v) -> entries.put(new Entry(String.format("%s.%s", section, k)), v));
         put(entries, local());
     }
 
-    @Override
-    public void remove(String key) {
+    public @Override void remove(String key) {
         remove(new Entry(key), local());
     }
 
-    @Override
-    public void removeGlobal(String key) {
+    public @Override void removeGlobal(String key) {
         remove(new Entry(key), global());
     }
 
-    @Override
-    public void removeSection(String key) {
+    public @Override void removeSection(String key) {
         removeSection(key, local());
     }
 
@@ -215,8 +201,7 @@ public class PGConfigDatabase implements ConfigDatabase {
         return Environment.GLOBAL_KEY;
     }
 
-    @Override
-    public void removeSectionGlobal(String key) {
+    public @Override void removeSectionGlobal(String key) {
         removeSection(key, global());
     }
 
@@ -229,13 +214,13 @@ public class PGConfigDatabase implements ConfigDatabase {
     }
 
     <T> T convert(String value, Class<T> clazz) {
-        Object v = Converters.convert(value, clazz);
+        Object v = FieldType.unmarshall(value, clazz);
         checkArgument(v != null, "Can't convert %s to %s", value, clazz.getName());
         return clazz.cast(v);
     }
 
     void put(Entry entry, Object value, final int repositoryPK) {
-        put(entry, (String) (value != null ? value.toString() : null), repositoryPK);
+        put(entry, FieldType.marshall(value), repositoryPK);
     }
 
     protected static class Entry {
@@ -500,8 +485,8 @@ public class PGConfigDatabase implements ConfigDatabase {
         return dataSource;
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
+        super.close();
         if (dataSource != null) {
             PGStorage.closeDataSource(dataSource);
             dataSource = null;

@@ -59,8 +59,7 @@ public class Blame extends AbstractCommand {
     @Parameter(names = { "--no-values" }, description = "Do not show values, only attribute names")
     private boolean noValues = false;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(paths.size() < 2, "Only one path allowed");
         checkParameter(!paths.isEmpty(), "A path must be specified");
 

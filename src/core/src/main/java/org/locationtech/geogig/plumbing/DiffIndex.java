@@ -85,8 +85,7 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
      * @return an iterator to a set of differences between the two trees
      * @see DiffEntry
      */
-    @Override
-    protected AutoCloseableIterator<DiffEntry> _call() {
+    protected @Override AutoCloseableIterator<DiffEntry> _call() {
         final String oldVersion = Optional.ofNullable(refSpec).orElse(Ref.HEAD);
         final Optional<ObjectId> rootTreeId;
         rootTreeId = command(ResolveTreeish.class).setTreeish(oldVersion).call();
@@ -122,8 +121,7 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
      * 
      * @see #call()
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> get() {
+    public @Override AutoCloseableIterator<DiffEntry> get() {
         return call();
     }
 

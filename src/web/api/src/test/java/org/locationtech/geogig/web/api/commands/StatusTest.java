@@ -63,14 +63,14 @@ public class StatusTest extends AbstractWebOpTest {
 
         RevFeature point1 = RevFeature.builder().build(TestData.point1);
         String point1_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         RevFeature point1_modified = RevFeature.builder().build(TestData.point1_modified);
         RevFeature point2 = RevFeature.builder().build(TestData.point2);
         String point2_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point2.getID());
+                TestData.point2.getId());
         RevFeature point3 = RevFeature.builder().build(TestData.point3);
         String point3_path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point3.getID());
+                TestData.point3.getId());
 
         testData.checkout("master");
         testData.addAndCommit("Initial commit", TestData.point1, TestData.point2);

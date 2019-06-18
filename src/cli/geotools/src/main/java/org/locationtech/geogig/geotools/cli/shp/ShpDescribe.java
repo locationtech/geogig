@@ -35,15 +35,13 @@ public class ShpDescribe extends AbstractShpCommand implements CLICommand {
     @Parameter(description = "<shapefile>... path to the shapefile to describe", arity = 1)
     public List<String> args = new ArrayList<>(2);
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
         checkParameter(!args.isEmpty(), "No shapefile argument provided");
 
         for (String shapefile : args) {
             DataStoreDescribe cmd = new DataStoreDescribe() {
-                @Override
-                protected DataStore getDataStore() {
+                protected @Override DataStore getDataStore() {
                     DataStore dataStore = ShpDescribe.this.getDataStore(shapefile, null);
                     return dataStore;
                 }

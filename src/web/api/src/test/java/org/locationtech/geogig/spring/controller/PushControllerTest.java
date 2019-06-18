@@ -32,8 +32,8 @@ public class PushControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/beginpush");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/beginpush");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("Push began for address:")));
@@ -47,8 +47,7 @@ public class PushControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/endpush");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get("/repos/repo1/repo/endpush");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(
@@ -63,8 +62,8 @@ public class PushControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/beginpush");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/beginpush");
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("Push began for address:")));

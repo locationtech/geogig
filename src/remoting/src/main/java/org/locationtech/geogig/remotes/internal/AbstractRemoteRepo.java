@@ -22,7 +22,7 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
 /**
  * Provides a base implementation for different representations of the {@link IRemoteRepo}.
@@ -33,8 +33,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
 
     private final Remote remote;
 
-    protected AbstractRemoteRepo(Remote remote) {
-        Preconditions.checkNotNull(remote);
+    protected AbstractRemoteRepo(@NonNull Remote remote) {
         this.remote = remote;
     }
 
@@ -58,8 +57,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             this.destination = destination;
         }
 
-        @Override
-        protected Evaluation evaluate(CommitNode commitNode) {
+        protected @Override Evaluation evaluate(CommitNode commitNode) {
 
             if (destination.objectExists(commitNode.getObjectId())) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
@@ -74,13 +72,11 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             return Evaluation.INCLUDE_AND_CONTINUE;
         }
 
-        @Override
-        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
-        @Override
-        protected boolean existsInDestination(ObjectId commitId) {
+        protected @Override boolean existsInDestination(ObjectId commitId) {
             return destination.objectExists(commitId);
         }
     }
@@ -106,8 +102,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             this.limit = limit;
         }
 
-        @Override
-        protected Evaluation evaluate(CommitNode commitNode) {
+        protected @Override Evaluation evaluate(CommitNode commitNode) {
             if (limit.isPresent() && commitNode.getDepth() > limit.get()) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             } else if (!source.objectExists(commitNode.getObjectId())) {
@@ -127,13 +122,11 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             return Evaluation.INCLUDE_AND_CONTINUE;
         }
 
-        @Override
-        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
-        @Override
-        protected boolean existsInDestination(ObjectId commitId) {
+        protected @Override boolean existsInDestination(ObjectId commitId) {
             return destination.objectExists(commitId);
         }
     };
@@ -154,8 +147,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             this.destination = destination;
         }
 
-        @Override
-        protected Evaluation evaluate(CommitNode commitNode) {
+        protected @Override Evaluation evaluate(CommitNode commitNode) {
             if (destination.objectExists(commitNode.getObjectId())) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             } else {
@@ -163,13 +155,11 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
             }
         }
 
-        @Override
-        protected List<ObjectId> getParentsInternal(ObjectId commitId) {
+        protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
             return source.getParents(commitId);
         }
 
-        @Override
-        protected boolean existsInDestination(ObjectId commitId) {
+        protected @Override boolean existsInDestination(ObjectId commitId) {
             return destination.objectExists(commitId);
         }
 
@@ -231,8 +221,7 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         return traverser;
     }
 
-    @Override
-    public void pushNewData(Repository local, Ref ref, ProgressListener progress)
+    public @Override void pushNewData(Repository local, Ref ref, ProgressListener progress)
             throws SynchronizationException {
         pushNewData(local, ref, ref.getName(), progress);
     }

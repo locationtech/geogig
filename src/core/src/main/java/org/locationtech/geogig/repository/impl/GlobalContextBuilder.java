@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.repository.impl;
 
+import org.locationtech.geogig.repository.ContextBuilder;
+
 public class GlobalContextBuilder {
 
     private static ContextBuilder builder = new PluginsContextBuilder();

@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -43,7 +44,6 @@ import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
@@ -61,11 +61,10 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
     private Remote remote;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // Commit several features to the remote
-        remoteRepo = remoteGeogig.repo;
-        localRepo = localGeogig.repo;
+        remoteRepo = super.originRepo;
+        localRepo = super.localRepo;
 
         expectedMaster = new LinkedList<RevCommit>();
         expectedBranch = new LinkedList<RevCommit>();
@@ -114,7 +113,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setBranch("Branch1").call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setBranch("Branch1").call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(localRepo.command(LogOp.class).call());

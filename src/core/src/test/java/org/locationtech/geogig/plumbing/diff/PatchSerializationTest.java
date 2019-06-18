@@ -16,30 +16,29 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.Test;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.PropertyDescriptor;
+import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 
 public class PatchSerializationTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test
     public void testRemoveFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1B.getProperty("extra").getValue();
+        Object oldValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -53,9 +52,9 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testAddFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object newValue = points1B.getProperty("extra").getValue();
+        Object newValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
         FeatureDiff featureDiff = new FeatureDiff(path, map,
@@ -69,12 +68,12 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testModifyFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
-        Object oldValue = points1.getProperty("sp").getValue();
+        Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
-        Geometry oldGeometry = (Geometry) points1.getProperty("pp").getValue();
-        Geometry newGeometry = new WKTReader2().read("POINT (2 2)");
+        Geometry oldGeometry = (Geometry) points1.getAttribute("pp");
+        Geometry newGeometry = new WKTReader().read("POINT (2 2)");
         GeometryAttributeDiff geomDiff = new GeometryAttributeDiff(oldGeometry, newGeometry);
         map.put(pointsType.getDescriptor("sp"), diff);
         map.put(pointsType.getDescriptor("pp"), geomDiff);
@@ -88,7 +87,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testAddFeaturePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addAddedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         testPatch(patch);
@@ -97,7 +96,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     @Test
     public void testRemoveFeaturePatch() throws Exception {
         Patch patch = new Patch();
-        String path = NodeRef.appendChild(pointsName, points1.getIdentifier().getID());
+        String path = NodeRef.appendChild(pointsName, points1.getId());
         patch.addRemovedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         testPatch(patch);

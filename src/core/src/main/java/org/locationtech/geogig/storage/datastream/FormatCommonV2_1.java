@@ -73,8 +73,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         }
     }
 
-    @Override
-    public void writeFeature(RevFeature feature, DataOutput target) throws IOException {
+    public @Override void writeFeature(RevFeature feature, DataOutput target) throws IOException {
         if (feature instanceof LazyRevFeature) {
             fastEncode((LazyRevFeature) feature, target);
             return;
@@ -136,8 +135,8 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
         target.write(data);
     }
 
-    @Override
-    public RevFeature readFeature(@Nullable ObjectId id, DataInput in) throws IOException {
+    public @Override RevFeature readFeature(@Nullable ObjectId id, DataInput in)
+            throws IOException {
         // <HEADER>
         // - unsigned varint: number of attributes
         final int attrCount = readUnsignedVarInt(in);
@@ -181,18 +180,15 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             this.valueParser = valueParser;
         }
 
-        @Override
-        public ObjectId getId() {
+        public @Override ObjectId getId() {
             return id;
         }
 
-        @Override
-        public TYPE getType() {
+        public @Override TYPE getType() {
             return TYPE.FEATURE;
         }
 
-        @Override
-        public ImmutableList<Optional<Object>> getValues() {
+        public @Override ImmutableList<Optional<Object>> getValues() {
             ImmutableList.Builder<Optional<Object>> b = ImmutableList.builder();
             final int size = size();
             for (int i = 0; i < size; i++) {
@@ -210,18 +206,15 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             return values;
         }
 
-        @Override
-        public int size() {
+        public @Override int size() {
             return offsets.length;
         }
 
-        @Override
-        public Optional<Object> get(final int index) {
+        public @Override Optional<Object> get(final int index) {
             return Optional.ofNullable(parse(index));
         }
 
-        @Override
-        public Optional<Geometry> get(int index, GeometryFactory gf) {
+        public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
             final int offset = offsets[index];
             final int tagValue = data[offset] & 0xFF;
             final FieldType type = FieldType.valueOf(tagValue);
@@ -239,8 +232,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             return Optional.of(value);
         }
 
-        @Override
-        public void forEach(Consumer<Object> consumer) {
+        public @Override void forEach(Consumer<Object> consumer) {
             final int size = size();
             for (int i = 0; i < size; i++) {
                 Object value = parse(i);
@@ -271,8 +263,7 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
          * 
          * @see java.lang.Object#equals(java.lang.Object)
          */
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof RevFeature)) {
                 return false;
             }

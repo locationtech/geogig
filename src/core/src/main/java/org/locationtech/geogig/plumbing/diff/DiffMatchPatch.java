@@ -1779,20 +1779,6 @@ public class DiffMatchPatch {
     }
 
     /**
-     * Compute a list of patches to turn text1 into text2. text2 is ignored, diffs are the delta
-     * between text1 and text2.
-     * 
-     * @param text1 Old text
-     * @param text2 Ignored.
-     * @param diffs Array of Diff objects for text1 to text2.
-     * @return LinkedList of Patch objects.
-     * @deprecated Prefer patch_make(String text1, LinkedList<Diff> diffs).
-     */
-    public LinkedList<Patch> patch_make(String text1, String text2, LinkedList<Diff> diffs) {
-        return patch_make(text1, diffs);
-    }
-
-    /**
      * Compute a list of patches to turn text1 into text2. text2 is not provided, diffs are the
      * delta between text1 and text2.
      * 
@@ -2320,8 +2306,7 @@ public class DiffMatchPatch {
          * 
          * @return Hash value.
          */
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             final int prime = 31;
             int hashCode = (operation == null) ? 0 : operation.hashCode();
             hashCode += prime * ((text == null) ? 0 : text.hashCode());
@@ -2334,8 +2319,7 @@ public class DiffMatchPatch {
          * @param obj Another Diff to compare against.
          * @return true or false.
          */
-        @Override
-        public boolean equals(Object obj) {
+        public @Override boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
@@ -2429,8 +2413,7 @@ public class DiffMatchPatch {
             return unescapeForEncodeUriCompatability(text.toString());
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof Patch)) {
                 return false;
             }

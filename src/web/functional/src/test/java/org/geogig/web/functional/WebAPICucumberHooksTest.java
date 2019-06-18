@@ -26,7 +26,7 @@ public class WebAPICucumberHooksTest {
         Map<String, String> variables = ImmutableMap.of("@token", "abc123");
 
         String uri = "/resource?token={@token}";
-        String expected = "/resource?token=abc123"; 
+        String expected = "/resource?token=abc123";
         String actual = replaceVariables(uri, variables);
         assertEquals(expected, actual);
     }

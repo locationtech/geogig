@@ -43,8 +43,7 @@ public class DropIndexOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
@@ -80,7 +79,7 @@ public class DropIndexOpTest extends RepositoryTestCase {
         if (extraAttributes != null && extraAttributes.length > 0) {
             metadata.put(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA, extraAttributes);
         }
-        Index index = geogig.command(CreateIndexOp.class)//
+        Index index = repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
@@ -104,7 +103,7 @@ public class DropIndexOpTest extends RepositoryTestCase {
                 worldPointsTree.getId());
         assertTrue(indexedTreeId.isPresent());
 
-        IndexInfo droppedIndex = geogig.command(DropIndexOp.class)//
+        IndexInfo droppedIndex = repo.command(DropIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
 
@@ -121,14 +120,14 @@ public class DropIndexOpTest extends RepositoryTestCase {
     public void testDropIndexNoTreeName() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Tree ref spec not provided.");
-        geogig.command(DropIndexOp.class).call();
+        repo.command(DropIndexOp.class).call();
     }
 
     @Test
     public void testDropIndexWrongTreeName() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Can't find feature tree 'nonexistent'");
-        geogig.command(DropIndexOp.class)//
+        repo.command(DropIndexOp.class)//
                 .setTreeRefSpec("nonexistent")//
                 .call();
     }
@@ -137,7 +136,7 @@ public class DropIndexOpTest extends RepositoryTestCase {
     public void testDropIndexWrongAttributeName() {
         exception.expect(IllegalStateException.class);
         exception.expectMessage("A matching index could not be found.");
-        geogig.command(DropIndexOp.class)//
+        repo.command(DropIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setAttributeName("xystr")//
                 .call();
@@ -150,7 +149,7 @@ public class DropIndexOpTest extends RepositoryTestCase {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
                 "Multiple indexes were found for the specified tree, please specify the attribute.");
-        geogig.command(DropIndexOp.class)//
+        repo.command(DropIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .call();
     }

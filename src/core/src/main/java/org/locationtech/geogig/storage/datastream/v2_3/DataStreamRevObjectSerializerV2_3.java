@@ -33,8 +33,7 @@ public class DataStreamRevObjectSerializerV2_3 extends DataStreamRevObjectSerial
         super(FormatCommonV2_3.INSTANCE);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         final int type = data[offset] & 0xFF;
         if (RevObject.TYPE.TREE.ordinal() == type) {
@@ -48,8 +47,7 @@ public class DataStreamRevObjectSerializerV2_3 extends DataStreamRevObjectSerial
         return super.read(id, new ByteArrayInputStream(data, offset, length));
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return "Binary 2.3";
     }
 }

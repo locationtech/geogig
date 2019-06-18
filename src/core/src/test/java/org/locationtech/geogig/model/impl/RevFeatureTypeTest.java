@@ -18,10 +18,9 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class RevFeatureTypeTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        injector.configDatabase().put("user.name", "groldan");
-        injector.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+    protected @Override void setUpInternal() throws Exception {
+        repo.configDatabase().put("user.name", "groldan");
+        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test

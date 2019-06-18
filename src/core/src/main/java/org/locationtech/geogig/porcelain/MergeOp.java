@@ -10,7 +10,6 @@
 package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -41,6 +40,8 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * 
@@ -106,8 +107,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         return addCommit(commit.get());
     }
 
-    public MergeOp addCommit(final ObjectId commit) {
-        this.commits.add(checkNotNull(commit));
+    public MergeOp addCommit(final @NonNull ObjectId commit) {
+        this.commits.add(commit);
         return this;
     }
 
@@ -185,8 +186,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
      * 
      * @return always {@code true}
      */
-    @Override
-    protected MergeReport _call() throws RuntimeException {
+    protected @Override MergeReport _call() throws RuntimeException {
         if (abort) {
             return abort();
         }

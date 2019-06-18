@@ -51,6 +51,7 @@ import com.google.common.io.Files;
 
 /**
  * Controller for Task related endpoints.
+ * 
  * <pre>
  * /tasks
  * /tasks/{taskId}
@@ -58,8 +59,8 @@ import com.google.common.io.Files;
  * </pre>
  */
 @RestController
-@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/tasks",
-        produces = {APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE})
+@RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/tasks", produces = { APPLICATION_XML_VALUE,
+        APPLICATION_JSON_VALUE })
 public class TaskController extends AbstractController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskController.class);
@@ -139,9 +140,8 @@ public class TaskController extends AbstractController {
     }
 
     @GetMapping(path = "/{taskId}/download")
-    public @ResponseBody
-            HttpEntity<FileSystemResource> getDownload(@PathVariable String taskId)
-                    throws IOException {
+    public @ResponseBody HttpEntity<FileSystemResource> getDownload(@PathVariable String taskId)
+            throws IOException {
         final AsyncContext asyncContext = AsyncContext.get();
 
         Optional<AsyncCommand<?>> cmd = asyncContext.get(taskId);

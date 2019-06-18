@@ -377,8 +377,7 @@ public abstract class GraphDatabaseTest {
 
         for (int t = 0; t < taskCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     database.put(rootId, Collections.emptyList());
                     database.put(commit1, ImmutableList.of(rootId));
                     database.put(commit2, ImmutableList.of(commit1, rootId));
@@ -442,8 +441,7 @@ public abstract class GraphDatabaseTest {
 
         for (int t = 0; t < taskCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     database.put(rootId, Collections.emptyList());
                     database.put(commit1, ImmutableList.of(rootId));
                     database.put(commit2, ImmutableList.of(commit1, rootId));
@@ -507,8 +505,7 @@ public abstract class GraphDatabaseTest {
 
         for (int t = 0; t < taskCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     GraphNode commit2Node = database.getNode(commit2);
                     GraphNode commit1Node = database.getNode(commit1);
                     GraphNode rootNode = database.getNode(rootId);

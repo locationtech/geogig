@@ -55,21 +55,18 @@ public class PostOrderDiffWalkTest {
 
         List</* @Nullable */Bounded> orderedRight = new ArrayList<>();
 
-        @Override
-        public void feature(NodeRef left, NodeRef right) {
+        public @Override void feature(NodeRef left, NodeRef right) {
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
-        @Override
-        public void tree(NodeRef left, NodeRef right) {
+        public @Override void tree(NodeRef left, NodeRef right) {
             orderedLeft.add(left);
             orderedRight.add(right);
         }
 
-        @Override
-        public void bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override void bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             orderedLeft.add(left);
             orderedRight.add(right);
         }
@@ -270,14 +267,12 @@ public class PostOrderDiffWalkTest {
                 }
             }
 
-            @Override
-            public void tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override void tree(@Nullable NodeRef left, @Nullable NodeRef right) {
                 copy(left);
                 copy(right);
             }
 
-            @Override
-            public void feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override void feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 // features are not put in the db by the
                 // RevObjectTestSupport.INSTANCE.createFeaturesTree() helper function, but
                 // we're testing the tree is well reported to the consumer anyway
@@ -285,9 +280,9 @@ public class PostOrderDiffWalkTest {
                 // copy(right);
             }
 
-            @Override
-            public void bucket(@Nullable NodeRef leftParent, @Nullable NodeRef rightParent,
-                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override void bucket(@Nullable NodeRef leftParent,
+                    @Nullable NodeRef rightParent, BucketIndex bucketIndex, @Nullable Bucket left,
+                    @Nullable Bucket right) {
                 copy(left);
                 copy(right);
             }

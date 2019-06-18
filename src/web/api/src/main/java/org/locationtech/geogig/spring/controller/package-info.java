@@ -9,8 +9,8 @@
  */
 
 /**
- * Package for Spring MVC Controllers for the GeoGig Web API. Each Controller should implement a
- * set of related REST endpoints, which utilize internal Services that implement the business logic
- * for providing the GeoGig Web API.
+ * Package for Spring MVC Controllers for the GeoGig Web API. Each Controller should implement a set
+ * of related REST endpoints, which utilize internal Services that implement the business logic for
+ * providing the GeoGig Web API.
  */
 package org.locationtech.geogig.spring.controller;

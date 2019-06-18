@@ -9,7 +9,10 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static java.util.Optional.empty;
+import static org.locationtech.geogig.model.Ref.HEAD;
+import static org.locationtech.geogig.model.Ref.MASTER;
+import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
+import static org.locationtech.geogig.model.Ref.WORK_HEAD;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,20 +35,22 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
-import org.locationtech.geogig.storage.PluginDefaults;
-import org.locationtech.geogig.storage.VersionedFormat;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import com.google.common.base.Preconditions;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.inject.Inject;
+
+import lombok.AccessLevel;
+import lombok.Setter;
 
 /**
  * Creates or "initializes" a repository in the {@link Platform#pwd() working directory}.
@@ -63,6 +68,8 @@ import com.google.inject.Inject;
  */
 @CanRunDuringConflict
 public class InitOp extends AbstractGeoGigOp<Repository> {
+
+    private @Setter(value = AccessLevel.PACKAGE) @VisibleForTesting RepositoryFinder repositoryFinder = RepositoryFinder.INSTANCE;
 
     private Map<String, String> config;
 
@@ -88,14 +95,6 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         return this;
     }
 
-    /**
-     * @deprecated must provide repository URI in {@link Hints} instead
-     */
-    @Deprecated
-    public InitOp setTarget(File targetRepoDirectory) {
-        return this;
-    }
-
     public InitOp setFilterFile(String filterFile) {
         this.filterFile = filterFile;
         return this;
@@ -109,8 +108,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      *         re-initialized in the current dir or one if its parents as determined by
      *         {@link ResolveGeogigURI}
      */
-    @Override
-    protected Repository _call() {
+    protected @Override Repository _call() {
         final Platform platform = platform();
         Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
         if (!resolvedURI.isPresent()) {
@@ -119,7 +117,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         URI repoURI = resolvedURI.get();
 
-        final RepositoryResolver repoInitializer = RepositoryResolver.lookup(repoURI);
+        final RepositoryResolver repoInitializer = repositoryFinder.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
         repoInitializer.initialize(repoURI, context());
@@ -150,10 +148,8 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
         try {
             if (!repoExisted) {
                 // use a config database appropriate for the kind of repo URI
-                try (ConfigDatabase configDB = repoInitializer.getConfigDatabase(repoURI,
+                try (ConfigDatabase configDB = repoInitializer.resolveConfigDatabase(repoURI,
                         context)) {
-                    PluginDefaults defaults = context.pluginDefaults();
-                    addDefaults(configDB, defaults, effectiveConfigBuilder);
                     if (config != null) {
                         effectiveConfigBuilder.putAll(config);
                     }
@@ -164,8 +160,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                             configDB.put(key, value);
                         }
                         repository = repository();
-                        repository.configure();
-                    } catch (RepositoryConnectionException e) {
+                    } catch (Exception e) {
                         throw new IllegalStateException(
                                 "Unable to initialize repository for the first time: "
                                         + e.getMessage(),
@@ -191,58 +186,40 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
 
-        if (!repoExisted) {
-            createDefaultRefs();
-        }
+        createDefaultRefs();
         return repository;
     }
 
-    private void addDefaults(ConfigDatabase configDB, PluginDefaults defaults,
-            Map<String, String> configProps) {
+    private void createDefaultRefs() {
+        Optional<Ref> master = getRef(MASTER);
+        Optional<Ref> head = getRef(HEAD);
+        Optional<Ref> workhead = command(RefParse.class).setName(WORK_HEAD).call();
+        Optional<Ref> stagehead = command(RefParse.class).setName(STAGE_HEAD).call();
 
-        final String refsKey = "storage.refs";
-        final String objectsKey = "storage.objects";
+        if (!master.isPresent())
+            setRef(MASTER, ObjectId.NULL);
 
-        final Map<String, String> providedConfig = configDB.getAll();
+        if (!head.isPresent())
+            setSymRef(HEAD, MASTER);
 
-        Optional<VersionedFormat> refs;
-        Optional<VersionedFormat> objects;
+        if (!workhead.isPresent())
+            setRef(WORK_HEAD, RevTree.EMPTY_TREE_ID);
 
-        refs = providedConfig.containsKey(refsKey) ? empty() : defaults.getRefs();
-        objects = providedConfig.containsKey(objectsKey) ? empty() : defaults.getObjects();
-
-        if (refs.isPresent()) {
-            configProps.put(refsKey, refs.get().getFormat());
-            configProps.put(refs.get().getFormat() + ".version", refs.get().getVersion());
-        }
-        if (objects.isPresent()) {
-            configProps.put(objectsKey, objects.get().getFormat());
-            configProps.put(objects.get().getFormat() + ".version", objects.get().getVersion());
-        }
+        if (!stagehead.isPresent())
+            setRef(STAGE_HEAD, RevTree.EMPTY_TREE_ID);
     }
 
-    private void createDefaultRefs() {
-        Optional<Ref> master = command(RefParse.class).setName(Ref.MASTER).call();
-        Preconditions.checkState(!master.isPresent(), Ref.MASTER + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.MASTER).setNewValue(ObjectId.NULL)
+    private void setRef(String name, ObjectId value) {
+        command(UpdateRef.class).setName(name).setNewValue(value)
                 .setReason("Repository initialization").call();
+    }
 
-        Optional<Ref> head = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(!head.isPresent(), Ref.HEAD + " was already initialized.");
-        command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(Ref.MASTER)
+    private void setSymRef(String name, String target) {
+        command(UpdateSymRef.class).setName(name).setNewValue(target)
                 .setReason("Repository initialization").call();
+    }
 
-        Optional<Ref> workhead = command(RefParse.class).setName(Ref.WORK_HEAD).call();
-        Preconditions.checkState(!workhead.isPresent(),
-                Ref.WORK_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(RevTree.EMPTY.getId())
-                .setReason("Repository initialization").call();
-
-        Optional<Ref> stagehead = command(RefParse.class).setName(Ref.STAGE_HEAD).call();
-        Preconditions.checkState(!stagehead.isPresent(),
-                Ref.STAGE_HEAD + " was already initialized.");
-        command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(RevTree.EMPTY.getId())
-                .setReason("Repository initialization").call();
-
+    private Optional<Ref> getRef(String name) {
+        return command(RefParse.class).setName(name).call();
     }
 }

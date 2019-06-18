@@ -30,37 +30,30 @@ public class FeatureInfoTest {
         final ObjectId oid1 = ObjectId.valueOf("abc123000000000000001234567890abcdef0000");
 
         RevFeature testFeature = new RevFeature() {
-            @Override
-            public TYPE getType() {
+            public @Override TYPE getType() {
                 return RevObject.TYPE.FEATURE;
             }
 
-            @Override
-            public ObjectId getId() {
+            public @Override ObjectId getId() {
                 return ObjectId.NULL;
             }
 
-            @Override
-            public List<Optional<Object>> getValues() {
+            public @Override List<Optional<Object>> getValues() {
                 return Collections.emptyList();
             }
 
-            @Override
-            public int size() {
+            public @Override int size() {
                 return 0;
             }
 
-            @Override
-            public Optional<Object> get(int index) {
+            public @Override Optional<Object> get(int index) {
                 return Optional.empty();
             }
 
-            @Override
-            public void forEach(Consumer<Object> consumer) {
+            public @Override void forEach(Consumer<Object> consumer) {
             }
 
-            @Override
-            public Optional<Geometry> get(int index, GeometryFactory gf) {
+            public @Override Optional<Geometry> get(int index, GeometryFactory gf) {
                 throw new UnsupportedOperationException();
             }
         };

@@ -50,8 +50,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
 
     protected IndexDatabase indexDb;
 
-    @Override
-    protected ObjectStore createOpen() throws IOException {
+    protected @Override ObjectStore createOpen() throws IOException {
         this.indexDb = createIndexDatabase(false);
         indexDb.open();
         return indexDb;

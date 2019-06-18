@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -37,8 +38,6 @@ import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -150,8 +149,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         return this;
     }
 
-    @Override
-    protected DiffMergeFeatureResult _call() {
+    protected @Override DiffMergeFeatureResult _call() {
         checkPreconditions(commonAncestor, mergeInto, toMerge);
 
         final Map<ObjectId, RevObject> objects = getObjects();
@@ -226,7 +224,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
 
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);
-            final boolean isGeom = descriptor instanceof GeometryDescriptor;
+            final boolean isGeom = descriptor.isGeometryDescriptor();
 
             @Nullable
             Object ancestorValue = ancestorValues.get(i);

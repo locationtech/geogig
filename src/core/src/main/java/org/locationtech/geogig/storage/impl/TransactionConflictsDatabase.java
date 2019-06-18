@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +54,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         database.open();
     }
 
-    public @Override void close() throws IOException {
+    public @Override void close() {
         database.close();
     }
 
@@ -63,8 +62,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
      */
-    @Override
-    public boolean hasConflicts(String namespace) {
+    public @Override boolean hasConflicts(String namespace) {
         return database.hasConflicts(txNamespace);
     }
 
@@ -72,8 +70,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
      */
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String namespace, String path) {
+    public @Override Optional<Conflict> getConflict(@Nullable String namespace, String path) {
         return database.getConflict(txNamespace, path);
     }
 
@@ -81,13 +78,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
      */
-    @Override
-    public void addConflict(@Nullable String namespace, Conflict conflict) {
+    public @Override void addConflict(@Nullable String namespace, Conflict conflict) {
         database.addConflict(txNamespace, conflict);
     }
 
-    @Override
-    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
+    public @Override void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts) {
         database.addConflicts(txNamespace, conflicts);
     }
 
@@ -95,13 +90,11 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
      */
-    @Override
-    public void removeConflict(@Nullable String namespace, String path) {
+    public @Override void removeConflict(@Nullable String namespace, String path) {
         database.removeConflict(txNamespace, path);
     }
 
-    @Override
-    public void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
+    public @Override void removeConflicts(@Nullable String namespace, Iterable<String> paths) {
         database.removeConflicts(txNamespace, paths);
     }
 
@@ -109,31 +102,34 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
      * Pass through to {@link StagingDatabase}, replacing the namespace with the transaction
      * namespace.
      */
-    @Override
-    public void removeConflicts(@Nullable String namespace) {
+    public @Override void removeConflicts(@Nullable String namespace) {
         database.removeConflicts(txNamespace);
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String namespace,
             @Nullable String prefixFilter) {
 
         return database.getByPrefix(txNamespace, prefixFilter);
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
 
         return database.getCountByPrefix(txNamespace, treePath);
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
         return database.findConflicts(txNamespace, paths);
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
         database.removeByPrefix(txNamespace, pathPrefix);
+    }
+
+    public @Override boolean isOpen() {
+        return database.isOpen();
+    }
+
+    public @Override boolean isReadOnly() {
+        return database.isReadOnly();
     }
 }

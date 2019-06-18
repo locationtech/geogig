@@ -162,18 +162,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     }
 
     /**
-     * @deprecated use {@link #getObjectId()} instead
-     */
-    @Deprecated
-    public ObjectId objectId() {
-        return node.getObjectId();
-    }
-
-    /**
      * @return the {@link ObjectId} of the {@code Node} this object points to
      */
-    @Override
-    public ObjectId getObjectId() {
+    public @Override ObjectId getObjectId() {
         return node.getObjectId();
     }
 
@@ -213,8 +204,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * Tests equality over another {@code NodeRef} based on {@link #getParentPath() parent path},
      * {@link #getNode() node} name and id, and {@link #getMetadataId()}
      */
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof NodeRef)) {
             return false;
         }
@@ -227,8 +217,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * Hash code is based on {@link #getParentPath() parent path}, {@link #getNode() node} name and
      * id, and {@link #getMetadataId()}
      */
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return 17 ^ (parentPath != null ? parentPath.hashCode() : 1) * node.getObjectId().hashCode()
                 * getMetadataId().hashCode();
     }
@@ -236,8 +225,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     /**
      * Provides for natural ordering of {@code NodeRef}, based on {@link #path()}
      */
-    @Override
-    public int compareTo(NodeRef o) {
+    public @Override int compareTo(NodeRef o) {
         int c = parentPath.compareTo(o.getParentPath());
         if (c == 0) {
             return node.compareTo(o.getNode());
@@ -248,8 +236,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     /**
      * @return the Node represented as a readable string.
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return new StringBuilder("NodeRef").append('[').append(path()).append(" -> ")
                 .append(node.getObjectId()).append(']').toString();
     }
@@ -403,8 +390,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param env the {@link Envelope} to check against
      * @return {@code true} if the {@code Node} intersects the {@link Envelope}
      */
-    @Override
-    public boolean intersects(Envelope env) {
+    public @Override boolean intersects(Envelope env) {
         return node.intersects(env);
     }
 
@@ -413,8 +399,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * 
      * @param env the {@link Envelope} to expand
      */
-    @Override
-    public void expand(Envelope env) {
+    public @Override void expand(Envelope env) {
         node.expand(env);
     }
 
@@ -449,8 +434,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return and {@link Optional} containing the bounds of the {@code Node} this object points to,
      *         or {@link Optional#empty()} if the {@code Node} has no bounds
      */
-    @Override
-    public Optional<Envelope> bounds() {
+    public @Override Optional<Envelope> bounds() {
         return node.bounds();
     }
 

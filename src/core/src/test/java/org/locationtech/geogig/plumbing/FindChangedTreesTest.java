@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,16 +17,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -40,18 +37,12 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-import org.locationtech.geogig.test.MemoryModule;
-import org.locationtech.geogig.test.TestPlatform;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.locationtech.geogig.test.TestRepository;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
@@ -61,16 +52,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
 
 /**
  *
  */
 public class FindChangedTreesTest extends Assert {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    public @Rule TestRepository testRepo = new TestRepository();
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -79,22 +67,14 @@ public class FindChangedTreesTest extends Assert {
 
     private Repository repo;
 
-    private SimpleFeatureType ftproto;
+    private FeatureType ftproto;
 
     public @Before void setUp() throws Exception {
-
-        File workingDirectory = tempFolder.newFolder("mockWorkingDir");
-        Platform testPlatform = new TestPlatform(workingDirectory);
-        Context injector = Guice
-                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
-                        new HintsModule(new Hints().platform(testPlatform))))
-                .getInstance(Context.class);
-
-        GeoGIG geogig = new GeoGIG(injector);
-        repo = geogig.getOrCreateRepository();
+        repo = testRepo.repository();
 
         command = repo.command(FindChangedTrees.class);
-        ftproto = DataUtilities.createType("points", "sp:String,ip:Integer,pp:Point:srid=3857");
+        ftproto = FeatureTypes.createType("points", "sp:String", "ip:Integer",
+                "pp:Point:srid=3857");
     }
 
     public @Test void testNoOldVersionSet() {
@@ -339,19 +319,19 @@ public class FindChangedTreesTest extends Assert {
     }
 
     private List<NodeRef> createLayers(int base, int count) {
-        SimpleFeatureTypeBuilder ftb = new SimpleFeatureTypeBuilder();
-        Map<String, SimpleFeatureType> types = new HashMap<>();
+        FeatureTypeBuilder ftb = FeatureType.builder();
+        Map<String, FeatureType> types = new HashMap<>();
         for (int i = base; i < count; i++) {
             String treePath = "tree" + i;
-            ftb.setName(treePath);
-            ftb.addAll(ftproto.getAttributeDescriptors());
-            SimpleFeatureType featureType = ftb.buildFeatureType();
+            ftb.localName(treePath);
+            ftb.descriptors(ftproto.getDescriptors());
+            FeatureType featureType = ftb.build();
             types.put(treePath, featureType);
         }
         return createLayers(types);
     }
 
-    private List<NodeRef> createLayers(Map<String, SimpleFeatureType> types) {
+    private List<NodeRef> createLayers(Map<String, FeatureType> types) {
         List<NodeRef> layers = new ArrayList<>();
         WorkingTree workingTree = repo.workingTree();
 

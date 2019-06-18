@@ -53,13 +53,11 @@ public interface RevObject extends Comparable<RevObject> {
          * Enum value for objects of type {@link RevCommit}
          */
         COMMIT {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 0;
             }
 
-            @Override
-            public Class<RevCommit> binding() {
+            public @Override Class<RevCommit> binding() {
                 return RevCommit.class;
             }
         },
@@ -67,13 +65,11 @@ public interface RevObject extends Comparable<RevObject> {
          * Enum value for objects of type {@link RevTree}
          */
         TREE {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 1;
             }
 
-            @Override
-            public Class<RevTree> binding() {
+            public @Override Class<RevTree> binding() {
                 return RevTree.class;
             }
         },
@@ -81,13 +77,11 @@ public interface RevObject extends Comparable<RevObject> {
          * Enum value for objects of type {@link RevFeature}
          */
         FEATURE {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 2;
             }
 
-            @Override
-            public Class<RevFeature> binding() {
+            public @Override Class<RevFeature> binding() {
                 return RevFeature.class;
             }
         },
@@ -95,13 +89,11 @@ public interface RevObject extends Comparable<RevObject> {
          * Enum value for objects of type {@link RevTag}
          */
         TAG {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 3;
             }
 
-            @Override
-            public Class<RevTag> binding() {
+            public @Override Class<RevTag> binding() {
                 return RevTag.class;
             }
         },
@@ -109,13 +101,11 @@ public interface RevObject extends Comparable<RevObject> {
          * Enum value for objects of type {@link RevFeatureType}
          */
         FEATURETYPE {
-            @Override
-            public int value() {
+            public @Override int value() {
                 return 4;
             }
 
-            @Override
-            public Class<RevFeatureType> binding() {
+            public @Override Class<RevFeatureType> binding() {
                 return RevFeatureType.class;
             }
         };

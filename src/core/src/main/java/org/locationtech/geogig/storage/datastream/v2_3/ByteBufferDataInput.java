@@ -32,13 +32,11 @@ class ByteBufferDataInput implements DataInput {
         ((Buffer) this.buff).limit(limit);
     }
 
-    @Override
-    public void readFully(byte[] b) throws IOException {
+    public @Override void readFully(byte[] b) throws IOException {
         readFully(b, 0, b.length);
     }
 
-    @Override
-    public void readFully(byte[] b, int off, int len) throws IOException {
+    public @Override void readFully(byte[] b, int off, int len) throws IOException {
         try {
             buff.get(b, off, len);
         } catch (IndexOutOfBoundsException | BufferUnderflowException e) {
@@ -46,8 +44,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public int skipBytes(int n) throws IOException {
+    public @Override int skipBytes(int n) throws IOException {
         int remaining = buff.remaining();
         if (0 == remaining) {
             throw new EOFException();
@@ -57,8 +54,7 @@ class ByteBufferDataInput implements DataInput {
         return skip;
     }
 
-    @Override
-    public boolean readBoolean() throws IOException {
+    public @Override boolean readBoolean() throws IOException {
         try {
             return buff.get() != 0;
         } catch (BufferUnderflowException e) {
@@ -66,8 +62,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public byte readByte() throws IOException {
+    public @Override byte readByte() throws IOException {
         try {
             return buff.get();
         } catch (BufferUnderflowException e) {
@@ -75,8 +70,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public int readUnsignedByte() throws IOException {
+    public @Override int readUnsignedByte() throws IOException {
         try {
             return buff.get() & 0xFF;
         } catch (BufferUnderflowException e) {
@@ -84,8 +78,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public short readShort() throws IOException {
+    public @Override short readShort() throws IOException {
         try {
             return buff.getShort();
         } catch (BufferUnderflowException e) {
@@ -93,8 +86,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public int readUnsignedShort() throws IOException {
+    public @Override int readUnsignedShort() throws IOException {
         try {
             return buff.getShort() & 0xFFFF;
         } catch (BufferUnderflowException e) {
@@ -102,8 +94,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public char readChar() throws IOException {
+    public @Override char readChar() throws IOException {
         try {
             return buff.getChar();
         } catch (BufferUnderflowException e) {
@@ -111,8 +102,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public int readInt() throws IOException {
+    public @Override int readInt() throws IOException {
         try {
             return buff.getInt();
         } catch (BufferUnderflowException e) {
@@ -120,8 +110,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public long readLong() throws IOException {
+    public @Override long readLong() throws IOException {
         try {
             return buff.getLong();
         } catch (BufferUnderflowException e) {
@@ -129,8 +118,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public float readFloat() throws IOException {
+    public @Override float readFloat() throws IOException {
         try {
             return buff.getFloat();
         } catch (BufferUnderflowException e) {
@@ -138,8 +126,7 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public double readDouble() throws IOException {
+    public @Override double readDouble() throws IOException {
         try {
             return buff.getDouble();
         } catch (BufferUnderflowException e) {
@@ -147,13 +134,11 @@ class ByteBufferDataInput implements DataInput {
         }
     }
 
-    @Override
-    public String readLine() throws IOException {
+    public @Override String readLine() throws IOException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public String readUTF() throws IOException {
+    public @Override String readUTF() throws IOException {
         throw new UnsupportedOperationException();
     }
 

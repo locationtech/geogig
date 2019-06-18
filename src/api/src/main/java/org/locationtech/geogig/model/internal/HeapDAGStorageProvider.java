@@ -60,13 +60,11 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         }
     }
 
-    @Override
-    public RevTree getTree(ObjectId treeId) {
+    public @Override RevTree getTree(ObjectId treeId) {
         return source.getTree(treeId);
     }
 
-    @Override
-    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
+    public @Override List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         List<DAG> res = new ArrayList<>(ids.size());
         ids.forEach((id) -> {
             DAG dag = trees.get(id);
@@ -86,8 +84,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return dag;
     }
 
-    @Override
-    public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
+    public @Override DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
         DAG dag = trees.get(treeId);
         if (dag == null) {
             dag = createTree(treeId, originalTreeId);
@@ -95,8 +92,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return dag;// .clone();
     }
 
-    @Override
-    public Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+    public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
 
         Map<NodeId, Node> res = new HashMap<>();
         nodeIds.forEach((nid) -> {
@@ -108,24 +104,20 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return res;
     }
 
-    @Override
-    public void saveNode(NodeId nodeId, Node node) {
+    public @Override void saveNode(NodeId nodeId, Node node) {
         nodes.put(nodeId, DAGNode.of(node));
     }
 
-    @Override
-    public void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
+    public @Override void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
         nodes.putAll(nodeMappings);
     }
 
-    @Override
-    public void save(Map<TreeId, DAG> dags) {
+    public @Override void save(Map<TreeId, DAG> dags) {
         // trees.putAll(Maps.transformValues(dags, (d) -> d.clone()));
         trees.putAll(dags);
     }
 
-    @Override
-    public TreeCache getTreeCache() {
+    public @Override TreeCache getTreeCache() {
         return treeCache;
     }
 

@@ -43,8 +43,7 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
      * @return the {@link Remote} that was removed, or {@link Optional#empty()} if the remote didn't
      *         exist.
      */
-    @Override
-    protected Remote _call() {
+    protected @Override Remote _call() {
         if (name == null || name.isEmpty()) {
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
@@ -63,8 +62,7 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
 
         // r -> Ref.isChild(remotePrefix, r.getName())
         Predicate<Ref> fn = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref r) {
+            public @Override boolean apply(Ref r) {
                 return Ref.isChild(remotePrefix, r.getName());
             }
         };

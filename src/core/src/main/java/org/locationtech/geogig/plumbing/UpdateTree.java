@@ -10,7 +10,6 @@
 package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
@@ -32,6 +31,8 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
+import lombok.NonNull;
+
 /**
  * Atomically creates a new tree out of several updates to it's children trees, including nested
  * trees, creating intermediate trees if needed.
@@ -50,8 +51,7 @@ import com.google.common.collect.Ordering;
 public class UpdateTree extends AbstractGeoGigOp<RevTree> {
 
     private static Ordering<String> REVERSEDEPTH = new Ordering<String>() {
-        @Override
-        public int compare(String left, String right) {
+        public @Override int compare(String left, String right) {
             int c = Integer.compare(NodeRef.depth(right), NodeRef.depth(left));
             if (c == 0) {
                 return left.compareTo(right);
@@ -66,14 +66,12 @@ public class UpdateTree extends AbstractGeoGigOp<RevTree> {
 
     private Set<String> childTreeRemoves = new TreeSet<>();
 
-    public UpdateTree setRoot(RevTree root) {
-        checkNotNull(root);
+    public UpdateTree setRoot(@NonNull RevTree root) {
         this.root = root;
         return this;
     }
 
-    public UpdateTree setRoot(ObjectId root) {
-        checkNotNull(root);
+    public UpdateTree setRoot(@NonNull ObjectId root) {
         return setRoot(EMPTY_TREE_ID.equals(root) ? EMPTY : objectDatabase().getTree(root));
     }
 
@@ -84,8 +82,7 @@ public class UpdateTree extends AbstractGeoGigOp<RevTree> {
         return this;
     }
 
-    public UpdateTree setChild(NodeRef childTreeNode) {
-        checkNotNull(childTreeNode);
+    public UpdateTree setChild(@NonNull NodeRef childTreeNode) {
         final String path = childTreeNode.path();
         NodeRef.checkValidPath(path);
         checkArgument(RevObject.TYPE.TREE.equals(childTreeNode.getType()));
@@ -95,8 +92,7 @@ public class UpdateTree extends AbstractGeoGigOp<RevTree> {
         return this;
     }
 
-    @Override
-    protected RevTree _call() {
+    protected @Override RevTree _call() {
         checkArgument(root != null, "root tree not provided");
         if (childTreeRemoves.isEmpty() && childTreeUpdates.isEmpty()) {
             return root;

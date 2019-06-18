@@ -97,8 +97,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
      * @return the new head after modifying the history squashing commits
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected ObjectId _call() {
+    protected @Override ObjectId _call() {
 
         Preconditions.checkNotNull(since);
         Preconditions.checkNotNull(until);
@@ -199,8 +198,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         RevCommitBuilder builder = RevCommit.builder().init(until);
         Collection<ObjectId> filteredParents = Collections2.filter(parents,
                 new Predicate<ObjectId>() {
-                    @Override
-                    public boolean apply(@Nullable ObjectId id) {
+                    public @Override boolean apply(@Nullable ObjectId id) {
                         return !squashedIds.contains(id);
                     }
 
@@ -248,8 +246,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         for (RevCommit commit : commits) {
             RevCommitBuilder builder = RevCommit.builder().init(commit);
             Function<ObjectId, ObjectId> fn = new Function<ObjectId, ObjectId>() {
-                @Override
-                public ObjectId apply(ObjectId id) {
+                public @Override ObjectId apply(ObjectId id) {
                     if (replacedCommits.containsKey(id)) {
                         return replacedCommits.get(id);
                     } else {
@@ -292,7 +289,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
     private String resolveCommitter() {
         final String namekey = "user.name";
 
-        String name = getClientData(namekey, String.class)
+        String name = getClientData(namekey)
                 .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
@@ -305,7 +302,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
     private String resolveCommitterEmail() {
         final String emailkey = "user.email";
 
-        String email = getClientData(emailkey, String.class)
+        String email = getClientData(emailkey)
                 .orElseGet(() -> command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,

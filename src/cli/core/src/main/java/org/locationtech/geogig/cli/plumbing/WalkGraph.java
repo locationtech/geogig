@@ -49,8 +49,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
     private boolean verbose;
 
-    @Override
-    public void runInternal(final GeogigCLI cli) throws IOException {
+    public @Override void runInternal(final GeogigCLI cli) throws IOException {
         String ref;
         if (refList.isEmpty()) {
             ref = null;
@@ -92,37 +91,30 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
             }
         }
 
-        @Override
-        public void starTree(NodeRef treeNode) {
+        public @Override void starTree(NodeRef treeNode) {
             print(treeNode);
         }
 
-        @Override
-        public void feature(NodeRef featureNode) {
+        public @Override void feature(NodeRef featureNode) {
             print(featureNode);
         }
 
-        @Override
-        public void endTree(NodeRef treeNode) {
+        public @Override void endTree(NodeRef treeNode) {
 
         }
 
-        @Override
-        public void bucket(BucketIndex bucketIndex, Bucket bucket) {
+        public @Override void bucket(BucketIndex bucketIndex, Bucket bucket) {
             print(bucket);
         }
 
-        @Override
-        public void endBucket(BucketIndex bucketIndex, Bucket bucket) {
+        public @Override void endBucket(BucketIndex bucketIndex, Bucket bucket) {
         }
 
-        @Override
-        public void commit(RevCommit commit) {
+        public @Override void commit(RevCommit commit) {
             print(commit);
         }
 
-        @Override
-        public void featureType(RevFeatureType ftype) {
+        public @Override void featureType(RevFeatureType ftype) {
             print(ftype);
         }
 
@@ -133,8 +125,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
         /**
          * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
          */
-        @Override
-        public CharSequence apply(Object o) {
+        public @Override CharSequence apply(Object o) {
             ObjectId id;
             String type;
             if (o instanceof Bounded) {
@@ -160,8 +151,7 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
         /**
          * @param o a {@link Node}, {@link Bucket}, or {@link RevObject}
          */
-        @Override
-        public CharSequence apply(Object o) {
+        public @Override CharSequence apply(Object o) {
             ObjectId id;
             String type;
             String extraData = "";

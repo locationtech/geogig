@@ -54,6 +54,5 @@ public interface DataStoreImportContextService {
      * 
      * @return the import command to use.
      */
-    public DataStoreImportOp<?> createCommand(final Context context,
-            final ParameterSet options);
+    public DataStoreImportOp<?> createCommand(final Context context, final ParameterSet options);
 }

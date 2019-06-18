@@ -22,7 +22,7 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.spring.dto.InitRequest;
 import org.locationtech.geogig.spring.dto.RepositoryInitRepo;
@@ -56,8 +56,8 @@ public class RepositoryInitService {
         String authorEmail = parameters.get(InitRequest.AUTHOREMAIL);
         if (authorName != null || authorEmail != null) {
             ConfigOp configOp = newRepo.command(ConfigOp.class);
-            configOp.setAction(CONFIG_SET).setScope(LOCAL).setName("user.name")
-                    .setValue(authorName).call();
+            configOp.setAction(CONFIG_SET).setScope(LOCAL).setName("user.name").setValue(authorName)
+                    .call();
             configOp.setAction(CONFIG_SET).setScope(LOCAL).setName("user.email")
                     .setValue(authorEmail).call();
         }
@@ -65,7 +65,7 @@ public class RepositoryInitService {
         Preconditions.checkState(repoUri.isPresent(),
                 "Unable to resolve URI of newly created repository.");
 
-        final String repoName = RepositoryResolver.load(repoUri.get())
+        final String repoName = RepositoryFinder.INSTANCE.open(repoUri.get())
                 .command(ResolveRepositoryName.class).call();
         RepositoryInitRepo info = new RepositoryInitRepo();
         info.setName(repoName);

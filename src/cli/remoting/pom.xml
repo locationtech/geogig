@@ -56,11 +56,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-shapefile</artifactId>
-    </dependency>
-
-    <dependency>
       <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
@@ -110,13 +105,6 @@
       <artifactId>geogig-cli-core</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <!-- As the default storage provider (see CLIContextBuilder.defaults) -->
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

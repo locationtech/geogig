@@ -109,8 +109,8 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "transactionId",
                 transaction.getTransactionId().toString());
         ex.expect(CommandSpecException.class);
@@ -128,8 +128,8 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "ours", "true", "theirs", "true",
                 "transactionId", transaction.getTransactionId().toString());
         ex.expect(CommandSpecException.class);
@@ -147,8 +147,8 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "ours", "true", "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());
@@ -167,8 +167,8 @@ public class CheckoutTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
 
-        String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+        String path = NodeRef.appendChild(TestData.pointsType.getName().getLocalPart(),
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "theirs", "true", "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());

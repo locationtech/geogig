@@ -22,8 +22,7 @@ import lombok.NonNull;
 
 public class RevCommitBuilderTest extends TestCase {
 
-    @Override
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
 
     }
 

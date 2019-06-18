@@ -14,8 +14,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -33,7 +33,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -48,8 +47,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     private IndexInfo indexInfo;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
         indexdb = repository.indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
@@ -89,7 +87,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         assertNotEquals(RevTree.EMPTY, indexTree);
         assertEquals(newCanonicalTree.size(), indexTree.size());
 
-        IndexTestSupport.verifyIndex(geogig, indexTree.getId(), newCanonicalTree.getId());
+        IndexTestSupport.verifyIndex(repo.context(), indexTree.getId(), newCanonicalTree.getId());
     }
 
     @Test
@@ -103,8 +101,8 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         assertNotEquals(RevTree.EMPTY, indexTree);
         assertEquals(newCanonicalTree.size(), indexTree.size());
 
-        IndexTestSupport.verifyIndex(geogig, indexTree.getId(), newCanonicalTree.getId(), "x", "y",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexTree.getId(), newCanonicalTree.getId(),
+                "x", "y", "xystr");
     }
 
     @Test
@@ -128,7 +126,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         Optional<ObjectId> indexId = indexdb.resolveIndexedTree(indexInfo,
                 newCanonicalTree.getId());
         assertTrue(indexId.isPresent());
-        IndexTestSupport.verifyIndex(geogig, indexId.get(), newCanonicalTree.getId());
+        IndexTestSupport.verifyIndex(repo.context(), indexId.get(), newCanonicalTree.getId());
     }
 
     @Test
@@ -138,8 +136,8 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         Optional<ObjectId> indexId = indexdb.resolveIndexedTree(indexInfo,
                 newCanonicalTree.getId());
         assertTrue(indexId.isPresent());
-        IndexTestSupport.verifyIndex(geogig, indexId.get(), newCanonicalTree.getId(), "x", "y",
-                "xystr");
+        IndexTestSupport.verifyIndex(repo.context(), indexId.get(), newCanonicalTree.getId(), "x",
+                "y", "xystr");
     }
 
     @Test
@@ -154,9 +152,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     public void testSupportsDuplicatedData(@Nullable String... extraAttributes) throws Exception {
         insertAndAdd(points1, points2, points3);
-        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(pointsType);
-        featureBuilder.addAll(((SimpleFeature) points1).getAttributes());
-        SimpleFeature duplicateFeature = featureBuilder.buildFeature("duplcate-contents");
+        Feature duplicateFeature = points1.createCopy("duplicate-contents");
         insertAndAdd(duplicateFeature);
 
         assertEquals(RevFeature.builder().build(points1),
@@ -195,14 +191,13 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         final RevTree newCanonicalTree = worldPointsTree;
         for (int t = 0; t < threadCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     RevTree indexTree = updateIndex(oldCanonicalTree, newCanonicalTree);
 
                     assertNotEquals(RevTree.EMPTY, indexTree);
                     assertEquals(newCanonicalTree.size(), indexTree.size());
 
-                    IndexTestSupport.verifyIndex(geogig, indexTree.getId(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexTree.getId(),
                             newCanonicalTree.getId());
                 }
             });
@@ -231,7 +226,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid1)).call();
         super.add();
         super.commit("deleted 0, 0");
-        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch1:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch2").call();
@@ -240,7 +235,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid2)).call();
         super.add();
         super.commit("deleted 0, 5");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch2:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch3").call();
@@ -249,7 +244,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid3)).call();
         super.add();
         super.commit("deleted 0, 10");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch3:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch4").call();
@@ -258,7 +253,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 .addPathToRemove(NodeRef.appendChild(worldPointsLayer.getName(), fid4)).call();
         super.add();
         super.commit("deleted 0, 15");
-        featureTree = IndexUtils.resolveTypeTreeRef(geogig.getContext(),
+        featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch4:" + worldPointsLayer.getName());
         branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("master").call();
@@ -274,20 +269,19 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         assertNotEquals(RevTree.EMPTY, indexTree);
         assertEquals(newCanonicalTree.size(), indexTree.size());
 
-        IndexTestSupport.verifyIndex(geogig, indexTree.getId(), newCanonicalTree.getId());
+        IndexTestSupport.verifyIndex(repo.context(), indexTree.getId(), newCanonicalTree.getId());
 
         ExecutorService executor = Executors.newFixedThreadPool(branchTrees.size());
         List<Future<?>> futures = new ArrayList<>();
         for (final RevTree branchCanonicalTree : branchTrees) {
             Future<?> future = executor.submit(new Runnable() {
-                @Override
-                public void run() {
+                public @Override void run() {
                     RevTree indexTree = updateIndex(newCanonicalTree, branchCanonicalTree);
 
                     assertNotEquals(RevTree.EMPTY, indexTree);
                     assertEquals(branchCanonicalTree.size(), indexTree.size());
 
-                    IndexTestSupport.verifyIndex(geogig, indexTree.getId(),
+                    IndexTestSupport.verifyIndex(repo.context(), indexTree.getId(),
                             branchCanonicalTree.getId());
                 }
             });

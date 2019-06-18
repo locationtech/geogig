@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.Conflict;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
@@ -45,8 +45,7 @@ public class RebaseOpTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
@@ -69,21 +68,21 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - branch2 - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master, then create branch2 and checkout
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        final Ref branch2 = geogig.command(BranchCreateOp.class).setAutoCheckout(true)
+        repo.command(CheckoutOp.class).setSource("master").call();
+        final Ref branch2 = repo.command(BranchCreateOp.class).setAutoCheckout(true)
                 .setName("branch2").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // Rebase branch2 onto branch1 to create the following revision graph
         // o
@@ -96,26 +95,24 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - branch2 - HEAD - Lines 1 added
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                 .call();
 
         CheckoutResult result;
-        result = geogig.command(CheckoutOp.class).setSource("branch1").call();
+        result = repo.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c2.getTreeId(), result.getNewTree());
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch1.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        result = geogig.command(CheckoutOp.class).setSource("branch2").call();
+        result = repo.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch2.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
 
         // Commit 4
         RevCommit logC4 = log.next();
@@ -182,43 +179,41 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - branch2 - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master, then create branch2 and checkout
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        final Ref branch2 = geogig.command(BranchCreateOp.class).setAutoCheckout(true)
+        repo.command(CheckoutOp.class).setSource("master").call();
+        final Ref branch2 = repo.command(BranchCreateOp.class).setAutoCheckout(true)
                 .setName("branch2").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         assertNotNull(c3);
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                 .setSquashMessage("squashed commit").call();
 
         CheckoutResult result;
-        result = geogig.command(CheckoutOp.class).setSource("branch1").call();
+        result = repo.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c2.getTreeId(), result.getNewTree());
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch1.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        result = geogig.command(CheckoutOp.class).setSource("branch2").call();
+        result = repo.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch2.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
 
         // Commit 4
         RevCommit logC4 = log.next();
@@ -234,11 +229,11 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertFalse(c4.getTreeId().equals(logC4.getTreeId()));
 
         String path = NodeRef.appendChild(linesName, idL1);
-        Optional<RevFeature> lines = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> lines = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(lines.isPresent());
         path = NodeRef.appendChild(pointsName, idP3);
-        Optional<RevFeature> points = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> points = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(points.isPresent());
 
@@ -284,27 +279,27 @@ public class RebaseOpTest extends RepositoryTestCase {
         // o - master - Lines 2 added
 
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
 
         // create branch2 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // checkout master and make a commit
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines2);
-        final RevCommit c5 = geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        final RevCommit c5 = repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
         // checkout branch2
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        repo.command(CheckoutOp.class).setSource("branch2").call();
 
         // Rebase branch2 onto master to create the following revision graph
         // o
@@ -319,29 +314,27 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - branch 2 - HEAD - Lines 1 added
 
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        Ref branch2 = geogig.command(RefParse.class).setName("branch2").call().get();
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        Ref branch2 = repo.command(RefParse.class).setName("branch2").call().get();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                 .setOnto(Suppliers.ofInstance(master.get().getObjectId())).call();
 
         CheckoutResult result;
-        result = geogig.command(CheckoutOp.class).setSource("branch1").call();
+        result = repo.command(CheckoutOp.class).setSource("branch1").call();
         assertEquals(c3.getTreeId(), result.getNewTree());
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch1.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        result = geogig.command(CheckoutOp.class).setSource("branch2").call();
+        result = repo.command(CheckoutOp.class).setSource("branch2").call();
         assertFalse(c4.getTreeId().equals(result.getNewTree()));
-        assertTrue(geogig.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
+        assertTrue(repo.command(RefParse.class).setName(Ref.HEAD).call().get() instanceof SymRef);
         assertEquals(branch2.getName(),
-                ((SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get())
-                        .getTarget());
+                ((SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get()).getTarget());
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
 
         // Commit 3 -- Lines 1
         RevCommit logC3 = log.next();
@@ -368,26 +361,26 @@ public class RebaseOpTest extends RepositoryTestCase {
     public void testRebaseEqualChanges() throws Exception {
 
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         assertNotNull(c1);
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points1_modified);
-        RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit in branch").call();
+        RevCommit c2 = repo.command(CommitOp.class).setMessage("commit in branch").call();
 
         // checkout master and make a commit with identical changes
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points1_modified);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit in master").call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit in master").call();
 
-        geogig.command(RefParse.class).setName("branch1").call().get();
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        repo.command(RefParse.class).setName("branch1").call().get();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+        repo.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
                 .call();
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         assertEquals(c2.getMessage(), log.next().getMessage());
         assertEquals(c3, log.next());
 
@@ -396,26 +389,26 @@ public class RebaseOpTest extends RepositoryTestCase {
     @Test
     public void testRebaseNoUpstream() throws Exception {
         exception.expect(IllegalStateException.class);
-        geogig.command(RebaseOp.class).call();
+        repo.command(RebaseOp.class).call();
     }
 
     @Test
     public void testRebaseNoCommits() throws Exception {
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
         exception.expect(IllegalStateException.class);
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
                 .call();
     }
 
     @Test
     public void testRebaseNoUpstreamCommit() throws Exception {
-        Optional<Ref> master = geogig.command(RefParse.class).setName("master").call();
+        Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         exception.expect(IllegalStateException.class);
-        geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
+        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
                 .call();
     }
 
@@ -432,43 +425,42 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1, points2);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(CommitOp.class).call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        RevCommit masterCommit2 = geogig.command(CommitOp.class)
+        repo.command(AddOp.class).call();
+        RevCommit masterCommit2 = repo.command(CommitOp.class)
                 .setMessage("adding points1 modified, deleting point2").call();
         insert(lines1);
-        geogig.command(AddOp.class).call();
-        RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(AddOp.class).call();
+        RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        RevCommit branchCommit = geogig.command(CommitOp.class).setMessage("branch commit").call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        repo.command(AddOp.class).call();
+        RevCommit branchCommit = repo.command(CommitOp.class).setMessage("branch commit").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                     .call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
         }
 
-        Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertTrue(ref.isPresent());
         assertEquals(masterCommit.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = Lists
-                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
+        List<Conflict> conflicts = Lists.newArrayList(repo.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
@@ -481,10 +473,10 @@ public class RebaseOpTest extends RepositoryTestCase {
         Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
         insert(points1Merged);
-        geogig.command(AddOp.class).call();
-        geogig.command(RebaseOp.class).setContinue(true).call();
+        repo.command(AddOp.class).call();
+        repo.command(RebaseOp.class).setContinue(true).call();
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         RevCommit logCommit1 = log.next();
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
@@ -509,7 +501,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(branchCommit.getCommitter().getName(), logCommit3.getCommitter().getName());
         assertEquals(branchCommit.getMessage(), logCommit3.getMessage());
 
-        ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
 
     }
@@ -531,43 +523,41 @@ public class RebaseOpTest extends RepositoryTestCase {
         final Ref branch1;
 
         insertAndAdd(points1, points2);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(CommitOp.class).call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        geogig.command(CommitOp.class).setMessage("adding points1 modified, deleting point2")
-                .call();
+        repo.command(AddOp.class).call();
+        repo.command(CommitOp.class).setMessage("adding points1 modified, deleting point2").call();
         insert(lines1);
-        geogig.command(AddOp.class).call();
-        masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(AddOp.class).call();
+        masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        branchCommit = geogig.command(CommitOp.class).setMessage("branch commit").call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        repo.command(AddOp.class).call();
+        branchCommit = repo.command(CommitOp.class).setMessage("branch commit").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
+        branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                     .setSquashMessage("squashed commit").call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
         }
 
-        Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertTrue(ref.isPresent());
         assertEquals(masterCommit.getId(), ref.get().getObjectId());
 
-        List<Conflict> conflicts = Lists
-                .newArrayList(geogig.command(ConflictsQueryOp.class).call());
+        List<Conflict> conflicts = Lists.newArrayList(repo.command(ConflictsQueryOp.class).call());
         assertEquals(1, conflicts.size());
         String path = NodeRef.appendChild(pointsName, idP1);
         assertEquals(conflicts.get(0).getPath(), path);
@@ -580,10 +570,10 @@ public class RebaseOpTest extends RepositoryTestCase {
         Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
                 "POINT(1 1)");
         insert(points1Merged);
-        geogig.command(AddOp.class).call();
-        geogig.command(RebaseOp.class).setContinue(true).call();
+        repo.command(AddOp.class).call();
+        repo.command(RebaseOp.class).setContinue(true).call();
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         RevCommit logCommit1 = log.next();
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
@@ -604,20 +594,20 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(branchCommit.getMessage(), logCommit3.getMessage());
 
         path = NodeRef.appendChild(linesName, idL1);
-        Optional<RevFeature> lines = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> lines = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(lines.isPresent());
         path = NodeRef.appendChild(pointsName, idP3);
-        Optional<RevFeature> points = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> points = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(points.isPresent());
         path = NodeRef.appendChild(pointsName, idP1);
-        points = geogig.command(RevObjectParse.class).setRefSpec(Ref.HEAD + ":" + path)
+        points = repo.command(RevObjectParse.class).setRefSpec(Ref.HEAD + ":" + path)
                 .call(RevFeature.class);
         assertTrue(points.isPresent());
         assertEquals(RevFeature.builder().build(points1Merged), points.get());
 
-        ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
 
     }
@@ -625,19 +615,19 @@ public class RebaseOpTest extends RepositoryTestCase {
     @Test
     public void testContinueSkipAndAbortWhileNotInConflictedState() throws Exception {
         try {
-            geogig.command(RebaseOp.class).setContinue(true).call();
+            repo.command(RebaseOp.class).setContinue(true).call();
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("Cannot continue"));
         }
         try {
-            geogig.command(RebaseOp.class).setAbort(true).call();
+            repo.command(RebaseOp.class).setAbort(true).call();
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("Cannot abort"));
         }
         try {
-            geogig.command(RebaseOp.class).setSkip(true).call();
+            repo.command(RebaseOp.class).setSkip(true).call();
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().contains("Cannot skip"));
@@ -657,31 +647,30 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1, points2);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        repo.command(CommitOp.class).call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        geogig.command(CommitOp.class).setMessage("adding points1 modified, deleting point2")
-                .call();
+        repo.command(AddOp.class).call();
+        repo.command(CommitOp.class).setMessage("adding points1 modified, deleting point2").call();
         insert(lines1);
-        geogig.command(AddOp.class).call();
-        RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(AddOp.class).call();
+        RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        RevCommit branchCommit = geogig.command(CommitOp.class).setMessage("branch commit").call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        repo.command(AddOp.class).call();
+        RevCommit branchCommit = repo.command(CommitOp.class).setMessage("branch commit").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                     .call();
             fail();
         } catch (RebaseConflictsException e) {
@@ -689,20 +678,20 @@ public class RebaseOpTest extends RepositoryTestCase {
         }
 
         String path = NodeRef.appendChild(pointsName, idP1);
-        Optional<RevFeature> points = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> points = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(points.isPresent());
         assertEquals(RevFeature.builder().build(points1ModifiedB), points.get());
 
-        boolean hasConflicts = geogig.command(ConflictsCheckOp.class).call().booleanValue();
+        boolean hasConflicts = repo.command(ConflictsCheckOp.class).call().booleanValue();
         assertTrue(hasConflicts);
 
-        geogig.command(RebaseOp.class).setSkip(true).call();
+        repo.command(RebaseOp.class).setSkip(true).call();
 
-        hasConflicts = geogig.command(ConflictsCheckOp.class).call().booleanValue();
+        hasConflicts = repo.command(ConflictsCheckOp.class).call().booleanValue();
         assertFalse(hasConflicts);
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         RevCommit logCommit1 = log.next();
         assertEquals(masterCommit.getAuthor(), logCommit1.getAuthor());
         assertEquals(masterCommit.getCommitter().getName(), logCommit1.getCommitter().getName());
@@ -723,12 +712,12 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(branchCommit.getMessage(), logCommit2.getMessage());
 
         // check that the changes from conflicting commit haven't been introduced
-        points = geogig.command(RevObjectParse.class).setRefSpec(Ref.HEAD + ":" + path)
+        points = repo.command(RevObjectParse.class).setRefSpec(Ref.HEAD + ":" + path)
                 .call(RevFeature.class);
         assertTrue(points.isPresent());
         assertEquals(RevFeature.builder().build(points1ModifiedB), points.get());
 
-        Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
+        Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
 
     }
@@ -747,44 +736,44 @@ public class RebaseOpTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1, points2);
-        RevCommit firstCommit = geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        RevCommit firstCommit = repo.command(CommitOp.class).call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        RevCommit masterCommit2 = geogig.command(CommitOp.class)
+        repo.command(AddOp.class).call();
+        RevCommit masterCommit2 = repo.command(CommitOp.class)
                 .setMessage("adding points1 modified, deleting point2").call();
         insert(lines1);
-        geogig.command(AddOp.class).call();
-        RevCommit masterCommit = geogig.command(CommitOp.class).setMessage("adding lines.1").call();
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(AddOp.class).call();
+        RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
-        geogig.command(AddOp.class).call();
-        geogig.command(CommitOp.class).setMessage("branch commit").call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
+        repo.command(AddOp.class).call();
+        repo.command(CommitOp.class).setMessage("branch commit").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            geogig.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
                     .call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
         }
 
-        geogig.command(RebaseOp.class).setAbort(true).call();
+        repo.command(RebaseOp.class).setAbort(true).call();
 
-        Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
+        Optional<Ref> head = repo.command(RefParse.class).setName(Ref.HEAD).call();
         assertTrue(head.isPresent());
         assertEquals(head.get().getObjectId(), masterCommit.getId());
 
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         RevCommit logCommit1 = log.next();
         assertEquals(masterCommit.getMessage(), logCommit1.getMessage());
         RevCommit logCommit2 = log.next();
@@ -793,7 +782,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(firstCommit.getMessage(), logCommit3.getMessage());
 
         String path = NodeRef.appendChild(pointsName, idP1);
-        Optional<RevFeature> points = geogig.command(RevObjectParse.class)
+        Optional<RevFeature> points = repo.command(RevObjectParse.class)
                 .setRefSpec(Ref.HEAD + ":" + path).call(RevFeature.class);
         assertTrue(points.isPresent());
         assertEquals(RevFeature.builder().build(points1Modified), points.get());

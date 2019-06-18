@@ -198,8 +198,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
             remote = geogig.command(RemoteAddOp.class).setName(remoteName).setURL(remoteURL)
                     .setUserName(username).setPassword(password).call();
         } catch (RemoteException re) {
-            throw new CommandSpecException(re.statusCode.toString(),
-                    HttpStatus.BAD_REQUEST);
+            throw new CommandSpecException(re.statusCode.toString(), HttpStatus.BAD_REQUEST);
         }
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -245,8 +244,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
         try {
             remote = geogig.command(RemoteRemoveOp.class).setName(remoteName).call();
         } catch (RemoteException e) {
-            throw new CommandSpecException(e.statusCode.toString(),
-                    HttpStatus.BAD_REQUEST);
+            throw new CommandSpecException(e.statusCode.toString(), HttpStatus.BAD_REQUEST);
         }
         context.setResponseContent(new CommandResponse() {
             @Override
@@ -263,8 +261,7 @@ public class RemoteManagement extends AbstractWebAPICommand {
         try {
             remote = geogig.command(RemoteResolve.class).setName(remoteName).call();
         } catch (RemoteException re) {
-            throw new CommandSpecException(re.statusCode.toString(),
-                    HttpStatus.BAD_REQUEST);
+            throw new CommandSpecException(re.statusCode.toString(), HttpStatus.BAD_REQUEST);
         }
         boolean remotePingResponse = false;
         if (remote.isPresent()) {

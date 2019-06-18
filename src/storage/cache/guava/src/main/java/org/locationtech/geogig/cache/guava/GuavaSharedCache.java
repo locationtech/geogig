@@ -85,8 +85,7 @@ public class GuavaSharedCache implements SharedCache {
 
             static final int ESTIMATED_Key_SIZE = 32;
 
-            @Override
-            public int weigh(CacheKey key, byte[] value) {
+            public @Override int weigh(CacheKey key, byte[] value) {
                 return ESTIMATED_Key_SIZE + value.length;
             }
 
@@ -94,8 +93,7 @@ public class GuavaSharedCache implements SharedCache {
 
         public final AtomicLong size = new AtomicLong();
 
-        @Override
-        public void onRemoval(RemovalNotification<CacheKey, byte[]> notification) {
+        public @Override void onRemoval(RemovalNotification<CacheKey, byte[]> notification) {
             CacheKey key = notification.getKey();
             byte[] value = notification.getValue();
             int weigh = WEIGHER.weigh(key, value);

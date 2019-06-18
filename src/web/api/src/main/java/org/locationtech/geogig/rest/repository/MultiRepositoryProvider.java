@@ -28,6 +28,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
@@ -61,7 +62,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     public MultiRepositoryProvider(final URI rootRepoURI) {
         checkNotNull(rootRepoURI, "root repo URI is null");
 
-        resolver = RepositoryResolver.lookup(rootRepoURI);
+        resolver = RepositoryFinder.INSTANCE.lookup(rootRepoURI);
 
         this.rootRepoURI = rootRepoURI;
 
@@ -221,7 +222,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
         } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);
-        }finally {
+        } finally {
             this.repositories.invalidate(repoName);
         }
     }
@@ -238,8 +239,7 @@ public class MultiRepositoryProvider implements RepositoryProvider {
     private static class InitRequestHandler {
 
         private static Optional<Repository> createGeoGIG(RepositoryResolver defaultResolver,
-                URI rootRepoURI, String repositoryName,
-                Map<String, String> parameters) {
+                URI rootRepoURI, String repositoryName, Map<String, String> parameters) {
             try {
                 final Hints hints = InitRequestUtil.createHintsFromParameters(repositoryName,
                         parameters);
@@ -250,8 +250,9 @@ public class MultiRepositoryProvider implements RepositoryProvider {
                     repositoryUri = hints.get(Hints.REPOSITORY_URL);
                 }
                 final URI repoUri = URI.create(repositoryUri.get().toString());
-                final RepositoryResolver resolver = RepositoryResolver.lookup(repoUri);
-                final Repository repository = GlobalContextBuilder.builder().build(hints).repository();
+                final RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoUri);
+                final Repository repository = GlobalContextBuilder.builder().build(hints)
+                        .repository();
                 if (resolver.repoExists(repoUri)) {
                     // open it
                     repository.open();

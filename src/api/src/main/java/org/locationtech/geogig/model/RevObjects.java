@@ -17,11 +17,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
+import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.impl.Float32Bounds;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -36,11 +35,6 @@ import lombok.experimental.UtilityClass;
  * @since 1.0
  */
 public @UtilityClass class RevObjects {
-
-    /**
-     * An identifier for a null coordinate reference system.
-     */
-    public static final String NULL_CRS_IDENTIFIER = "urn:ogc:def:crs:EPSG::0";
 
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
@@ -385,7 +379,8 @@ public @UtilityClass class RevObjects {
             }
             builder.append(desc.getName().getLocalPart());
             builder.append(": ");
-            Class<?> binding = desc.getType().getBinding();
+            @NonNull
+            Class<?> binding = desc.getBinding();
             FieldType fieldType = FieldType.forBinding(binding);
             builder.append(binding.getSimpleName());
             builder.append("->");

@@ -23,14 +23,12 @@ import org.locationtech.jts.geom.Envelope;
 
 public class DataStreamRevObjectSerializerV2_2Test extends RevObjectSerializerConformanceTest {
 
-    @Override
-    protected RevObjectSerializer newObjectSerializer() {
+    protected @Override RevObjectSerializer newObjectSerializer() {
         return DataStreamRevObjectSerializerV2_2.INSTANCE;
     }
 
     // exact bounds check
-    @Override
-    public void assertTreesAreEqual(RevTree a, RevTree b) {
+    public @Override void assertTreesAreEqual(RevTree a, RevTree b) {
         super.assertTreesAreEqual(a, b); // do the original impl checks
 
         Iterator<? extends Bounded> ia;

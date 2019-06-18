@@ -47,7 +47,7 @@ public class ParentsController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ParentsController.class);
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));
@@ -74,7 +74,7 @@ public class ParentsController extends AbstractRepositoryController {
                 return;
             }
             // get the affected features
-            Parents parents =  repositoryService.getParents(provider, repoName, oid);
+            Parents parents = repositoryService.getParents(provider, repoName, oid);
             // encode the affected features
             encode(parents, request, response);
         } else {
@@ -87,4 +87,3 @@ public class ParentsController extends AbstractRepositoryController {
         return LOGGER;
     }
 }
-

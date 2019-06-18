@@ -88,7 +88,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         testData.insert(TestData.point1);
         testData.add();
@@ -119,7 +119,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         testData.insert(TestData.point1);
         testData.add();
@@ -151,7 +151,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         testData.insert(TestData.line1);
         testData.add();
@@ -183,7 +183,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         testData.insert(TestData.point1);
         testData.add();
@@ -215,7 +215,7 @@ public class FeatureDiffTest extends AbstractWebOpTest {
         testData.checkout("master");
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
 
         testData.insert(TestData.point1);
         testData.add();

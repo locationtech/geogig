@@ -18,7 +18,7 @@ class SnapshotContext extends DelegatingContext {
     public SnapshotContext(Context context) {
         super(context);
         this.refsSnapshot = new RefDatabaseSnapshot(context.refDatabase());
-        this.refsSnapshot.create();
+        this.refsSnapshot.open();
     }
 
     public @Override Context snapshot() {

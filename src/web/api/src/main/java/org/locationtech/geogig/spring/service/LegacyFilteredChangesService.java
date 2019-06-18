@@ -61,8 +61,8 @@ public class LegacyFilteredChangesService extends AbstractRepositoryService {
                     trackedArray = new JsonArray();
                 }
                 if (message.has("commitId") && message.get("commitId").isJsonPrimitive()) {
-                    commitId = ObjectId.valueOf(
-                            message.get("commitId").getAsJsonPrimitive().getAsString());
+                    commitId = ObjectId
+                            .valueOf(message.get("commitId").getAsJsonPrimitive().getAsString());
                 } else {
                     commitId = ObjectId.NULL;
                 }
@@ -80,23 +80,22 @@ public class LegacyFilteredChangesService extends AbstractRepositoryService {
                             String featureType = null;
                             String filterType = null;
                             String filterText = null;
-                            if (filterObject.has("featurepath") &&
-                                     filterObject.get("featurepath").isJsonPrimitive()) {
-                                featureType = filterObject.get("featurepath")
-                                        .getAsJsonPrimitive().getAsString();
+                            if (filterObject.has("featurepath")
+                                    && filterObject.get("featurepath").isJsonPrimitive()) {
+                                featureType = filterObject.get("featurepath").getAsJsonPrimitive()
+                                        .getAsString();
                             }
-                            if (filterObject.has("type") &&
-                                     filterObject.get("type").isJsonPrimitive()) {
+                            if (filterObject.has("type")
+                                    && filterObject.get("type").isJsonPrimitive()) {
                                 filterType = filterObject.get("type").getAsJsonPrimitive()
                                         .getAsString();
                             }
-                            if (filterObject.has("filter") &&
-                                     filterObject.get("filter").isJsonPrimitive()) {
+                            if (filterObject.has("filter")
+                                    && filterObject.get("filter").isJsonPrimitive()) {
                                 filterText = filterObject.get("filter").getAsJsonPrimitive()
                                         .getAsString();
                             }
-                            if (featureType != null && filterType != null &&
-                                     filterText != null) {
+                            if (featureType != null && filterType != null && filterText != null) {
                                 filter.addFilter(featureType, filterType, filterText);
                             }
                         }
@@ -125,8 +124,8 @@ public class LegacyFilteredChangesService extends AbstractRepositoryService {
                 }
             };
 
-            filteredChanges.setChanges(filteredDiffIterator).
-                    setPacker(new BinaryPackedChanges(repository));
+            filteredChanges.setChanges(filteredDiffIterator)
+                    .setPacker(new BinaryPackedChanges(repository));
 
         } catch (Exception e) {
             throw new RuntimeException(e);

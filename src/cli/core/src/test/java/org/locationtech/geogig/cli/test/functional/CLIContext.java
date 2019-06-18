@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertNotNull;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
@@ -29,6 +28,9 @@ import java.util.Map;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -43,9 +45,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
-import org.opengis.feature.Feature;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.Name;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
@@ -54,6 +53,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.CharSource;
+
+import lombok.NonNull;
 
 /**
  * The "context" for a specific repository when running the CLI functional tests.
@@ -67,7 +68,7 @@ public class CLIContext {
      * If non null, {@link #configureRepository()} will use it as the repository URI, otherwise
      * it'll use the platform's current directory
      */
-    public final URI repositoryURI;
+    private final URI repositoryURI;
 
     public final TestPlatform platform;
 
@@ -85,9 +86,7 @@ public class CLIContext {
 
     public Console consoleReader;
 
-    public CLIContext(URI repoURI, TestPlatform platform) {
-        checkNotNull(repoURI);
-        checkNotNull(platform);
+    public CLIContext(@NonNull URI repoURI, @NonNull TestPlatform platform) {
         this.repositoryURI = repoURI;
         this.platform = platform;
 
@@ -110,7 +109,7 @@ public class CLIContext {
 
     public void configureRepository() throws Exception {
         geogigCLI.close();
-        URI uri = repositoryURI;
+        URI uri = getRepositoryURI();
         Preconditions.checkState(uri != null, "repository URI not set");
 
         geogigCLI.setPlatform(platform);
@@ -191,8 +190,7 @@ public class CLIContext {
             String parentPath = name.getLocalPart();
             RevFeatureType rft = RevFeatureType.builder().type(newType).build();
             geogig.getRepository().objectDatabase().put(rft);
-            String path = NodeRef.appendChild(parentPath,
-                    points1_FTmodified.getIdentifier().getID());
+            String path = NodeRef.appendChild(parentPath, points1_FTmodified.getId());
             FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(points1_FTmodified),
                     rft.getId(), path);
             workTree.insert(fi);
@@ -227,7 +225,6 @@ public class CLIContext {
     public List<ObjectId> insert(Feature... features) throws Exception {
         geogigCLI.close();
         GeoGIG geogig = geogigCLI.newGeoGIG(Hints.readWrite());
-        Preconditions.checkNotNull(geogig);
         List<ObjectId> ids = Lists.newArrayListWithCapacity(features.length);
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (Feature f : features) {
@@ -246,7 +243,7 @@ public class CLIContext {
                 FeatureType ft = f.getType();
                 RevFeatureType rft = types.get(ft);
                 String parentPath = ft.getName().getLocalPart();
-                String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+                String path = NodeRef.appendChild(parentPath, f.getId());
                 FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),
                         path);
                 workTree.insert(fi);
@@ -281,7 +278,7 @@ public class CLIContext {
             final WorkingTree workTree = geogig.getRepository().workingTree();
             Name name = f.getType().getName();
             String localPart = name.getLocalPart();
-            String id = f.getIdentifier().getID();
+            String id = f.getId();
             boolean existed = workTree.delete(localPart, id);
             return existed;
         } finally {
@@ -310,5 +307,9 @@ public class CLIContext {
             features.put(index ? "index" : ref.getParentPath(), ref.name());
         }
         return features;
+    }
+
+    public URI getRepositoryURI() {
+        return repositoryURI;
     }
 }

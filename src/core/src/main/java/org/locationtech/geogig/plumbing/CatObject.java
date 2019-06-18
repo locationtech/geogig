@@ -33,8 +33,7 @@ public class CatObject extends AbstractGeoGigOp<CharSequence> {
         return this;
     }
 
-    @Override
-    protected CharSequence _call() {
+    protected @Override CharSequence _call() {
         Preconditions.checkState(object != null);
         RevObject revObject = object.get();
 

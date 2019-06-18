@@ -23,8 +23,7 @@ import org.locationtech.geogig.web.api.WebAPICommand;
  */
 public class IndexCommandBuilder {
 
-    private final static Map<String, Supplier<AbstractWebAPICommand>> MAPPINGS =
-            new HashMap<>(30);
+    private final static Map<String, Supplier<AbstractWebAPICommand>> MAPPINGS = new HashMap<>(30);
     static {
         MAPPINGS.put("create", CreateIndex::new);
         MAPPINGS.put("update", UpdateIndex::new);

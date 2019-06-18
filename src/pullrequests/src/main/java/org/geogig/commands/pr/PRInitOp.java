@@ -130,7 +130,7 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
         return prepare(existing.orElseGet(() -> build()));
     }
 
-    private PR prepare(PR pr) {
+    private PR prepare(@NonNull PR pr) {
         Preconditions.checkNotNull(pr.getTransactionId());
         Preconditions.checkNotNull(pr.getId());
         getProgressListener().setDescription("Initializing pull request " + pr);

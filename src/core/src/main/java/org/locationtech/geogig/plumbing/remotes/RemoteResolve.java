@@ -43,8 +43,7 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
      * 
      * @return the {@link Remote} that was added.
      */
-    @Override
-    protected Optional<Remote> _call() {
+    protected @Override Optional<Remote> _call() {
         if (name == null || name.isEmpty()) {
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
@@ -76,8 +75,7 @@ public class RemoteResolve extends AbstractGeoGigOp<Optional<Remote>>
         return remoteOpt;
     }
 
-    @Override
-    public Optional<Remote> get() {
+    public @Override Optional<Remote> get() {
         return call();
     }
 }

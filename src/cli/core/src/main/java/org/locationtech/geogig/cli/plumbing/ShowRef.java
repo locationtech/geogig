@@ -43,8 +43,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
     @Parameter(description = "<pattern>")
     private List<String> patterns = new ArrayList<String>();
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
@@ -52,8 +51,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
         ForEachRef op = geogig.command(ForEachRef.class);
 
         Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref ref) {
+            public @Override boolean apply(Ref ref) {
                 String name = ref.getName();
                 if (!name.startsWith(Ref.REFS_PREFIX)) {
                     return false;

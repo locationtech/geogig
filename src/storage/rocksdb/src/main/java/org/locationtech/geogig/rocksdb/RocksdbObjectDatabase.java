@@ -9,9 +9,6 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.rocksdb.RocksdbStorageProvider.VERSION;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -23,70 +20,46 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectDatabase {
 
     private RocksdbBlobStore blobs;
 
-    private final ConfigDatabase configdb;
-
     private RocksdbGraphDatabase graph;
 
-    @Inject
-    public RocksdbObjectDatabase(Platform platform, Hints hints, ConfigDatabase configdb) {
-        super(platform, hints);
-        this.configdb = configdb;
+    public RocksdbObjectDatabase(@NonNull File dbdir, boolean readOnly) {
+        super(dbdir, readOnly);
     }
 
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.OBJECT.configure(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.OBJECT.verify(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return super.readOnly;
-    }
-
-    @Override
-    public RocksdbBlobStore getBlobStore() {
+    public @Override RocksdbBlobStore getBlobStore() {
         return blobs;
     }
 
-    @Override
-    public GraphDatabase getGraphDatabase() {
+    public @Override GraphDatabase getGraphDatabase() {
         return new SynchronizedGraphDatabase(graph);
     }
 
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         if (isOpen()) {
             return;
         }
         super.open();
         try {
-            File blobsDir = new File(super.path, "blobs");
+            File blobsDir = new File(super.dbDirectory, "blobs");
+            File graphDir = new File(super.dbDirectory.getParentFile(), "graph.rocksdb");
             blobsDir.mkdir();
-            this.blobs = new RocksdbBlobStore(blobsDir, super.readOnly);
-            this.graph = new RocksdbGraphDatabase(platform, hints);
+            graphDir.mkdir();
+            this.blobs = new RocksdbBlobStore(blobsDir, isReadOnly());
+            this.graph = new RocksdbGraphDatabase(graphDir, isReadOnly());
             this.graph.open();
         } catch (RuntimeException e) {
             close();
@@ -94,8 +67,7 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
         }
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
         if (!isOpen()) {
             return;
         }

@@ -32,6 +32,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
@@ -96,8 +97,7 @@ public class Clone extends AbstractCommand implements CLICommand {
     /**
      * Executes the clone command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(args != null && args.size() > 0, "You must specify a repository to clone.");
         checkParameter(args.size() < 3, "Too many arguments provided.");
         if (filterFile != null) {
@@ -113,12 +113,12 @@ public class Clone extends AbstractCommand implements CLICommand {
             if (args.size() == 2) {
                 targetArg = args.get(1);
             } else {
-                RepositoryResolver remoteResolver = RepositoryResolver.lookup(remoteURI);
+                RepositoryResolver remoteResolver = RepositoryFinder.INSTANCE.lookup(remoteURI);
                 targetArg = remoteResolver.getName(remoteURI);
             }
 
             try {
-                cloneURI = RepositoryResolver.resolveRepoUriFromString(platform, targetArg);
+                cloneURI = RepositoryFinder.INSTANCE.resolveRepoUriFromString(platform, targetArg);
             } catch (URISyntaxException e) {
                 throw new CommandFailedException("Can't parse target URI '" + targetArg + "'",
                         true);
@@ -132,7 +132,7 @@ public class Clone extends AbstractCommand implements CLICommand {
                     "Source and target repositories are the same");
 
         }
-        RepositoryResolver cloneInitializer = RepositoryResolver.lookup(cloneURI);
+        RepositoryResolver cloneInitializer = RepositoryFinder.INSTANCE.lookup(cloneURI);
 
         if (cloneInitializer.repoExists(cloneURI)) {
             URI resolvedURI = cloneURI;
@@ -191,7 +191,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         final URI remoteURI;
         final String remoteArg = args.get(0);
         try {
-            remoteURI = RepositoryResolver.resolveRepoUriFromString(platform, remoteArg);
+            remoteURI = RepositoryFinder.INSTANCE.resolveRepoUriFromString(platform, remoteArg);
         } catch (URISyntaxException e) {
             throw new CommandFailedException("Can't parse remote URI '" + remoteArg + "'", true);
         }

@@ -9,13 +9,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
-import org.locationtech.geogig.data.FindFeatureTypeTrees;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -26,6 +25,7 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -43,8 +43,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      * @param branchRef the refSpec that resolves to a root tree
      * @return {@code this}
      */
-    public UpdateIndexesOp setRef(final Ref branchRef) {
-        checkNotNull(branchRef);
+    public UpdateIndexesOp setRef(final @NonNull Ref branchRef) {
         checkArgument(!(branchRef instanceof SymRef),
                 "Update indexes does not support symbolic references");
         checkArgument(branchRef.getName().startsWith(Ref.REFS_PREFIX),
@@ -58,8 +57,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      * 
      * @return a list of {@link Index} objects that represent updated indexes
      */
-    @Override
-    protected List<Index> _call() {
+    protected @Override List<Index> _call() {
         checkNotNull(rootRefSpec, "rootRefSpec not provided");
 
         final Ref branchRef = this.rootRefSpec;
@@ -144,7 +142,9 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 String id = indexTree.getId().toString().substring(0, 8);
                 long size = indexTree.size();
                 Envelope env = SpatialOps.boundsOf(indexTree);
-                String bounds = env == null ? "null" : JTS.toGeometry(env).toString();
+                String bounds = env == null ? "null"
+                        : String.format("[%f, %f, %f, %f]", env.getMinX(), env.getMinY(),
+                                env.getMaxX(), env.getMaxY());
                 progress.setDescription(String.format("Updated index: %s, size: %,d, bounds: %s",
                         id, size, bounds));
 

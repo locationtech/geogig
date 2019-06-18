@@ -11,20 +11,18 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.io.File;
+import java.net.URI;
 import java.util.List;
 
-import org.geotools.data.DataUtilities;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
+import org.junit.rules.TestName;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
@@ -38,36 +36,30 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
+import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.test.MemoryModule;
-import org.locationtech.geogig.test.TestPlatform;
+import org.locationtech.geogig.test.TestRepository;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
 
 /**
  *
  */
 public class DiffTreeTest extends Assert {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
+    public @Rule TestName testName = new TestName();
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    public @Rule ExpectedException exception = ExpectedException.none();
 
     private DiffTree diffTree;
 
-    private GeoGIG geogig;
+    private Repository repository;
 
     private RevFeatureType revtype;
 
@@ -75,23 +67,24 @@ public class DiffTreeTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
+        URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
+                testName.getMethodName()));
 
-        File workingDirectory = tempFolder.newFolder("mockWorkingDir");
-        Platform testPlatform = new TestPlatform(workingDirectory);
-        Context injector = Guice
-                .createInjector(Modules.override(new GeogigModule()).with(new MemoryModule(),
-                        new HintsModule(new Hints().platform(testPlatform))))
-                .getInstance(Context.class);
+        Context injector = new PluginsContextBuilder().build(Hints.repository(uri));
 
-        geogig = new GeoGIG(injector);
-        assertNotNull(geogig.getOrCreateRepository());
-        diffTree = geogig.command(DiffTree.class);
+        repository = new GeoGIG(injector).getOrCreateRepository();
+        assertNotNull(repository);
+        diffTree = repository.command(DiffTree.class);
 
-        SimpleFeatureType ft = DataUtilities.createType("points",
-                "sp:String,ip:Integer,pp:Point:srid=3857");
+        FeatureType ft = FeatureTypes.createType("points", "sp:String", "ip:Integer",
+                "pp:Point:srid=3857");
         revtype = RevFeatureType.builder().type(ft).build();
         metadataId = revtype.getId();
-        geogig.getContext().objectDatabase().put(revtype);
+        repository.objectDatabase().put(revtype);
+    }
+
+    public @After void after() {
+        TestRepository.closeAndDelete(repository);
     }
 
     @Test
@@ -135,7 +128,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testTreePathFiltering() {
-        ObjectDatabase db = geogig.getContext().objectDatabase();
+        ObjectDatabase db = repository.objectDatabase();
         RevTree tree1 = tree(100, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -159,47 +152,22 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testBoundsFiltering() {
-        ObjectDatabase db = geogig.getContext().objectDatabase();
+        ObjectDatabase db = repository.objectDatabase();
         RevTree tree1 = tree(1000, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
 
-        CoordinateReferenceSystem crs = revtype.type().getCoordinateReferenceSystem();
-        ReferencedEnvelope filter;
-        List<DiffEntry> diffs;
-
         diffTree.setOldTree(ObjectId.NULL).setNewTree(root.getId());
 
-        filter = new ReferencedEnvelope(50, 51, 50, 51, crs);
+        Envelope filter = new Envelope(50, 51, 50, 51);
         diffTree.setBoundsFilter(filter);
-        diffs = ImmutableList.copyOf(diffTree.call());
-        assertEquals(2, diffs.size());
-    }
-
-    @Test
-    public void testBoundsFilteringReprojecting() throws Exception {
-        ObjectDatabase db = geogig.getContext().objectDatabase();
-        RevTree tree1 = tree(1000, db);
-        RevTree tree2 = tree(50, db);
-        RevTree root = createRoot(db, tree1, tree2);
-
-        CoordinateReferenceSystem nativeCrs = revtype.type().getCoordinateReferenceSystem();
-        CoordinateReferenceSystem queryCrs = CRS.decode("EPSG:4326", true);
-
-        ReferencedEnvelope nativeFilter = new ReferencedEnvelope(49.9, 51.1, 49.9, 51.1, nativeCrs);
-        ReferencedEnvelope queryFilter = nativeFilter.transform(queryCrs, true);
-        List<DiffEntry> diffs;
-
-        diffTree.setOldTree(ObjectId.NULL).setNewTree(root.getId());
-
-        diffTree.setBoundsFilter(queryFilter);
-        diffs = ImmutableList.copyOf(diffTree.call());
+        ImmutableList<DiffEntry> diffs = ImmutableList.copyOf(diffTree.call());
         assertEquals(2, diffs.size());
     }
 
     @Test
     public void testChangeTypeFilter() {
-        ObjectDatabase db = geogig.getContext().objectDatabase();
+        ObjectDatabase db = repository.objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
@@ -241,7 +209,7 @@ public class DiffTreeTest extends Assert {
      */
     @Test
     public void testMixedFilters() {
-        ObjectDatabase db = geogig.getContext().objectDatabase();
+        ObjectDatabase db = repository.objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
@@ -264,9 +232,8 @@ public class DiffTreeTest extends Assert {
         final ObjectId rootId1 = root1.getId();
         final ObjectId rootId2 = root2.getId();
 
-        CoordinateReferenceSystem crs = revtype.type().getCoordinateReferenceSystem();
         // boundsFilter covers features 1-11
-        ReferencedEnvelope boundsFilter = new ReferencedEnvelope(1.9, 11.1, 1.9, 11.1, crs);
+        Envelope boundsFilter = new Envelope(1.9, 11.1, 1.9, 11.1);
 
         // first try with bounds only
         diffTree.setBoundsFilter(boundsFilter);

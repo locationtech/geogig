@@ -23,6 +23,7 @@ public class CommandSpecException extends IllegalArgumentException {
     private HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
 
     private Set<String> allowedMethods;
+
     /**
      * Constructs a new {code CommandSpecException} with the given message.
      * 

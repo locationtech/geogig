@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,8 @@ import org.locationtech.geogig.repository.Remote;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
+import lombok.NonNull;
+
 public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     /**
@@ -44,8 +45,7 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
      * {@code refs/heads/<branch>} namespace and returns the list translated to the local
      * repository's remotes namespace (i.e. {@code refs/remotes/<remote>/<branch>}
      */
-    @Override
-    protected List<RefDiff> _call() {
+    protected @Override List<RefDiff> _call() {
         checkArgument(remote != null, "remote not provided");
 
         final List<RefDiff> remoteLocalRefs = this.refUpdates;
@@ -54,16 +54,14 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
 
         // (r) -> !isSymRef(r)
         Predicate<RefDiff> fn = new Predicate<RefDiff>() {
-            @Override
-            public boolean apply(RefDiff r) {
+            public @Override boolean apply(RefDiff r) {
                 return !isSymRef(r);
             }
         };
 
         // (r) -> isSymRef(r)
         Predicate<RefDiff> fn2 = new Predicate<RefDiff>() {
-            @Override
-            public boolean apply(RefDiff r) {
+            public @Override boolean apply(RefDiff r) {
                 return isSymRef(r);
             }
         };
@@ -146,14 +144,12 @@ public class UpdateRemoteRefOp extends AbstractGeoGigOp<List<RefDiff>> {
         return localRemoteRef;
     }
 
-    public UpdateRemoteRefOp add(RefDiff diff) {
-        checkNotNull(diff);
+    public UpdateRemoteRefOp add(@NonNull RefDiff diff) {
         refUpdates.add(diff);
         return this;
     }
 
-    public UpdateRemoteRefOp addAll(Iterable<RefDiff> diffs) {
-        checkNotNull(diffs);
+    public UpdateRemoteRefOp addAll(@NonNull Iterable<RefDiff> diffs) {
         diffs.forEach((r) -> add(r));
         return this;
     }

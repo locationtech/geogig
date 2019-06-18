@@ -97,8 +97,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return maxDepth;
     }
 
-    @Override
-    protected void mergeRoot(final @NonNull DAG root) {
+    protected @Override void mergeRoot(final @NonNull DAG root) {
         if (!ENABLE_EXPAND_COLLAPSE) {
             super.mergeRoot(root);
             return;
@@ -138,8 +137,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * Override to collapse root DAG's that are one single bucket to the first DAG that has more
      * than one bucket
      */
-    @Override
-    public DAG buildRoot() {
+    public @Override DAG buildRoot() {
         if (ENABLE_EXPAND_COLLAPSE) {
             final long size = root.getTotalChildCount();
             collapse(root);
@@ -324,13 +322,11 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
     /**
      * @see #normalizedSizeLimit()
      */
-    @Override
-    public int normalizedSizeLimit(final int depthIndex) {
+    public @Override int normalizedSizeLimit(final int depthIndex) {
         return normalizedSizeLimit();
     }
 
-    @Override
-    protected Comparator<NodeId> getNodeOrdering() {
+    protected @Override Comparator<NodeId> getNodeOrdering() {
         return CanonicalClusteringStrategy.CANONICAL_ORDER;
     }
 
@@ -350,8 +346,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         return quadrantAtDepth.ordinal();
     }
 
-    @Override
-    protected int unpromotableBucketIndex(final int depthIndex) {
+    protected @Override int unpromotableBucketIndex(final int depthIndex) {
         return unpromotableBucketIndex();
     }
 
@@ -363,15 +358,13 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * @return a {@link NodeId} whose {@link NodeId#value() value} is the node's
      *         {@link Node#bounds() bounds} {@link Envelope} or {@code null}
      */
-    @Override
-    public NodeId computeId(final Node node) {
+    public @Override NodeId computeId(final Node node) {
         @Nullable
         Envelope bounds = node.bounds().orElse(null);
         return new NodeId(node.getName(), bounds);
     }
 
-    @Override
-    public int put(final Node node) {
+    public @Override int put(final Node node) {
         Preconditions.checkArgument(TYPE.FEATURE == node.getType(),
                 "Can't add non feature nodes to quad-tree: %s", node);
         return super.put(node);
@@ -382,8 +375,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * changed and hence avoid calling remove and then put, but call put only, since the
      * {@code NodeId} is guaranteed to lay on the same bucket at any depth.
      */
-    @Override
-    public int update(Node oldNode, Node newNode) {
+    public @Override int update(Node oldNode, Node newNode) {
         Optional<Envelope> oldBounds = oldNode.bounds();
         Optional<Envelope> newBounds = newNode.bounds();
         if (oldBounds.equals(newBounds)) {

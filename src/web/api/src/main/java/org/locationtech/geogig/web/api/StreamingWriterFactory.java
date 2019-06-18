@@ -21,7 +21,8 @@ import org.springframework.http.MediaType;
 public class StreamingWriterFactory {
 
     public static StreamingWriter getStreamWriter(MediaType format, Writer parent) {
-        final ServiceLoader<StreamingWriterService> svcLoader = ServiceLoader.load(StreamingWriterService.class);
+        final ServiceLoader<StreamingWriterService> svcLoader = ServiceLoader
+                .load(StreamingWriterService.class);
         final Iterator<StreamingWriterService> writerServices = svcLoader.iterator();
         while (writerServices.hasNext()) {
             final StreamingWriterService writerService = writerServices.next();

@@ -41,13 +41,21 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-geotools</artifactId>
+      <artifactId>geogig-gt-commands</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-datastore</artifactId>
+      <artifactId>geogig-gt-datastore</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-cql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-epsg-hsql</artifactId>
     </dependency>
 
     <dependency>
@@ -84,23 +92,10 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-geotools</artifactId>
+      <artifactId>geogig-gt-commands</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
       <classifier>tests</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

@@ -13,9 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.storage.ObjectStore;
@@ -87,56 +85,42 @@ public interface RevTree extends RevObject {
      */
     RevTree EMPTY = new RevTree() {
 
-        @Override
-        public ObjectId getId() {
+        public @Override ObjectId getId() {
             return EMPTY_TREE_ID;
         }
 
-        @Override
-        public List<Node> trees() {
+        public @Override List<Node> trees() {
             return Collections.emptyList();
         }
 
-        @Override
-        public long size() {
+        public @Override long size() {
             return 0L;
         }
 
-        @Override
-        public int numTrees() {
+        public @Override int numTrees() {
             return 0;
         }
 
-        @Override
-        public boolean isEmpty() {
+        public @Override boolean isEmpty() {
             return true;
         }
 
-        @Override
-        public List<Node> features() {
+        public @Override List<Node> features() {
             return Collections.emptyList();
         }
 
-        @Override
-        public SortedMap<Integer, Bucket> buckets() {
-            return Collections.emptySortedMap();
-        }
-
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof RevObject)) {
                 return false;
             }
             return getId().equals(((RevObject) o).getId());
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return "EMPTY TREE[" + getId() + "]";
         }
 
-        @Override
-        public SortedSet<Bucket> getBuckets() {
+        public @Override SortedSet<Bucket> getBuckets() {
             return Collections.emptySortedSet();
         }
     };
@@ -144,8 +128,7 @@ public interface RevTree extends RevObject {
     /**
      * @return {@link TYPE#TREE}
      */
-    @Override
-    public default TYPE getType() {
+    public @Override default TYPE getType() {
         return TYPE.TREE;
     }
 
@@ -269,12 +252,7 @@ public interface RevTree extends RevObject {
      * {@link CanonicalNodeNameOrder} defines a split factor based on the bucket's
      * {@link CanonicalNodeNameOrder#maxBucketsForLevel(int) depth), while a tree built to represent
      * a quad-tree would always be split into four subtrees to represent the next set of quadrants.
-     * 
-     * @apiNote the returned map does not contain {@code null} keys nor values
-     * @deprecated
      */
-    public SortedMap<Integer, Bucket> buckets();
-
     public Iterable<Bucket> getBuckets();
 
     /**
@@ -288,14 +266,9 @@ public interface RevTree extends RevObject {
      * Performs the given action for each element of the {@link #buckets} collection respecting its
      * iteration order, which is the order of the bucket index.
      * 
-     * @deprecated
      * @param consumer a consumer that accepts a tuple given by the bucket index and the bucket
      *        itself
      */
-    public default void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-        getBuckets().forEach(b -> consumer.accept(Integer.valueOf(b.getIndex()), b));
-    }
-
     public default void forEachBucket(Consumer<Bucket> consumer) {
         getBuckets().forEach(consumer);
     }

@@ -57,21 +57,18 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * @return the description of the current task
      */
-    @Override
-    public String getDescription() {
+    public @Override String getDescription() {
         return description;
     }
 
-    @Override
-    public void setDescription(String format, Object... args) {
+    public @Override void setDescription(String format, Object... args) {
         this.description = String.format(format, args);
     }
 
     /**
      * Called when a task begins tracking progress.
      */
-    @Override
-    public void started() {
+    public @Override void started() {
         completed = false;
         progress.set(0);
     }
@@ -81,8 +78,7 @@ public class DefaultProgressListener implements ProgressListener {
      * 
      * @param progress the new progress
      */
-    @Override
-    public void setProgress(float progress) {
+    public @Override void setProgress(float progress) {
         this.progress.set(progress);
     }
 
@@ -93,8 +89,7 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * @return the current progress of the task
      */
-    @Override
-    public float getProgress() {
+    public @Override float getProgress() {
         return progress.floatValue();
     }
 
@@ -102,8 +97,7 @@ public class DefaultProgressListener implements ProgressListener {
      * Called when the task is completed. This will update the progress to the maximum progress
      * value.
      */
-    @Override
-    public void complete() {
+    public @Override void complete() {
         setProgress(getMaxProgress());
         this.completed = true;
     }
@@ -111,32 +105,28 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * @return {@code true} if the task is complete
      */
-    @Override
-    public boolean isCompleted() {
+    public @Override boolean isCompleted() {
         return this.completed;
     }
 
     /**
      * Called when the progress listener is no longer needed.
      */
-    @Override
-    public void dispose() {
+    public @Override void dispose() {
         // do nothing
     }
 
     /**
      * Called to indicate that the current task has been cancelled.
      */
-    @Override
-    public void cancel() {
+    public @Override void cancel() {
         this.canceled = true;
     }
 
     /**
      * @return {@code true} if the task was cancelled
      */
-    @Override
-    public boolean isCanceled() {
+    public @Override boolean isCanceled() {
         return canceled;
     }
 
@@ -145,8 +135,7 @@ public class DefaultProgressListener implements ProgressListener {
      * 
      * @param maxProgress the new maximum value
      */
-    @Override
-    public void setMaxProgress(float maxProgress) {
+    public @Override void setMaxProgress(float maxProgress) {
         this.maxProgress = maxProgress;
 
     }
@@ -154,8 +143,7 @@ public class DefaultProgressListener implements ProgressListener {
     /**
      * @return the maximum value of the progress listener
      */
-    @Override
-    public float getMaxProgress() {
+    public @Override float getMaxProgress() {
         return this.maxProgress;
     }
 

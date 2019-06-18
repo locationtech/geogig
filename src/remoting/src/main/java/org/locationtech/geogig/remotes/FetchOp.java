@@ -11,7 +11,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
 import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
@@ -43,6 +42,8 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
@@ -141,16 +142,6 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     /**
      * @param all if {@code true}, fetch from all remotes.
      * @return {@code this}
-     * @deprecated use {@link #setAllRemotes} instead
-     */
-    public FetchOp setAll(final boolean all) {
-        argsBuilder.allRemotes = all;
-        return this;
-    }
-
-    /**
-     * @param all if {@code true}, fetch from all remotes.
-     * @return {@code this}
      */
     public FetchOp setAllRemotes(final boolean all) {
         argsBuilder.allRemotes = all;
@@ -160,13 +151,6 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     public FetchOp setAutofetchTags(final boolean tags) {
         argsBuilder.fetchTags = tags;
         return this;
-    }
-
-    /**
-     * @deprecated use {@link #isAllRemotes} instead
-     */
-    public boolean isAll() {
-        return argsBuilder.allRemotes;
     }
 
     public boolean isAllRemotes() {
@@ -229,12 +213,11 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteName the name or URL of a remote repository to fetch from
      * @return {@code this}
      */
-    public FetchOp addRemote(final String remoteName) {
-        checkNotNull(remoteName);
+    public FetchOp addRemote(final @NonNull String remoteName) {
         return addRemote(command(RemoteResolve.class).setName(remoteName));
     }
 
-    public FetchOp addRemote(final Remote remote) {
+    public FetchOp addRemote(final @NonNull Remote remote) {
         return addRemote(Suppliers.ofInstance(Optional.of(remote)));
     }
 
@@ -246,8 +229,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteSupplier the remote repository to fetch from
      * @return {@code this}
      */
-    public FetchOp addRemote(Supplier<Optional<Remote>> remoteSupplier) {
-        checkNotNull(remoteSupplier);
+    public FetchOp addRemote(@NonNull Supplier<Optional<Remote>> remoteSupplier) {
         Optional<Remote> remote = remoteSupplier.get();
         checkArgument(remote.isPresent(), "Remote could not be resolved.");
         argsBuilder.remotes.add(remote.get());
@@ -265,8 +247,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected TransferSummary _call() {
+    protected @Override TransferSummary _call() {
         final Repository repository = repository();
         final FetchArgs args = argsBuilder.build(repository);
         {
@@ -355,8 +336,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
             // (r) -> r.getType() != REMOVED_REF
             Predicate<RefDiff> fn = new Predicate<RefDiff>() {
-                @Override
-                public boolean apply(RefDiff r) {
+                public @Override boolean apply(RefDiff r) {
                     return r.getType() != REMOVED_REF;
                 }
             };

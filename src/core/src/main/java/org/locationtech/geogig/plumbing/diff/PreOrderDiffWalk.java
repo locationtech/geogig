@@ -69,6 +69,8 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 
+import lombok.NonNull;
+
 /**
  * Provides a means to "walk" the differences between two {@link RevTree trees} in in-order order
  * and emit diff events to a {@link Consumer}, which can choose to skip parts of the walk when it
@@ -136,18 +138,14 @@ public class PreOrderDiffWalk {
         /**
          * Creates a root bucket index
          */
-        private BucketIndex(RevTree left, RevTree right) {
-            checkNotNull(left);
-            checkNotNull(right);
+        private BucketIndex(@NonNull RevTree left, @NonNull RevTree right) {
             this.indexPath = new int[0];
             this.left = left;
             this.right = right;
         }
 
-        private BucketIndex(final int[] parentPath, final int index, RevTree left, RevTree right) {
-            checkNotNull(parentPath);
-            checkNotNull(left);
-            checkNotNull(right);
+        private BucketIndex(final @NonNull int[] parentPath, final int index, @NonNull RevTree left,
+                @NonNull RevTree right) {
             int[] path = new int[parentPath.length + 1];
             System.arraycopy(parentPath, 0, path, 0, parentPath.length);
             path[parentPath.length] = index;
@@ -210,21 +208,18 @@ public class PreOrderDiffWalk {
             return Integer.valueOf(indexPath[indexPath.length - 1]);
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof BucketIndex)) {
                 return false;
             }
             return Arrays.equals(indexPath, ((BucketIndex) o).indexPath);
         }
 
-        @Override
-        public int hashCode() {
+        public @Override int hashCode() {
             return Arrays.hashCode(indexPath);
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < indexPath.length - 1; i++) {
                 sb.append(indexPath[i]).append('/');
@@ -235,8 +230,7 @@ public class PreOrderDiffWalk {
             return sb.toString();
         }
 
-        @Override
-        public int compareTo(BucketIndex o) {
+        public @Override int compareTo(BucketIndex o) {
             return Ints.lexicographicalComparator().compare(indexPath, o.indexPath);
         }
     }
@@ -412,8 +406,7 @@ public class PreOrderDiffWalk {
             forkJoinPool.shutdown(); // private pool needs cleaning
     }
 
-    public void nodeOrder(NodeOrdering nodeOrder) {
-        checkNotNull(nodeOrder);
+    public void nodeOrder(@NonNull NodeOrdering nodeOrder) {
         this.ORDER = nodeOrder;
     }
 
@@ -443,10 +436,9 @@ public class PreOrderDiffWalk {
             this(walkInfo, BucketIndex.EMPTY);
         }
 
-        WalkAction(WalkInfo info, final BucketIndex bucketIndex) {
+        WalkAction(@NonNull WalkInfo info, final @NonNull BucketIndex bucketIndex) {
             checkArgument(info.left.parentRef != null || info.right.parentRef != null,
                     "leftParent and rightParent can't be null at the same time");
-            checkNotNull(bucketIndex);
             this.info = info;
             this.bucketIndex = bucketIndex;
         }
@@ -482,8 +474,7 @@ public class PreOrderDiffWalk {
 
                 // index -> this.bucketIndex.append(index, left, right)
                 Function<Integer, BucketIndex> fn = new Function<Integer, BucketIndex>() {
-                    @Override
-                    public BucketIndex apply(Integer index) {
+                    public @Override BucketIndex apply(Integer index) {
                         return bucketIndex.append(index, left, right);
                     }
                 };
@@ -758,8 +749,7 @@ public class PreOrderDiffWalk {
             super(walkInfo);
         }
 
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             final @Nullable NodeRef leftNode = info.left.parentRef;
             final @Nullable NodeRef rightNode = info.right.parentRef;
             if (Objects.equal(leftNode, rightNode)) {
@@ -794,17 +784,14 @@ public class PreOrderDiffWalk {
 
         private final RevTree left, right;
 
-        public TraverseTreeContents(WalkInfo info, RevTree left, RevTree right,
+        public TraverseTreeContents(WalkInfo info, @NonNull RevTree left, @NonNull RevTree right,
                 BucketIndex bucketIndex) {
             super(info, bucketIndex);
-            checkNotNull(left);
-            checkNotNull(right);
             this.left = left;
             this.right = right;
         }
 
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             if (Objects.equal(left, right)) {
                 return;
             }
@@ -863,8 +850,7 @@ public class PreOrderDiffWalk {
          * Traverse and compare the {@link RevObjects#children() children} nodes of two leaf trees,
          * calling {@link #node(Consumer, Node, Node)} for each diff.
          */
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             if (info.consumer.isCancelled()) {
                 return;
             }
@@ -979,8 +965,7 @@ public class PreOrderDiffWalk {
          * @precondition {@code left.isEmpty() || left.buckets().isPresent()}
          * @precondition {@code right.isEmpty() || right.buckets().isPresent()}
          */
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             if (info.consumer.isCancelled()) {
                 return;
             }
@@ -1030,8 +1015,7 @@ public class PreOrderDiffWalk {
          * 
          * @precondition {@code left.buckets().isPresent()}
          */
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             final CancellableConsumer consumer = info.consumer;
             if (consumer.isCancelled()) {
                 return;
@@ -1092,8 +1076,7 @@ public class PreOrderDiffWalk {
          * 
          * @precondition {@code right.buckets().isPresent()}
          */
-        @Override
-        protected void compute() {
+        protected @Override void compute() {
             final CancellableConsumer consumer = info.consumer;
             if (consumer.isCancelled()) {
                 return;
@@ -1240,30 +1223,25 @@ public class PreOrderDiffWalk {
     }
 
     public static abstract class AbstractConsumer implements Consumer {
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
             return true;
         }
 
-        @Override
-        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
             return true;
         }
 
-        @Override
-        public void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override void endTree(@Nullable NodeRef left, @Nullable NodeRef right) {
             //
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
             return true;
         }
 
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
             //
         }
 
@@ -1286,35 +1264,29 @@ public class PreOrderDiffWalk {
             this.delegate = delegate;
         }
 
-        public void setDelegate(Consumer delegate) {
-            Preconditions.checkNotNull(delegate);
+        public void setDelegate(@NonNull Consumer delegate) {
             this.delegate = delegate;
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             return delegate.feature(left, right);
         }
 
-        @Override
-        public boolean tree(NodeRef left, NodeRef right) {
+        public @Override boolean tree(NodeRef left, NodeRef right) {
             return delegate.tree(left, right);
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             delegate.endTree(left, right);
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             return delegate.bucket(leftParent, rightParent, bucketIndex, left, right);
         }
 
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             delegate.endBucket(leftParent, rightParent, bucketIndex, left, right);
         }
     }
@@ -1331,8 +1303,7 @@ public class PreOrderDiffWalk {
             this.count = new AtomicLong();
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             if (count.incrementAndGet() > limit) {
                 return false;
             }
@@ -1349,41 +1320,36 @@ public class PreOrderDiffWalk {
             this.predicate = predicate;
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             if (predicate.apply(left) || predicate.apply(right)) {
                 super.feature(left, right);
             }
             return true;
         }
 
-        @Override
-        public boolean tree(NodeRef left, NodeRef right) {
+        public @Override boolean tree(NodeRef left, NodeRef right) {
             if (predicate.apply(left) || predicate.apply(right)) {
                 return super.tree(left, right);
             }
             return false;
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             if (predicate.apply(left) || predicate.apply(right)) {
                 super.endTree(left, right);
             }
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             if (predicate.apply(left) || predicate.apply(right)) {
                 return super.bucket(leftParent, rightParent, bucketIndex, left, right);
             }
             return false;
         }
 
-        @Override
-        public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             if (predicate.apply(left) || predicate.apply(right)) {
                 super.endBucket(leftParent, rightParent, bucketIndex, left, right);
             }
@@ -1406,8 +1372,7 @@ public class PreOrderDiffWalk {
             return this.cancel.get();
         }
 
-        @Override
-        public boolean feature(NodeRef left, NodeRef right) {
+        public @Override boolean feature(NodeRef left, NodeRef right) {
             boolean continuteTraversal = !isCancelled() && delegate.feature(left, right);
             if (!continuteTraversal) {
                 abortTraversal();
@@ -1415,14 +1380,12 @@ public class PreOrderDiffWalk {
             return continuteTraversal;
         }
 
-        @Override
-        public boolean tree(NodeRef left, NodeRef right) {
+        public @Override boolean tree(NodeRef left, NodeRef right) {
             return !isCancelled() && delegate.tree(left, right);
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                Bucket left, Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, Bucket left, Bucket right) {
             return !isCancelled()
                     && delegate.bucket(leftParent, rightParent, bucketIndex, left, right);
         }

@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.RevObject.TYPE.COMMIT;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURE;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURETYPE;
@@ -18,10 +17,10 @@ import static org.locationtech.geogig.model.RevObject.TYPE.TREE;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.HashObjectFunnels;
 import org.locationtech.geogig.model.Node;
@@ -29,13 +28,14 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;
+
+import lombok.NonNull;
 
 /**
  * Hashes a RevObject and returns the ObjectId.
@@ -72,8 +72,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
      * 
      * @return a new ObjectId created from the hash of the RevObject.
      */
-    @Override
-    protected ObjectId _call() {
+    protected @Override ObjectId _call() {
         Preconditions.checkState(object != null, "Object has not been set.");
 
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
@@ -88,18 +87,6 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
 
     public static ObjectId hashFeature(List<Object> values) {
         return hash(h -> HashObjectFunnels.feature(h, values));
-    }
-
-    @Deprecated
-    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        final List<Node> t = trees == null ? Collections.emptyList() : trees;
-        final List<Node> f = features == null ? Collections.emptyList() : features;
-        final Iterable<Bucket> b = buckets == null ? Collections.emptySet() : buckets.values();
-
-        return hash(h -> HashObjectFunnels.tree(h, t, f, b));
-
     }
 
     public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
@@ -118,8 +105,7 @@ public class HashObject extends AbstractGeoGigOp<ObjectId> {
         return hash(h -> HashObjectFunnels.tag(h, name, commitId, message, tagger));
     }
 
-    public static ObjectId hashFeatureType(FeatureType featureType) {
-        checkNotNull(featureType);
+    public static ObjectId hashFeatureType(@NonNull FeatureType featureType) {
         return hash(h -> HashObjectFunnels.featureType(h, featureType));
     }
 

@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +17,8 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+
+import lombok.NonNull;
 
 /**
  * Represents a conversational protocol between two repositories to create, update, and delete
@@ -48,9 +49,7 @@ public class RefRequest {
      */
     public final Optional<ObjectId> have;
 
-    RefRequest(String name, ObjectId want, @Nullable ObjectId have) {
-        checkNotNull(name);
-        checkNotNull(want);
+    RefRequest(@NonNull String name, @NonNull ObjectId want, @Nullable ObjectId have) {
         checkArgument(!want.isNull(), "Do not request refs pointing to the NULl id");
         this.name = name;
         this.want = want;
@@ -74,8 +73,7 @@ public class RefRequest {
                 && Objects.equals(have, r.have);
     }
 
-    public static RefRequest want(Ref want, @Nullable ObjectId have) {
-        checkNotNull(want);
+    public static RefRequest want(@NonNull Ref want, @Nullable ObjectId have) {
         checkArgument(!want.getObjectId().isNull(),
                 "Do not request refs pointing to the NULl id: %s", want);
         if (have != null && have.isNull()) {

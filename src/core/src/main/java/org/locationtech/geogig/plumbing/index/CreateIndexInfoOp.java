@@ -74,8 +74,7 @@ public class CreateIndexInfoOp extends AbstractGeoGigOp<IndexInfo> {
      * 
      * @return the newly constructed {@link IndexInfo}
      */
-    @Override
-    protected IndexInfo _call() {
+    protected @Override IndexInfo _call() {
         IndexDatabase indexDatabase = indexDatabase();
         checkArgument(treeName != null, "tree name not provided");
         checkArgument(attributeName != null, "indexing attribute name not provided");

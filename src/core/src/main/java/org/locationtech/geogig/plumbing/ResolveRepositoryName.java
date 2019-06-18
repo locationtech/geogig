@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
@@ -37,14 +38,13 @@ public class ResolveRepositoryName extends AbstractGeoGigOp<String> {
      * @return the name of the repository
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected String _call() {
+    protected @Override String _call() {
         Optional<String> repoName = configDb.get("repo.name");
         if (repoName.isPresent()) {
             return repoName.get();
         }
         URI repoURI = repository().getLocation();
-        RepositoryResolver resolver = RepositoryResolver.lookup(repoURI);
+        RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
         return resolver.getName(repoURI);
     }
 }

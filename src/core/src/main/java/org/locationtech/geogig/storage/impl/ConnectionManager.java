@@ -36,8 +36,7 @@ public abstract class ConnectionManager<A, C> {
             this.connection = connection;
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return getClass().getSimpleName() + "[clients:" + clients + ", connection: "
                     + connection + "]";
         }

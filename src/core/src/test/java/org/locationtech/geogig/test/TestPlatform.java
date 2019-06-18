@@ -31,13 +31,11 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
         this.userHomeDirectory = userHomeDirectory;
     }
 
-    @Override
-    public File pwd() {
+    public @Override File pwd() {
         return workingDir;
     }
 
-    @Override
-    public File getUserHome() {
+    public @Override File getUserHome() {
         return userHomeDirectory;
     }
 
@@ -45,20 +43,17 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
         this.userHomeDirectory = userHomeDirectory;
     }
 
-    @Override
-    public TestPlatform clone() {
+    public @Override TestPlatform clone() {
         return new TestPlatform(pwd(), getUserHome());
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return getClass().getSimpleName() + "[home=" + this.userHomeDirectory + ", pwd="
                 + super.workingDir + "]";
     }
 
     // Make sure that all the times are unique (make sure clock ticks between calls)
-    @Override
-    public synchronized long currentTimeMillis() {
+    public @Override synchronized long currentTimeMillis() {
         boolean keep_going = true;
         int i = 0;
         long current = super.currentTimeMillis();

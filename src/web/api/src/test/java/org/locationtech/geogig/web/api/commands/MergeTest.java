@@ -136,16 +136,14 @@ public class MergeTest extends AbstractWebOpTest {
         buildCommand(options).run(testContext.get());
 
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call().isPresent());
 
-        path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point2.getID());
-        assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call()
-                .isPresent());
+        path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point2.getId());
+        assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call().isPresent());
 
-        path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point3.getID());
-        assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call()
-                .isPresent());
+        path = NodeRef.appendChild(TestData.pointsType.getTypeName(), TestData.point3.getId());
+        assertTrue(transaction.command(FindTreeChild.class).setChildPath(path).call().isPresent());
 
         JsonObject response = getJSONResponse().getJsonObject("response");
         assertTrue(response.getBoolean("success"));
@@ -196,7 +194,7 @@ public class MergeTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
@@ -263,8 +261,7 @@ public class MergeTest extends AbstractWebOpTest {
         assertEquals(1, featureArray.getValuesAs(JsonValue.class).size());
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", feature.getString("change"));
-        String path = NodeRef.appendChild(TestData.polysType.getTypeName(),
-                TestData.poly1.getID());
+        String path = NodeRef.appendChild(TestData.polysType.getTypeName(), TestData.poly1.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());

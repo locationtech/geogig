@@ -88,7 +88,7 @@ Feature: Cat
      Then the response status should be '200'
       And the xpath "/response/success/text()" equals "true"
       And the xpath "/response/featuretype/id/text()" equals "{@PointsTypeID}"
-      And the xpath "/response/featuretype/name/text()" equals "http://geogig.org:Points"
+      And the xpath "/response/featuretype/name/text()" equals "http://geogig.org#Points"
       And the xml response should contain "/response/featuretype/attribute" 3 times
       And the response body should contain "sp"
       And the response body should contain "ip"

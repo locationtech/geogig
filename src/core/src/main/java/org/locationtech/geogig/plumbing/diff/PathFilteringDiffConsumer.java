@@ -30,8 +30,7 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
         this.filter = new DiffPathFilter(pathFilters);
     }
 
-    @Override
-    public boolean tree(NodeRef left, NodeRef right) {
+    public @Override boolean tree(NodeRef left, NodeRef right) {
         String path = left == null ? right.path() : left.path();
         if (filter.treeApplies(path)) {
             return super.tree(left, right);
@@ -39,17 +38,15 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
         return false;
     }
 
-    @Override
-    public void endTree(NodeRef left, NodeRef right) {
+    public @Override void endTree(NodeRef left, NodeRef right) {
         String path = left == null ? right.path() : left.path();
         if (filter.treeApplies(path)) {
             super.endTree(left, right);
         }
     }
 
-    @Override
-    public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex, Bucket left,
-            Bucket right) {
+    public @Override boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
+            Bucket left, Bucket right) {
         String treePath = lparent == null ? rparent.path() : lparent.path();
 
         if (filter.bucketApplies(treePath, bucketIndex)) {
@@ -58,8 +55,7 @@ public class PathFilteringDiffConsumer extends PreOrderDiffWalk.ForwardingConsum
         return false;
     }
 
-    @Override
-    public boolean feature(NodeRef left, NodeRef right) {
+    public @Override boolean feature(NodeRef left, NodeRef right) {
         String parent = left == null ? right.getParentPath() : left.getParentPath();
         String node = left == null ? right.name() : left.name();
         if (filter.featureApplies(parent, node)) {

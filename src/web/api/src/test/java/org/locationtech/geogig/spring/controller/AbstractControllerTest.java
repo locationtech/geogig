@@ -63,4 +63,5 @@ public abstract class AbstractControllerTest {
             Streams.write(json, jsonWriter);
         }
         return baos.toByteArray();
-    }}
+    }
+}

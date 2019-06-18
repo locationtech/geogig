@@ -101,8 +101,7 @@ public final class CanonicalNodeNameOrder implements Comparator<String>, Seriali
 
     public static final CanonicalNodeNameOrder INSTANCE = new CanonicalNodeNameOrder();
 
-    @Override
-    public int compare(String p1, String p2) {
+    public @Override int compare(String p1, String p2) {
         return hashOrder.compare(p1, p2);
     }
 

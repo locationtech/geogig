@@ -48,13 +48,13 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
         JsonArray want = new JsonArray();
         json.add("want", want);
         want.add("bad want");
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/batchobjects").contentType(
-                        MediaType.APPLICATION_JSON).content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/batchobjects").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(content().string(containsString(
-                        "<response><success>false</success><error>bad want")));
+                .andExpect(content().string(
+                        containsString("<response><success>false</success><error>bad want")));
         repo.close();
     }
 
@@ -71,13 +71,13 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
         JsonArray have = new JsonArray();
         have.add("bad have");
         json.add("have", have);
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/batchobjects").contentType(
-                        MediaType.APPLICATION_JSON).content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/batchobjects").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         perform(post).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
-                .andExpect(content().string(containsString(
-                        "<response><success>false</success><error>bad have ")));
+                .andExpect(content().string(
+                        containsString("<response><success>false</success><error>bad have ")));
         repo.close();
     }
 
@@ -101,12 +101,12 @@ public class BatchObjectsControllerTest extends AbstractControllerTest {
         while (branch1Commits.hasNext()) {
             have.add(branch1Commits.next().getId().toString());
         }
-        MockHttpServletRequestBuilder post =
-                MockMvcRequestBuilders.post("/repos/repo1/repo/batchobjects").contentType(
-                        MediaType.APPLICATION_JSON).content(getBytes(json));
+        MockHttpServletRequestBuilder post = MockMvcRequestBuilders
+                .post("/repos/repo1/repo/batchobjects").contentType(MediaType.APPLICATION_JSON)
+                .content(getBytes(json));
         byte[] content = perform(post).andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM))
-                .andReturn().getResponse().getContentAsByteArray();
+                .andExpect(content().contentType(MediaType.APPLICATION_OCTET_STREAM)).andReturn()
+                .getResponse().getContentAsByteArray();
         // get an InputStream from the content
         ByteArrayInputStream bais = new ByteArrayInputStream(content);
         // get the Object serializer

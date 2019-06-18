@@ -129,8 +129,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * 
      * @return an immutable set of the refs for the given remote
      */
-    @Override
-    protected ImmutableSet<Ref> _call() {
+    protected @Override ImmutableSet<Ref> _call() {
         final Remote remoteConfig = this.remote.get().orElse(null);
 
         Preconditions.checkState(remoteRepo != null || remoteConfig != null,

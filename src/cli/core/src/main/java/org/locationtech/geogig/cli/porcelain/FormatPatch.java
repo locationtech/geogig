@@ -57,8 +57,7 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
     /**
      * Executes the format-patch command with the specified options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(refSpec.size() < 3, "Commit list is too long :%s", refSpec);
 
         GeoGIG geogig = cli.getGeogig();

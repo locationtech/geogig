@@ -37,13 +37,11 @@ import com.google.common.collect.Sets;
 @SuppressWarnings("deprecation")
 public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
-    @Override
-    protected RevTreeBuilder createBuiler() {
+    protected @Override RevTreeBuilder createBuiler() {
         return CanonicalTreeBuilder.create(objectStore);
     }
 
-    @Override
-    protected CanonicalTreeBuilder createBuiler(RevTree original) {
+    protected @Override CanonicalTreeBuilder createBuiler(RevTree original) {
         return CanonicalTreeBuilder.create(objectStore, original);
     }
 
@@ -68,17 +66,12 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             // assertEquals(100, removedKeys.size());
         }
 
-        final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
         for (Node key : removedKeys) {
             builder.remove(key);
-            legacy.remove(key);
         }
 
-        final RevTree legacyResult = legacy.build();
         final RevTree result = builder.build();
-
-        assertEquals(legacyResult, result);
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
@@ -110,16 +103,12 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             assertTrue(removedKeys.size() > 0);
         }
 
-        final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
         for (Node key : removedKeys) {
             builder.remove(key);
-            legacy.remove(key);
         }
 
-        final RevTree legacyResult = legacy.build();
         final RevTree result = builder.build();
-        assertEquals(legacyResult, result);
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
@@ -150,52 +139,39 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
             }
         }
 
-        final LegacyTreeBuilder legacy = createLegacyBuilder(tree);
         final CanonicalTreeBuilder builder = createBuiler(tree);
         for (Node key : removedKeys) {
             builder.remove(key);
-            legacy.remove(key);
         }
-
-        final RevTree legacyResult = legacy.build();
         final RevTree result = builder.build();
         assertEquals(resultSize, result.size());
         assertEquals(0, result.bucketsSize());
-        assertEquals(legacyResult, result);
     }
 
     @Test
     public void testSplitsOnAdd() throws Exception {
-        final RevTree legacyFull;
         final RevTree leafFull;
         {
-            LegacyTreeBuilder legacy = createLegacyBuilder(RevTree.EMPTY);
             RevTreeBuilder builder = createBuiler();
             for (int i = 0; i < CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
                 Node node = createNode(i);
                 builder.put(node);
-                legacy.put(node);
             }
             leafFull = builder.build();
-            legacyFull = legacy.build();
         }
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), leafFull.size());
         assertEquals(0, leafFull.bucketsSize());
-        assertEquals(legacyFull, leafFull);
 
         final RevTree legacyExpanded;
         final RevTree expanded;
         {
-            LegacyTreeBuilder legacy = createLegacyBuilder(leafFull);
             RevTreeBuilder builder = createBuiler(leafFull);
             for (int i = CanonicalNodeNameOrder.normalizedSizeLimit(0); i < 2
                     * CanonicalNodeNameOrder.normalizedSizeLimit(0); i++) {
                 Node node = createNode(i);
                 builder.put(node);
-                legacy.put(node);
             }
             expanded = builder.build();
-            legacyExpanded = legacy.build();
         }
 
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), expanded.size());
@@ -203,7 +179,6 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         assertNotEquals(0, expanded.bucketsSize());
         List<Node> lstree = lstree(expanded);
         assertEquals(2 * CanonicalNodeNameOrder.normalizedSizeLimit(0), lstree.size());
-        assertEquals(legacyExpanded, expanded);
     }
 
     @Test

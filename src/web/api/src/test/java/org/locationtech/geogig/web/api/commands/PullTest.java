@@ -339,7 +339,7 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());
@@ -401,7 +401,7 @@ public class PullTest extends AbstractWebOpTest {
         JsonObject feature = featureArray.getJsonObject(0);
         assertEquals("CONFLICT", feature.getString("change"));
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         assertEquals(path, feature.getString("id"));
         JsonArray geometryArray = feature.getJsonArray("geometry");
         assertEquals(1, geometryArray.getValuesAs(JsonValue.class).size());

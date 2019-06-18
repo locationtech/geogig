@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 
 public class PRListOpTest {
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     private TestData origin;
 

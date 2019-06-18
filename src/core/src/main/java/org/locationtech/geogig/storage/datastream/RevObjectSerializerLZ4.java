@@ -21,8 +21,8 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import com.google.common.annotations.Beta;
-import com.google.common.base.Preconditions;
 
+import lombok.NonNull;
 import net.jpountz.lz4.LZ4BlockInputStream;
 import net.jpountz.lz4.LZ4BlockOutputStream;
 import net.jpountz.lz4.LZ4Compressor;
@@ -52,8 +52,7 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
 
     private final RevObjectSerializer factory;
 
-    public RevObjectSerializerLZ4(final RevObjectSerializer factory) {
-        Preconditions.checkNotNull(factory);
+    public RevObjectSerializerLZ4(final @NonNull RevObjectSerializer factory) {
         this.factory = factory;
     }
 
@@ -66,8 +65,7 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
         return false;
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream in) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream in) throws IOException {
         LZ4FastDecompressor decompressor = lz4factory.fastDecompressor();
         Checksum checksum = newChecksum();
         LZ4BlockInputStream cin = new LZ4BlockInputStream(in, decompressor, checksum);
@@ -80,15 +78,13 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
         return checksum;
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(data, offset, length);
         return read(id, in);
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         final int blockSize = 1 << 16;
         LZ4Compressor compressor = lz4factory.fastCompressor();
         Checksum checksum = newChecksum();
@@ -98,8 +94,7 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
         cout.finish();// same as close but not closing the wrapped stream
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return factory.getDisplayName() + "/LZ4";
     }
 }

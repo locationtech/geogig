@@ -45,8 +45,7 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
      * @return true if the object should be tracked, false if it should only be tracked if it
      *         matches the filter
      */
-    @Override
-    protected boolean trackingObject(ObjectId objectId) {
+    protected @Override boolean trackingObject(ObjectId objectId) {
         return destinationRepo.blobExists(objectId);
     }
 
@@ -55,8 +54,7 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
      * 
      * @param object the object to process
      */
-    @Override
-    protected void processObject(RevObject object) {
+    protected @Override void processObject(RevObject object) {
         if (object != null && !destinationRepo.blobExists(object.getId())) {
             destinationRepo.objectDatabase().put(object);
         }

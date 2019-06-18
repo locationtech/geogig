@@ -216,8 +216,7 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
             this.depth = depth;
         }
 
-        @Override
-        protected RevTree compute() {
+        protected @Override RevTree compute() {
             final RevTree builtTree;
             if (state.isCancelled()) {
                 return null;

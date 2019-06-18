@@ -50,13 +50,11 @@ public class CommandHooksDecorator implements Decorator {
             this.callChain = callChain;
         }
 
-        @Override
-        public void preCall(AbstractGeoGigOp<?> command) {
+        public @Override void preCall(AbstractGeoGigOp<?> command) {
             callChain.runPreHooks();
         }
 
-        @Override
-        public void postCall(AbstractGeoGigOp<?> command, Object result,
+        public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
                 RuntimeException exception) {
             callChain.runPostHooks(result, exception);
         }

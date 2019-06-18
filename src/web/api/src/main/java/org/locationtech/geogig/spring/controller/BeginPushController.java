@@ -51,7 +51,7 @@ public class BeginPushController extends AbstractRepositoryController {
     @Autowired
     private LegacyPushService legacyPushService;
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));

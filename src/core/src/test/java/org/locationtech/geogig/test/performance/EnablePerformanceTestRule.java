@@ -41,16 +41,14 @@ public class EnablePerformanceTestRule implements TestRule {
 
     private static final String PERF_TEST_SYS_PROP = "geogig.runPerformanceTests";
 
-    @Override
-    public Statement apply(Statement base, Description description) {
+    public @Override Statement apply(Statement base, Description description) {
         boolean enabled = Boolean.getBoolean(PERF_TEST_SYS_PROP);
         if (enabled) {
             return base;
         }
 
         return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
+            public @Override void evaluate() throws Throwable {
                 LOG.info(String.format("%s ignored, run with -D%s=true to enable it.",
                         description.getClassName(), PERF_TEST_SYS_PROP));
             }

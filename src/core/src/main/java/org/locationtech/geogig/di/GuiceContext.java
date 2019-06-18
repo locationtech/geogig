@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Platform;
@@ -23,12 +21,13 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.PluginDefaults;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+
+import lombok.NonNull;
 
 /**
  * Provides a method for finding and creating instances of GeoGig operations.
@@ -56,16 +55,14 @@ public class GuiceContext implements Context {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    @Override
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
         T command = getInstance(commandClass);
         command.setContext(this);
         command = getDecoratedInstance(command);
         return command;
     }
 
-    private <T> T getInstance(final Class<T> type) {
-        checkNotNull(type);
+    private <T> T getInstance(final @NonNull Class<T> type) {
         Provider<T> provider = guiceInjector.getProvider(type);
         T instance = provider.get();
         return instance;
@@ -77,83 +74,58 @@ public class GuiceContext implements Context {
         return getDecoratedInstance(undecorated);
     }
 
-    private <T> T getDecoratedInstance(T undecorated) {
-        checkNotNull(undecorated);
-        DecoratorProvider decoratorProvider = guiceInjector.getInstance(DecoratorProvider.class);
-        checkNotNull(decoratorProvider);
+    private <T> T getDecoratedInstance(@NonNull T undecorated) {
+        final @NonNull DecoratorProvider decoratorProvider = guiceInjector
+                .getInstance(DecoratorProvider.class);
         T decoratedInstance = decoratorProvider.get(undecorated);
         return decoratedInstance;
     }
 
-    @Override
-    public WorkingTree workingTree() {
+    public @Override WorkingTree workingTree() {
         return getDecoratedInstance(WorkingTree.class);
     }
 
-    @Override
-    @Deprecated
-    public StagingArea index() {
-        return stagingArea();
-    }
-
-    @Override
-    public StagingArea stagingArea() {
+    public @Override StagingArea stagingArea() {
         return getDecoratedInstance(StagingArea.class);
     }
 
-    @Override
-    public RefDatabase refDatabase() {
+    public @Override RefDatabase refDatabase() {
         return getDecoratedInstance(RefDatabase.class);
     }
 
-    @Override
-    public Platform platform() {
+    public @Override Platform platform() {
         return getDecoratedInstance(Platform.class);
     }
 
-    @Override
-    public ObjectDatabase objectDatabase() {
+    public @Override ObjectDatabase objectDatabase() {
         return getDecoratedInstance(ObjectDatabase.class);
     }
 
-    @Override
-    public IndexDatabase indexDatabase() {
+    public @Override IndexDatabase indexDatabase() {
         return getDecoratedInstance(IndexDatabase.class);
     }
 
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
+    public @Override ConflictsDatabase conflictsDatabase() {
         return getDecoratedInstance(ConflictsDatabase.class);
     }
 
-    @Override
-    public ConfigDatabase configDatabase() {
+    public @Override ConfigDatabase configDatabase() {
         return getDecoratedInstance(ConfigDatabase.class);
     }
 
-    @Override
-    public GraphDatabase graphDatabase() {
+    public @Override GraphDatabase graphDatabase() {
         return getDecoratedInstance(objectDatabase().getGraphDatabase());
     }
 
-    @Deprecated
-    @Override
-    public Repository repository() {
+    public @Override Repository repository() {
         return getDecoratedInstance(Repository.class);
     }
 
-    @Override
-    public PluginDefaults pluginDefaults() {
-        return getDecoratedInstance(PluginDefaults.class);
-    }
-
-    @Override
-    public BlobStore blobStore() {
+    public @Override BlobStore blobStore() {
         return getDecoratedInstance(objectDatabase().getBlobStore());
     }
 
-    @Override
-    public Context snapshot() {
+    public @Override Context snapshot() {
         return new SnapshotContext(this);
     }
 }

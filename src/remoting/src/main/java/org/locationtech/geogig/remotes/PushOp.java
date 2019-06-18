@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -31,6 +30,8 @@ import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
+
+import lombok.NonNull;
 
 /**
  * Update remote refs along with associated objects.
@@ -75,8 +76,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteName the name or URL of a remote repository to push to
      * @return {@code this}
      */
-    public PushOp setRemote(final String remoteName) {
-        checkNotNull(remoteName);
+    public PushOp setRemote(final @NonNull String remoteName) {
         this.remoteName = remoteName;
         return this;
     }
@@ -99,8 +99,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @return {@code null}
      * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
      */
-    @Override
-    protected TransferSummary _call() throws SynchronizationException {
+    protected @Override TransferSummary _call() throws SynchronizationException {
         final String remoteName = this.remoteName == null ? "origin" : this.remoteName;
         final Remote remote = resolveRemote(remoteName);
 
@@ -212,8 +211,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         Predicate<Ref> filter = new Predicate<Ref>() {
             final String prefix = Ref.HEADS_PREFIX;
 
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 return !(input instanceof SymRef) && input.getName().startsWith(prefix);
             }
         };

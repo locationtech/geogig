@@ -23,6 +23,7 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Preconditions;
@@ -115,7 +116,8 @@ public class GeoGIG {
 
         final Optional<URI> repoLocation = command(ResolveGeogigURI.class).call();
         if (repoLocation.isPresent()) {
-            if (RepositoryResolver.lookup(repoLocation.get()).repoExists(repoLocation.get())) {
+            if (RepositoryFinder.INSTANCE.lookup(repoLocation.get())
+                    .repoExists(repoLocation.get())) {
                 repository = context.repository();
                 try {
                     repository.open();
@@ -161,7 +163,7 @@ public class GeoGIG {
      * Precondition: {#link #isOpen()} must return {code false}
      */
     public static void delete(URI repoURI) throws Exception {
-        RepositoryResolver resolver = RepositoryResolver.lookup(repoURI);
+        RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(repoURI);
         resolver.delete(repoURI);
 
     }

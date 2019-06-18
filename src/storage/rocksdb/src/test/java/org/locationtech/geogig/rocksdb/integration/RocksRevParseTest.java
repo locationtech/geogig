@@ -9,12 +9,14 @@
  */
 package org.locationtech.geogig.rocksdb.integration;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.locationtech.geogig.plumbing.RevParseTest;
-import org.locationtech.geogig.repository.Context;
 
 public class RocksRevParseTest extends RevParseTest {
+    public @Rule RocksdbTestRepositoryURIBuilder uriBuilder = new RocksdbTestRepositoryURIBuilder();
 
-    protected @Override Context createInjector() {
-        return RocksStorageModule.createContext(repositoryDirectory);
+    public @Before void before() {
+        testRepository.setURIBuilder(uriBuilder);
     }
 }

@@ -80,7 +80,7 @@ public class RenameRepository extends AbstractWebAPICommand {
             checkArgument(!name.equals(existingRepos.next()),
                     "A repository with that name already exists.");
         }
-        
+
         geogig.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("repo.name")
                 .setScope(ConfigScope.LOCAL).setValue(name).call();
 

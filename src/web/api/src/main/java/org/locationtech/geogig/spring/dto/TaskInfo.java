@@ -23,6 +23,7 @@ public class TaskInfo {
 
     @XmlElement
     private int id;
+
     @XmlElement
     private String name;
 

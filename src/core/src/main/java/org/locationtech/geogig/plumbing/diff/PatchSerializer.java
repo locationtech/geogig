@@ -18,20 +18,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * Serializes the differences between two versions of the repository, in plain text format
@@ -50,8 +52,7 @@ public class PatchSerializer {
      * @param reader the read from where to read the patch description
      * @return a Patch
      */
-    public static Patch read(BufferedReader reader) {
-        Preconditions.checkNotNull(reader);
+    public static Patch read(@NonNull BufferedReader reader) {
 
         Patch patch = new Patch();
         List<String> subset = Lists.newArrayList();
@@ -141,12 +142,14 @@ public class PatchSerializer {
     private static void addDifference(String s, Map<PropertyDescriptor, AttributeDiff> map,
             RevFeatureType oldRevFeatureType, RevFeatureType newRevFeatureType) {
         String[] tokens = s.split("\t");
-        PropertyDescriptor descriptor = oldRevFeatureType.type().getDescriptor(tokens[0]);
-        if (descriptor == null) {
+        PropertyDescriptor descriptor;
+        try {
+            descriptor = oldRevFeatureType.type().getDescriptor(tokens[0]);
+        } catch (NoSuchElementException e) {
             descriptor = newRevFeatureType.type().getDescriptor(tokens[0]);
         }
-        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(
-                descriptor.getType().getBinding(), s.substring(s.indexOf("\t") + 1));
+        AttributeDiff ad = AttributeDiffFactory.attributeDiffFromText(descriptor.getBinding(),
+                s.substring(s.indexOf("\t") + 1));
         map.put(descriptor, ad);
     }
 

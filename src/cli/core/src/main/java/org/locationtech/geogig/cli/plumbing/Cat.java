@@ -51,8 +51,7 @@ public class Cat extends AbstractCommand {
     @Parameter(names = { "--binary" }, description = "Produce binary output")
     private boolean binary;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(paths.size() < 2, "Only one refspec allowed");
         checkParameter(!paths.isEmpty(), "A refspec must be specified");
 

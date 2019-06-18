@@ -16,6 +16,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * Server version, given by it's major, minor, and patch numbers
  * 
@@ -71,23 +73,19 @@ public class Version implements Comparable<Version> {
         return String.format("%d.%d.%d", major, minor, patch);
     }
 
-    public boolean lowerThan(Version v) {
-        Preconditions.checkNotNull(v);
+    public boolean lowerThan(@NonNull Version v) {
         return compareTo(v) < 0;
     }
 
-    public boolean lowerOrEqualTo(Version v) {
-        Preconditions.checkNotNull(v);
+    public boolean lowerOrEqualTo(@NonNull Version v) {
         return compareTo(v) <= 0;
     }
 
-    public boolean greatherThan(Version v) {
-        Preconditions.checkNotNull(v);
+    public boolean greatherThan(@NonNull Version v) {
         return compareTo(v) > 0;
     }
 
-    public boolean greatherOrEqualTo(Version v) {
-        Preconditions.checkNotNull(v);
+    public boolean greatherOrEqualTo(@NonNull Version v) {
         return compareTo(v) >= 0;
     }
 

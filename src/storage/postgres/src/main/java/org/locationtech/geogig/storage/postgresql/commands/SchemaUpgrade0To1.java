@@ -22,7 +22,7 @@ import org.locationtech.geogig.plumbing.RebuildGraphOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
@@ -78,7 +78,7 @@ public class SchemaUpgrade0To1 {
             URI repoURI = env.connectionConfig.toURI(repoName);
             Repository repo;
             try {
-                repo = RepositoryResolver.load(repoURI);
+                repo = RepositoryFinder.INSTANCE.open(repoURI);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException("Unable to connnect to repo " + repoName, e);
             }

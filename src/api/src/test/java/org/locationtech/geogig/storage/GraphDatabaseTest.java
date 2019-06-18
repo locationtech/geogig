@@ -32,18 +32,15 @@ public class GraphDatabaseTest {
             this.identifier = identifier;
         }
 
-        @Override
-        public ObjectId getIdentifier() {
+        public @Override ObjectId getIdentifier() {
             return identifier;
         }
 
-        @Override
-        public Iterator<GraphEdge> getEdges(Direction direction) {
+        public @Override Iterator<GraphEdge> getEdges(Direction direction) {
             return null;
         }
 
-        @Override
-        public boolean isSparse() {
+        public @Override boolean isSparse() {
             return false;
         }
 

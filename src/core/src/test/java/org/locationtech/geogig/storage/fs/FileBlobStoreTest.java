@@ -17,8 +17,7 @@ import org.locationtech.geogig.test.TestPlatform;
 
 public class FileBlobStoreTest extends TransactionBlobStoreTest {
 
-    @Override
-    protected TransactionBlobStore createBlobStore(File currentDirectory) {
+    protected @Override TransactionBlobStore createBlobStore(File currentDirectory) {
         new File(currentDirectory, ".geogig").mkdir();// fake a repo directory
         FileBlobStore fileBlobStore = new FileBlobStore(new TestPlatform(currentDirectory));
         fileBlobStore.open();

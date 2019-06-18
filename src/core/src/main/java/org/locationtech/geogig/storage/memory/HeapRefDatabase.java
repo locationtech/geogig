@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 
 import java.util.HashMap;
@@ -28,41 +27,29 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import lombok.NonNull;
+
 /**
  * Provides an implementation of a GeoGig ref database that utilizes the heap for the storage of
  * refs.
  */
 public class HeapRefDatabase extends AbstractRefDatabase {
 
-    private ConcurrentMap<String, String> refs;
+    private final ConcurrentMap<String, String> refs = new ConcurrentHashMap<>();
 
-    /**
-     * Creates the reference database.
-     */
-    @Override
-    public void create() {
-        if (refs == null) {
-            refs = new ConcurrentHashMap<>();
-        }
+    public HeapRefDatabase() {
+        this(false);
     }
 
-    /**
-     * Closes the reference database.
-     */
-    @Override
-    public void close() {
-        if (refs != null) {
-            refs.clear();
-            refs = null;
-        }
+    public HeapRefDatabase(boolean readOnly) {
+        super(readOnly);
     }
 
     /**
      * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
-    @Override
-    public String getRef(String name) {
+    public @Override String getRef(String name) {
         String val = refs.get(name);
         if (val == null) {
             return null;
@@ -80,10 +67,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @param value the value of the ref
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
-    @Override
-    public void putRef(String name, String value) {
-        checkNotNull(name);
-        checkNotNull(value);
+    public @Override void putRef(@NonNull String name, @NonNull String value) {
         ObjectId.valueOf(value);
         refs.put(name, value);
     }
@@ -93,9 +77,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      *        {@code "refs/remotes/origin"}, etc).
      * @return the value of the ref before removing it, or {@code null} if it didn't exist
      */
-    @Override
-    public String remove(String refName) {
-        checkNotNull(refName);
+    public @Override String remove(@NonNull String refName) {
         String oldValue = refs.remove(refName);
         if (oldValue != null && oldValue.startsWith("ref: ")) {
             oldValue = unmask(oldValue);
@@ -107,9 +89,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
      */
-    @Override
-    public String getSymRef(String name) {
-        checkNotNull(name);
+    public @Override String getSymRef(@NonNull String name) {
         String value = refs.get(name);
         if (value == null) {
             return null;
@@ -132,10 +112,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @param val the value of the symbolic ref
      * @return {@code null} if the ref didn't exist already, its old value otherwise
      */
-    @Override
-    public void putSymRef(String name, String val) {
-        checkNotNull(name);
-        checkNotNull(val);
+    public @Override void putSymRef(@NonNull String name, @NonNull String val) {
         val = "ref: " + val;
         refs.put(name, val);
     }
@@ -148,8 +125,7 @@ public class HeapRefDatabase extends AbstractRefDatabase {
             this.prefix = prefix;
         }
 
-        @Override
-        public boolean apply(String refName) {
+        public @Override boolean apply(String refName) {
             return refName.startsWith(prefix);
         }
     }
@@ -158,16 +134,14 @@ public class HeapRefDatabase extends AbstractRefDatabase {
      * @return all known references under the "refs" namespace (i.e. not top level ones like HEAD,
      *         etc), key'ed by ref name
      */
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
 
         Predicate<String> filter = Predicates.not(new RefPrefixPredicate(TRANSACTIONS_PREFIX));
 
         return getAll(filter);
     }
 
-    @Override
-    public Map<String, String> getAll(final String prefix) {
+    public @Override Map<String, String> getAll(final String prefix) {
         Preconditions.checkNotNull(prefix, "namespace can't be null");
         Predicate<String> filter = new RefPrefixPredicate(prefix);
         return getAll(filter);
@@ -179,14 +153,12 @@ public class HeapRefDatabase extends AbstractRefDatabase {
         return all;
     }
 
-    @Override
-    public Map<String, String> removeAll(final String namespace) {
+    public @Override Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
 
         Predicate<String> keyPredicate = new Predicate<String>() {
 
-            @Override
-            public boolean apply(String refName) {
+            public @Override boolean apply(String refName) {
                 return refName.startsWith(namespace);
             }
         };
@@ -195,16 +167,6 @@ public class HeapRefDatabase extends AbstractRefDatabase {
             refs.remove(key);
         }
         return removed;
-    }
-
-    @Override
-    public void configure() {
-        // No-op
-    }
-
-    @Override
-    public boolean checkConfig() {
-        return true;
     }
 
     public void putAll(Map<String, String> all) {

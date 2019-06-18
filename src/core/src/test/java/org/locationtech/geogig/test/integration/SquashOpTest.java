@@ -17,6 +17,7 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.SquashOp;
-import org.opengis.feature.Feature;
 
 import com.google.common.collect.Lists;
 
@@ -43,12 +43,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).call();
+            final RevCommit commit = repo.command(CommitOp.class).call();
             commits.add(commit);
         }
 
-        geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         ArrayList<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(3, logentries.size());
         RevCommit headCommit = logentries.get(0);
@@ -67,12 +67,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).setMessage("Squashed").call();
+            final RevCommit commit = repo.command(CommitOp.class).setMessage("Squashed").call();
             commits.add(commit);
         }
 
-        geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         ArrayList<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(3, logentries.size());
         RevCommit headCommit = logentries.get(0);
@@ -91,12 +91,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).call();
+            final RevCommit commit = repo.command(CommitOp.class).call();
             commits.add(commit);
         }
 
-        geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(5)).call();
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(5)).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         ArrayList<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(2, logentries.size());
         RevCommit squashedCommit = logentries.get(0);
@@ -114,12 +114,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class).call();
+            final RevCommit commit = repo.command(CommitOp.class).call();
             commits.add(commit);
         }
 
         try {
-            geogig.command(SquashOp.class).setSince(commits.get(0)).setUntil(commits.get(4)).call();
+            repo.command(SquashOp.class).setSince(commits.get(0)).setUntil(commits.get(4)).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("no parents"));
@@ -132,13 +132,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().getID()).call();
+            final RevCommit commit = repo.command(CommitOp.class).setMessage(f.getId()).call();
             commits.add(commit);
         }
-        geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(1))
+        repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(1))
                 .setMessage("squashed").call();
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         ArrayList<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(6, logentries.size());
         RevCommit squashedCommit = logentries.get(4);
@@ -152,13 +151,12 @@ public class SquashOpTest extends RepositoryTestCase {
         List<RevCommit> commits = Lists.newArrayList();
         for (Feature f : features) {
             insertAndAdd(f);
-            final RevCommit commit = geogig.command(CommitOp.class)
-                    .setMessage(f.getIdentifier().getID()).call();
+            final RevCommit commit = repo.command(CommitOp.class).setMessage(f.getId()).call();
             commits.add(commit);
         }
-        geogig.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(2))
+        repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(2))
                 .setMessage("squashed").call();
-        Iterator<RevCommit> log = geogig.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.command(LogOp.class).call();
         ArrayList<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(5, logentries.size());
         RevCommit squashedCommit = logentries.get(3);
@@ -169,21 +167,21 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testUncleanWorkingTree() throws Exception {
         insertAndAdd(points1);
-        RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insert(points2);
         exception.expect(IllegalStateException.class);
-        geogig.command(SquashOp.class).setSince(c1).setUntil(c1).call();
+        repo.command(SquashOp.class).setSince(c1).setUntil(c1).call();
     }
 
     @Test
     public void testUncleanIndex() throws Exception {
         insertAndAdd(points1);
-        RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insertAndAdd(points2);
         exception.expect(IllegalStateException.class);
-        geogig.command(SquashOp.class).setSince(c1).setUntil(c1).call();
+        repo.command(SquashOp.class).setSince(c1).setUntil(c1).call();
     }
 
     @Test
@@ -202,22 +200,22 @@ public class SquashOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit
         insertAndAdd(points1);
         @SuppressWarnings("unused")
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
-                .setMessage("My merge message.").call();
-        geogig.command(SquashOp.class).setSince(c3).setUntil(c4).setMessage("Squashed").call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        repo.command(MergeOp.class).addCommit(branch1.getObjectId()).setMessage("My merge message.")
+                .call();
+        repo.command(SquashOp.class).setSince(c3).setUntil(c4).setMessage("Squashed").call();
         // check that the commit added after the squashed has all the parents
         ArrayList<RevCommit> log = Lists
-                .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
+                .newArrayList(repo.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(3, log.size());
         List<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(2, parents.size());
@@ -243,22 +241,22 @@ public class SquashOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit*
         insertAndAdd(points1);
         @SuppressWarnings("unused")
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
         @SuppressWarnings("unused")
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines1);
         @SuppressWarnings("unused")
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         try {
-            geogig.command(SquashOp.class).setSince(c2).setUntil(mergeReport.getMergeCommit())
+            repo.command(SquashOp.class).setSince(c2).setUntil(mergeReport.getMergeCommit())
                     .setMessage("Squashed").call();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage()
@@ -282,23 +280,23 @@ public class SquashOpTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge commit*
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
         @SuppressWarnings("unused")
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
-        geogig.command(SquashOp.class).setSince(c3).setUntil(mergeReport.getMergeCommit())
+        repo.command(SquashOp.class).setSince(c3).setUntil(mergeReport.getMergeCommit())
                 .setMessage("Squashed").call();
         ArrayList<RevCommit> log = Lists
-                .newArrayList(geogig.command(LogOp.class).setFirstParentOnly(true).call());
+                .newArrayList(repo.command(LogOp.class).setFirstParentOnly(true).call());
         assertEquals(2, log.size());
         List<ObjectId> parents = log.get(0).getParentIds();
         assertEquals(c1.getId(), parents.get(0));
@@ -324,25 +322,25 @@ public class SquashOpTest extends RepositoryTestCase {
         // o - master - HEAD - Merge commit*
         insertAndAdd(lines2);
         @SuppressWarnings("unused")
-        final RevCommit c0 = geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        final RevCommit c0 = repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
         @SuppressWarnings("unused")
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
         @SuppressWarnings("unused")
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
         @SuppressWarnings("unused")
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        Ref branch1 = geogig.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch1.getObjectId())
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
         try {
-            geogig.command(SquashOp.class).setSince(c1).setUntil(mergeReport.getMergeCommit())
+            repo.command(SquashOp.class).setSince(c1).setUntil(mergeReport.getMergeCommit())
                     .setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
@@ -370,25 +368,25 @@ public class SquashOpTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
         @SuppressWarnings("unused")
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
         @SuppressWarnings("unused")
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
         insertAndAdd(lines2);
         @SuppressWarnings("unused")
-        final RevCommit c5 = geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        final RevCommit c5 = repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines3);
         @SuppressWarnings("unused")
-        final RevCommit c6 = geogig.command(CommitOp.class).setMessage("commit for " + idL3).call();
+        final RevCommit c6 = repo.command(CommitOp.class).setMessage("commit for " + idL3).call();
 
         try {
-            geogig.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
+            repo.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().equals(
@@ -400,21 +398,21 @@ public class SquashOpTest extends RepositoryTestCase {
     public void testSquashwithBranchWithoutCommitsCreatedInChildren() throws Exception {
         insertAndAdd(points1);
         @SuppressWarnings("unused")
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         insertAndAdd(points2);
-        final RevCommit c2 = geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        final RevCommit c3 = geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
         @SuppressWarnings("unused")
-        final RevCommit c4 = geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        geogig.command(BranchCreateOp.class).setName("branch1").call();
+        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        repo.command(BranchCreateOp.class).setName("branch1").call();
         insertAndAdd(lines2);
         @SuppressWarnings("unused")
-        final RevCommit c5 = geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        final RevCommit c5 = repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
         try {
-            geogig.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
+            repo.command(SquashOp.class).setSince(c2).setUntil(c3).setMessage("Squashed").call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().equals(
@@ -422,8 +420,7 @@ public class SquashOpTest extends RepositoryTestCase {
         }
     }
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
 }

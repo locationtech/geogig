@@ -18,5 +18,6 @@ import org.springframework.http.MediaType;
  */
 public interface StreamingWriterService {
     public StreamingWriter createWriter(Writer writer) throws StreamWriterException;
+
     public boolean handles(MediaType mediaType);
 }

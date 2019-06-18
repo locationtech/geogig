@@ -67,18 +67,15 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
     protected abstract Envelope createMaxBounds();
 
-    @Override
-    protected RevTreeBuilder createBuiler() {
+    protected @Override RevTreeBuilder createBuiler() {
         return createBuiler(RevTree.EMPTY);
     }
 
-    @Override
-    protected RevTreeBuilder createBuiler(RevTree original) {
+    protected @Override RevTreeBuilder createBuiler(RevTree original) {
         return RevTreeBuilder.quadBuilder(objectStore, objectStore, original, maxBounds);
     }
 
-    @Override
-    protected Node createNode(int i) {
+    protected @Override Node createNode(int i) {
         Node node = createRandomSmallRectNode(i);
         return node;
     }
@@ -220,8 +217,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Map<String, Node> added = new HashMap<>();
         Map<String, Node> removed = new HashMap<>();
         walk.walk(new PreOrderDiffWalk.AbstractConsumer() {
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 if (left != null) {
                     removed.put(left.name(), left.getNode());
                 }

@@ -23,8 +23,7 @@ import com.google.common.collect.Sets;
 
 public class ConflictsReadWriteOpTest extends RepositoryTestCase {
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test
@@ -35,10 +34,10 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
                 RevObjectTestSupport.hashString("ours2"),
                 RevObjectTestSupport.hashString("theirs2"));
         ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
-        geogig.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
+        repo.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
         Set<Conflict> returnedConflicts = Sets
-                .newHashSet(geogig.command(ConflictsQueryOp.class).call());
+                .newHashSet(repo.command(ConflictsQueryOp.class).call());
 
         assertEquals(Sets.newHashSet(conflicts), returnedConflicts);
     }

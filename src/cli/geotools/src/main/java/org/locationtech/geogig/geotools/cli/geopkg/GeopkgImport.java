@@ -47,20 +47,17 @@ public class GeopkgImport extends DataStoreImport implements CLICommand {
 
     final GeopkgSupport support = new GeopkgSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 
-    @Override
-    protected String getSourceDatabaseName() {
+    protected @Override String getSourceDatabaseName() {
         return commonArgs.database;
     }
 
     private GeopkgGeogigMetadata metadata = null;
 
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         File databaseFile = new File(commonArgs.database);
         Preconditions.checkArgument(databaseFile.exists(), "Database file not found.");
         final GeoPackage geopackage = new GeoPackage(databaseFile);

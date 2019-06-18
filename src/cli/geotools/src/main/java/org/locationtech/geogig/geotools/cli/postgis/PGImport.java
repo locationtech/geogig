@@ -34,13 +34,11 @@ public class PGImport extends DataStoreImport implements CLICommand {
 
     final PGSupport support = new PGSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 
-    @Override
-    protected String getSourceDatabaseName() {
+    protected @Override String getSourceDatabaseName() {
         return commonArgs.database;
     }
 }

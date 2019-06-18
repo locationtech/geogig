@@ -52,7 +52,7 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-geotools</artifactId>
+      <artifactId>geogig-gt-commands</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -114,7 +114,7 @@
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-geotools</artifactId>
+      <artifactId>geogig-gt-commands</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>

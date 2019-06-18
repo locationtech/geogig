@@ -46,16 +46,14 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
         this.destinationRepo = destinationRepo;
     }
 
-    @Override
-    public boolean hasNext() {
+    public @Override boolean hasNext() {
         if (next == null) {
             next = computeNext();
         }
         return next != null;
     }
 
-    @Override
-    public DiffEntry next() {
+    public @Override DiffEntry next() {
         if (next == null && !hasNext()) {
             throw new NoSuchElementException();
         }
@@ -64,8 +62,7 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
         return returnValue;
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         source.close();
     }
 

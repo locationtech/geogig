@@ -62,8 +62,7 @@ public class ParseTimestamp extends AbstractGeoGigOp<Long> {
      * 
      * @return a Long with the timestamp represented by the specified string
      */
-    @Override
-    protected Long _call() {
+    protected @Override Long _call() {
         Preconditions.checkState(string != null, "String has not been set.");
 
         try { // see if it is a timestamp in milisecs

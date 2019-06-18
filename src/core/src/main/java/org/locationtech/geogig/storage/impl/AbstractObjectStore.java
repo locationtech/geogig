@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -28,6 +27,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
@@ -35,26 +35,31 @@ import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 
 import com.google.common.io.Closeables;
 
+import lombok.NonNull;
+
 /**
  * Provides a base implementation for different representations of the {@link ObjectStore}.
  * 
  * @see ObjectStore
  */
-public abstract class AbstractObjectStore implements ObjectStore {
+public abstract class AbstractObjectStore extends AbstractStore implements ObjectStore {
 
     private RevObjectSerializer serializer;
 
     public AbstractObjectStore() {
-        this(new RevObjectSerializerProxy());
+        this(false);
     }
 
-    public AbstractObjectStore(final RevObjectSerializer serializer) {
-        checkNotNull(serializer);
+    public AbstractObjectStore(boolean readOnly) {
+        this(new RevObjectSerializerProxy(), readOnly);
+    }
+
+    public AbstractObjectStore(final @NonNull RevObjectSerializer serializer, boolean readOnly) {
+        super(readOnly);
         this.serializer = serializer;
     }
 
-    protected void setSerializationFactory(RevObjectSerializer serializer) {
-        checkNotNull(serializer);
+    protected void setSerializationFactory(@NonNull RevObjectSerializer serializer) {
         this.serializer = serializer;
     }
 
@@ -69,12 +74,11 @@ public abstract class AbstractObjectStore implements ObjectStore {
      * @return a list of matching results
      * @see org.locationtech.geogig.storage.ObjectDatabase#lookUp(java.lang.String)
      */
-    @Override
-    public List<ObjectId> lookUp(final String partialId) {
+    public @Override List<ObjectId> lookUp(final String partialId) {
         checkNotNull(partialId, "argument partialId is null");
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         byte[] raw = ObjectId.toRaw(partialId);
 
@@ -103,18 +107,16 @@ public abstract class AbstractObjectStore implements ObjectStore {
      */
     protected abstract List<ObjectId> lookUpInternal(byte[] raw);
 
-    @Override
-    public RevObject get(ObjectId id) {
+    public @Override RevObject get(ObjectId id) {
         checkNotNull(id, "argument id is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         return get(id, true);
     }
 
-    @Override
-    public @Nullable RevObject getIfPresent(ObjectId id) {
+    public @Override @Nullable RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         return get(id, false);
     }
@@ -128,11 +130,10 @@ public abstract class AbstractObjectStore implements ObjectStore {
      * @see org.locationtech.geogig.storage.ObjectDatabase#get(org.locationtech.geogig.model.ObjectId,
      *      org.locationtech.geogig.storage.impl.ObjectReader)
      */
-    @Override
-    public <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
+    public @Override <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         RevObject obj = null;
         try {
@@ -145,12 +146,11 @@ public abstract class AbstractObjectStore implements ObjectStore {
         }
     }
 
-    @Override
-    public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz)
+    public @Override @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz)
             throws IllegalArgumentException {
         checkNotNull(id, "argument id is null");
         checkNotNull(clazz, "argument class is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
         try {
             return clazz.cast(get(id, false));
         } catch (ClassCastException e) {
@@ -175,28 +175,23 @@ public abstract class AbstractObjectStore implements ObjectStore {
         return object;
     }
 
-    @Override
-    public RevTree getTree(ObjectId id) {
+    public @Override RevTree getTree(ObjectId id) {
         return get(id, RevTree.class);
     }
 
-    @Override
-    public RevFeature getFeature(ObjectId id) {
+    public @Override RevFeature getFeature(ObjectId id) {
         return get(id, RevFeature.class);
     }
 
-    @Override
-    public RevFeatureType getFeatureType(ObjectId id) {
+    public @Override RevFeatureType getFeatureType(ObjectId id) {
         return get(id, RevFeatureType.class);
     }
 
-    @Override
-    public RevCommit getCommit(ObjectId id) {
+    public @Override RevCommit getCommit(ObjectId id) {
         return get(id, RevCommit.class);
     }
 
-    @Override
-    public RevTag getTag(ObjectId id) {
+    public @Override RevTag getTag(ObjectId id) {
         return get(id, RevTag.class);
     }
 
@@ -210,11 +205,10 @@ public abstract class AbstractObjectStore implements ObjectStore {
      */
     protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound);
 
-    @Override
-    public boolean put(final RevObject object) {
+    public @Override boolean put(final RevObject object) {
         checkNotNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         writeObject(object, rawOut);
@@ -228,11 +222,11 @@ public abstract class AbstractObjectStore implements ObjectStore {
      * This default implementation calls {@link #putInternal(ObjectId, byte[])} for each object;
      * subclasses may override if appropriate.
      */
-    @Override
-    public void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public @Override void putAll(Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
-        checkState(isOpen(), "db is closed");
+        checkOpen();
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         while (objects.hasNext()) {
@@ -266,20 +260,17 @@ public abstract class AbstractObjectStore implements ObjectStore {
      */
     protected abstract boolean putInternal(ObjectId id, byte[] rawData);
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
-        checkState(isOpen(), "db is closed");
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids) {
+        checkOpen();
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public void putAll(Iterator<? extends RevObject> objects) {
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
         putAll(objects, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids) {
-        checkState(isOpen(), "db is closed");
+    public @Override void deleteAll(Iterator<ObjectId> ids) {
+        checkOpen();
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 }

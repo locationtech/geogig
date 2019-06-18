@@ -29,8 +29,7 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
@@ -53,23 +52,22 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        final RevCommit left = geogig.command(CommitOp.class).setMessage("commit for " + idP2)
-                .call();
+        final RevCommit left = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines1);
-        final RevCommit right = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+        final RevCommit right = repo.command(CommitOp.class).setMessage("commit for " + idL1)
                 .call();
 
-        Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class).setLeft(left)
+        Optional<ObjectId> commonAncestor = repo.command(FindCommonAncestor.class).setLeft(left)
                 .setRight(right).call();
 
         assertTrue(commonAncestor.isPresent());
@@ -92,25 +90,24 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         // |
         // o - master - HEAD - Lines 1 added
         insertAndAdd(points1);
-        final RevCommit c1 = geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
         insertAndAdd(lines2);
-        final RevCommit left = geogig.command(CommitOp.class).setMessage("commit for " + idL2)
-                .call();
+        final RevCommit left = repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines1);
-        final RevCommit right = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+        final RevCommit right = repo.command(CommitOp.class).setMessage("commit for " + idL1)
                 .call();
 
-        Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class).setLeft(left)
+        Optional<ObjectId> commonAncestor = repo.command(FindCommonAncestor.class).setLeft(left)
                 .setRight(right).call();
 
         assertTrue(commonAncestor.isPresent());
@@ -137,33 +134,31 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge Commit
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        final RevCommit ancestor = geogig.command(CommitOp.class).setMessage("commit for " + idP3)
+        final RevCommit ancestor = repo.command(CommitOp.class).setMessage("commit for " + idP3)
                 .call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
         insertAndAdd(lines1);
-        final RevCommit branch2 = geogig.command(CommitOp.class).setMessage("commit for " + idL1)
+        final RevCommit branch2 = repo.command(CommitOp.class).setMessage("commit for " + idL1)
                 .call();
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
-        final RevCommit left = geogig.command(CommitOp.class).setMessage("commit for " + idL3)
-                .call();
+        final RevCommit left = repo.command(CommitOp.class).setMessage("commit for " + idL3).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
-        final MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(left.getId())
-                .call();
+        final MergeReport mergeReport = repo.command(MergeOp.class).addCommit(left.getId()).call();
 
-        Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
+        Optional<ObjectId> commonAncestor = repo.command(FindCommonAncestor.class)
                 .setLeft(mergeReport.getMergeCommit()).setRight(branch2).call();
 
         assertTrue(commonAncestor.isPresent());
@@ -196,42 +191,41 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge Commit
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // create branch1 and checkout
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
         insertAndAdd(points3);
-        final RevCommit ancestor = geogig.command(CommitOp.class).setMessage("commit for " + idP3)
+        final RevCommit ancestor = repo.command(CommitOp.class).setMessage("commit for " + idP3)
                 .call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
         insertAndAdd(lines1);
-        geogig.command(CommitOp.class).setMessage("commit for " + idL1).call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
+        repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
-        RevCommit branch3 = geogig.command(CommitOp.class).setMessage("commit for " + idPG1).call();
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        RevCommit branch3 = repo.command(CommitOp.class).setMessage("commit for " + idPG1).call();
+        repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idPG2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idPG2).call();
 
-        MergeReport mergeReport = geogig.command(MergeOp.class).addCommit(branch3.getId()).call();
+        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch3.getId()).call();
 
         RevCommit branch2 = mergeReport.getMergeCommit();
 
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines3);
-        final RevCommit left = geogig.command(CommitOp.class).setMessage("commit for " + idL3)
-                .call();
+        final RevCommit left = repo.command(CommitOp.class).setMessage("commit for " + idL3).call();
 
         // checkout master
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(lines2);
-        geogig.command(CommitOp.class).setMessage("commit for " + idL2).call();
+        repo.command(CommitOp.class).setMessage("commit for " + idL2).call();
 
-        mergeReport = geogig.command(MergeOp.class).addCommit(left.getId()).call();
+        mergeReport = repo.command(MergeOp.class).addCommit(left.getId()).call();
 
-        Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
+        Optional<ObjectId> commonAncestor = repo.command(FindCommonAncestor.class)
                 .setLeft(mergeReport.getMergeCommit()).setRight(branch2).call();
 
         assertTrue(commonAncestor.isPresent());
@@ -268,61 +262,61 @@ public class FindCommonAncestorTest extends RepositoryTestCase {
 
         // root commit
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).setMessage("root commit").call();
+        repo.command(CommitOp.class).setMessage("root commit").call();
 
         // commit1
-        geogig.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).setMessage("commit1").call();
-        geogig.command(BranchCreateOp.class).setAutoCheckout(false).setName("branch2").call();
+        repo.command(CommitOp.class).setMessage("commit1").call();
+        repo.command(BranchCreateOp.class).setAutoCheckout(false).setName("branch2").call();
 
         // commit2
-        geogig.command(CheckoutOp.class).setSource("master").call();
+        repo.command(CheckoutOp.class).setSource("master").call();
         insertAndAdd(points3);
-        geogig.command(CommitOp.class).setMessage("commit2").call();
+        repo.command(CommitOp.class).setMessage("commit2").call();
 
         // commit3
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(points1_modified);
-        geogig.command(CommitOp.class).setMessage("commit3").call();
+        repo.command(CommitOp.class).setMessage("commit3").call();
 
         // commit4
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines1);
-        ObjectId commit4 = geogig.command(CommitOp.class).setMessage("commit4").call().getId();
+        ObjectId commit4 = repo.command(CommitOp.class).setMessage("commit4").call().getId();
 
         // commit5
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
-        geogig.command(MergeOp.class).setMessage("commit3").addCommit(commit4).call();
+        repo.command(CheckoutOp.class).setSource("branch2").call();
+        repo.command(MergeOp.class).setMessage("commit3").addCommit(commit4).call();
 
         // commit6
-        geogig.command(CheckoutOp.class).setSource("branch1").call();
+        repo.command(CheckoutOp.class).setSource("branch1").call();
         insertAndAdd(lines2);
-        geogig.command(CommitOp.class).setMessage("commit6").call();
+        repo.command(CommitOp.class).setMessage("commit6").call();
 
         // commit7
         insertAndAdd(lines3);
-        geogig.command(CommitOp.class).setMessage("commit7").call();
+        repo.command(CommitOp.class).setMessage("commit7").call();
 
         // commit8
         insertAndAdd(poly1);
-        geogig.command(CommitOp.class).setMessage("commit8").call();
+        repo.command(CommitOp.class).setMessage("commit8").call();
 
         // commit9
         insertAndAdd(poly2);
-        ObjectId commit9 = geogig.command(CommitOp.class).setMessage("commit9").call().getId();
+        ObjectId commit9 = repo.command(CommitOp.class).setMessage("commit9").call().getId();
 
         // commit10
-        geogig.command(CheckoutOp.class).setSource("branch2").call();
+        repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly3);
-        RevCommit commit10 = geogig.command(CommitOp.class).setMessage("commit10").call();
+        RevCommit commit10 = repo.command(CommitOp.class).setMessage("commit10").call();
 
         // commit11
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        MergeReport report = geogig.command(MergeOp.class).setMessage("commit11").addCommit(commit9)
+        repo.command(CheckoutOp.class).setSource("master").call();
+        MergeReport report = repo.command(MergeOp.class).setMessage("commit11").addCommit(commit9)
                 .call();
 
-        Optional<ObjectId> commonAncestor = geogig.command(FindCommonAncestor.class)
+        Optional<ObjectId> commonAncestor = repo.command(FindCommonAncestor.class)
                 .setLeft(report.getMergeCommit()).setRight(commit10).call();
 
         assertTrue(commonAncestor.isPresent());

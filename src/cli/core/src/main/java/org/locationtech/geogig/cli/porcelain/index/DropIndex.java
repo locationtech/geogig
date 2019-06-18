@@ -34,8 +34,7 @@ public class DropIndex extends AbstractCommand implements CLICommand {
             "--attribute" }, description = "Indexed attribute of the index to drop.")
     private String attribute;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
 
         Repository repo = cli.getGeogig().getRepository();

@@ -68,8 +68,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
     /**
      * Executes the fetch command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(depth > 0 ? !fulldepth : true,
                 "Cannot specify a depth and full depth.  Use --depth <depth> or --fulldepth.");
 
@@ -82,7 +81,7 @@ public class Fetch extends AbstractCommand implements CLICommand {
         try {
             FetchOp fetch = cli.getGeogig().command(FetchOp.class);
             fetch.setProgressListener(cli.getProgressListener());
-            fetch.setAll(all).setPrune(prune).setFullDepth(fulldepth);
+            fetch.setAllRemotes(all).setPrune(prune).setFullDepth(fulldepth);
             fetch.setDepth(depth);
             fetch.setFetchIndexes(withIndexes);
 

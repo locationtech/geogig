@@ -67,11 +67,6 @@ public interface Repository extends CommandFactory {
     void addListener(RepositoryListener listener);
 
     /**
-     * Performs any setup required before first open() including default configuration.
-     */
-    void configure() throws RepositoryConnectionException;
-
-    /**
      * @return {@code true} if the repository is open
      */
     boolean isOpen();

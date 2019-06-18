@@ -16,15 +16,8 @@
     <project.relativePath>experimental</project.relativePath>
   </properties>
 
-  <profiles>
-  <profile>
-    <id>experimental</id>
-    <modules>
-      <module>ql</module>
-      <module>gui</module>
-      <module>scripting</module>
-    </modules>
-  </profile>
-  </profiles>
+  <modules>
+    <module>ql</module>
+  </modules>
 
 </project>

@@ -55,8 +55,7 @@ public class RevParse extends AbstractCommand {
     /**
      * Executes the rev-parse command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         GeoGIG geogig = cli.getGeogig();
 
         if (!refSpecs.isEmpty()) {

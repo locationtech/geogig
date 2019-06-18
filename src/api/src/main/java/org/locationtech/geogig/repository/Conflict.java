@@ -13,8 +13,6 @@ import java.util.Objects;
 
 import org.locationtech.geogig.model.ObjectId;
 
-import com.google.common.base.Preconditions;
-
 import lombok.NonNull;
 
 /**
@@ -110,21 +108,6 @@ public final class Conflict {
     public String toString() {
         return path + "\t" + ancestor.toString() + "\t" + ours.toString() + "\t"
                 + theirs.toString();
-    }
-
-    /**
-     * @deprecated at 1.0-RC3. Conflict serialization shall be specific to the ConflictsDatabase
-     *             implementation
-     */
-    @Deprecated
-    public static Conflict valueOf(String line) {
-        String[] tokens = line.split("\t");
-        Preconditions.checkArgument(tokens.length == 4, "wrong conflict definitions: %s", line);
-        String path = tokens[0];
-        ObjectId ancestor = ObjectId.valueOf(tokens[1]);
-        ObjectId ours = ObjectId.valueOf(tokens[2]);
-        ObjectId theirs = ObjectId.valueOf(tokens[3]);
-        return new Conflict(path, ancestor, ours, theirs);
     }
 
 }

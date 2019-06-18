@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
@@ -21,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -39,9 +37,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
@@ -66,46 +61,25 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
-import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 public class RocksdbObjectStore extends AbstractObjectStore implements ObjectStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbObjectStore.class);
 
-    private volatile boolean open;
-
-    protected final String path;
-
-    protected final boolean readOnly;
+    protected final @NonNull File dbDirectory;
 
     protected DBHandle dbhandle;
 
     private ReadOptions bulkReadOptions;
 
-    protected final Platform platform;
-
-    protected final @Nullable Hints hints;
-
-    @Inject
-    public RocksdbObjectStore(Platform platform, @Nullable Hints hints) {
-        this(platform, hints, "objects.rocksdb");
+    public RocksdbObjectStore(@NonNull File dbdir, boolean readOnly) {
+        super(readOnly);
+        this.dbDirectory = dbdir;
     }
 
-    public RocksdbObjectStore(Platform platform, @Nullable Hints hints, String databaseName) {
-        checkNotNull(platform);
-        this.platform = platform;
-        this.hints = hints;
-        Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
-        checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
-        URI uri = repoUriOpt.get();
-        checkArgument("file".equals(uri.getScheme()));
-        this.path = new File(new File(uri), databaseName).getAbsolutePath();
-
-        this.readOnly = hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-    }
-
-    @Override
-    public synchronized void open() {
+    public @Override synchronized void open() {
         open(Collections.emptySet());
     }
 
@@ -114,9 +88,10 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             return;
         }
         Map<String, String> defaultMetadata = ImmutableMap.of("version",
-                RocksdbStorageProvider.VERSION, "serializer", "proxy");
+                RocksdbRepositoryResolver.VERSION, "serializer", "proxy");
 
-        DBConfig address = new DBConfig(path, readOnly, defaultMetadata, columnFamilyNames);
+        DBConfig address = new DBConfig(dbDirectory.getAbsolutePath(), isReadOnly(),
+                defaultMetadata, columnFamilyNames);
         this.dbhandle = RocksConnectionManager.INSTANCE.acquire(address);
 
         this.bulkReadOptions = new ReadOptions();
@@ -136,40 +111,20 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
             serializer = new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2.INSTANCE);
         }
         super.setSerializationFactory(serializer);
-        open = true;
+        super.open();
     }
 
-    @Override
-    public synchronized void close() {
-        if (!open) {
-            return;
-        }
-        open = false;
-
-        final DBHandle dbhandle = this.dbhandle;
-        this.dbhandle = null;
-        this.bulkReadOptions.close();
-        RocksConnectionManager.INSTANCE.release(dbhandle);
-    }
-
-    @Override
-    public boolean isOpen() {
-        return open;
-    }
-
-    protected void checkOpen() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-    }
-
-    protected void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
+    public @Override synchronized void close() {
+        if (isOpen()) {
+            super.close();
+            final DBHandle dbhandle = this.dbhandle;
+            this.dbhandle = null;
+            this.bulkReadOptions.close();
+            RocksConnectionManager.INSTANCE.release(dbhandle);
         }
     }
 
-    @Override
-    protected boolean putInternal(ObjectId id, byte[] rawData) {
+    protected @Override boolean putInternal(ObjectId id, byte[] rawData) {
         checkWritable();
         boolean exists;
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -184,8 +139,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return !exists;
     }
 
-    @Override
-    protected InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
+    protected @Override InputStream getRawInternal(ObjectId id, boolean failIfNotFound)
             throws IllegalArgumentException {
 
         byte[] bytes = getRawInternal(id.getRawValue());
@@ -209,8 +163,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    public boolean exists(ObjectId id) {
+    public @Override boolean exists(ObjectId id) {
         checkOpen();
         checkNotNull(id, "argument id is null");
 
@@ -233,8 +186,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return size != RocksDB.NOT_FOUND;
     }
 
-    @Override
-    public void delete(ObjectId objectId) {
+    public @Override void delete(ObjectId objectId) {
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
         byte[] key = objectId.getRawValue();
@@ -245,13 +197,12 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener) {
         return getAll(ids, listener, RevObject.class);
     }
 
-    @Override
-    public <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
+    public @Override <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
             final BulkOpListener listener, final Class<T> type) {
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
@@ -268,8 +219,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
             private ReadOptions readOps = bulkReadOptions;
 
-            @Override
-            protected T computeNext() {
+            protected @Override T computeNext() {
                 checkOpen();
                 try (RocksDBReference dbRef = dbhandle.getReference()) {
                     while (oids.hasNext()) {
@@ -300,8 +250,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         };
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
+    public @Override void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
         checkNotNull(ids, "argument objectId is null");
         checkNotNull(listener, "argument listener is null");
         checkWritable();
@@ -333,8 +282,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         }
     }
 
-    @Override
-    protected List<ObjectId> lookUpInternal(byte[] idprefix) {
+    protected @Override List<ObjectId> lookUpInternal(byte[] idprefix) {
         checkOpen();
         List<ObjectId> matches = new ArrayList<>(2);
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -402,8 +350,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return new EncodedObject(o.getId(), o.getType(), out.toByteArray());
     }
 
-    @Override
-    public final void putAll(Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public @Override final void putAll(Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
@@ -461,8 +409,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         return insertedIds.size();
     }
 
-    @Override
-    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+    public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
 
         checkNotNull(refs, "refs is null");
@@ -484,15 +431,13 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
             private ObjectInfo<T> next;
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 closed = true;
                 noderefs = null;
                 valueBuff = null;
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 if (closed) {
                     return false;
                 }
@@ -502,8 +447,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
                 return next != null;
             }
 
-            @Override
-            public ObjectInfo<T> next() {
+            public @Override ObjectInfo<T> next() {
                 if (closed) {
                     throw new NoSuchElementException("Iterator is closed");
                 }

@@ -26,13 +26,11 @@ public class RocksdbConflictsDatabaseConformanceTest
     @Rule
     public TemporaryFolder tmp = new TemporaryFolder();
 
-    @Override
-    protected RocksdbConflictsDatabase createConflictsDatabase() throws Exception {
+    protected @Override RocksdbConflictsDatabase createConflictsDatabase() throws Exception {
         return new RocksdbConflictsDatabase(tmp.getRoot());
     }
 
-    @Override
-    protected void dispose(RocksdbConflictsDatabase conflicts) throws Exception {
+    protected @Override void dispose(RocksdbConflictsDatabase conflicts) throws Exception {
         conflicts.close();
     }
 

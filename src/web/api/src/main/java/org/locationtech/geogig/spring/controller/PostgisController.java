@@ -62,8 +62,7 @@ import com.google.common.collect.Maps;
  */
 @RestController
 @RequestMapping(path = GEOGIG_ROUTE_PREFIX + "/" + BASE_REPOSITORY_ROUTE
-        + "/{repoName}/postgis", produces = {
-        APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
+        + "/{repoName}/postgis", produces = { APPLICATION_XML_VALUE, APPLICATION_JSON_VALUE })
 public class PostgisController extends AbstractController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PostgisController.class);

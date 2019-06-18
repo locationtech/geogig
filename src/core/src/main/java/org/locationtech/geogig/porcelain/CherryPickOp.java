@@ -35,6 +35,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * 
  * Apply the changes introduced by an existing commit.
@@ -53,9 +55,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
      * @param onto a supplier for the commit id
      * @return {@code this}
      */
-    public CherryPickOp setCommit(final Supplier<ObjectId> commit) {
-        Preconditions.checkNotNull(commit);
-
+    public CherryPickOp setCommit(final @NonNull Supplier<ObjectId> commit) {
         this.commit = commit.get();
         return this;
     }
@@ -65,8 +65,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
      * 
      * @return RevCommit the new commit with the changes from the cherry-picked commit
      */
-    @Override
-    protected RevCommit _call() {
+    protected @Override RevCommit _call() {
         final Repository repository = repository();
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         Preconditions.checkState(currHead.isPresent(),
@@ -98,8 +97,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
         MergeScenarioReport report = command(ReportCommitConflictsOp.class).setCommit(commitToApply)
                 .setConsumer(new MergeScenarioConsumer() {
 
-                    @Override
-                    public void conflicted(Conflict conflict) {
+                    public @Override void conflicted(Conflict conflict) {
                         conflictsBuffer.add(conflict);
                         if (conflictsBuffer.size() == BUFFER_SIZE) {
                             // Write the conflicts
@@ -113,8 +111,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         }
                     }
 
-                    @Override
-                    public void unconflicted(DiffEntry diff) {
+                    public @Override void unconflicted(DiffEntry diff) {
                         diffEntryBuffer.add(diff);
                         if (diffEntryBuffer.size() == BUFFER_SIZE) {
                             // Stage it
@@ -125,8 +122,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
 
                     }
 
-                    @Override
-                    public void merged(FeatureInfo featureInfo) {
+                    public @Override void merged(FeatureInfo featureInfo) {
                         // Stage it
                         workingTree().insert(featureInfo);
                         try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
@@ -135,8 +131,7 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
                         }
                     }
 
-                    @Override
-                    public void finished() {
+                    public @Override void finished() {
                         if (conflictsBuffer.size() > 0) {
                             // Write the conflicts
                             command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();

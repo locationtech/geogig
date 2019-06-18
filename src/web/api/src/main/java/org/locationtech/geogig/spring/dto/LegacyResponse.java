@@ -78,11 +78,11 @@ public abstract class LegacyResponse {
     /**
      * Encodes an Atom link element into a response.
      *
-     * @param writer  StreamingWriter wrapper around the HTTP OutputStream to which to encode the
-     *                link.
+     * @param writer StreamingWriter wrapper around the HTTP OutputStream to which to encode the
+     *        link.
      * @param baseURL Base URL of the link to build for writing to the provided StreamingWriter.
-     * @param link    The relative link portion to write.
-     * @param format  The output format (XML or JSON).
+     * @param link The relative link portion to write.
+     * @param format The output format (XML or JSON).
      *
      * @throws StreamWriterException
      */

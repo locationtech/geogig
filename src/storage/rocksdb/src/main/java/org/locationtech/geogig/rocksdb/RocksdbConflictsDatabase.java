@@ -10,10 +10,8 @@
 package org.locationtech.geogig.rocksdb;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.Closeable;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -37,6 +35,7 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
@@ -46,7 +45,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
@@ -56,7 +54,9 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 
-public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
+import lombok.NonNull;
+
+public class RocksdbConflictsDatabase extends AbstractStore implements ConflictsDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(RocksdbConflictsDatabase.class);
 
@@ -66,8 +66,8 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
 
     private ConcurrentMap<String/* TxID */, DBHandle> dbsByTransaction = new ConcurrentHashMap<>();
 
-    public @Inject RocksdbConflictsDatabase(Platform platform, @Nullable Hints hints) {
-        checkNotNull(platform);
+    public @Inject RocksdbConflictsDatabase(@NonNull Platform platform, @Nullable Hints hints) {
+        super(Hints.isRepoReadOnly(hints));
         Optional<URI> repoUriOpt = new ResolveGeogigURI(platform, hints).call();
         checkArgument(repoUriOpt.isPresent(), "couldn't resolve geogig directory");
         URI uri = repoUriOpt.get();
@@ -81,18 +81,14 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
     }
 
-    @VisibleForTesting
-    public RocksdbConflictsDatabase(File baseDirectory) {
-        checkNotNull(baseDirectory);
+    public RocksdbConflictsDatabase(@NonNull File baseDirectory) {
+        super(false);
         checkArgument(baseDirectory.exists() && baseDirectory.canWrite());
         this.baseDirectory = baseDirectory;
     }
 
-    public @Override synchronized void open() {
-        // no-op
-    }
-
     public @Override synchronized void close() {
+        super.close();
         try {
             for (DBHandle db : dbsByTransaction.values()) {
                 RocksConnectionManager.INSTANCE.release(db);
@@ -143,8 +139,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return new File(this.baseDirectory, dbname).getAbsolutePath();
     }
 
-    @Override
-    public void removeConflicts(@Nullable String txId) {
+    public @Override void removeConflicts(@Nullable String txId) {
         if (dbExists(txId)) {
             String hanldeId = txId == null ? NULL_TX_ID : txId;
             DBHandle dbHandle = this.dbsByTransaction.remove(hanldeId);
@@ -197,8 +192,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return c;
     }
 
-    @Override
-    public boolean hasConflicts(@Nullable String txId) {
+    public @Override boolean hasConflicts(@Nullable String txId) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         boolean hasConflicts = false;
         if (dbRefOpt.isPresent()) {
@@ -212,8 +206,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return hasConflicts;
     }
 
-    @Override
-    public Optional<Conflict> getConflict(@Nullable String txId, String path) {
+    public @Override Optional<Conflict> getConflict(@Nullable String txId, String path) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         Conflict c = null;
         if (dbRefOpt.isPresent()) {
@@ -224,13 +217,12 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return Optional.ofNullable(c);
     }
 
-    @Override
-    public Iterator<Conflict> getByPrefix(@Nullable String txId, @Nullable String prefixFilter) {
+    public @Override Iterator<Conflict> getByPrefix(@Nullable String txId,
+            @Nullable String prefixFilter) {
         return new BatchIterator(this, txId, prefixFilter);
     }
 
-    @Override
-    public long getCountByPrefix(@Nullable String txId, @Nullable String treePath) {
+    public @Override long getCountByPrefix(@Nullable String txId, @Nullable String treePath) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return 0L;
@@ -274,13 +266,11 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return true;
     }
 
-    @Override
-    public void addConflict(@Nullable String txId, Conflict conflict) {
+    public @Override void addConflict(@Nullable String txId, Conflict conflict) {
         addConflicts(txId, Collections.singleton(conflict));
     }
 
-    @Override
-    public void addConflicts(@Nullable String txId, Iterable<Conflict> conflicts) {
+    public @Override void addConflicts(@Nullable String txId, Iterable<Conflict> conflicts) {
         try (RocksDBReference dbRef = getOrCreateDb(txId)) {
             ConflictSerializer serializer = new ConflictSerializer();
             try (WriteBatch batch = new WriteBatch()) {
@@ -299,8 +289,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
     }
 
-    @Override
-    public void removeConflict(@Nullable String txId, String path) {
+    public @Override void removeConflict(@Nullable String txId, String path) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -312,8 +301,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
     }
 
-    @Override
-    public void removeConflicts(@Nullable String txId, Iterable<String> paths) {
+    public @Override void removeConflicts(@Nullable String txId, Iterable<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -331,8 +319,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         }
     }
 
-    @Override
-    public Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return ImmutableSet.of();
@@ -352,8 +339,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
         return found;
     }
 
-    @Override
-    public void removeByPrefix(@Nullable String txId, @Nullable String pathPrefix) {
+    public @Override void removeByPrefix(@Nullable String txId, @Nullable String pathPrefix) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return;
@@ -436,8 +422,7 @@ public class RocksdbConflictsDatabase implements ConflictsDatabase, Closeable {
 
         }
 
-        @Override
-        protected Conflict computeNext() {
+        protected @Override Conflict computeNext() {
             if (currentBatch.hasNext()) {
                 return currentBatch.next();
             }

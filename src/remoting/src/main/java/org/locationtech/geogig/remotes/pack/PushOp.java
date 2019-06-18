@@ -57,6 +57,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import lombok.NonNull;
+
 /**
  * Updates refs on a remote repository using local refs, while sending objects necessary to complete
  * the given refs.
@@ -184,8 +186,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteName the name or URL of a remote repository to push to
      * @return {@code this}
      */
-    public PushOp setRemote(final String remoteName) {
-        checkNotNull(remoteName);
+    public PushOp setRemote(final @NonNull String remoteName) {
         this.remoteName = remoteName;
         return this;
     }
@@ -394,7 +395,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * @param remoteRefs the current state of the remote refs in it's local refs namespace (i.e. as
      *        {@code refs/heads/*}, not {@code refs/remotes/...})
      */
-    private PackRequest prepareRequest(List<PushReq> pushRequests, Set<Ref> remoteRefs) {
+    private PackRequest prepareRequest(@NonNull List<PushReq> pushRequests,
+            @NonNull Set<Ref> remoteRefs) {
 
         PackRequest req = new PackRequest();
 
@@ -576,9 +578,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             return new PushReq(null, remoterefspec, true, true);
         }
 
-        public static PushReq update(Ref local, String remoteRefName, boolean force) {
-            checkNotNull(local);
-            checkNotNull(remoteRefName);
+        public static PushReq update(@NonNull Ref local, @NonNull String remoteRefName,
+                boolean force) {
             return new PushReq(local, remoteRefName, force, false);
         }
 

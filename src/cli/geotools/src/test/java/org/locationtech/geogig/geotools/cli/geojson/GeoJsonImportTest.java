@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -31,11 +32,11 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.DescribeFeatureType;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.LineString;
 import org.mockito.exceptions.base.MockitoException;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -52,7 +53,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(geogig);
+        cli.setGeogig(new GeoGIG(repo));
     }
 
     @After
@@ -112,19 +113,19 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         for (PropertyDescriptor attribute : attributes) {
             switch (attribute.getName().toString()) {
             case "geometry":
-                assertTrue(LineString.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(LineString.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals("LINESTRING (102 0, 103 1, 104 0, 105 1)",
                         feature1Obj.get(attributeIndex).get().toString());
                 assertEquals("LINESTRING (100 0, 101 0, 101 1, 100 1)",
                         feature2Obj.get(attributeIndex).get().toString());
                 break;
             case "prop0":
-                assertTrue(String.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(String.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals("value0", feature1Obj.get(attributeIndex).get());
                 assertEquals("value1", feature2Obj.get(attributeIndex).get());
                 break;
             case "prop1":
-                assertTrue(Double.class.isAssignableFrom(attribute.getType().getBinding()));
+                assertTrue(Double.class.isAssignableFrom(attribute.getBinding()));
                 assertEquals(0.0, feature1Obj.get(attributeIndex).get());
                 assertEquals(0.2, feature2Obj.get(attributeIndex).get());
                 break;

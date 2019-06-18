@@ -20,15 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
-
-import org.geotools.data.DataUtilities;
-import org.geotools.data.memory.MemoryDataStore;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.WKTReader2;
-import org.locationtech.geogig.data.FeatureBuilder;
-import org.locationtech.geogig.data.FindFeatureTypeTrees;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -37,6 +31,7 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -67,10 +62,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
+import org.locationtech.jts.io.WKTReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,24 +120,20 @@ public class TestData {
 
     public static final String polyTypeSpec = "sp:String,ip:Integer,pp:Polygon:srid=4326";
 
-    public static final SimpleFeatureType pointsType, linesType, polysType;
+    public static final FeatureType pointsType, linesType, polysType;
 
-    public static final SimpleFeature point1, point2, point3, point4;
+    public static final Feature point1, point2, point3, point4;
 
-    public static final SimpleFeature point1_modified, point2_modified, point3_modified;
+    public static final Feature point1_modified, point2_modified, point3_modified;
 
-    public static final SimpleFeature line1, line2, line3;
+    public static final Feature line1, line2, line3;
 
-    public static final SimpleFeature poly1, poly2, poly3, poly4, poly1_modified1, poly1_modified2;
+    public static final Feature poly1, poly2, poly3, poly4, poly1_modified1, poly1_modified2;
 
     static {
-        try {
-            pointsType = DataUtilities.createType("http://geogig.org", "Points", pointsTypeSpec);
-            linesType = DataUtilities.createType("http://geogig.org", "Lines", linesTypeSpec);
-            polysType = DataUtilities.createType("http://geogig.org", "Polygons", polyTypeSpec);
-        } catch (SchemaException e) {
-            throw new RuntimeException(e);
-        }
+        pointsType = FeatureTypes.createType("http://geogig.org#Points", pointsTypeSpec.split(","));
+        linesType = FeatureTypes.createType("http://geogig.org#Lines", linesTypeSpec.split(","));
+        polysType = FeatureTypes.createType("http://geogig.org#Polygons", polyTypeSpec.split(","));
 
         point1 = feature(pointsType, "Point.1", "StringProp1_1", 1000, "POINT(0 0)");
         point2 = feature(pointsType, "Point.2", "StringProp1_2", 2000, "POINT(-10 -10)");
@@ -178,20 +166,16 @@ public class TestData {
 
     private GeogigTransaction transaction = null;
 
-    public TestData(final GeoGIG repo) throws Exception {
+    public TestData(final GeoGIG repo) {
         this.repo = repo.getOrCreateRepository();
     }
 
-    public TestData(final Repository repo) throws Exception {
+    public TestData(final Repository repo) {
         this.repo = repo;
     }
 
     public Repository getRepo() {
         return repo;
-    }
-
-    public static MemoryDataStore newMemoryDataStore() {
-        return new MemoryDataStoreWithProvidedFIDSupport();
     }
 
     public void setTransaction(GeogigTransaction transaction) {
@@ -367,20 +351,20 @@ public class TestData {
         return this;
     }
 
-    public TestData addAndCommit(String commitMessage, SimpleFeature... features) {
+    public TestData addAndCommit(String commitMessage, Feature... features) {
         return insert(features).add().commit(commitMessage);
     }
 
-    public TestData insert(SimpleFeature... features) {
+    public TestData insert(Feature... features) {
         return insert(Arrays.asList(features));
     }
 
-    public TestData insert(List<SimpleFeature> features) {
+    public TestData insert(List<Feature> features) {
         Context context = getContext();
         WorkingTree workingTree = context.workingTree();
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
-        for (SimpleFeature sf : features) {
-            SimpleFeatureType ft = sf.getType();
+        for (Feature sf : features) {
+            FeatureType ft = sf.getType();
             RevFeatureType rft = types.get(ft);
             if (null == rft) {
                 rft = RevFeatureType.builder().type(ft).build();
@@ -388,18 +372,18 @@ public class TestData {
                 context.objectDatabase().put(rft);
             }
             String parentTreePath = ft.getName().getLocalPart();
-            String path = NodeRef.appendChild(parentTreePath, sf.getID());
+            String path = NodeRef.appendChild(parentTreePath, sf.getId());
             FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(sf), rft.getId(), path);
             workingTree.insert(fi);
         }
         return this;
     }
 
-    public TestData remove(SimpleFeature... features) {
+    public TestData remove(Feature... features) {
         WorkingTree workingTree = getContext().workingTree();
-        for (SimpleFeature sf : features) {
+        for (Feature sf : features) {
             String parentTreePath = sf.getType().getName().getLocalPart();
-            workingTree.delete(parentTreePath, sf.getID());
+            workingTree.delete(parentTreePath, sf.getId());
         }
         return this;
     }
@@ -410,12 +394,11 @@ public class TestData {
         return Maps.uniqueIndex(refs, n -> n.path());
     }
 
-    public Map<String, SimpleFeature> getFeatures(@NonNull String rootTreeIsh) {
+    public Map<String, Feature> getFeatures(@NonNull String rootTreeIsh) {
         return getFeatures(rootTreeIsh, null);
     }
 
-    public Map<String, SimpleFeature> getFeatures(@NonNull String rootTreeIsh,
-            @Nullable String layerName) {
+    public Map<String, Feature> getFeatures(@NonNull String rootTreeIsh, String layerName) {
 
         Map<String, RevFeatureType> types = getFeatureTypes(rootTreeIsh);
         String treeIsh = layerName == null ? rootTreeIsh
@@ -424,7 +407,7 @@ public class TestData {
         Map<String, NodeRef> nodes = getFeatureNodes(treeIsh);
         Context context = getContext();
 
-        Map<String, SimpleFeature> featuresByPath = new HashMap<>();
+        Map<String, Feature> featuresByPath = new HashMap<>();
 
         try (AutoCloseableIterator<ObjectInfo<RevFeature>> features = context.objectDatabase()
                 .getObjects(nodes.values().iterator(), BulkOpListener.NOOP_LISTENER,
@@ -434,8 +417,7 @@ public class TestData {
                 String typeName = rf.ref().getParentPath();
                 String path = rf.ref().path();
                 String id = rf.node().getName();
-                SimpleFeature feature = (SimpleFeature) new FeatureBuilder(types.get(typeName))
-                        .build(id, rf.object());
+                Feature feature = Feature.build(id, types.get(typeName), rf.object());
                 featuresByPath.put(path, feature);
             });
         }
@@ -471,22 +453,22 @@ public class TestData {
         return logged;
     }
 
-    static SimpleFeature feature(SimpleFeatureType type, String id, Object... values) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    static Feature feature(FeatureType type, String id, Object... values) {
+        Feature feature = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     try {
-                        value = new WKTReader2().read((String) value);
+                        value = new WKTReader().read((String) value);
                     } catch (ParseException e) {
                         throw new RuntimeException(e);
                     }
                 }
             }
-            builder.set(i, value);
+            feature.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return feature;
     }
 
     public Iterator<RevCommit> log(String refSpec) {
@@ -500,14 +482,12 @@ public class TestData {
         return this;
     }
 
-    public static SimpleFeature clone(SimpleFeature f) {
-        return copy(f, f.getID());
+    public static Feature clone(Feature f) {
+        return copy(f, f.getId());
     }
 
-    public static SimpleFeature copy(SimpleFeature f, String newId) {
-        SimpleFeatureBuilder cloner = new SimpleFeatureBuilder(f.getFeatureType());
-        cloner.init(f);
-        return cloner.buildFeature(newId);
+    public static Feature copy(Feature f, String newId) {
+        return f.createCopy(newId);
     }
 
 }

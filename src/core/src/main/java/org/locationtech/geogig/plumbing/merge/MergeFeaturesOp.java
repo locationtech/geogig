@@ -18,7 +18,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -27,11 +28,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +54,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
 
     private NodeRef ancestorRef;
 
-    @Override
-    protected Feature _call() {
+    protected @Override Feature _call() {
         checkArgument(nodeRefA != null, "first feature version not specified");
         checkArgument(nodeRefB != null, "second feature version not specified");
         checkArgument(ancestorRef != null, "ancestor version not specified");
@@ -114,13 +109,12 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
     private Feature merge(RevFeature featureA, RevFeature featureB, RevFeature ancestor,
             RevFeatureType featureType) {
 
-        SimpleFeatureBuilder featureBuilder = new SimpleFeatureBuilder(
-                (SimpleFeatureType) featureType.type());
         List<PropertyDescriptor> descriptors = featureType.descriptors();
+        Feature feature = Feature.build(nodeRefA.name(), featureType);
         for (int i = 0; i < descriptors.size(); i++) {
             final PropertyDescriptor descriptor = descriptors.get(i);
-            final boolean isGeom = descriptor instanceof GeometryDescriptor;
-            Name name = descriptor.getName();
+            final boolean isGeom = descriptor.isGeometryDescriptor();
+
             Object valueAncestor = ancestor.get(i).orElse(null);
             Object valueA = featureA.get(i).orElse(null);
             Object valueB = featureB.get(i).orElse(null);
@@ -128,14 +122,13 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
             final boolean valueAEqualsAncestor = valueEquals(isGeom, valueA, valueAncestor);
 
             if (valueAEqualsAncestor) {
-                featureBuilder.set(name, valueB);
+                feature.setAttribute(i, valueB);
             } else {
                 Object merged = valueA;
-                featureBuilder.set(name, merged);
+                feature.setAttribute(i, merged);
             }
         }
-        return featureBuilder.buildFeature(nodeRefA.name());
-
+        return feature;
     }
 
     private boolean valueEquals(boolean isGeom, @Nullable Object v1, @Nullable Object v2) {

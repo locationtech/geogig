@@ -76,8 +76,7 @@ public abstract class CacheKey {
             this.keyPrefix = keyPrefix;
         }
 
-        @Override
-        public int prefix() {
+        public @Override int prefix() {
             return keyPrefix & 0xFF;
         }
     }
@@ -91,8 +90,7 @@ public abstract class CacheKey {
             this.keyPrefix = keyPrefix;
         }
 
-        @Override
-        public int prefix() {
+        public @Override int prefix() {
             return keyPrefix;
         }
 

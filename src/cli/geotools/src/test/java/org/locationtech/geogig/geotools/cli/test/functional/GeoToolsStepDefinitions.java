@@ -19,6 +19,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import org.locationtech.geogig.cli.test.functional.CLIContext;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 
+import cucumber.api.Scenario;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.When;
 import cucumber.runtime.java.StepDefAnnotation;
@@ -35,15 +36,15 @@ public class GeoToolsStepDefinitions {
     private CLIContextProvider contextProvider;
 
     @cucumber.api.java.Before
-    public void before() throws Throwable {
+    public void before(Scenario scenario) throws Throwable {
         contextProvider = CLIContextProvider.get();
-        contextProvider.before();
+        contextProvider.before(scenario);
         this.localRepo = contextProvider.getOrCreateRepositoryContext("localrepo");
     }
 
     @cucumber.api.java.After
-    public void after() {
-        contextProvider.after();
+    public void after(Scenario scenario) {
+        contextProvider.after(scenario);
     }
 
     private String getPGDatabaseParameters() throws Exception {

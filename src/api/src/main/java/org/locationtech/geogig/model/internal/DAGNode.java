@@ -25,8 +25,7 @@ public abstract class DAGNode {
 
     public abstract boolean isNull();
 
-    @Override
-    public abstract boolean equals(Object o);
+    public @Override abstract boolean equals(Object o);
 
     public static class DirectDAGNode extends DAGNode {
 
@@ -36,18 +35,15 @@ public abstract class DAGNode {
             this.node = node;
         }
 
-        @Override
-        public Node resolve(TreeCache cache) {
+        public @Override Node resolve(TreeCache cache) {
             return node;
         }
 
-        @Override
-        public boolean isNull() {
+        public @Override boolean isNull() {
             return node.getObjectId().isNull();
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof DirectDAGNode)) {
                 return false;
             }
@@ -66,21 +62,18 @@ public abstract class DAGNode {
             this.nodeIndex = nodeIndex;
         }
 
-        @Override
-        public final Node resolve(TreeCache cache) {
+        public @Override final Node resolve(TreeCache cache) {
             RevTree tree = cache.resolve(leafRevTreeId);
             return resolve(tree);
         }
 
         protected abstract Node resolve(RevTree tree);
 
-        @Override
-        public boolean isNull() {
+        public @Override boolean isNull() {
             return false;
         }
 
-        @Override
-        public boolean equals(Object o) {
+        public @Override boolean equals(Object o) {
             if (!(o instanceof LazyDAGNode)) {
                 return false;
             }
@@ -88,8 +81,7 @@ public abstract class DAGNode {
             return leafRevTreeId == l.leafRevTreeId && nodeIndex == l.nodeIndex;
         }
 
-        @Override
-        public String toString() {
+        public @Override String toString() {
             return new StringBuilder(getClass().getSimpleName()).append("[").append(leafRevTreeId)
                     .append("/").append(nodeIndex).append("]").toString();
         }
@@ -101,8 +93,7 @@ public abstract class DAGNode {
             super(leafRevTreeId, nodeIndex);
         }
 
-        @Override
-        protected Node resolve(RevTree tree) {
+        protected @Override Node resolve(RevTree tree) {
             return tree.getTree(this.nodeIndex);
         }
 
@@ -114,8 +105,7 @@ public abstract class DAGNode {
             super(leafRevTreeId, nodeIndex);
         }
 
-        @Override
-        protected Node resolve(RevTree tree) {
+        protected @Override Node resolve(RevTree tree) {
             return tree.getFeature(this.nodeIndex);
         }
     }

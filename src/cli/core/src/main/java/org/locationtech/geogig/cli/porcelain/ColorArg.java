@@ -26,8 +26,7 @@ public enum ColorArg {
          * @param value the string to convert
          * @return the resulting ColorArg enumeration
          */
-        @Override
-        public ColorArg convert(String value) {
+        public @Override ColorArg convert(String value) {
             return ColorArg.valueOf(value);
         }
 

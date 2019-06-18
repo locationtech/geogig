@@ -75,7 +75,7 @@ public class RemoveTest extends AbstractWebOpTest {
 
         GeogigTransaction transaction = geogig.command(TransactionBegin.class).call();
         String path = NodeRef.appendChild(TestData.pointsType.getTypeName(),
-                TestData.point1.getID());
+                TestData.point1.getId());
         ParameterSet options = TestParams.of("path", path, "transactionId",
                 transaction.getTransactionId().toString());
         buildCommand(options).run(testContext.get());

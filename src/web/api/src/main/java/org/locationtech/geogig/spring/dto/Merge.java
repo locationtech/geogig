@@ -27,8 +27,10 @@ public class Merge {
     // These 3 attributes are mutually exclusive, exaclty one must be set.
     @XmlElement(nillable = true)
     private Boolean ours;
+
     @XmlElement(nillable = true)
     private Boolean theirs;
+
     @XmlElement(nillable = true)
     private Object value;
 
@@ -48,7 +50,8 @@ public class Merge {
             return this;
         }
         if (Boolean.TRUE.equals(ours) && (theirs != null || value != null)) {
-            throw new IllegalArgumentException("Can not set 'ours' to 'true' with 'theirs' or 'value' set.");
+            throw new IllegalArgumentException(
+                    "Can not set 'ours' to 'true' with 'theirs' or 'value' set.");
         }
         this.ours = ours;
         return this;
@@ -69,7 +72,8 @@ public class Merge {
             return this;
         }
         if (Boolean.TRUE.equals(theirs) && (ours != null || value != null)) {
-            throw new IllegalArgumentException("Can not set 'theirs' to 'true' with 'ours' or 'value' set.");
+            throw new IllegalArgumentException(
+                    "Can not set 'theirs' to 'true' with 'ours' or 'value' set.");
         }
         this.theirs = theirs;
         return this;
@@ -80,8 +84,9 @@ public class Merge {
     }
 
     public Merge setValue(Object value) {
-        if (value!= null && (theirs != null || ours != null)) {
-            throw new IllegalArgumentException("Can not set 'value' to 'true' with 'theirs' or 'ours' set.");
+        if (value != null && (theirs != null || ours != null)) {
+            throw new IllegalArgumentException(
+                    "Can not set 'value' to 'true' with 'theirs' or 'ours' set.");
         }
         this.value = value;
         return this;

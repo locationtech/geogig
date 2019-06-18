@@ -19,10 +19,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -84,7 +84,7 @@ public class FeatureDiff {
             for (int i = 0; i < oldAttributes.size(); i++) {
                 Optional<Object> oldValue = oldRevFeature.get(i);
                 PropertyDescriptor descriptor = oldAttributes.get(i);
-                if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
+                if (descriptor.isGeometryDescriptor()) {
                     diffs.put(descriptor, new GeometryAttributeDiff(
                             (Geometry) oldValue.orElse(null), (Geometry) null));
                 } else {
@@ -101,7 +101,7 @@ public class FeatureDiff {
             for (int i = 0; i < newAttributes.size(); i++) {
                 Optional<Object> newValue = newRevFeature.get(i);
                 PropertyDescriptor descriptor = newAttributes.get(i);
-                if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
+                if (descriptor.isGeometryDescriptor()) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
                             (Geometry) newValue.orElse(null)));
                 } else {
@@ -119,8 +119,7 @@ public class FeatureDiff {
                 if (idx != -1) {
                     Optional<Object> newValue = newRevFeature.get(idx);
                     if (!oldValue.equals(newValue) || all) {
-                        if (Geometry.class
-                                .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
+                        if (oldAttributes.get(i).isGeometryDescriptor()) {
                             diffs.put(oldAttributes.get(i),
                                     new GeometryAttributeDiff((Geometry) oldValue.orElse(null),
                                             (Geometry) newValue.orElse(null)));
@@ -131,8 +130,7 @@ public class FeatureDiff {
                     }
                     updatedAttributes.set(idx);
                 } else {
-                    if (Geometry.class
-                            .isAssignableFrom(oldAttributes.get(i).getType().getBinding())) {
+                    if (oldAttributes.get(i).isGeometryDescriptor()) {
                         diffs.put(oldAttributes.get(i), new GeometryAttributeDiff(
                                 (Geometry) oldValue.orElse(null), (Geometry) null));
                     } else {
@@ -145,7 +143,7 @@ public class FeatureDiff {
             for (int i = updatedAttributes.nextSetBit(0); i >= 0; i = updatedAttributes
                     .nextSetBit(i + 1)) {
                 PropertyDescriptor descriptor = newAttributes.get(i);
-                if (Geometry.class.isAssignableFrom(descriptor.getType().getBinding())) {
+                if (descriptor.isGeometryDescriptor()) {
                     diffs.put(descriptor, new GeometryAttributeDiff((Geometry) null,
                             (Geometry) newRevFeature.get(i).orElse(null)));
                 } else {
@@ -256,8 +254,7 @@ public class FeatureDiff {
         return new FeatureDiff(path, map, newFeatureType, oldFeatureType);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // TODO: this is a temporary simple comparison. Should be more elaborate
         if (!(o instanceof FeatureDiff)) {
             return false;

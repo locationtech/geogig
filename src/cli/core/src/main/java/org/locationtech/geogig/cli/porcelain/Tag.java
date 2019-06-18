@@ -54,8 +54,7 @@ public class Tag extends AbstractCommand implements CLICommand {
     /**
      * Executes the commit command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(
                 (message != null && !message.trim().isEmpty()) || nameAndCommit.isEmpty() || delete,
                 "No tag message provided");

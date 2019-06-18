@@ -37,8 +37,7 @@ public class PGList extends DataStoreList implements CLICommand {
 
     final PGSupport support = new PGSupport();
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 

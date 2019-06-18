@@ -15,6 +15,7 @@ import java.util.Optional;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
@@ -101,7 +102,8 @@ public class ResolveConflict extends AbstractWebAPICommand {
 
         RevFeature revFeature = object.get();
 
-        CoordinateReferenceSystem crs = revFeatureType.type().getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = GT
+                .adapt(revFeatureType.type().getCoordinateReferenceSystem());
         Envelope bounds = ReferencedEnvelope.create(crs);
 
         Optional<Object> o;

@@ -42,8 +42,7 @@ public class ConfigGet extends AbstractGeoGigOp<Optional<String>> {
      * @throws ConfigException if an error is encountered. More specific information can be found in
      *         the exception's statusCode.
      */
-    @Override
-    protected Optional<String> _call() {
+    protected @Override Optional<String> _call() {
         ConfigScope scope = global ? ConfigScope.GLOBAL : ConfigScope.LOCAL;
         Optional<Map<String, String>> configGetResult = command(ConfigOp.class)
                 .setAction(ConfigAction.CONFIG_GET).setName(name).setScope(scope).call();

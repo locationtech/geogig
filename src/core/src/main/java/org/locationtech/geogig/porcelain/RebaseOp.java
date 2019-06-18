@@ -179,8 +179,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
      * 
      * @return always {@code true}
      */
-    @Override
-    protected Boolean _call() {
+    protected @Override Boolean _call() {
 
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
         Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't rebase.");
@@ -440,8 +439,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             MergeScenarioReport report = command(ReportCommitConflictsOp.class)
                     .setCommit(commitToApply).setConsumer(new MergeScenarioConsumer() {
 
-                        @Override
-                        public void conflicted(Conflict conflict) {
+                        public @Override void conflicted(Conflict conflict) {
                             conflictsBuffer.add(conflict);
                             if (conflictsBuffer.size() == BUFFER_SIZE) {
                                 // Write the conflicts
@@ -456,8 +454,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                             }
                         }
 
-                        @Override
-                        public void unconflicted(DiffEntry diff) {
+                        public @Override void unconflicted(DiffEntry diff) {
                             diffEntryBuffer.add(diff);
                             if (diffEntryBuffer.size() == BUFFER_SIZE) {
                                 // Stage it
@@ -468,8 +465,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
                         }
 
-                        @Override
-                        public void merged(FeatureInfo featureInfo) {
+                        public @Override void merged(FeatureInfo featureInfo) {
                             // Stage it
                             workingTree().insert(featureInfo);
                             try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
@@ -478,8 +474,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                             }
                         }
 
-                        @Override
-                        public void finished() {
+                        public @Override void finished() {
                             if (conflictsBuffer.size() > 0) {
                                 // Write the conflicts
                                 command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)

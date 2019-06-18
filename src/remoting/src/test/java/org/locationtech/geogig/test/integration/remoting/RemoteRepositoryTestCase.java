@@ -12,34 +12,22 @@ package org.locationtech.geogig.test.integration.remoting;
 import static java.util.Optional.ofNullable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.geometry.jts.WKTReader2;
-import org.geotools.referencing.CRS;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.di.Decorator;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -52,52 +40,33 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.porcelain.ConfigOp;
-import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
-import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PushOp;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.TransferSummary;
-import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.remotes.internal.LocalRemoteResolver;
-import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.ContextBuilder;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.test.TestPlatform;
-import org.locationtech.geogig.test.integration.TestContextBuilder;
+import org.locationtech.geogig.test.TestRepository;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.Name;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
 
 public abstract class RemoteRepositoryTestCase {
 
@@ -127,9 +96,9 @@ public abstract class RemoteRepositoryTestCase {
 
     protected static final String pointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326";
 
-    protected static final Name pointsTypeName = new NameImpl("http://geogig.points", pointsName);
+    protected static final Name pointsTypeName = Name.valueOf("http://geogig.points", pointsName);
 
-    protected SimpleFeatureType pointsType;
+    protected FeatureType pointsType;
 
     protected Feature points1;
 
@@ -149,9 +118,9 @@ public abstract class RemoteRepositoryTestCase {
 
     protected static final String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
 
-    protected static final Name linesTypeName = new NameImpl("http://geogig.lines", linesName);
+    protected static final Name linesTypeName = Name.valueOf("http://geogig.lines", linesName);
 
-    protected SimpleFeatureType linesType;
+    protected FeatureType linesType;
 
     protected Feature lines1;
 
@@ -165,118 +134,13 @@ public abstract class RemoteRepositoryTestCase {
 
     protected Feature lines3_modified;
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    public @Rule TestRepository repositorySupport = new TestRepository();
 
-    public static class OpenRemoteOverride extends OpenRemote {
+    public Repository localRepo;
 
-        private Map<String, IRemoteRepo> remoteOverride;
+    public Repository originRepo;
 
-        public OpenRemoteOverride setOverrides(Map<String, IRemoteRepo> remoteOverride) {
-            this.remoteOverride = remoteOverride;
-            return this;
-        }
-
-        public @Override IRemoteRepo _call() {
-            String name = getRemote().getName();
-            IRemoteRepo override = remoteOverride.get(name);
-            Preconditions.checkNotNull(override, "remote override %s not provided", name);
-            Remote remoteConfig = super.getRemote();
-            doReturn(remoteConfig).when(override).getInfo();
-            return override;
-        }
-    }
-
-    protected class GeogigContainer {
-        public GeoGIG geogig;
-
-        public Repository repo;
-
-        public File envHome;
-
-        public Context injector;
-
-        public Map<String, IRemoteRepo> remoteOverride = new HashMap<>();
-
-        public GeogigContainer(final String workingDirectory) throws IOException {
-
-            envHome = tempFolder.newFolder(workingDirectory);
-
-            ContextBuilder injectorBuilder = createInjectorBuilder();
-            GlobalContextBuilder.builder(injectorBuilder);
-            injector = injectorBuilder.build();
-
-            geogig = new GeoGIG(injector);
-            repo = geogig.getOrCreateRepository();
-
-            repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
-                    .setValue("Gabriel Roldan").call();
-            repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                    .setValue("groldan@boundlessgeo.com").call();
-        }
-
-        public void tearDown() throws IOException {
-            if (repo != null) {
-                repo.close();
-            }
-            repo = null;
-            injector = null;
-        }
-
-        public void addRemoteOverride(Remote remote, Repository override) {
-            IRemoteRepo remoteRepo = spy(LocalRemoteResolver.resolve(remote, override));
-            try {
-                remoteRepo.open();
-            } catch (RepositoryConnectionException e) {
-                throw new RuntimeException(e);
-            }
-            doNothing().when(remoteRepo).close();
-            this.remoteOverride.put(remote.getName(), remoteRepo);
-        }
-
-        public Context getInjector() {
-            return injector;
-        }
-
-        private AbstractModule RemoteOpenOverrideModule = new AbstractModule() {
-            @Override
-            protected void configure() {
-                Decorator decorator = new Decorator() {
-
-                    @Override
-                    public <I> I decorate(I subject) {
-                        OpenRemote cmd = (OpenRemote) subject;
-                        cmd = cmd.command(OpenRemoteOverride.class).setOverrides(remoteOverride);
-                        return (I) cmd;
-                    }
-
-                    @Override
-                    public boolean canDecorate(Object instance) {
-                        boolean canDecorate = OpenRemote.class.equals(instance.getClass());
-                        return canDecorate;
-                    }
-                };
-                Multibinder.newSetBinder(binder(), Decorator.class).addBinding()
-                        .toInstance(decorator);
-            }
-        };
-
-        private ContextBuilder createInjectorBuilder() {
-            Platform testPlatform = new TestPlatform(envHome) {
-                @Override
-                public long currentTimeMillis() {
-                    return 1000;
-                }
-            };
-            return new TestContextBuilder(testPlatform, RemoteOpenOverrideModule);
-        }
-    }
-
-    public GeogigContainer localGeogig;
-
-    public GeogigContainer remoteGeogig;
-
-    public GeogigContainer upstreamGeogig;
+    public Repository upstreamRepo;
 
     // prevent recursion
     private boolean setup = false;
@@ -291,23 +155,17 @@ public abstract class RemoteRepositoryTestCase {
         doSetUp();
     }
 
-    protected final void doSetUp() throws IOException, SchemaException, ParseException, Exception {
-        localGeogig = new GeogigContainer("localtestrepository");
-        remoteGeogig = new GeogigContainer("remotetestrepository");
-        upstreamGeogig = new GeogigContainer("upstream");
+    protected final void doSetUp() throws Exception {
+        localRepo = repositorySupport.repository();
+        originRepo = repositorySupport.createAndInitRepository("remotetestrepository");
+        upstreamRepo = repositorySupport.createAndInitRepository("upstream");
         {
-            String remoteURI = remoteGeogig.repo.getLocation().toString();
-            Remote originInfo = localGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
-                    .setURL(remoteURI).call();
-            Repository originRepo = remoteGeogig.geogig.getRepository();
-            localGeogig.addRemoteOverride(originInfo, originRepo);
-
-            originInfo = upstreamGeogig.geogig.command(RemoteAddOp.class).setName(REMOTE_NAME)
-                    .setURL(remoteURI).call();
-            upstreamGeogig.addRemoteOverride(originInfo, originRepo);
+            String remoteURI = originRepo.getLocation().toString();
+            localRepo.command(RemoteAddOp.class).setName(REMOTE_NAME).setURL(remoteURI).call();
+            upstreamRepo.command(RemoteAddOp.class).setName(REMOTE_NAME).setURL(remoteURI).call();
         }
 
-        pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
+        pointsType = FeatureTypes.createType(pointsTypeName.toString(), pointsTypeSpec.split(","));
 
         points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
         points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
@@ -319,7 +177,7 @@ public abstract class RemoteRepositoryTestCase {
         points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
                 "POINT(3 4)");
 
-        linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
+        linesType = FeatureTypes.createType(linesTypeName.toString(), linesTypeSpec.split(","));
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING (1 1, 2 2)");
@@ -338,35 +196,29 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected LsRemoteOp lsremoteOp() {
-        return localGeogig.geogig.command(LsRemoteOp.class);
+        return localRepo.command(LsRemoteOp.class);
     }
 
     protected FetchOp fetchOp() throws RepositoryConnectionException {
-        return localGeogig.geogig.command(FetchOp.class);
+        return localRepo.command(FetchOp.class);
     }
 
     protected CloneOp cloneOp() {
-        return localGeogig.geogig.command(CloneOp.class).setRemoteName(REMOTE_NAME);
+        return localRepo.command(CloneOp.class).setRemoteName(REMOTE_NAME);
     }
 
     protected PullOp pullOp() {
-        return localGeogig.geogig.command(PullOp.class);
+        return localRepo.command(PullOp.class);
     }
 
     protected PushOp pushOp() throws RepositoryConnectionException {
-        return localGeogig.geogig.command(PushOp.class);
+        return localRepo.command(PushOp.class);
     }
 
     @After
     public final void tearDown() throws Exception {
         setup = false;
         tearDownInternal();
-        localGeogig.tearDown();
-        remoteGeogig.tearDown();
-        upstreamGeogig.tearDown();
-        localGeogig = null;
-        remoteGeogig = null;
-        System.gc();
     }
 
     /**
@@ -381,18 +233,18 @@ public abstract class RemoteRepositoryTestCase {
         //
     }
 
-    protected Feature feature(SimpleFeatureType type, String id, Object... values) {
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+    protected Feature feature(FeatureType type, String id, Object... values) {
+        Feature feature = Feature.build(id, type);
         for (int i = 0; i < values.length; i++) {
             Object value = values[i];
-            if (type.getDescriptor(i) instanceof GeometryDescriptor) {
+            if (type.getDescriptor(i).isGeometryDescriptor()) {
                 if (value instanceof String) {
                     value = geom((String) value);
                 }
             }
-            builder.set(i, value);
+            feature.setAttribute(i, value);
         }
-        return builder.buildFeature(id);
+        return feature;
     }
 
     protected List<RevCommit> populate(GeoGIG geogig, boolean oneCommitPerFeature,
@@ -456,7 +308,7 @@ public abstract class RemoteRepositoryTestCase {
         String parentPath = name.getLocalPart();
         RevFeatureType type = RevFeatureType.builder().type(f.getType()).build();
         repo.objectDatabase().put(type);
-        String path = NodeRef.appendChild(parentPath, f.getIdentifier().getID());
+        String path = NodeRef.appendChild(parentPath, f.getId());
         FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), type.getId(), path);
         workTree.insert(fi);
         return fi.getFeature().getId();
@@ -477,7 +329,7 @@ public abstract class RemoteRepositoryTestCase {
 
     protected Geometry geom(String wkt) {
         try {
-            return new WKTReader2().read(wkt);
+            return new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -511,7 +363,7 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     public FeatureInfo featureInfo(String treePath, Feature f) {
-        final String path = NodeRef.appendChild(treePath, f.getIdentifier().getID());
+        final String path = NodeRef.appendChild(treePath, f.getId());
         RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
@@ -538,7 +390,7 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = geogig.getRepository().workingTree();
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
-        String id = f.getIdentifier().getID();
+        String id = f.getId();
         boolean existed = workTree.delete(localPart, id);
         return existed;
     }
@@ -547,7 +399,7 @@ public abstract class RemoteRepositoryTestCase {
         final WorkingTree workTree = repo.workingTree();
 
         Iterator<String> featurePaths = Iterators.transform(features.iterator(),
-                (f) -> f.getType().getName().getLocalPart() + "/" + f.getIdentifier().toString());
+                (f) -> f.getType().getName().getLocalPart() + "/" + f.getId());
         workTree.delete(featurePaths, new DefaultProgressListener());
     }
 
@@ -590,14 +442,14 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Computes the aggregated bounds of {@code features}, assuming all of them are in the same CRS
      */
-    protected ReferencedEnvelope boundsOf(Feature... features) {
-        ReferencedEnvelope bounds = null;
+    protected Envelope boundsOf(Feature... features) {
+        Envelope bounds = null;
         for (int i = 0; i < features.length; i++) {
             Feature f = features[i];
             if (bounds == null) {
-                bounds = (ReferencedEnvelope) f.getBounds();
+                bounds = f.getDefaultGeometryBounds();
             } else {
-                bounds.include(f.getBounds());
+                bounds.expandToInclude(f.getDefaultGeometryBounds());
             }
         }
         return bounds;
@@ -606,20 +458,20 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Computes the aggregated bounds of {@code features} in the {@code targetCrs}
      */
-    protected ReferencedEnvelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
-            throws Exception {
-        ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
-
-        for (int i = 0; i < features.length; i++) {
-            Feature f = features[i];
-            BoundingBox fbounds = f.getBounds();
-            if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
-                fbounds = fbounds.toBounds(targetCrs);
-            }
-            bounds.include(fbounds);
-        }
-        return bounds;
-    }
+    // protected Envelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
+    // throws Exception {
+    // ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
+    //
+    // for (int i = 0; i < features.length; i++) {
+    // Feature f = features[i];
+    // BoundingBox fbounds = f.getBounds();
+    // if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
+    // fbounds = fbounds.toBounds(targetCrs);
+    // }
+    // bounds.include(fbounds);
+    // }
+    // return bounds;
+    // }
 
     public RevCommit commit(Repository repo, String msg) {
         return repo.command(CommitOp.class).setMessage(msg).call();

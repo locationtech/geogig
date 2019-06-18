@@ -39,58 +39,47 @@ public class TransactionBlobStoreImpl implements TransactionBlobStore {
         this.txNamespace = transactionId.toString();
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String path) {
+    public @Override Optional<byte[]> getBlob(String path) {
         return getBlob(txNamespace, path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String path) {
         return getBlobAsStream(txNamespace, path);
     }
 
-    @Override
-    public void putBlob(String path, byte[] blob) {
+    public @Override void putBlob(String path, byte[] blob) {
         putBlob(txNamespace, path, blob);
     }
 
-    @Override
-    public void putBlob(String path, InputStream blob) {
+    public @Override void putBlob(String path, InputStream blob) {
         putBlob(txNamespace, path, blob);
     }
 
-    @Override
-    public void removeBlob(String path) {
+    public @Override void removeBlob(String path) {
         removeBlob(txNamespace, path);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String namespace, String path) {
+    public @Override Optional<byte[]> getBlob(String namespace, String path) {
         return store.getBlob(namespace, path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String namespace, String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String namespace, String path) {
         return store.getBlobAsStream(namespace, path);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, byte[] blob) {
+    public @Override void putBlob(String namespace, String path, byte[] blob) {
         store.putBlob(namespace, path, blob);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, InputStream blob) {
+    public @Override void putBlob(String namespace, String path, InputStream blob) {
         store.putBlob(namespace, path, blob);
     }
 
-    @Override
-    public void removeBlob(String namespace, String path) {
+    public @Override void removeBlob(String namespace, String path) {
         store.removeBlob(namespace, path);
     }
 
-    @Override
-    public void removeBlobs(String namespace) {
+    public @Override void removeBlobs(String namespace) {
         store.removeBlobs(txNamespace);
     }
 }

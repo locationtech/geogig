@@ -87,8 +87,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
      * @return the {@link ObjectId} of the moved object, or {@code null} if {@link #setObjects} was
      *         used and hence no such information it available
      */
-    @Override
-    protected ObjectId _call() {
+    protected @Override ObjectId _call() {
         Preconditions.checkState(from != null, "No from database specified");
         ObjectStore from = this.from;
         ObjectStore to = objectDatabase();
@@ -133,8 +132,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
                 return id;
             };
 
-            @Override
-            public Iterator<ObjectId> iterator() {
+            public @Override Iterator<ObjectId> iterator() {
                 Iterator<Node> iterator = nodesToMove.get();
                 Iterator<ObjectId> ids = Iterators.transform(iterator, asId::apply);
 
@@ -211,8 +209,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
             bucketTrees = Collections.emptyIterator();
         }
 
-        @Override
-        protected RevTree computeNext() {
+        protected @Override RevTree computeNext() {
             if (tree != null) {
                 RevTree ret = tree;
                 tree = null;

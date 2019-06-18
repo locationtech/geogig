@@ -33,6 +33,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
+import lombok.NonNull;
+
 @Hookable(name = "send-pack")
 public class SendPack extends AbstractGeoGigOp<TransferSummary> {
 
@@ -84,14 +86,12 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
 
     private Remote remote;
 
-    public SendPack addRef(TransferableRef refToPush) {
-        checkNotNull(refToPush);
+    public SendPack addRef(@NonNull TransferableRef refToPush) {
         this.refsToPush.add(refToPush);
         return this;
     }
 
-    public SendPack setRefs(List<TransferableRef> refsToPush) {
-        checkNotNull(refsToPush);
+    public SendPack setRefs(@NonNull List<TransferableRef> refsToPush) {
         for (TransferableRef tr : refsToPush) {
             checkNotNull(tr);
         }
@@ -104,8 +104,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return ImmutableList.copyOf(refsToPush);
     }
 
-    public SendPack setRemote(Remote remote) {
-        checkNotNull(remote);
+    public SendPack setRemote(@NonNull Remote remote) {
         this.remote = remote;
         return this;
     }
@@ -114,8 +113,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return remote;
     }
 
-    @Override
-    protected TransferSummary _call() {
+    protected @Override TransferSummary _call() {
         checkState(remote != null, "no remote specified");
         checkState(!refsToPush.isEmpty(), "no refs to push specified");
 

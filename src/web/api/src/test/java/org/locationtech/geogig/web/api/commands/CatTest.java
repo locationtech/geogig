@@ -179,7 +179,7 @@ public class CatTest extends AbstractWebOpTest {
         assertEquals(3, attributes.getValuesAs(JsonValue.class).size());
         String expectedAttributes = "[{\"name\": \"sp\", \"type\": \"STRING\"},"
                 + "{\"name\": \"ip\", \"type\": \"INTEGER\"},"
-                + "{\"name\": \"geom\", \"type\": \"POINT\", \"crs\": \"urn:ogc:def:crs:EPSG::4326\"}]";
+                + "{\"name\": \"geom\", \"type\": \"POINT\", \"crs\": \"EPSG:4326\"}]";
         assertTrue(jsonEquals(toJSONArray(expectedAttributes), attributes, false));
 
     }

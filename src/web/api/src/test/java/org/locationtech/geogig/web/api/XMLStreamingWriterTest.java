@@ -52,11 +52,13 @@ public class XMLStreamingWriterTest extends AbstractStreamingWriterTest {
         return new XMLStreamingWriter(sink);
     }
 
-    private Document getDocument(String actualBuffer) throws ParserConfigurationException, SAXException, IOException {
+    private Document getDocument(String actualBuffer)
+            throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
-        return builder.parse(new ByteArrayInputStream(actualBuffer.getBytes(StandardCharsets.UTF_8)));
+        return builder
+                .parse(new ByteArrayInputStream(actualBuffer.getBytes(StandardCharsets.UTF_8)));
     }
 
     private String getXPath(String[] paths, String part) throws IOException {
@@ -70,22 +72,24 @@ public class XMLStreamingWriterTest extends AbstractStreamingWriterTest {
             xpathBuilder.append(part).append("()");
         } else {
             // remove the trailing slash
-            xpathBuilder.deleteCharAt(xpathBuilder.length()-1);
+            xpathBuilder.deleteCharAt(xpathBuilder.length() - 1);
         }
         return xpathBuilder.toString();
     }
 
     @Override
-    protected void verifyInternal(String[] paths, String value, String actualBuffer) throws IOException {
+    protected void verifyInternal(String[] paths, String value, String actualBuffer)
+            throws IOException {
         // build an xpath
         String xpath = getXPath(paths, "text");
         // assert the value matches, or "" (empty String) matches if value is null
-        assertThat(actualBuffer, EvaluateXPathMatcher.hasXPath(xpath, equalTo(
-                (value != null) ? value : "")).withNamespaceContext(NSCONTEXT));
+        assertThat(actualBuffer,
+                EvaluateXPathMatcher.hasXPath(xpath, equalTo((value != null) ? value : ""))
+                        .withNamespaceContext(NSCONTEXT));
     }
 
-    private List<Node> getXPathNodes(String[] paths, String actualBuffer) throws IOException,
-            ParserConfigurationException, SAXException {
+    private List<Node> getXPathNodes(String[] paths, String actualBuffer)
+            throws IOException, ParserConfigurationException, SAXException {
         Document dom = getDocument(actualBuffer);
         Source source = new DOMSource(dom);
 
@@ -106,7 +110,8 @@ public class XMLStreamingWriterTest extends AbstractStreamingWriterTest {
                 Node child = node.getFirstChild();
                 nodeValues.add((child != null) ? child.getNodeValue() : null);
             }
-            assertArrayEquals("Array doesn't contain expected values", expectedValues, nodeValues.toArray());
+            assertArrayEquals("Array doesn't contain expected values", expectedValues,
+                    nodeValues.toArray());
         } catch (ParserConfigurationException | SAXException ex) {
             ex.printStackTrace();
             fail("Error parsing XML");
@@ -114,13 +119,14 @@ public class XMLStreamingWriterTest extends AbstractStreamingWriterTest {
     }
 
     @Override
-    protected void verifyAttributeInternal(String[] paths, String value, String actualBuffer) throws IOException {
+    protected void verifyAttributeInternal(String[] paths, String value, String actualBuffer)
+            throws IOException {
         // the paths array has the node xpath and the attribute name as the last array element
         // get the attribute name
-        final String attributeName = paths[paths.length -1];
+        final String attributeName = paths[paths.length - 1];
         // get the node
         // add all but the last path element
-        String[] xpath = new String[paths.length -1];
+        String[] xpath = new String[paths.length - 1];
         System.arraycopy(paths, 0, xpath, 0, xpath.length);
         try {
             List<Node> nodes = getXPathNodes(xpath, actualBuffer);
@@ -139,7 +145,8 @@ public class XMLStreamingWriterTest extends AbstractStreamingWriterTest {
     }
 
     @Override
-    protected void verifyArrayElementInternal(String[] paths, String value, String actualBuffer) throws IOException {
+    protected void verifyArrayElementInternal(String[] paths, String value, String actualBuffer)
+            throws IOException {
         verifyInternal(paths, value, actualBuffer);
     }
 

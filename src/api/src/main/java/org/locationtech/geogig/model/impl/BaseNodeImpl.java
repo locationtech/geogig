@@ -64,16 +64,14 @@ abstract class BaseNodeImpl extends Node {
         bounds_y2 = bbox.ymax;
     }
 
-    @Override
-    public Optional<ObjectId> getMetadataId() {
+    public @Override Optional<ObjectId> getMetadataId() {
         return Optional.ofNullable(metadataId);
     }
 
     /**
      * @return the name of the {@link RevObject} this node points to
      */
-    @Override
-    public String getName() {
+    public @Override String getName() {
         return name;
     }
 
@@ -84,23 +82,20 @@ abstract class BaseNodeImpl extends Node {
         return ObjectId.create(objectId_h1, objectId_h2, objectId_h3);
     }
 
-    @Override
-    public boolean intersects(Envelope env) {
+    public @Override boolean intersects(Envelope env) {
         if (isBoundsNull() || env.isNull()) {
             return false;
         }
         return boundsInternal().intersects(env);
     }
 
-    @Override
-    public void expand(Envelope env) {
+    public @Override void expand(Envelope env) {
         if (!isBoundsNull()) {
             boundsInternal().expand(env);
         }
     }
 
-    @Override
-    public Optional<Envelope> bounds() {
+    public @Override Optional<Envelope> bounds() {
         return ofNullable(boundsInternal().isNull() ? null : boundsInternal().asEnvelope());
     }
 
@@ -112,8 +107,7 @@ abstract class BaseNodeImpl extends Node {
         return bounds_x1 > bounds_x2;
     }
 
-    @Override
-    public Map<String, Object> getExtraData() {
+    public @Override Map<String, Object> getExtraData() {
         return extraData.asMap();
     }
 

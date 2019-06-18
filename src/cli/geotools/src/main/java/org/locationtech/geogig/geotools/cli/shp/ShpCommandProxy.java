@@ -31,8 +31,7 @@ public class ShpCommandProxy implements CLICommandExtension {
      * @return the JCommander parser for this extension
      * @see JCommander
      */
-    @Override
-    public JCommander getCommandParser() {
+    public @Override JCommander getCommandParser() {
         JCommander commander = new JCommander();
         commander.setProgramName("geogig shp");
         commander.addCommand("import", new ShpImport());

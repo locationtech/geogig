@@ -93,7 +93,7 @@ public class Fetch extends AbstractWebAPICommand {
         }
 
         try {
-            final TransferSummary result = command.setAll(fetchAll).setPrune(prune).call();
+            final TransferSummary result = command.setAllRemotes(fetchAll).setPrune(prune).call();
             context.setResponseContent(new CommandResponse() {
                 @Override
                 public void write(ResponseWriter out) throws Exception {

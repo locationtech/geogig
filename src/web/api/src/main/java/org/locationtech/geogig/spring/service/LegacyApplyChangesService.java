@@ -42,8 +42,7 @@ import com.google.common.base.Suppliers;
 @Service("legacyApplyChangesService")
 public class LegacyApplyChangesService extends AbstractRepositoryService {
 
-    public RevCommit applyChanges(RepositoryProvider provider, String repoName,
-            InputStream input) {
+    public RevCommit applyChanges(RepositoryProvider provider, String repoName, InputStream input) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
             try {

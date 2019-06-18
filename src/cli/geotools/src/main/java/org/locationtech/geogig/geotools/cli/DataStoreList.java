@@ -35,8 +35,7 @@ public abstract class DataStoreList extends AbstractCommand implements CLIComman
     /**
      * Executes the list command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         DataStore dataStore = getDataStore();
 
         try {

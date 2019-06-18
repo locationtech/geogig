@@ -18,13 +18,14 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -87,8 +88,7 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
-    @Override
-    protected void runInternal(GeogigCLI cli)
+    protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
         checkParameter(geoJSONList != null && !geoJSONList.isEmpty(), "No GeoJSON specified");
         checkParameter(geomName == null || !geomNameAuto,
@@ -123,10 +123,9 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
                 // If the destination tree does not exist, we use the default name for the geometry
                 // attribute
                 if (ft.isPresent()) {
-                    GeometryDescriptor geomDescriptor = ft.get().type().getGeometryDescriptor();
-                    if (geomDescriptor != null) {
-                        geomName = geomDescriptor.getLocalName();
-                    }
+                    geomName = ft.map(RevFeatureType::type)
+                            .flatMap(FeatureType::getGeometryDescriptor)
+                            .map(PropertyDescriptor::getLocalName).orElse(null);
                 }
             }
             try {

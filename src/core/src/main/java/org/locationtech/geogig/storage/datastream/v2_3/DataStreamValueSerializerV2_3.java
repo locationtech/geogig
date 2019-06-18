@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.datastream.v2_3;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.writeUnsignedVarInt;
 
@@ -30,6 +29,8 @@ import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
+
+import lombok.NonNull;
 
 /**
  * A {@link ValueSerializer} based off {@link DataStreamValueSerializerV2} that encodes string
@@ -130,9 +131,8 @@ class DataStreamValueSerializerV2_3 extends DataStreamValueSerializerV2 {
      * }
      * </pre>
      */
-    public @Override void writeMap(Map<String, Object> map, DataOutput out) throws IOException {
-        checkNotNull(map);
-
+    public @Override void writeMap(@NonNull Map<String, Object> map, @NonNull DataOutput out)
+            throws IOException {
         final int size = map.size();
         final StringTable st = stringTable.get();
 

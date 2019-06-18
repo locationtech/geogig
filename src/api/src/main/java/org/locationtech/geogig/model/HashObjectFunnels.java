@@ -16,24 +16,20 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Funnels;
@@ -105,22 +101,6 @@ public class HashObjectFunnels {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
-    @Deprecated
-    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable SortedMap<Integer, Bucket> buckets) {
-
-        final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        trees = trees == null ? Collections.emptyList() : trees;
-        features = features == null ? Collections.emptyList() : features;
-        buckets = buckets == null ? Collections.emptySortedMap() : buckets;
-        HashObjectFunnels.tree(hasher, trees, features, buckets.values());
-
-        final byte[] rawKey = hasher.hash().asBytes();
-        final ObjectId id = ObjectId.create(rawKey);
-
-        return id;
-    }
-
     public static ObjectId hashTag(@NonNull String name, @NonNull ObjectId commitId,
             @NonNull String message, @NonNull RevPerson tagger) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
@@ -177,8 +157,7 @@ public class HashObjectFunnels {
             this.nonNullableFunnel = nonNullableFunnel;
         }
 
-        @Override
-        public void funnel(T from, PrimitiveSink into) {
+        public @Override void funnel(T from, PrimitiveSink into) {
             if (from == null) {
                 NullFunnel.funnel(from, into);
             } else {
@@ -195,8 +174,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Object from, PrimitiveSink into) {
+        public @Override void funnel(Object from, PrimitiveSink into) {
             Funnels.byteArrayFunnel().funnel(NULL_BYTE_CODE, into);
         }
     };
@@ -210,8 +188,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(RevObject.TYPE from, PrimitiveSink into) {
+        public @Override void funnel(RevObject.TYPE from, PrimitiveSink into) {
             Funnels.integerFunnel().funnel(from.value(), into);
         }
     };
@@ -220,8 +197,7 @@ public class HashObjectFunnels {
 
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(ObjectId from, PrimitiveSink into) {
+        public @Override void funnel(ObjectId from, PrimitiveSink into) {
             for (int i = 0; i < ObjectId.NUM_BYTES; i++) {
                 into.putByte((byte) from.byteN(i));
             }
@@ -268,8 +244,7 @@ public class HashObjectFunnels {
 
         private static final CommitFunnel INSTANCE = new CommitFunnel();
 
-        @Override
-        public void funnel(RevCommit from, PrimitiveSink into) {
+        public @Override void funnel(RevCommit from, PrimitiveSink into) {
             funnel(into, from.getTreeId(), from.getParentIds(), from.getMessage(), from.getAuthor(),
                     from.getCommitter());
         }
@@ -301,8 +276,7 @@ public class HashObjectFunnels {
 
         private static final TreeFunnel INSTANCE = new TreeFunnel();
 
-        @Override
-        public void funnel(RevTree from, PrimitiveSink into) {
+        public @Override void funnel(RevTree from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.TREE, into);
             from.forEachTree(n -> NodeFunnel.funnel(n, into));
             from.forEachFeature(n -> NodeFunnel.funnel(n, into));
@@ -311,20 +285,6 @@ public class HashObjectFunnels {
                 Funnels.integerFunnel().funnel(bucket.getIndex(), into);
                 ObjectIdFunnel.funnel(bucket.getObjectId(), into);
             });
-        }
-
-        @Deprecated
-        public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
-                SortedMap<Integer, Bucket> buckets) {
-
-            RevObjectTypeFunnel.funnel(TYPE.TREE, into);
-            trees.forEach(n -> NodeFunnel.funnel(n, into));
-            features.forEach(n -> NodeFunnel.funnel(n, into));
-
-            for (Entry<Integer, Bucket> entry : buckets.entrySet()) {
-                Funnels.integerFunnel().funnel(entry.getKey(), into);
-                ObjectIdFunnel.funnel(entry.getValue().getObjectId(), into);
-            }
         }
 
         public void funnel(PrimitiveSink into, List<Node> trees, List<Node> features,
@@ -346,8 +306,7 @@ public class HashObjectFunnels {
 
         private static final FeatureFunnel INSTANCE = new FeatureFunnel();
 
-        @Override
-        public void funnel(RevFeature from, PrimitiveSink into) {
+        public @Override void funnel(RevFeature from, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(TYPE.FEATURE, into);
             from.forEach(v -> PropertyValueFunnel.funnel(v, into));
         }
@@ -363,8 +322,7 @@ public class HashObjectFunnels {
 
         public static final FeatureTypeFunnel INSTANCE = new FeatureTypeFunnel();
 
-        @Override
-        public void funnel(RevFeatureType from, PrimitiveSink into) {
+        public @Override void funnel(RevFeatureType from, PrimitiveSink into) {
             funnel(into, from.type());
         }
 
@@ -386,8 +344,7 @@ public class HashObjectFunnels {
 
         public static final TagFunnel INSTANCE = new TagFunnel();
 
-        @Override
-        public void funnel(RevTag from, PrimitiveSink into) {
+        public @Override void funnel(RevTag from, PrimitiveSink into) {
             funnel(into, from.getName(), from.getCommitId(), from.getMessage(), from.getTagger());
         }
 
@@ -405,8 +362,7 @@ public class HashObjectFunnels {
             .of(new Funnel<RevPerson>() {
                 private static final long serialVersionUID = -1L;
 
-                @Override
-                public void funnel(RevPerson from, PrimitiveSink into) {
+                public @Override void funnel(RevPerson from, PrimitiveSink into) {
                     NullableStringFunnel.funnel(from.getName().orElse(null), into);
                     NullableStringFunnel.funnel(from.getEmail().orElse(null), into);
                     Funnels.longFunnel().funnel(from.getTimestamp(), into);
@@ -417,8 +373,7 @@ public class HashObjectFunnels {
     private static final Funnel<Node> NodeFunnel = new Funnel<Node>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Node ref, PrimitiveSink into) {
+        public @Override void funnel(Node ref, PrimitiveSink into) {
             RevObjectTypeFunnel.funnel(ref.getType(), into);
             StringFunnel.funnel((CharSequence) ref.getName(), into);
             ObjectIdFunnel.funnel(ref.getObjectId(), into);
@@ -435,8 +390,7 @@ public class HashObjectFunnels {
     private static final Funnel<Object> PropertyValueFunnel = new Funnel<Object>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(final @Nullable Object value, PrimitiveSink into) {
+        public @Override void funnel(final @Nullable Object value, PrimitiveSink into) {
             final FieldType fieldType = FieldType.forValue(value);
             switch (fieldType) {
             case UNKNOWN:
@@ -555,15 +509,13 @@ public class HashObjectFunnels {
     private static final Funnel<Geometry> GeometryFunnel = new Funnel<Geometry>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(final Geometry geom, final PrimitiveSink into) {
+        public @Override void funnel(final Geometry geom, final PrimitiveSink into) {
 
             CoordinateFilter filter = new CoordinateFilter() {
 
                 static final double SCALE = 1E9D;
 
-                @Override
-                public void filter(Coordinate coord) {
+                public @Override void filter(Coordinate coord) {
                     double x = Math.round(coord.x * SCALE) / SCALE;
                     double y = Math.round(coord.y * SCALE) / SCALE;
                     into.putDouble(x);
@@ -577,8 +529,7 @@ public class HashObjectFunnels {
     private static final Funnel<Name> NameFunnel = new Funnel<Name>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Name from, PrimitiveSink into) {
+        public @Override void funnel(Name from, PrimitiveSink into) {
             NullableStringFunnel.funnel(from.getNamespaceURI(), into);
             StringFunnel.funnel((CharSequence) from.getLocalPart(), into);
         }
@@ -587,28 +538,31 @@ public class HashObjectFunnels {
     private static final Funnel<PropertyDescriptor> PropertyDescriptorFunnel = new Funnel<PropertyDescriptor>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(PropertyDescriptor descriptor, PrimitiveSink into) {
-            NameFunnel.funnel(descriptor.getName(), into);
+        public @Override void funnel(PropertyDescriptor descriptor, PrimitiveSink into) {
 
-            PropertyType attrType = descriptor.getType();
-            NameFunnel.funnel(attrType.getName(), into);
+            final @NonNull Name name = descriptor.getName();
+            final @NonNull Name attrTypeName = descriptor.getTypeName();
+            final @NonNull Class<?> binding = descriptor.getBinding();
+            final FieldType type = FieldType.forBinding(binding);
 
-            FieldType type = FieldType.forBinding(attrType.getBinding());
+            NameFunnel.funnel(name, into);
+
+            NameFunnel.funnel(attrTypeName, into);
+
             into.putInt(type.getTag());
             into.putBoolean(descriptor.isNillable());
 
             into.putInt(descriptor.getMaxOccurs());
             into.putInt(descriptor.getMinOccurs());
 
-            if (descriptor instanceof GeometryDescriptor) {
-                CoordinateReferenceSystem crs;
-                crs = ((GeometryDescriptor) descriptor).getCoordinateReferenceSystem();
-                String srsName;
-                if (crs == null) {
-                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
-                } else {
-                    srsName = CRS.toSRS(crs);
+            if (descriptor.isGeometryDescriptor()) {
+                CoordinateReferenceSystem crs = descriptor.coordinateReferenceSystem();
+                String srsName = crs.getSrsIdentifier();
+                if (srsName == null) {
+                    srsName = crs.getWKT();
+                }
+                if (srsName == null) {
+                    srsName = CoordinateReferenceSystem.NULL.getSrsIdentifier();
                 }
                 NullableStringFunnel.funnel(srsName, into);
             }
@@ -622,8 +576,7 @@ public class HashObjectFunnels {
     private static final Funnel<Map<String, ?>> MapPropertyFunnel = new Funnel<Map<String, ?>>() {
         private static final long serialVersionUID = 1L;
 
-        @Override
-        public void funnel(Map<String, ?> map, final PrimitiveSink into) {
+        public @Override void funnel(Map<String, ?> map, final PrimitiveSink into) {
             if (!(map instanceof SortedMap)) {
                 map = new TreeMap<>(map);
             }

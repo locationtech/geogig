@@ -6,30 +6,31 @@ jdk:
   - oraclejdk8
 before_install: 
   - cd src
-  - sudo apt-get install libspatialite-dev
-install: mvn -B -U install -Dfmt.action=validate -DskipTests=true -Ptravis,postgres
+    #  - sudo apt-get install libspatialite-dev
+install: ./mvnw -B --no-transfer-progress -U install -Dfmt.action=validate -DskipTests=true -Ptravis,postgres
 before_script:
-  - psql -c 'create database geogig_tests;' -U postgres
-  - psql -c "create extension postgis" -U postgres -d geogig_tests
-  - psql -f geotools/src/test/resources/features/online/geogig_pg_test.sql -U postgres -d geogig_tests
-  - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties
-  - echo 'enabled = true' >> ~/.geogig-pg-backend-tests.properties
-  - echo 'server = localhost' >> ~/.geogig-pg-backend-tests.properties
-  - echo 'database = geogig_tests' >> ~/.geogig-pg-backend-tests.properties
-  - echo 'user = postgres' >> ~/.geogig-pg-backend-tests.properties
-  - echo 'password = ' >> ~/.geogig-pg-backend-tests.properties
-  - echo '[database]' > ~/.geogig-pg-tests.properties
-  - echo 'server = localhost' >> ~/.geogig-pg-tests.properties
-  - echo 'database = geogig_tests' >> ~/.geogig-pg-tests.properties
-  - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
-  - echo 'password = ' >> ~/.geogig-pg-tests.properties
+#  - psql -c 'create database geogig_tests;' -U postgres
+#  - psql -c "create extension postgis" -U postgres -d geogig_tests
+#  - psql -f geotools/commands/src/test/resources/features/online/geogig_pg_test.sql -U postgres -d geogig_tests
+#  - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties
+#  - echo 'enabled = true' >> ~/.geogig-pg-backend-tests.properties
+#  - echo 'server = localhost' >> ~/.geogig-pg-backend-tests.properties
+#  - echo 'database = geogig_tests' >> ~/.geogig-pg-backend-tests.properties
+#  - echo 'user = postgres' >> ~/.geogig-pg-backend-tests.properties
+#  - echo 'password = ' >> ~/.geogig-pg-backend-tests.properties
+#  - echo '[database]' > ~/.geogig-pg-tests.properties
+#  - echo 'server = localhost' >> ~/.geogig-pg-tests.properties
+#  - echo 'database = geogig_tests' >> ~/.geogig-pg-tests.properties
+#  - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
+#  - echo 'password = ' >> ~/.geogig-pg-tests.properties
 script:
-  - mvn -B test -Dfmt.skip=true -Ppostgres,experimental,online
+  # - mvn -B --no-transfer-progress test -Dfmt.skip=true -Ppostgres,experimental,online
+  - ./mvnw -B --no-transfer-progress verify -Dfmt.skip=true -Pexperimental
 services: postgresql
-addons:
-  postgresql: "9.4"
-  apt:
-    packages:
-      - postgresql-9.4-postgis-2.3
+#addons:
+#  postgresql: "10"
+#  apt:
+#    packages:
+#      - postgresql-10-postgis-2.4
 notifications:
   email: false

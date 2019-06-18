@@ -121,8 +121,7 @@ public class MergeScenarioReport {
         return sum(r -> r.merged.get());
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return String.format("Conflicts: %,d, merged: %,d, unconflicted: %,d", getConflicts(),
                 getMerged(), getUnconflicted());
     }

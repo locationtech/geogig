@@ -15,7 +15,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.geotools.util.Range;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
@@ -36,6 +35,7 @@ import com.beust.jcommander.Parameters;
 import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 
 /**
  * Shows list of commits.
@@ -56,8 +56,7 @@ public class RevList extends AbstractCommand implements CLICommand {
     /**
      * Executes the revlist command using the provided options.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!args.commits.isEmpty(), "No starting commit provided");
 
         geogig = cli.getGeogig();
@@ -125,7 +124,7 @@ public class RevList extends AbstractCommand implements CLICommand {
             if (args.until != null) {
                 until = new Date(geogig.command(ParseTimestamp.class).setString(args.until).call());
             }
-            op.setTimeRange(new Range<Date>(Date.class, since, until));
+            op.setTimeRange(Range.closed(since, until));
         }
         if (!args.pathNames.isEmpty()) {
             for (String s : args.pathNames) {

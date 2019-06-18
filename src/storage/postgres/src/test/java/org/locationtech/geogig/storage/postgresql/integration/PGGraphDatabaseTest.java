@@ -27,11 +27,10 @@ public class PGGraphDatabaseTest extends GraphDatabaseTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    @Override
-    protected GraphDatabase createDatabase(Platform platform) throws Exception {
+    protected @Override GraphDatabase createDatabase(Platform platform) throws Exception {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
-        return new PGGraphDatabase(config);
+        return new PGGraphDatabase(config, false);
     }
 
 }

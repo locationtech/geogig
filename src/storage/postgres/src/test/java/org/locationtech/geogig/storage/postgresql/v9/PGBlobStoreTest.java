@@ -32,8 +32,7 @@ public class PGBlobStoreTest extends TransactionBlobStoreTest {
 
     private DataSource dataSource;
 
-    @Override
-    protected TransactionBlobStore createBlobStore(File currentDirectory) {
+    protected @Override TransactionBlobStore createBlobStore(File currentDirectory) {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 

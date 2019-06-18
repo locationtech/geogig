@@ -36,8 +36,8 @@ public class DepthControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/getdepth?commitId=1234");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/getdepth?commitId=1234");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(containsString("You must specify a valid commit id.")));
@@ -51,8 +51,8 @@ public class DepthControllerTest extends AbstractControllerTest {
         // setup TestData with branches: master, branch1 and branch2
         new TestData(repo).init("testGeoGig", "geogig@geogig.org").loadDefaultData();
 
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/getdepth?commitId=1234567890123456789012345678901234567890");
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders.get(
+                "/repos/repo1/repo/getdepth?commitId=1234567890123456789012345678901234567890");
         perform(get).andExpect(status().isBadRequest())
                 .andExpect(content().contentType(MediaType.APPLICATION_XML))
                 .andExpect(content().string(containsString(
@@ -69,8 +69,8 @@ public class DepthControllerTest extends AbstractControllerTest {
         Optional<RevObject> masterRevObject = repo.command(RevObjectParse.class)
                 .setRefSpec("master").call();
         String masterId = masterRevObject.get().getId().toString();
-        MockHttpServletRequestBuilder get =
-                MockMvcRequestBuilders.get("/repos/repo1/repo/getdepth?commitId=" + masterId);
+        MockHttpServletRequestBuilder get = MockMvcRequestBuilders
+                .get("/repos/repo1/repo/getdepth?commitId=" + masterId);
         perform(get).andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string("2"));

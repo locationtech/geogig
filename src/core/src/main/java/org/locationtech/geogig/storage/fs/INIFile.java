@@ -27,8 +27,7 @@ public abstract class INIFile extends INIBlob {
 
     public abstract File iniFile();
 
-    @Override
-    public byte[] iniBytes() throws IOException {
+    public @Override byte[] iniBytes() throws IOException {
         File file = iniFile();
         if (file.exists()) {
             return Files.toByteArray(file);
@@ -37,14 +36,12 @@ public abstract class INIFile extends INIBlob {
         }
     }
 
-    @Override
-    public void setBytes(byte[] bytes) throws IOException {
+    public @Override void setBytes(byte[] bytes) throws IOException {
         File file = iniFile();
         Files.write(bytes, file);
     }
 
-    @Override
-    public boolean needsReload() {
+    public @Override boolean needsReload() {
         File ini = iniFile();
         long currentTime = ini.lastModified();
         if (currentTime > timestamp) {
@@ -59,8 +56,7 @@ public abstract class INIFile extends INIBlob {
 
             private final File file = iniFile;
 
-            @Override
-            public File iniFile() {
+            public @Override File iniFile() {
                 return file;
             }
         };

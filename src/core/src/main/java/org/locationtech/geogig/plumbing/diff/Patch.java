@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -187,8 +187,7 @@ public class Patch {
         featureTypes.put(featureType.getId(), featureType);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         // TODO: this is a temporary simple comparison. Should be more elaborate
         if (!(o instanceof Patch)) {
             return false;
@@ -206,8 +205,7 @@ public class Patch {
      * serialize the patch, use the {@link PatchSerializer} class instead. Use this method to show
      * patch content in a human-readable format
      */
-    @Override
-    public String toString() {
+    public @Override String toString() {
         TextRevObjectSerializer serializer = TextRevObjectSerializer.INSTANCE;
         StringBuilder sb = new StringBuilder();
         for (FeatureInfo feature : addedFeatures) {
@@ -263,7 +261,7 @@ public class Patch {
                 if (idx != -1) {
                     updatedDescriptors.set(idx);
                 } else {
-                    Class<?> oldType = oldDescriptor.getType().getBinding();
+                    Class<?> oldType = oldDescriptor.getBinding();
                     sb.append("R\t" + oldDescriptors.get(i).getName().getLocalPart() + "["
                             + oldType.getName() + "]");
                 }
@@ -273,7 +271,7 @@ public class Patch {
             for (int i = updatedDescriptors.nextSetBit(0); i >= 0; i = updatedDescriptors
                     .nextSetBit(i + 1)) {
                 PropertyDescriptor newDescriptor = newDescriptors.get(i);
-                Class<?> oldType = newDescriptor.getType().getBinding();
+                Class<?> oldType = newDescriptor.getBinding();
                 sb.append("A\t" + newDescriptors.get(i).getName().getLocalPart() + "["
                         + oldType.getName() + "]");
             }

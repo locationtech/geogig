@@ -10,17 +10,14 @@
 package org.locationtech.geogig.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.Feature;
-import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
 
 import lombok.NonNull;
 import lombok.Setter;
@@ -58,11 +55,11 @@ public final @Accessors(fluent = true) class RevFeatureBuilder {
         return this;
     }
 
-    public RevFeatureBuilder addProperty(@NonNull Property featureProp) {
-        // This is where we might handle complex properties if ever supported
-        addValue(featureProp.getValue());
-        return this;
-    }
+    // public RevFeatureBuilder addProperty(@NonNull Property featureProp) {
+    // // This is where we might handle complex properties if ever supported
+    // addValue(featureProp.getValue());
+    // return this;
+    // }
 
     /**
      * Adds the provided value to the tail of the sequence of attribute values that compose the
@@ -125,17 +122,7 @@ public final @Accessors(fluent = true) class RevFeatureBuilder {
      * @return the newly constructed RevFeature
      */
     public RevFeature build(@NonNull Feature feature) {
-        if (feature instanceof SimpleFeature) {
-            // Just
-            SimpleFeature sf = (SimpleFeature) feature;
-            int attributeCount = sf.getAttributeCount();
-            for (int i = 0; i < attributeCount; i++) {
-                addValue(sf.getAttribute(i));
-            }
-        } else {
-            Collection<Property> props = feature.getProperties();
-            props.forEach(this::addProperty);
-        }
+        feature.forEach(this::addValue);
         return build();
     }
 }

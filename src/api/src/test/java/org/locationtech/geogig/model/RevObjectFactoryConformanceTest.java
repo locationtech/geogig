@@ -26,15 +26,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nonnegative;
-
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.data.DataUtilities;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.NameImpl;
-import org.geotools.feature.SchemaException;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.jts.WKTReader2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -42,20 +34,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
+import org.locationtech.geogig.feature.FeatureTypes;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.RevObjectFactoryImpl;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mockito;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.AttributeType;
-import org.opengis.feature.type.FeatureTypeFactory;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.filter.Filter;
-import org.opengis.util.InternationalString;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
@@ -304,13 +294,12 @@ public abstract class RevObjectFactoryConformanceTest {
         return actual;
     }
 
-    private RevTree testCreateTree(ObjectId id, @Nonnegative long size, int childTreeCount,
-            Bucket... buckets) {
+    private RevTree testCreateTree(ObjectId id, long size, int childTreeCount, Bucket... buckets) {
         SortedSet<Bucket> set = buckets == null ? null : new TreeSet<>(Arrays.asList(buckets));
         return testCreateTree(id, size, childTreeCount, set);
     }
 
-    private RevTree testCreateTree(ObjectId id, @Nonnegative long size, int childTreeCount,
+    private RevTree testCreateTree(ObjectId id, long size, int childTreeCount,
             SortedSet<Bucket> buckets) {
 
         RevTree actual = factory.createTree(id, size, childTreeCount, buckets);
@@ -540,19 +529,19 @@ public abstract class RevObjectFactoryConformanceTest {
         testCreateTag(id1, "v1.0", id2, "some version message", null);
     }
 
-    private final RevFeatureType testCreateFeatureType(ObjectId id, String typeSpec) {
-        SimpleFeatureType type = null;
+    private final RevFeatureType testCreateFeatureType(ObjectId id, List<String> typeSpec) {
+        return testCreateFeatureType(id, typeSpec.toArray(new String[typeSpec.size()]));
+    }
+
+    private final RevFeatureType testCreateFeatureType(ObjectId id, String... typeSpec) {
+        FeatureType type = null;
         if (typeSpec != null) {
-            try {
-                type = DataUtilities.createType("roads", typeSpec);
-            } catch (SchemaException e) {
-                throw new RuntimeException(e);
-            }
+            type = FeatureTypes.createType("roads", typeSpec);
         }
         return testCreateFeatureType(id, type);
     }
 
-    private RevFeatureType testCreateFeatureType(ObjectId id, SimpleFeatureType type) {
+    private RevFeatureType testCreateFeatureType(ObjectId id, FeatureType type) {
         RevFeatureType actual = factory.createFeatureType(id, type);
         assertNotNull(actual);
         RevFeatureType expected = DEFAULT.createFeatureType(id, type);
@@ -564,33 +553,28 @@ public abstract class RevObjectFactoryConformanceTest {
     public @Test final void createFeatureTypeNullId() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("id");
-        testCreateFeatureType(null, "sp:String,ip:Integer,pp:Point:srid=4326");
+        testCreateFeatureType(null, "sp:String", "ip:Integer", "pp:Point:srid=4326");
     }
 
     public @Test final void createFeatureTypeNullFeatureType() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("type");
-        testCreateFeatureType(id1, (SimpleFeatureType) null);
+        testCreateFeatureType(id1, (FeatureType) null);
     }
 
     public @Test final void createFeatureType() {
-        testCreateFeatureType(id1, "sp:String,ip:Integer,pp:Point:srid=4326");
+        testCreateFeatureType(id1, "sp:String", "ip:Integer", "pp:Point:srid=4326");
     }
 
     public @Test final void createFeatureTypeAllSupportedAttributeTypes() {
         FieldType[] fieldTypes = FieldType.values();
-        StringBuilder typeSpec = new StringBuilder();
+        List<String> typeSpec = new ArrayList<>();
         for (FieldType ft : fieldTypes) {
-            if (typeSpec.length() > 0) {
-                typeSpec.append(',');
-            }
             if (ft != FieldType.NULL && ft != FieldType.UNKNOWN) {
-                typeSpec.append(ft + "_type:").append(ft.getBinding().getName());
+                typeSpec.add(ft + "_type:" + ft.getBinding().getName());
             }
         }
-        final String spec = typeSpec.toString();
-
-        final RevFeatureType revFType = testCreateFeatureType(id1, spec);
+        final RevFeatureType revFType = testCreateFeatureType(id1, typeSpec);
         for (FieldType ft : fieldTypes) {
             if (ft == FieldType.NULL || ft == FieldType.UNKNOWN) {
                 continue;
@@ -598,7 +582,7 @@ public abstract class RevObjectFactoryConformanceTest {
             String attName = ft + "_type";
             PropertyDescriptor descriptor = revFType.type().getDescriptor(attName);
             assertNotNull(descriptor);
-            assertEquals(attName, ft.getBinding(), descriptor.getType().getBinding());
+            assertEquals(attName, ft.getBinding(), descriptor.getBinding());
         }
     }
 
@@ -610,110 +594,71 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createFeatureTypeCardinality() {
-        FeatureTypeFactory ftf = CommonFactoryFinder.getFeatureTypeFactory(null);
+        Name attName1 = new Name("int_Type");
+        Name attName2 = new Name("string_Type");
 
-        Name attName1 = new NameImpl("int_Type");
-        Name attName2 = new NameImpl("string_Type");
         Class<?> binding = Integer.class;
-        boolean isIdentifiable = false;
-        boolean isAbstract = false;
-        List<Filter> restrictions = null;
-        AttributeType superType = null;
-        InternationalString description = null;
-        AttributeType attribute1 = ftf.createAttributeType(attName1, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-        AttributeType attribute2 = ftf.createAttributeType(attName2, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-
         int minOccurs = 2;
         int maxOccurs = 5;
         boolean isNillable = true;
-        Object defaultValue = null;
-        AttributeDescriptor descriptor1 = ftf.createAttributeDescriptor(attribute1,
-                attribute1.getName(), minOccurs, maxOccurs, isNillable, defaultValue);
+        PropertyDescriptor descriptor1 = PropertyDescriptor.builder().name(attName1)
+                .typeName(attName1).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
         minOccurs = 0;
         maxOccurs = 10;
-        AttributeDescriptor descriptor2 = ftf.createAttributeDescriptor(attribute2,
-                attribute2.getName(), minOccurs, maxOccurs, isNillable, defaultValue);
+        PropertyDescriptor descriptor2 = PropertyDescriptor.builder().name(attName2)
+                .typeName(attName2).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
 
-        SimpleFeatureTypeBuilder sftb = new SimpleFeatureTypeBuilder(ftf);
-        sftb.add(descriptor1);
-        sftb.add(descriptor2);
-        sftb.setName(new NameImpl("SimpleName"));
-        SimpleFeatureType featureType = sftb.buildFeatureType();
+        FeatureTypeBuilder sftb = FeatureType.builder().name(new Name("SimpleName"));
+        sftb.descriptors(Arrays.asList(descriptor1, descriptor2));
+        FeatureType featureType = sftb.build();
         testCreateFeatureType(id1, featureType);
     }
 
     public @Test final void createFeatureTypeNillability() {
-        FeatureTypeFactory ftf = CommonFactoryFinder.getFeatureTypeFactory(null);
-
-        Name attName1 = new NameImpl("int_Type");
-        Name attName2 = new NameImpl("string_Type");
+        Name attName1 = new Name("int_Type");
+        Name attName2 = new Name("string_Type");
         Class<?> binding = Integer.class;
-        boolean isIdentifiable = false;
-        boolean isAbstract = false;
-        List<Filter> restrictions = null;
-        AttributeType superType = null;
-        InternationalString description = null;
-        AttributeType attribute1 = ftf.createAttributeType(attName1, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-        AttributeType attribute2 = ftf.createAttributeType(attName2, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-
         int minOccurs = 0;
         int maxOccurs = 1;
         boolean isNillable = true;
-        Object defaultValue = null;
-        AttributeDescriptor descriptor1 = ftf.createAttributeDescriptor(attribute1,
-                attribute1.getName(), minOccurs, maxOccurs, isNillable, defaultValue);
-
+        PropertyDescriptor descriptor1 = PropertyDescriptor.builder().name(attName1)
+                .typeName(attName1).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
         isNillable = false;
-        AttributeDescriptor descriptor2 = ftf.createAttributeDescriptor(attribute2,
-                attribute2.getName(), minOccurs, maxOccurs, isNillable, defaultValue);
+        PropertyDescriptor descriptor2 = PropertyDescriptor.builder().name(attName2)
+                .typeName(attName2).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
 
-        SimpleFeatureTypeBuilder sftb = new SimpleFeatureTypeBuilder(ftf);
-        sftb.add(descriptor1);
-        sftb.add(descriptor2);
-        sftb.setName(new NameImpl("SimpleName"));
-        SimpleFeatureType featureType = sftb.buildFeatureType();
+        FeatureTypeBuilder sftb = FeatureType.builder().name(new Name("SimpleName"))
+                .descriptors(Arrays.asList(descriptor1, descriptor2));
+        FeatureType featureType = sftb.build();
         testCreateFeatureType(id1, featureType);
     }
 
     public @Test final void createFeatureTypeNamesWithNamespaces() {
-        FeatureTypeFactory ftf = CommonFactoryFinder.getFeatureTypeFactory(null);
-
-        Name attName1 = new NameImpl("http://geogig.org/test/att1", "int_Type");
-        Name attName2 = new NameImpl("http://geogig.org/test/att2", "string_Type");
+        Name attName1 = Name.valueOf("http://geogig.org/test/att1", "int_Type");
+        Name attName2 = Name.valueOf("http://geogig.org/test/att2", "string_Type");
         Class<?> binding = Integer.class;
-        boolean isIdentifiable = false;
-        boolean isAbstract = false;
-        List<Filter> restrictions = null;
-        AttributeType superType = null;
-        InternationalString description = null;
-        AttributeType attribute1 = ftf.createAttributeType(attName1, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-        AttributeType attribute2 = ftf.createAttributeType(attName2, binding, isIdentifiable,
-                isAbstract, restrictions, superType, description);
-
         int minOccurs = 0;
         int maxOccurs = 1;
         boolean isNillable = false;
-        Object defaultValue = null;
 
-        Name propName1 = new NameImpl("http://geogig.org/test/prop1", "int_Property");
-        Name propName2 = new NameImpl("http://geogig.org/test/prop2", "string_Property");
-        AttributeDescriptor descriptor1 = ftf.createAttributeDescriptor(attribute1, propName1,
-                minOccurs, maxOccurs, isNillable, defaultValue);
+        Name propName1 = Name.valueOf("http://geogig.org/test/prop1", "int_Property");
+        Name propName2 = Name.valueOf("http://geogig.org/test/prop2", "string_Property");
 
-        AttributeDescriptor descriptor2 = ftf.createAttributeDescriptor(attribute2, propName2,
-                minOccurs, maxOccurs, isNillable, defaultValue);
+        PropertyDescriptor descriptor1 = PropertyDescriptor.builder().name(propName1)
+                .typeName(attName1).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
+        PropertyDescriptor descriptor2 = PropertyDescriptor.builder().name(propName2)
+                .typeName(attName2).binding(binding).minOccurs(minOccurs).maxOccurs(maxOccurs)
+                .nillable(isNillable).build();
 
-        Name typeName = new NameImpl("http://geogig.org/test/type", "QualifiedTypeName");
-        SimpleFeatureTypeBuilder sftb = new SimpleFeatureTypeBuilder(ftf);
-        sftb.add(descriptor1);
-        sftb.add(descriptor2);
-        sftb.setName(typeName);
-        SimpleFeatureType featureType = sftb.buildFeatureType();
+        Name typeName = Name.valueOf("http://geogig.org/test/type", "QualifiedTypeName");
+        FeatureTypeBuilder sftb = FeatureType.builder().name(typeName)
+                .descriptors(Arrays.asList(descriptor1, descriptor2));
+        FeatureType featureType = sftb.build();
         testCreateFeatureType(id1, featureType);
     }
 
@@ -833,7 +778,7 @@ public abstract class RevObjectFactoryConformanceTest {
     private Geometry geom(String wkt) {
         Geometry value;
         try {
-            value = new WKTReader2().read(wkt);
+            value = new WKTReader().read(wkt);
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }

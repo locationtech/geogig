@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.geotools.data.DataStore;
+import org.geotools.feature.ValidatingFeatureFactoryImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.cli.CLICommand;
@@ -61,8 +62,7 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
             "--interchange" }, description = "Export as geogig mobile interchange format")
     boolean interchangeFormat;
 
-    @Override
-    protected DataStore getDataStore() {
+    protected @Override DataStore getDataStore() {
         return support.getDataStore(commonArgs);
     }
 
@@ -70,8 +70,7 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
 
     private final AtomicLong nextId = new AtomicLong(1);
 
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         super.runInternal(cli);
         // Add mapped feature ids table to geopackage
         final String sourcePathspec = args.get(0);
@@ -103,11 +102,11 @@ public class GeopkgExport extends DataStoreExport implements CLICommand {
      * @param featureType the feature type of the features to transform
      * @return the transforming function
      */
-    @Override
-    protected Function<Feature, Optional<Feature>> getTransformingFunction(
+    protected @Override Function<Feature, Optional<Feature>> getTransformingFunction(
             final SimpleFeatureType featureType) {
         Function<Feature, Optional<Feature>> function = (feature) -> {
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType,
+                    new ValidatingFeatureFactoryImpl());
             builder.init((SimpleFeature) feature);
             long fidValue = nextId.incrementAndGet();
             builder.featureUserData(Hints.PROVIDED_FID, Long.valueOf(fidValue));

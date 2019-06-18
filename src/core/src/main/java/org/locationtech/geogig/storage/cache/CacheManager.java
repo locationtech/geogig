@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.cache;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.lang.management.ManagementFactory;
@@ -293,9 +292,7 @@ public class CacheManager implements CacheManagerBean {
      * 
      * @param uniqueCacheIdentifier a client defined identifier for the objectcache
      */
-    public ObjectCache acquire(final String uniqueCacheIdentifier) {
-        checkNotNull(uniqueCacheIdentifier);
-
+    public ObjectCache acquire(final @NonNull String uniqueCacheIdentifier) {
         CacheIdentifier prefix = CACHE_IDS.get(uniqueCacheIdentifier);
         if (prefix == null) {
             prefix = new CacheIdentifier(CACHE_ID_SEQ.incrementAndGet());
@@ -335,13 +332,11 @@ public class CacheManager implements CacheManagerBean {
             this.cacheManager = cacheManager;
         }
 
-        @Override
-        protected ObjectCache connect(CacheIdentifier address) {
+        protected @Override ObjectCache connect(CacheIdentifier address) {
             return cacheManager.create(address);
         }
 
-        @Override
-        protected void disconnect(ObjectCache cache) {
+        protected @Override void disconnect(ObjectCache cache) {
             cacheManager.doRelease(cache);
         }
     }
@@ -357,61 +352,50 @@ public class CacheManager implements CacheManagerBean {
         }
     }
 
-    @Override
-    public long getSize() {
+    public @Override long getSize() {
         return sharedCache().objectCount();
     }
 
-    @Override
-    public long getSizeBytes() {
+    public @Override long getSizeBytes() {
         return sharedCache().sizeBytes();
     }
 
-    @Override
-    public double getSizeMB() {
+    public @Override double getSizeMB() {
         return getSizeBytes() / (1024D * 1024D);
     }
 
-    @Override
-    public void clear() {
+    public @Override void clear() {
         if (_SHARED_CACHE != null) {
             _SHARED_CACHE.invalidateAll();
         }
     }
 
-    @Override
-    public long getHitCount() {
+    public @Override long getHitCount() {
         return sharedCache().getStats().hitCount();
     }
 
-    @Override
-    public double getHitRate() {
+    public @Override double getHitRate() {
         return sharedCache().getStats().hitRate();
     }
 
-    @Override
-    public long getMissCount() {
+    public @Override long getMissCount() {
         return sharedCache().getStats().missCount();
     }
 
-    @Override
-    public double getMissRate() {
+    public @Override double getMissRate() {
         return sharedCache().getStats().missRate();
     }
 
-    @Override
-    public long getEvictionCount() {
+    public @Override long getEvictionCount() {
         return sharedCache().getStats().evictionCount();
     }
 
-    @Override
-    public void setMaximumSizePercent(double percent) {
+    public @Override void setMaximumSizePercent(double percent) {
         long maxSize = getCacheSizePercent(percent);
         setMaximumSize(maxSize);
     }
 
-    @Override
-    public void setMaximumSizeMB(double maxSizeMB) {
+    public @Override void setMaximumSizeMB(double maxSizeMB) {
         final long maxSize = (long) (maxSizeMB * (1024 * 1024));
         setMaximumSize(maxSize);
     }
@@ -420,14 +404,12 @@ public class CacheManager implements CacheManagerBean {
         return currentMaxCacheSize;
     }
 
-    @Override
-    public double getMaximumSizeMB() {
+    public @Override double getMaximumSizeMB() {
         long maxCacheSizeBytes = currentMaxCacheSize;
         return maxCacheSizeBytes / (1024d * 1024d);
     }
 
-    @Override
-    public void setMaximumSize(long maxSizeBytes) throws IllegalArgumentException {
+    public @Override void setMaximumSize(long maxSizeBytes) throws IllegalArgumentException {
         final long absoluteMaximumSize = getAbsoluteMaximumSize();
         checkArgument(maxSizeBytes >= 0 && maxSizeBytes <= absoluteMaximumSize,
                 "Cache max size must be between 0 and %s, got %s", absoluteMaximumSize,
@@ -461,20 +443,17 @@ public class CacheManager implements CacheManagerBean {
         this.currentMaxCacheSize = maxSizeBytes;
     }
 
-    @Override
-    public double getMaximumSizePercent() {
+    public @Override double getMaximumSizePercent() {
         final long maxMemory = getMaximumHeapSize();
         double percent = (double) getMaximumSize() / maxMemory;
         return percent;
     }
 
-    @Override
-    public double getDefaultSizeMB() {
+    public @Override double getDefaultSizeMB() {
         return resolveDefaultMaxSize() / (1024d * 1024D);
     }
 
-    @Override
-    public double getAbsoluteMaximumSizeMB() {
+    public @Override double getAbsoluteMaximumSizeMB() {
         long maxMemory = getAbsoluteMaximumSize();
         return maxMemory / (double) (1024 * 1024);
     }
@@ -484,21 +463,18 @@ public class CacheManager implements CacheManagerBean {
         return (long) (maxMemory * 0.9);
     }
 
-    @Override
     @Nullable
-    public String getMaximumSizeSystemProperty() {
+    public @Override String getMaximumSizeSystemProperty() {
         return System.getProperty(GEOGIG_CACHE_MAX_SIZE);
     }
 
-    @Override
     @Nullable
-    public String getMaximumSizeEnvVariable() {
+    public @Override String getMaximumSizeEnvVariable() {
         return System.getenv(GEOGIG_CACHE_MAX_SIZE);
     }
 
-    @Override
     @Nullable
-    public String getCacheImplementationName() {
+    public @Override String getCacheImplementationName() {
         return sharedCache().getClass().getName();
     }
 }

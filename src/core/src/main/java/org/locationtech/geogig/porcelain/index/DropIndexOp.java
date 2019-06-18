@@ -51,8 +51,7 @@ public class DropIndexOp extends AbstractGeoGigOp<IndexInfo> {
      * 
      * @return The {@link IndexInfo} of the dropped index.
      */
-    @Override
-    protected IndexInfo _call() {
+    protected @Override IndexInfo _call() {
         checkArgument(treeRefSpec != null, "Tree ref spec not provided.");
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
         checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);

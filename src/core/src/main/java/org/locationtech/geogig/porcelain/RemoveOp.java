@@ -214,8 +214,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         // return new DiffEntry(oldFeature, null);
         // }
         Function<String, DiffEntry> f = new Function<String, DiffEntry>() {
-            @Override
-            public DiffEntry apply(String featurePath) {
+            public @Override DiffEntry apply(String featurePath) {
                 Node node = RevObjectFactory.defaultInstance().createNode(
                         NodeRef.nodeFromPath(featurePath), ObjectId.NULL, ObjectId.NULL,
                         TYPE.FEATURE, null, null);

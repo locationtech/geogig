@@ -36,8 +36,9 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
 /**
  * Spring MVC class for configuring the Web API.
  *
- * @see <a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html">
- * The Spring Web MVC Documentation</a> for more.
+ * @see <a href=
+ *      "https://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html"> The
+ *      Spring Web MVC Documentation</a> for more.
  */
 @Configuration
 @EnableWebMvc

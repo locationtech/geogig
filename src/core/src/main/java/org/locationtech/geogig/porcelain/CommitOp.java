@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
@@ -42,6 +41,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
+
+import lombok.NonNull;
 
 /**
  * Commits the staged changed in the index to the repository, creating a new commit pointing to the
@@ -133,8 +134,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * @param committerName the committer's name
      * @param committerEmail the committer's email
      */
-    public CommitOp setCommitter(String committerName, @Nullable String committerEmail) {
-        checkNotNull(committerName);
+    public CommitOp setCommitter(@NonNull String committerName, @Nullable String committerEmail) {
         this.committerName = committerName;
         this.committerEmail = Optional.ofNullable(committerEmail);
         return this;
@@ -247,8 +247,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * @throws NothingToCommitException if there are no staged changes by comparing the index
      *         staging tree and the repository HEAD tree.
      */
-    @Override
-    protected RevCommit _call() throws RuntimeException {
+    protected @Override RevCommit _call() throws RuntimeException {
         String commitMessage = message;
 
         getProgressListener().started();
@@ -390,8 +389,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     private Supplier<RevTree> resolveOldRoot() {
         Supplier<RevTree> supplier = new Supplier<RevTree>() {
-            @Override
-            public RevTree get() {
+            public @Override RevTree get() {
                 Optional<ObjectId> head = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
                 if (!head.isPresent() || head.get().isNull()) {
                     return RevTree.EMPTY;
@@ -410,7 +408,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
         final String namekey = "user.name";
 
-        String name = getClientData(namekey, String.class)
+        String name = getClientData(namekey)
                 .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
@@ -428,7 +426,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
         final String emailkey = "user.email";
 
-        String email = getClientData(emailkey, String.class)
+        String email = getClientData(emailkey)
                 .orElseGet(() -> command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,

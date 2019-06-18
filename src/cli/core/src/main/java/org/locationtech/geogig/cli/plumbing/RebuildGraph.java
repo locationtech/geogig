@@ -33,8 +33,7 @@ public class RebuildGraph extends AbstractCommand implements CLICommand {
     @Parameter(names = "--quiet", description = "Print only a summary of the fixed entries.")
     private boolean quiet = false;
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
         ImmutableList<ObjectId> updatedObjects = cli.getGeogig().command(RebuildGraphOp.class)
                 .call();
 

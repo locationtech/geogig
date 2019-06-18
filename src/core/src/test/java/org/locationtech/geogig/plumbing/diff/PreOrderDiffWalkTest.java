@@ -638,9 +638,8 @@ public class PreOrderDiffWalkTest {
             final int overlapCount) {
 
         consumer = new PreOrderDiffWalk.AbstractConsumer() {
-            @Override
-            public boolean bucket(NodeRef leftParent, NodeRef rigthParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override boolean bucket(NodeRef leftParent, NodeRef rigthParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
 
                 int bucketDepth = bucketIndex.depthIndex();
                 if (bucketDepth > 3) {
@@ -649,9 +648,8 @@ public class PreOrderDiffWalkTest {
                 return true;
             }
 
-            @Override
-            public void endBucket(NodeRef leftParent, NodeRef rigthParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override void endBucket(NodeRef leftParent, NodeRef rigthParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 int bucketDepth = bucketIndex.depthIndex();
                 if (bucketDepth > 3) {
                     throw new IllegalStateException();
@@ -760,9 +758,8 @@ public class PreOrderDiffWalkTest {
         final AtomicInteger maxDepth = new AtomicInteger();
 
         visitor.walk(new PreOrderDiffWalk.AbstractConsumer() {
-            @Override
-            public boolean bucket(NodeRef lparent, NodeRef rparent, BucketIndex bucketIndex,
-                    Bucket left, Bucket right) {
+            public @Override boolean bucket(NodeRef lparent, NodeRef rparent,
+                    BucketIndex bucketIndex, Bucket left, Bucket right) {
                 int bucketDepth = bucketIndex.depthIndex();
                 maxDepth.set(Math.max(maxDepth.get(), bucketDepth + 1));// use +1 cause we want the
                                                                         // number of levels, not the
@@ -882,8 +879,7 @@ public class PreOrderDiffWalkTest {
         final List<String> actualOrder = new ArrayList<>();
 
         Consumer c = new AbstractConsumer() {
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 actualOrder.add(right.name());
                 return true;
             }
@@ -959,8 +955,7 @@ public class PreOrderDiffWalkTest {
         class Accumulator extends AbstractConsumer {
             final List<Bounded> events = new ArrayList<>();
 
-            @Override
-            public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
                 if (collectLeft && left != null)
                     events.add(left.getNode());
                 if (collectRight && right != null)
@@ -968,16 +963,14 @@ public class PreOrderDiffWalkTest {
                 return true;
             }
 
-            @Override
-            public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 add(left, right);
                 return true;
             }
 
-            @Override
-            public void endBucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                    @Nullable Bucket left, @Nullable Bucket right) {
+            public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
+                    BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
                 add(left, right);
             }
 
@@ -1047,8 +1040,7 @@ public class PreOrderDiffWalkTest {
 
         final AtomicLong count = new AtomicLong();
 
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
             count.incrementAndGet();
             return true;
         }

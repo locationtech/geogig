@@ -14,20 +14,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
@@ -36,21 +29,17 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /**
  * Computes the bounds of the difference between the two trees instead of the actual diffs.
  * 
  */
-public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, BoundingBox>> {
+public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>> {
 
     private ObjectStore leftSource, rightSource;
 
@@ -59,8 +48,6 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
     private RevTree oldTree, newTree;
 
     private List<String> pathFilters = Collections.emptyList();
-
-    private CoordinateReferenceSystem crs;
 
     private boolean compareStaged;
 
@@ -103,17 +90,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         return this;
     }
 
-    /**
-     * @param crs the CRS to compute the bounds in. Defaults to {@code EPSG:4326} with long/lat axis
-     *        order if not set.
-     */
-    public DiffBounds setCRS(@Nullable CoordinateReferenceSystem crs) {
-        this.crs = crs;
-        return this;
-    }
-
-    @Override
-    protected DiffSummary<BoundingBox, BoundingBox> _call() {
+    protected @Override DiffSummary<Envelope, Envelope> _call() {
         checkArgument(compareStaged && oldVersion == null && oldTree == null || !compareStaged,
                 String.format(
                         "compare index allows only one revision to check against, got %s / %s",
@@ -132,28 +109,14 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
         RevTree right = resolveTree(newTree, newVersion, rightSource);
 
         PreOrderDiffWalk visitor = new PreOrderDiffWalk(left, right, leftSource, rightSource);
-        CoordinateReferenceSystem crs = resolveCrs();
-        BoundsWalk walk = new BoundsWalk(crs, leftSource, rightSource);
+        BoundsWalk walk = new BoundsWalk(leftSource, rightSource);
         PreOrderDiffWalk.Consumer consumer = walk;
         if (!pathFilters.isEmpty()) {
             consumer = new PathFilteringDiffConsumer(pathFilters, walk);
         }
         visitor.walk(consumer);
-        DiffSummary<BoundingBox, BoundingBox> diffBounds = walk.getResult();
+        DiffSummary<Envelope, Envelope> diffBounds = walk.getResult();
         return diffBounds;
-    }
-
-    private CoordinateReferenceSystem resolveCrs() {
-        if (this.crs != null) {
-            return this.crs;
-        }
-        CoordinateReferenceSystem defaultCrs;
-        try {
-            defaultCrs = CRS.decode("EPSG:4326", true);
-        } catch (FactoryException e) {
-            throw new RuntimeException(e);
-        }
-        return defaultCrs;
     }
 
     private RevTree resolveTree(@Nullable RevTree tree, @Nullable String refSpec,
@@ -170,58 +133,42 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
     private static class BoundsWalk extends PreOrderDiffWalk.AbstractConsumer {
 
         /**
-         * Private extension of {@link ReferencedEnvelope} to make only the methods
-         * {@link BoundsWalk} is intereseted in synchronized.
+         * Private extension of {@link Envelope} to make only the methods {@link BoundsWalk} is
+         * intereseted in synchronized.
          *
          */
-        private static class ThreadSafeReferencedEnvelope extends ReferencedEnvelope {
+        private static class ThreadSafeEnvelope extends Envelope {
 
             private static final long serialVersionUID = -9218780157089328231L;
 
-            public ThreadSafeReferencedEnvelope(CoordinateReferenceSystem crs) {
-                super(crs);
-            }
-
-            @Override
-            public synchronized void expandToInclude(Envelope other) {
+            public @Override synchronized void expandToInclude(Envelope other) {
                 super.expandToInclude(other);
             }
 
-            @Override
-            public synchronized void expandToInclude(double x, double y) {
+            public @Override synchronized void expandToInclude(double x, double y) {
                 super.expandToInclude(x, y);
             }
         }
 
         @Nullable
-        private DiffSummary<BoundingBox, BoundingBox> diffBoundsResult;
+        private DiffSummary<Envelope, Envelope> diffBoundsResult;
 
-        @NonNull
-        private ThreadSafeReferencedEnvelope leftEnv;
+        private ThreadSafeEnvelope leftEnv;
 
-        @NonNull
-        private ThreadSafeReferencedEnvelope rightEnv;
-
-        private final CoordinateReferenceSystem crs;
+        private ThreadSafeEnvelope rightEnv;
 
         private final ObjectStore leftSource, rightSource;
 
-        private final ConcurrentMap<ObjectId, MathTransform> transformsByMetadataId;
-
-        public BoundsWalk(CoordinateReferenceSystem crs, ObjectStore leftSource,
-                ObjectStore rightSource) {
-            this.crs = crs;
+        public BoundsWalk(@NonNull ObjectStore leftSource, @NonNull ObjectStore rightSource) {
             this.leftSource = leftSource;
             this.rightSource = rightSource;
-            this.transformsByMetadataId = new ConcurrentHashMap<>();
-            leftEnv = new ThreadSafeReferencedEnvelope(this.crs);
-            rightEnv = new ThreadSafeReferencedEnvelope(this.crs);
+            leftEnv = new ThreadSafeEnvelope();
+            rightEnv = new ThreadSafeEnvelope();
         }
 
-        @Override
-        public boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
-            ReferencedEnvelope leftHelper = getEnv(left, leftSource);
-            ReferencedEnvelope rightHelper = getEnv(right, rightSource);
+        public @Override boolean feature(@Nullable NodeRef left, @Nullable NodeRef right) {
+            Envelope leftHelper = getEnv(left, leftSource);
+            Envelope rightHelper = getEnv(right, rightSource);
 
             if (!leftHelper.equals(rightHelper)) {
                 leftEnv.expandToInclude(leftHelper);
@@ -230,10 +177,9 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return true;
         }
 
-        @Override
-        public boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-            ReferencedEnvelope leftHelper = getEnv(left, leftSource);
-            ReferencedEnvelope rightHelper = getEnv(right, rightSource);
+        public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
+            Envelope leftHelper = getEnv(left, leftSource);
+            Envelope rightHelper = getEnv(right, rightSource);
 
             if (leftHelper.isNull() && rightHelper.isNull()) {
                 return false;
@@ -249,32 +195,30 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return true;
         }
 
-        @Override
-        public void endTree(NodeRef left, NodeRef right) {
+        public @Override void endTree(NodeRef left, NodeRef right) {
             String name = left == null ? right.name() : left.name();
             if (NodeRef.ROOT.equals(name)) {
-                BoundingBox lbounds = new ReferencedEnvelope(this.leftEnv);
-                BoundingBox rbounds = new ReferencedEnvelope(this.rightEnv);
-                BoundingBox merged;
-                if (lbounds.isEmpty()) {
+                Envelope lbounds = new Envelope(this.leftEnv);
+                Envelope rbounds = new Envelope(this.rightEnv);
+                Envelope merged;
+                if (lbounds.isNull()) {
                     merged = rbounds;
-                } else if (rbounds.isEmpty()) {
+                } else if (rbounds.isNull()) {
                     merged = lbounds;
                 } else {
-                    merged = new ReferencedEnvelope(lbounds);
-                    merged.include(rbounds);
+                    merged = new Envelope(lbounds);
+                    merged.expandToInclude(rbounds);
                 }
-                this.diffBoundsResult = new DiffSummary<BoundingBox, BoundingBox>(lbounds, rbounds,
+                this.diffBoundsResult = new DiffSummary<Envelope, Envelope>(lbounds, rbounds,
                         merged);
             }
         }
 
-        @Override
-        public boolean bucket(NodeRef leftParent, NodeRef rightParent, BucketIndex bucketIndex,
-                @Nullable Bucket left, @Nullable Bucket right) {
+        public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
+                BucketIndex bucketIndex, @Nullable Bucket left, @Nullable Bucket right) {
 
-            ReferencedEnvelope leftHelper = getEnv(left, leftParent, leftSource);
-            ReferencedEnvelope rightHelper = getEnv(right, rightParent, rightSource);
+            Envelope leftHelper = getEnv(left, leftParent, leftSource);
+            Envelope rightHelper = getEnv(right, rightParent, rightSource);
 
             if (leftHelper.isNull() && rightHelper.isNull()) {
                 return false;
@@ -290,69 +234,23 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<BoundingBox, Boundi
             return true;
         }
 
-        private ObjectId md(@Nullable NodeRef node) {
-            return null == node ? ObjectId.NULL : node.getMetadataId();
-        }
-
-        private ReferencedEnvelope getEnv(@Nullable NodeRef ref, ObjectStore source) {
+        private Envelope getEnv(@Nullable NodeRef ref, ObjectStore source) {
             return getEnv(ref, ref, source);
         }
 
-        private ReferencedEnvelope getEnv(@Nullable Bounded bounded, NodeRef ref,
-                ObjectStore source) {
-
-            ObjectId metadataId = md(ref);
-            ReferencedEnvelope env = new ReferencedEnvelope(this.crs);
+        private Envelope getEnv(@Nullable Bounded bounded, NodeRef ref, ObjectStore source) {
+            Envelope env = new Envelope();
             if (bounded != null) {
                 bounded.expand(env);
-                if (!env.isNull() && !metadataId.isNull()) {
-                    MathTransform transform = getMathTransform(metadataId, source);
-                    if (!transform.isIdentity()) {
-                        Envelope targetEnvelope = new ReferencedEnvelope(crs);
-                        try {
-                            int densifyPoints = isPoint(env) ? 1 : 5;
-                            JTS.transform(env, targetEnvelope, transform, densifyPoints);
-                            env.init(targetEnvelope);
-                        } catch (TransformException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                }
             }
             return env;
         }
 
-        private boolean isPoint(Envelope env) {
-            return env.getWidth() == 0D && env.getHeight() == 0D;
-        }
-
-        private MathTransform getMathTransform(ObjectId mdid, ObjectStore source) {
-            MathTransform transform = this.transformsByMetadataId.get(mdid);
-            if (transform == null) {
-                RevFeatureType revtype = source.getFeatureType(mdid);
-                FeatureType type = revtype.type();
-                CoordinateReferenceSystem sourceCrs = type.getCoordinateReferenceSystem();
-                CoordinateReferenceSystem targetCrs = this.crs;
-                if (sourceCrs == null) {
-                    sourceCrs = targetCrs;
-                }
-                try {
-                    boolean lenient = true;
-                    transform = CRS.findMathTransform(sourceCrs, targetCrs, lenient);
-                } catch (FactoryException e) {
-                    throw new RuntimeException(e);
-                }
-                this.transformsByMetadataId.putIfAbsent(mdid, transform);
-            }
-            return transform;
-        }
-
-        public DiffSummary<BoundingBox, BoundingBox> getResult() {
-            DiffSummary<BoundingBox, BoundingBox> r = this.diffBoundsResult;
+        public DiffSummary<Envelope, Envelope> getResult() {
+            DiffSummary<Envelope, Envelope> r = this.diffBoundsResult;
             if (r == null) {
-                BoundingBox empty = new ReferencedEnvelope(crs);
-                r = new DiffSummary<BoundingBox, BoundingBox>(empty, empty, empty);
+                Envelope empty = new Envelope();
+                r = new DiffSummary<Envelope, Envelope>(empty, empty, empty);
             }
             return r;
         }

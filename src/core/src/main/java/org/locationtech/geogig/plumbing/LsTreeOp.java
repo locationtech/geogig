@@ -34,6 +34,8 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
+
 /**
  * List the contents of a {@link RevTree tree} object as an Iterator&lt;{@link NodeRef}&gt;, using
  * the sepecified {@link Strategy strategy} to indicate what to return.
@@ -102,8 +104,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
         return this;
     }
 
-    public LsTreeOp setStrategy(final Strategy strategy) {
-        Preconditions.checkNotNull(strategy);
+    public LsTreeOp setStrategy(final @NonNull Strategy strategy) {
         this.strategy = strategy;
         return this;
     }
@@ -255,8 +256,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
     /**
      * Implements {@link Supplier#get()} by deferring to {@link #call()}
      */
-    @Override
-    public Iterator<NodeRef> get() {
+    public @Override Iterator<NodeRef> get() {
         return call();
     }
 }

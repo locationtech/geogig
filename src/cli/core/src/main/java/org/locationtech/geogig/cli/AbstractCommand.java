@@ -52,8 +52,8 @@ public abstract class AbstractCommand implements CLICommand {
     @Parameter(hidden = true, names = "--color", description = "Whether to apply colored output. Possible values are auto|never|always.", converter = ColorArg.Converter.class)
     public ColorArg color = ColorArg.auto;
 
-    @Override
-    public void run(GeogigCLI cli) throws InvalidParameterException, CommandFailedException {
+    public @Override void run(GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException {
         checkNotNull(cli, "No GeogigCLI provided");
         if (help) {
             printUsage(cli);

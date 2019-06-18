@@ -28,7 +28,7 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -72,7 +72,7 @@ public class CLI {
             // FileRepositoryResolver doesn't fail regardless of the argument value, but other
             // implementations might.
             final boolean resolveAsRootURI = false;
-            try (ConfigDatabase config = FileRepositoryResolver
+            try (ConfigDatabase config = RepositoryFinder.INSTANCE
                     .resolveConfigDatabase(platform.pwd().toURI(), context, resolveAsRootURI)) {
                 Optional<String> ansiEnabled = config.getGlobal("ansi.enabled");
                 if (ansiEnabled.isPresent()) {
@@ -83,7 +83,7 @@ public class CLI {
                         console.disableAnsi();
                     }
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 console.println(format("Unable to obtain global config: " + e.getMessage()));
                 System.exit(-1);
             }
@@ -178,8 +178,7 @@ public class CLI {
 
             private GeogigCLI geogig = cli;
 
-            @Override
-            public void run() {
+            public @Override void run() {
                 if (cli.isRunning()) {
                     System.err.println("Forced shut down, wait for geogig to be closed...");
                     System.err.flush();

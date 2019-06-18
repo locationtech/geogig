@@ -1,3 +1,4 @@
+@ignore
 Feature: "pg export" command
     In order to export data to Geogig
     As a Geogig User

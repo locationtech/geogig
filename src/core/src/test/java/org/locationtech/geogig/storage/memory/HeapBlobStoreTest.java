@@ -16,8 +16,7 @@ import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 
 public class HeapBlobStoreTest extends TransactionBlobStoreTest {
 
-    @Override
-    protected TransactionBlobStore createBlobStore(File currentDirectory) {
+    protected @Override TransactionBlobStore createBlobStore(File currentDirectory) {
         return new HeapBlobStore();
     }
 }

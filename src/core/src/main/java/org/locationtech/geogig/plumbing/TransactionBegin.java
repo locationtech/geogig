@@ -32,8 +32,7 @@ public class TransactionBegin extends AbstractGeoGigOp<GeogigTransaction> {
      * 
      * @return the {@link GeogigTransaction} that was created by the operation
      */
-    @Override
-    protected GeogigTransaction _call() {
+    protected @Override GeogigTransaction _call() {
         Preconditions.checkState(!(context instanceof GeogigTransaction),
                 "Cannot start a new transaction within a transaction!");
 

@@ -33,8 +33,7 @@ public class CatObjectTest extends RepositoryTestCase {
 
     private static final String FEATURE_PREFIX = "Feature.";
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         odb = repo.objectDatabase();
     }
 
@@ -42,7 +41,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithoutBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) / 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
         assertEquals(numChildren + 4, lines.length);
@@ -57,7 +56,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) * 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
                 .call();
         String[] lines = desc.toString().split("\n");
         assertEquals(tree.bucketsSize() + 4, lines.length);
@@ -81,11 +80,11 @@ public class CatObjectTest extends RepositoryTestCase {
     @Test
     public void TestCatFeatureObject() {
         RevFeature feature = RevFeature.builder().build(points1);
-        CharSequence desc = geogig.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
+        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
                 .call();
         String[] lines = desc.toString().split("\n");
 
-        assertEquals(points1.getProperties().size() + 2, lines.length);
+        assertEquals(points1.getAttributeCount() + 2, lines.length);
         assertEquals(FieldType.STRING.name() + "\tStringProp1_1", lines[2]);
         assertEquals(FieldType.INTEGER.name() + "\t1000", lines[3]);
         assertEquals(FieldType.POINT.name() + "\tPOINT (1 1)", lines[4]);

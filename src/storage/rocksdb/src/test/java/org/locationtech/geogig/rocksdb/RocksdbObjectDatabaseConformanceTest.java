@@ -10,48 +10,27 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
-import java.io.IOException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
-import org.locationtech.geogig.storage.memory.HeapConfigDatabase;
-import org.locationtech.geogig.test.TestPlatform;
 
 public class RocksdbObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
 
-    private ConfigDatabase configdb;
-
     public @Rule TemporaryFolder folder = new TemporaryFolder();
 
-    private TestPlatform platform;
+    private File dbdir;
 
     public @Before @Override void setUp() throws Exception {
-        File root = folder.getRoot();
-        folder.newFolder(".geogig");
-        File home = folder.newFolder("home");
-        platform = new TestPlatform(root);
-        platform.setUserHome(home);
+        this.dbdir = folder.newFolder(".geogig");
         super.setUp();
     }
 
-    @Override
-    protected RocksdbObjectDatabase createOpen(boolean readOnly) {
-        Hints hints = new Hints();
-        hints.set(Hints.OBJECTS_READ_ONLY, readOnly);
-        configdb = new HeapConfigDatabase();
-        RocksdbObjectDatabase database = new RocksdbObjectDatabase(platform, hints, configdb);
+    protected @Override RocksdbObjectDatabase createOpen(boolean readOnly) {
+        RocksdbObjectDatabase database = new RocksdbObjectDatabase(dbdir, readOnly);
         database.open();
         return database;
     }
 
-    public @After void afterTest() throws IOException {
-        if (null != configdb) {
-            configdb.close();
-        }
-    }
 }

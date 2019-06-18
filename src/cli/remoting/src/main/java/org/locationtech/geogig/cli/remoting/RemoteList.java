@@ -49,8 +49,7 @@ public class RemoteList extends AbstractCommand implements CLICommand {
     /**
      * Executes the remote list command.
      */
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         final ImmutableList<Remote> remoteList;
         try {

@@ -27,8 +27,6 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -56,11 +54,12 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * Default implementation of {@link StagingArea}
@@ -70,13 +69,11 @@ public class StagingAreaImpl implements StagingArea {
     private Context context;
 
     @Inject
-    public StagingAreaImpl(final Context context) {
-        Preconditions.checkNotNull(context);
+    public StagingAreaImpl(final @NonNull Context context) {
         this.context = context;
     }
 
-    @Override
-    public ConflictsDatabase conflictsDatabase() {
+    public @Override ConflictsDatabase conflictsDatabase() {
         return context.conflictsDatabase();
     }
 
@@ -85,8 +82,7 @@ public class StagingAreaImpl implements StagingArea {
      * 
      * @param newTree the tree to set as the new STAGE_HEAD
      */
-    @Override
-    public void updateStageHead(ObjectId newTree) {
+    public @Override void updateStageHead(ObjectId newTree) {
         context.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(newTree).call();
     }
 
@@ -94,8 +90,7 @@ public class StagingAreaImpl implements StagingArea {
      * @return the tree represented by STAGE_HEAD. If there is no tree set at STAGE_HEAD, it will
      *         return the HEAD tree (no unstaged changes).
      */
-    @Override
-    public RevTree getTree() {
+    public @Override RevTree getTree() {
         Optional<ObjectId> stageTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.STAGE_HEAD).call();
 
@@ -123,8 +118,7 @@ public class StagingAreaImpl implements StagingArea {
      * @return the {@code Node} for the feature at the specified path if it exists in the index,
      *         otherwise {@link Optional#empty()}
      */
-    @Override
-    public Optional<Node> findStaged(final String path) {
+    public @Override Optional<Node> findStaged(final String path) {
         Optional<NodeRef> entry = context.command(FindTreeChild.class).setParent(getTree())
                 .setChildPath(path).call();
         if (entry.isPresent()) {
@@ -145,7 +139,7 @@ public class StagingAreaImpl implements StagingArea {
         return head.equals(stageHead);
     }
 
-    private static final @ThreadSafe class StageState {
+    private static final class StageState {
 
         final Context context;
 
@@ -246,8 +240,7 @@ public class StagingAreaImpl implements StagingArea {
      * @param unstaged an iterator for the unstaged changes
      * @param numChanges number of unstaged changes, or negative if unknown
      */
-    @Override
-    public void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
+    public @Override void stage(final ProgressListener progress, final Iterator<DiffEntry> unstaged,
             final long numChanges) {
 
         progress.started();
@@ -377,8 +370,8 @@ public class StagingAreaImpl implements StagingArea {
      * @return an iterator for all of the differences between STAGE_HEAD and HEAD based on the path
      *         filter.
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> getStaged(final @Nullable List<String> pathFilters) {
+    public @Override AutoCloseableIterator<DiffEntry> getStaged(
+            final @Nullable List<String> pathFilters) {
         AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffIndex.class)
                 .setFilter(pathFilters).setReportTrees(true).call();
         return unstaged;
@@ -388,21 +381,18 @@ public class StagingAreaImpl implements StagingArea {
      * @param pathFilter if specified, only changes that match the filter will be returned
      * @return the number differences between STAGE_HEAD and HEAD based on the path filter.
      */
-    @Override
-    public DiffObjectCount countStaged(final @Nullable List<String> pathFilters) {
+    public @Override DiffObjectCount countStaged(final @Nullable List<String> pathFilters) {
         DiffObjectCount count = context.command(DiffCount.class).setOldVersion(Ref.HEAD)
                 .setNewVersion(Ref.STAGE_HEAD).setFilter(pathFilters).call();
 
         return count;
     }
 
-    @Override
-    public long countConflicted(String pathFilter) {
+    public @Override long countConflicted(String pathFilter) {
         return conflictsDatabase().getCountByPrefix(null, null);
     }
 
-    @Override
-    public Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
+    public @Override Iterator<Conflict> getConflicted(@Nullable String pathFilter) {
         return conflictsDatabase().getByPrefix(null, pathFilter);
     }
 

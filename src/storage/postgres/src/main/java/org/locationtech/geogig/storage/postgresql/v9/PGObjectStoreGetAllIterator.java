@@ -53,8 +53,7 @@ class PGObjectStoreGetAllIterator<T extends RevObject> extends AbstractIterator<
         cache = store.sharedCache;
     }
 
-    @Override
-    protected T computeNext() {
+    protected @Override T computeNext() {
         if (nextBatch != null && nextBatch.hasNext()) {
             return nextBatch.next();
         }

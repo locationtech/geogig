@@ -11,13 +11,12 @@
  * Defines the various GeoGig Web API Request and Response bean objects. All Response objects should
  * implement the {@link org.locationtech.geogig.spring.dto.LegacyResponse} interface and provide an
  * implementation for the
- * {@link org.locationtech.geogig.spring.dto.LegacyResponse#encodeInternal(
- * org.locationtech.geogig.web.api.StreamingWriter, org.springframework.http.MediaType,
- * java.lang.String) LegacyResponse.encode}
- * method in order to keep the API responses backward compatible with GeoGig 1.x.
+ * {@link org.locationtech.geogig.spring.dto.LegacyResponse#encodeInternal( org.locationtech.geogig.web.api.StreamingWriter, org.springframework.http.MediaType, java.lang.String)
+ * LegacyResponse.encode} method in order to keep the API responses backward compatible with GeoGig
+ * 1.x.
  */
-@XmlSchema(xmlns = {@XmlNs(prefix = "atom", namespaceURI = "http://www.w3.org/2005/Atom")},
-        attributeFormDefault = QUALIFIED, elementFormDefault = QUALIFIED)
+@XmlSchema(xmlns = {
+        @XmlNs(prefix = "atom", namespaceURI = "http://www.w3.org/2005/Atom") }, attributeFormDefault = QUALIFIED, elementFormDefault = QUALIFIED)
 package org.locationtech.geogig.spring.dto;
 
 import static javax.xml.bind.annotation.XmlNsForm.QUALIFIED;

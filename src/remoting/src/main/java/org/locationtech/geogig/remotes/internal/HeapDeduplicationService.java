@@ -10,8 +10,7 @@
 package org.locationtech.geogig.remotes.internal;
 
 public class HeapDeduplicationService implements DeduplicationService {
-    @Override
-    public Deduplicator createDeduplicator() {
+    public @Override Deduplicator createDeduplicator() {
         return new HeapDeduplicator();
     }
 }

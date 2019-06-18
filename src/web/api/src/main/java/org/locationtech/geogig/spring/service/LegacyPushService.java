@@ -55,14 +55,15 @@ public class LegacyPushService extends AbstractRepositoryService {
                 String combinedAddress = clientIp + "." + internalIp;
                 LOGGER.debug("Initiating EndPush for '{}'", combinedAddress);
 
-                final ObjectId oid =  ObjectId.valueOf(
-                        objectId != null ? objectId : ObjectId.NULL.toString());
-                final ObjectId originalRefValue = ObjectId.valueOf(
-                        origRefValue != null ? origRefValue : ObjectId.NULL.toString());
+                final ObjectId oid = ObjectId
+                        .valueOf(objectId != null ? objectId : ObjectId.NULL.toString());
+                final ObjectId originalRefValue = ObjectId
+                        .valueOf(origRefValue != null ? origRefValue : ObjectId.NULL.toString());
 
-                Optional<Ref> currentRef = repository.command(RefParse.class).setName(refspec).call();
-                ObjectId currentRefId = currentRef.isPresent() ? currentRef.get().getObjectId() :
-                        ObjectId.NULL;
+                Optional<Ref> currentRef = repository.command(RefParse.class).setName(refspec)
+                        .call();
+                ObjectId currentRefId = currentRef.isPresent() ? currentRef.get().getObjectId()
+                        : ObjectId.NULL;
                 if (!currentRefId.isNull() && !currentRefId.equals(originalRefValue)) {
                     // Abort push
                     endPush.setAborted(true);

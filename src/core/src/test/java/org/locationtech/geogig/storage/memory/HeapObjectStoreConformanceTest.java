@@ -14,8 +14,7 @@ import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
 
 public class HeapObjectStoreConformanceTest extends ObjectStoreConformanceTest {
 
-    @Override
-    protected ObjectStore createOpen() {
+    protected @Override ObjectStore createOpen() {
         HeapObjectStore store = new HeapObjectStore();
         store.open();
         return store;

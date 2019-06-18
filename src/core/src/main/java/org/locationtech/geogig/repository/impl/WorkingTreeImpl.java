@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.data.FindFeatureTypeTrees;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -39,6 +39,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
+import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.FindOrCreateSubtree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.LsTreeOp;
@@ -56,7 +57,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -66,6 +66,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Inject;
+
+import lombok.NonNull;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a
@@ -106,8 +108,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * 
      * @param newTree the tree to be set as the new WORK_HEAD
      */
-    @Override
-    public synchronized ObjectId updateWorkHead(ObjectId newTree) {
+    public @Override synchronized ObjectId updateWorkHead(ObjectId newTree) {
         context.command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(newTree).call();
         return newTree;
     }
@@ -116,8 +117,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @return the tree represented by WORK_HEAD. If there is no tree set at WORK_HEAD, it will
      *         return the HEAD tree (no unstaged changes).
      */
-    @Override
-    public synchronized RevTree getTree() {
+    public @Override synchronized RevTree getTree() {
         Optional<ObjectId> workTreeId = context.command(ResolveTreeish.class)
                 .setTreeish(Ref.WORK_HEAD).call();
 
@@ -148,8 +148,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param featureId the id of the feature
      * @return true if the object was found and deleted, false otherwise
      */
-    @Override
-    public boolean delete(final String parentPath, final String featureId) {
+    public @Override boolean delete(final String parentPath, final String featureId) {
         final RevTree workHead = getTree();
         final ObjectId newWorkHeadId = delete(NodeRef.appendChild(parentPath, featureId));
         return !workHead.getId().equals(newWorkHeadId);
@@ -159,8 +158,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param path the path to the tree to truncate
      * @return the new {@link ObjectId} for the root tree in the {@link Ref#WORK_HEAD working tree}
      */
-    @Override
-    public ObjectId truncate(final String path) {
+    public @Override ObjectId truncate(final String path) {
         final RevTree workHead = getTree();
 
         final NodeRef currentTypeRef = context.command(FindTreeChild.class).setParent(workHead)
@@ -193,8 +191,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @return
      * @throws Exception
      */
-    @Override
-    public ObjectId delete(final String treePath) {
+    public @Override ObjectId delete(final String treePath) {
         final RevTree workHead = getTree();
 
         final NodeRef childRef = context.command(FindTreeChild.class).setParent(workHead)
@@ -232,8 +229,7 @@ public class WorkingTreeImpl implements WorkingTree {
         return newWorkTree.getId();
     }
 
-    @Override
-    public ObjectId delete(Iterator<String> features, ProgressListener progress) {
+    public @Override ObjectId delete(Iterator<String> features, ProgressListener progress) {
 
         final ExecutorService treeBuildingService = Executors.newSingleThreadExecutor(
                 new ThreadFactoryBuilder().setNameFormat("WorkingTree-tree-builder-%d").build());
@@ -278,8 +274,7 @@ public class WorkingTreeImpl implements WorkingTree {
         }
     }
 
-    @Override
-    public synchronized NodeRef createTypeTree(final String treePath,
+    public @Override synchronized NodeRef createTypeTree(final String treePath,
             final FeatureType featureType) {
 
         NodeRef.checkValidPath(treePath);
@@ -313,14 +308,12 @@ public class WorkingTreeImpl implements WorkingTree {
         return ref;
     }
 
-    @Override
-    public ObjectId insert(FeatureInfo featureInfo) {
-        checkNotNull(featureInfo);
+    public @Override ObjectId insert(@NonNull FeatureInfo featureInfo) {
         return insert(Iterators.singletonIterator(featureInfo), DefaultProgressListener.NULL);
     }
 
-    @Override
-    public ObjectId insert(Iterator<FeatureInfo> featureInfos, ProgressListener progress) {
+    public @Override ObjectId insert(Iterator<FeatureInfo> featureInfos,
+            ProgressListener progress) {
         checkArgument(featureInfos != null);
         checkArgument(progress != null);
 
@@ -374,8 +367,7 @@ public class WorkingTreeImpl implements WorkingTree {
 
         // (f) -> !progress.isCanceled()
         Predicate<RevFeature> fn = new Predicate<RevFeature>() {
-            @Override
-            public boolean apply(RevFeature f) {
+            public @Override boolean apply(RevFeature f) {
                 return !progress.isCanceled();
             }
         };
@@ -411,11 +403,10 @@ public class WorkingTreeImpl implements WorkingTree {
     }
 
     @Nullable
-    private RevTreeBuilder getTreeBuilder(final Map<String, NodeRef> currentTrees,
-            final Map<String, RevTreeBuilder> treeBuilders, final String treePath,
+    private RevTreeBuilder getTreeBuilder(final @NonNull Map<String, NodeRef> currentTrees,
+            final @NonNull Map<String, RevTreeBuilder> treeBuilders, final @NonNull String treePath,
             final @Nullable ObjectId featureMetadataId) {
 
-        checkNotNull(treePath);
         RevTreeBuilder builder = treeBuilders.get(treePath);
         if (builder == null) {
             NodeRef treeRef = currentTrees.get(treePath);
@@ -444,8 +435,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param treePath feature type to check
      * @return true if the feature type is versioned, false otherwise.
      */
-    @Override
-    public boolean hasRoot(final String treePath) {
+    public @Override boolean hasRoot(final String treePath) {
 
         Optional<NodeRef> typeNameTreeRef = context.command(FindTreeChild.class)
                 .setChildPath(treePath).call();
@@ -458,8 +448,8 @@ public class WorkingTreeImpl implements WorkingTree {
      * @return an iterator for all of the differences between the work tree and the index based on
      *         the path filter.
      */
-    @Override
-    public AutoCloseableIterator<DiffEntry> getUnstaged(final @Nullable String pathFilter) {
+    public @Override AutoCloseableIterator<DiffEntry> getUnstaged(
+            final @Nullable String pathFilter) {
         AutoCloseableIterator<DiffEntry> unstaged = context.command(DiffWorkTree.class)
                 .setFilter(pathFilter).setReportTrees(true).call();
         return unstaged;
@@ -469,8 +459,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param pathFilter if specified, only changes that match the filter will be counted
      * @return the number differences between the work tree and the index based on the path filter.
      */
-    @Override
-    public DiffObjectCount countUnstaged(final @Nullable String pathFilter) {
+    public @Override DiffObjectCount countUnstaged(final @Nullable String pathFilter) {
         DiffObjectCount count = context.command(DiffCount.class).setOldVersion(Ref.STAGE_HEAD)
                 .setNewVersion(Ref.WORK_HEAD).addFilter(pathFilter).call();
         return count;
@@ -479,8 +468,7 @@ public class WorkingTreeImpl implements WorkingTree {
     /**
      * Returns true if there are no unstaged changes, false otherwise
      */
-    @Override
-    public boolean isClean() {
+    public @Override boolean isClean() {
         Optional<ObjectId> stageHead;
         Optional<ObjectId> workHead;
         stageHead = context.command(ResolveTreeish.class).setTreeish(Ref.STAGE_HEAD).call();
@@ -493,8 +481,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @return the Node for the feature at the specified path if it exists in the work tree,
      *         otherwise Optional.empty()
      */
-    @Override
-    public Optional<Node> findUnstaged(final String path) {
+    public @Override Optional<Node> findUnstaged(final String path) {
         Optional<NodeRef> nodeRef = context.command(FindTreeChild.class).setParent(getTree())
                 .setChildPath(path).call();
         if (nodeRef.isPresent()) {
@@ -508,8 +495,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @return a list of all the feature type names in the working tree
      * @see FindFeatureTypeTrees
      */
-    @Override
-    public List<NodeRef> getFeatureTypeTrees() {
+    public @Override List<NodeRef> getFeatureTypeTrees() {
 
         List<NodeRef> typeTrees = context.command(FindFeatureTypeTrees.class)
                 .setRootTreeRef(Ref.WORK_HEAD).call();
@@ -525,8 +511,7 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param path the path
      * @param featureType the new feature type definition to set as default for the passed path
      */
-    @Override
-    public NodeRef updateTypeTree(final String treePath, final FeatureType featureType) {
+    public @Override NodeRef updateTypeTree(final String treePath, final FeatureType featureType) {
 
         final RevTree workHead = getTree();
 

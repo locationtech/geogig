@@ -36,8 +36,7 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
 
     ConfigDatabase configdb;
 
-    @Override
-    protected IndexDatabase createIndexDatabase(boolean readOnly) throws IOException {
+    protected @Override IndexDatabase createIndexDatabase(boolean readOnly) throws IOException {
         Environment config = testConfig.getEnvironment();
         PGStorage.createNewRepo(config);
 

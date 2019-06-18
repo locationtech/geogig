@@ -12,14 +12,13 @@ package org.locationtech.geogig.model.impl;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 
-import javax.annotation.Nonnegative;
-
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
@@ -36,8 +35,6 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.FeatureType;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.collect.ImmutableList;
 
@@ -121,8 +118,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         return new NodeTree(id, size, childTreeCount, array);
     }
 
-    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree,
-            @Nonnegative int bucketIndex, final @Nullable Envelope bounds) {
+    public @Override Bucket createBucket(final @NonNull ObjectId bucketTree, int bucketIndex,
+            final @Nullable Envelope bounds) {
         if (bucketIndex < 0) {
             throw new IllegalArgumentException(
                     "Bucket cannot have a negative index: " + bucketIndex);
@@ -158,10 +155,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
 
         Collection<PropertyDescriptor> descriptors = ftype.getDescriptors();
         descriptors.forEach(d -> {
-            Class<?> binding = d.getType().getBinding();
-            Objects.requireNonNull(binding,
-                    "got null binding for attribute " + d.getName().getLocalPart());
-            FieldType fieldType = FieldType.forBinding(binding);
+            final @NonNull Class<?> binding = d.getBinding();
+            final @NonNull FieldType fieldType = FieldType.forBinding(binding);
             if (FieldType.NULL == fieldType || FieldType.UNKNOWN == fieldType) {
                 String msg = String.format(
                         "Attribute %s of FeatureType %s is of an unsupported type: %s",

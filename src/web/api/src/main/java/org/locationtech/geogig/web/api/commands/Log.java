@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.geotools.util.Range;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.NodeRef;
@@ -48,7 +48,6 @@ import org.locationtech.geogig.web.api.CommandSpecException;
 import org.locationtech.geogig.web.api.ParameterSet;
 import org.locationtech.geogig.web.api.ResponseWriter;
 import org.locationtech.geogig.web.api.StreamingWriter;
-import org.opengis.feature.type.PropertyDescriptor;
 import org.springframework.http.MediaType;
 
 import com.google.common.base.Preconditions;
@@ -260,7 +259,7 @@ public class Log extends AbstractWebAPICommand {
                 until = new Date(
                         geogig.command(ParseTimestamp.class).setString(this.untilTime).call());
             }
-            op.setTimeRange(new Range<Date>(Date.class, since, until));
+            op.setTimeRange(com.google.common.collect.Range.closed(since, until));
         }
 
         if (this.since != null) {
@@ -483,7 +482,7 @@ public class Log extends AbstractWebAPICommand {
                                 String stringValue = "";
                                 if (value.isPresent()) {
                                     FieldType attributeType = FieldType
-                                            .forBinding(attrib.getType().getBinding());
+                                            .forBinding(attrib.getBinding());
                                     switch (attributeType) {
                                     case DATE:
                                         stringValue = new SimpleDateFormat("MM/dd/yyyy z")

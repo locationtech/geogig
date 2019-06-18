@@ -14,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.RefDatabase;
 
 /**
@@ -21,17 +22,20 @@ import org.locationtech.geogig.storage.RefDatabase;
  * 
  * @see RefDatabase
  */
-public abstract class AbstractRefDatabase implements RefDatabase {
+public abstract class AbstractRefDatabase extends AbstractStore implements RefDatabase {
 
     Lock lock = new ReentrantLock();
+
+    public AbstractRefDatabase(boolean ro) {
+        super(ro);
+    }
 
     /**
      * Locks access to the main repository refs.
      * 
      * @throws TimeoutException
      */
-    @Override
-    public final void lock() throws TimeoutException {
+    public @Override final void lock() throws TimeoutException {
         try {
             if (!lock.tryLock(30, TimeUnit.SECONDS)) {
                 throw new TimeoutException("The attempt to lock the database timed out.");
@@ -44,8 +48,7 @@ public abstract class AbstractRefDatabase implements RefDatabase {
     /**
      * Unlocks access to the main repository refs.
      */
-    @Override
-    public final void unlock() {
+    public @Override final void unlock() {
         lock.unlock();
     }
 

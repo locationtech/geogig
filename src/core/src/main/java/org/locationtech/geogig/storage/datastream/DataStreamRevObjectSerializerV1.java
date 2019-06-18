@@ -37,9 +37,9 @@ import java.util.EnumMap;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.CRS.AxisOrder;
-import org.geotools.referencing.wkt.Formattable;
+import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.feature.Name;
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -47,20 +47,12 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.impl.ObjectReader;
 import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.type.GeometryType;
-import org.opengis.feature.type.Name;
-import org.opengis.feature.type.PropertyDescriptor;
-import org.opengis.feature.type.PropertyType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
@@ -82,19 +74,16 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
         serializers.put(TYPE.TREE, new TreeSerializer());
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         serializer(o.getType()).write(o, out);
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         return read(id, new ByteArrayInputStream(data, offset, length));
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream rawData) throws IOException {
         DataInput in = new DataInputStream(rawData);
         String header = readToMarker(in, NUL);
         if ("commit".equals(header))
@@ -126,8 +115,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
     }
 
     private static class CommitSerializer implements Serializer<RevCommit> {
-        @Override
-        public RevCommit read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevCommit read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "commit");
@@ -138,8 +127,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevCommit commit, OutputStream out) throws IOException {
+        public @Override void write(RevCommit commit, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 FormatCommonV1.writeHeader(data, "commit");
@@ -162,8 +150,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class FeatureSerializer implements Serializer<RevFeature> {
 
-        @Override
-        public RevFeature read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevFeature read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "feature");
@@ -173,8 +161,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevFeature feature, OutputStream out) throws IOException {
+        public @Override void write(RevFeature feature, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "feature");
@@ -193,8 +180,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class FeatureTypeSerializer implements Serializer<RevFeatureType> {
 
-        @Override
-        public RevFeatureType read(ObjectId id, InputStream rawData)
+        public @Override RevFeatureType read(ObjectId id, InputStream rawData)
                 throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
@@ -205,8 +191,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevFeatureType object, OutputStream out) throws IOException {
+        public @Override void write(RevFeatureType object, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "featuretype");
@@ -227,46 +212,22 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             data.writeUTF(lp == null ? "" : lp);
         }
 
-        private void writePropertyType(PropertyType type, DataOutput data) throws IOException {
-            writeName(type.getName(), data);
+        private void writePropertyType(PropertyDescriptor type, DataOutput data)
+                throws IOException {
+            writeName(type.getTypeName(), data);
             data.writeByte(FieldType.forBinding(type.getBinding()).getTag());
-            if (type instanceof GeometryType) {
-                GeometryType gType = (GeometryType) type;
-                CoordinateReferenceSystem crs = gType.getCoordinateReferenceSystem();
-                String srsName;
-                if (crs == null) {
-                    srsName = RevObjects.NULL_CRS_IDENTIFIER;
-                } else {
-                    final boolean longitudeFirst = CRS.getAxisOrder(crs,
-                            false) == AxisOrder.EAST_NORTH;
-                    final boolean codeOnly = true;
-                    String crsCode = CRS.toSRS(crs, codeOnly);
-                    if (crsCode != null) {
-                        srsName = (longitudeFirst ? "EPSG:" : "urn:ogc:def:crs:EPSG::") + crsCode;
-                        // check that what we are writing is actually a valid EPSG code and we will
-                        // be
-                        // able to decode it later. If not, we will use WKT instead
-                        try {
-                            CRS.decode(srsName, longitudeFirst);
-                        } catch (NoSuchAuthorityCodeException e) {
-                            srsName = null;
-                        } catch (FactoryException e) {
-                            srsName = null;
-                        }
-                    } else {
-                        srsName = null;
-                    }
+            if (type.isGeometryDescriptor()) {
+                CoordinateReferenceSystem crs = type.coordinateReferenceSystem();
+                String srsName = null;
+                if (crs.getSrsIdentifier() != null) {
+                    srsName = crs.getSrsIdentifier();
                 }
+
                 if (srsName != null) {
-                    data.writeBoolean(true);
+                    data.writeBoolean(true);// code only
                     data.writeUTF(srsName);
                 } else {
-                    final String wkt;
-                    if (crs instanceof Formattable) {
-                        wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
-                    } else {
-                        wkt = crs.toWKT();
-                    }
+                    final String wkt = crs.getWKT();
                     data.writeBoolean(false);
                     data.writeUTF(wkt);
                 }
@@ -278,7 +239,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             data.writeBoolean(attr.isNillable());
             data.writeInt(attr.getMinOccurs());
             data.writeInt(attr.getMaxOccurs());
-            writePropertyType(attr.getType(), data);
+            writePropertyType(attr, data);
         }
     }
 
@@ -306,8 +267,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
     private static class TreeSerializer implements Serializer<RevTree> {
 
-        @Override
-        public RevTree read(ObjectId id, InputStream rawData) throws IllegalArgumentException {
+        public @Override RevTree read(ObjectId id, InputStream rawData)
+                throws IllegalArgumentException {
             DataInput in = new DataInputStream(rawData);
             try {
                 requireHeader(in, "tree");
@@ -317,8 +278,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
             }
         }
 
-        @Override
-        public void write(RevTree tree, OutputStream out) throws IOException {
+        public @Override void write(RevTree tree, OutputStream out) throws IOException {
             DataOutputStream data = new DataOutputStream(out);
             try {
                 writeHeader(data, "tree");
@@ -342,8 +302,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
         }
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return "Binary 1.0";
     }
 }

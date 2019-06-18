@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
@@ -26,13 +25,10 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
 import com.google.inject.Provider;
 import com.google.inject.Scopes;
-import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Providers;
 
 /**
@@ -56,11 +52,9 @@ public class GeogigModule extends AbstractModule {
      * 
      * @see com.google.inject.AbstractModule#configure()
      */
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(Context.class).to(GuiceContext.class).in(Scopes.SINGLETON);
 
-        Multibinder.newSetBinder(binder(), Decorator.class);
         bind(DecoratorProvider.class).in(Scopes.SINGLETON);
 
         bind(Platform.class).toProvider(new PlatformProvider(binder().getProvider(Hints.class)))
@@ -70,16 +64,11 @@ public class GeogigModule extends AbstractModule {
         bind(StagingArea.class).to(StagingAreaImpl.class).in(Scopes.SINGLETON);
         bind(WorkingTree.class).to(WorkingTreeImpl.class).in(Scopes.SINGLETON);
 
-        // TODO bind configdb to null and force it to be provided depending on the repo
-        bind(ConfigDatabase.class).to(IniFileConfigDatabase.class).in(Scopes.SINGLETON);
+        bind(ConfigDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(RefDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(ObjectDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(IndexDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
         bind(ConflictsDatabase.class).toProvider(Providers.of(null)).in(Scopes.SINGLETON);
-
-        bindConflictCheckingInterceptor();
-
-        bindDecorator(binder(), new CommandHooksDecorator());
     }
 
     private static class PlatformProvider implements Provider<Platform> {
@@ -91,23 +80,12 @@ public class GeogigModule extends AbstractModule {
             this.hints = hints;
         }
 
-        @Override
-        public Platform get() {
+        public @Override Platform get() {
             if (resolved == null) {
                 Hints hints = this.hints.get();
                 resolved = (Platform) hints.get(Hints.PLATFORM).orElseGet(DefaultPlatform::new);
             }
             return resolved;
         }
-    }
-
-    private void bindConflictCheckingInterceptor() {
-        bindDecorator(binder(), new ConflictInterceptor());
-    }
-
-    public static void bindDecorator(Binder binder, Decorator decorator) {
-
-        Multibinder.newSetBinder(binder, Decorator.class).addBinding().toInstance(decorator);
-
     }
 }

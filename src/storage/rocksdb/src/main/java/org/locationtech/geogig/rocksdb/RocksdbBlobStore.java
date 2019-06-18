@@ -72,33 +72,27 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         return key.getBytes(Charsets.UTF_8);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String path) {
+    public @Override Optional<byte[]> getBlob(String path) {
         return getBlob(NO_TRANSACTION, path);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String path) {
         return getBlobAsStream(NO_TRANSACTION, path);
     }
 
-    @Override
-    public void putBlob(String path, byte[] blob) {
+    public @Override void putBlob(String path, byte[] blob) {
         putBlob(NO_TRANSACTION, path, blob);
     }
 
-    @Override
-    public void putBlob(String path, InputStream blob) {
+    public @Override void putBlob(String path, InputStream blob) {
         putBlob(NO_TRANSACTION, path, blob);
     }
 
-    @Override
-    public void removeBlob(String path) {
+    public @Override void removeBlob(String path) {
         removeBlob(NO_TRANSACTION, path);
     }
 
-    @Override
-    public Optional<byte[]> getBlob(String namespace, String path) {
+    public @Override Optional<byte[]> getBlob(String namespace, String path) {
         byte[] bytes;
         try (RocksDBReference dbRef = db()) {
             bytes = dbRef.db().get(key(namespace, path));
@@ -108,14 +102,12 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         return Optional.ofNullable(bytes);
     }
 
-    @Override
-    public Optional<InputStream> getBlobAsStream(String namespace, String path) {
+    public @Override Optional<InputStream> getBlobAsStream(String namespace, String path) {
         Optional<byte[]> blob = getBlob(namespace, path);
 
         // (b) -> new ByteArrayInputStream(b)
         Function<byte[], InputStream> fn = new Function<byte[], InputStream>() {
-            @Override
-            public InputStream apply(byte[] b) {
+            public @Override InputStream apply(byte[] b) {
                 return new ByteArrayInputStream(b);
             }
         };
@@ -123,8 +115,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         return blob.map(fn);
     }
 
-    @Override
-    public void putBlob(String namespace, String path, byte[] blob) {
+    public @Override void putBlob(String namespace, String path, byte[] blob) {
         try (RocksDBReference dbRef = db()) {
             dbRef.db().put(key(namespace, path), blob);
         } catch (RocksDBException e) {
@@ -133,8 +124,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
 
     }
 
-    @Override
-    public void putBlob(String namespace, String path, InputStream blob) {
+    public @Override void putBlob(String namespace, String path, InputStream blob) {
         try {
             putBlob(namespace, path, ByteStreams.toByteArray(blob));
         } catch (IOException e) {
@@ -142,8 +132,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         }
     }
 
-    @Override
-    public void removeBlob(String namespace, String path) {
+    public @Override void removeBlob(String namespace, String path) {
         try (RocksDBReference dbRef = db()) {
             dbRef.db().delete(key(namespace, path));
         } catch (RocksDBException e) {
@@ -151,8 +140,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
         }
     }
 
-    @Override
-    public void removeBlobs(String namespace) {
+    public @Override void removeBlobs(String namespace) {
         byte[] namespacePrefix = (namespace + ".").getBytes();
         try (RocksDBReference dbRef = db()) {
             try (RocksIterator it = dbRef.db().newIterator()) {

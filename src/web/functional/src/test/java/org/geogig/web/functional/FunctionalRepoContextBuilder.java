@@ -15,15 +15,14 @@ import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.ContextBuilder;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.util.Modules;
 
-public class FunctionalRepoContextBuilder extends ContextBuilder {
+public class FunctionalRepoContextBuilder extends ContextBuilderImpl {
 
     private TestPlatform platform;
 
@@ -34,13 +33,10 @@ public class FunctionalRepoContextBuilder extends ContextBuilder {
     @Override
     public Context build(Hints hints) {
         FunctionalTestModule functionalTestModule = new FunctionalTestModule(platform.clone());
-
-        Context context = Guice.createInjector(
-                Modules.override(new GeogigModule(), new HintsModule(hints))
-                        .with(new PluginsModule(), new PluginsContextBuilder.DefaultPlugins(),
-                                functionalTestModule))
-                .getInstance(Context.class);
-        return context;
+        return Guice.createInjector(//
+                Modules.override(new GeogigModule(), new HintsModule(hints))//
+                        .with(new PluginsModule(), functionalTestModule))//
+                .getInstance(org.locationtech.geogig.repository.Context.class);
     }
 
     private static class FunctionalTestModule extends AbstractModule {

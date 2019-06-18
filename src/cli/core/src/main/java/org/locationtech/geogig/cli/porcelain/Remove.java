@@ -46,8 +46,7 @@ public class Remove extends AbstractCommand implements CLICommand {
     @Parameter(description = "<path_to_remove>  [<path_to_remove>]...")
     private List<String> pathsToRemove = new ArrayList<String>();
 
-    @Override
-    public void runInternal(GeogigCLI cli) throws IOException {
+    public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         Console console = cli.getConsole();
 

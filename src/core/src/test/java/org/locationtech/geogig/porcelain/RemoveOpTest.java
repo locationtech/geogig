@@ -17,6 +17,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -30,31 +31,29 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
 
 public class RemoveOpTest extends RepositoryTestCase {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
     }
 
     @Test
     public void testSingleFeatureRemoval() throws Exception {
         populate(false, points1, points2, points3);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         String path = NodeRef.appendChild(pointsName, featureId);
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path).call();
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(path).call();
         assertEquals(1, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        Optional<ObjectId> id = geogig.command(RevParse.class)
-                .setRefSpec(Ref.WORK_HEAD + ":" + path).call();
+        Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(Ref.WORK_HEAD + ":" + path)
+                .call();
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path).call();
         assertFalse(id.isPresent());
     }
 
@@ -62,24 +61,24 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testMultipleRemoval() throws Exception {
         populate(false, points1, points2, points3);
 
-        String featureId = points1.getIdentifier().getID();
+        String featureId = points1.getId();
         String path = NodeRef.appendChild(pointsName, featureId);
-        String featureId2 = points2.getIdentifier().getID();
+        String featureId2 = points2.getId();
         String path2 = NodeRef.appendChild(pointsName, featureId2);
 
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path)
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(path)
                 .addPathToRemove(path2).call();
         assertEquals(2, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        Optional<ObjectId> id = geogig.command(RevParse.class)
-                .setRefSpec(Ref.WORK_HEAD + ":" + path).call();
+        Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(Ref.WORK_HEAD + ":" + path)
+                .call();
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path).call();
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.WORK_HEAD + ":" + path2).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.WORK_HEAD + ":" + path2).call();
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path2).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + path2).call();
         assertFalse(id.isPresent());
     }
 
@@ -87,19 +86,19 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testTreeRemoval() throws Exception {
         populate(false, points1, points2, points3, lines1, lines2);
 
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(pointsName)
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(pointsName)
                 .setRecursive(true).call();
         assertEquals(3, result.getFeaturesRemoved());
         assertEquals(1, result.getTreesRemoved());
 
-        Optional<ObjectId> id = geogig.command(RevParse.class)
+        Optional<ObjectId> id = repo.command(RevParse.class)
                 .setRefSpec(Ref.WORK_HEAD + ":" + pointsName).call();
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + pointsName).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + pointsName).call();
         List<DiffEntry> list = toList(repo.index().getStaged(null));
         assertEquals(4, list.size());
         assertFalse(id.isPresent());
-        id = geogig.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + linesName).call();
+        id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + linesName).call();
         assertTrue(id.isPresent());
     }
 
@@ -109,7 +108,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         populate(false, points1, points2, points3);
 
         try {
-            geogig.command(RemoveOp.class).addPathToRemove("wrong/wrong.1").call();
+            repo.command(RemoveOp.class).addPathToRemove("wrong/wrong.1").call();
             fail("expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -123,33 +122,33 @@ public class RemoveOpTest extends RepositoryTestCase {
         Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         insertAndAdd(points1);
-        geogig.command(CommitOp.class).call();
-        geogig.command(BranchCreateOp.class).setName("TestBranch").call();
+        repo.command(CommitOp.class).call();
+        repo.command(BranchCreateOp.class).setName("TestBranch").call();
         insertAndAdd(points1Modified);
-        geogig.command(CommitOp.class).call();
-        geogig.command(CheckoutOp.class).setSource("TestBranch").call();
+        repo.command(CommitOp.class).call();
+        repo.command(CheckoutOp.class).setSource("TestBranch").call();
         insertAndAdd(points1ModifiedB);
         insertAndAdd(points2);
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
-        geogig.command(CheckoutOp.class).setSource("master").call();
-        Ref branch = geogig.command(RefParse.class).setName("TestBranch").call().get();
+        repo.command(CheckoutOp.class).setSource("master").call();
+        Ref branch = repo.command(RefParse.class).setName("TestBranch").call().get();
         try {
-            geogig.command(MergeOp.class).addCommit(branch.getObjectId()).call();
+            repo.command(MergeOp.class).addCommit(branch.getObjectId()).call();
             fail();
         } catch (MergeConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
         }
         String path = NodeRef.appendChild(pointsName, idP1);
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path).call();
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(path).call();
         assertEquals(1, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        Repository repository = geogig.getRepository();
+        Repository repository = repo;
         ConflictsDatabase conflicts = repository.conflictsDatabase();
         assertEquals(0, conflicts.getCountByPrefix(null, null));
-        geogig.command(CommitOp.class).call();
-        Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
+        repo.command(CommitOp.class).call();
+        Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
     }
 
@@ -159,27 +158,27 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testRemovalOfAllFeaturesOfAGivenType() throws Exception {
         List<RevCommit> commits = populate(false, points1, points2, points3, lines1, lines2);
 
-        String featureId = lines1.getIdentifier().getID();
+        String featureId = lines1.getId();
         String path = NodeRef.appendChild(linesName, featureId);
-        String featureId2 = lines2.getIdentifier().getID();
+        String featureId2 = lines2.getId();
         String path2 = NodeRef.appendChild(linesName, featureId2);
 
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(path)
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(path)
                 .addPathToRemove(path2).call();
         assertEquals(2, result.getFeaturesRemoved());
         assertEquals(0, result.getTreesRemoved());
 
-        RevCommit commit = geogig.command(CommitOp.class).setMessage("Removed lines").call();
-        Iterator<NodeRef> nodes = geogig.command(LsTreeOp.class).call();
+        RevCommit commit = repo.command(CommitOp.class).setMessage("Removed lines").call();
+        Iterator<NodeRef> nodes = repo.command(LsTreeOp.class).call();
 
         while (nodes.hasNext()) {
             NodeRef node = nodes.next();
             assertNotNull(node);
         }
 
-        geogig.command(ResetOp.class).setMode(ResetMode.HARD).call();
+        repo.command(ResetOp.class).setMode(ResetMode.HARD).call();
 
-        nodes = geogig.command(LsTreeOp.class).call();
+        nodes = repo.command(LsTreeOp.class).call();
         while (nodes.hasNext()) {
             NodeRef node = nodes.next();
             assertNotNull(node);
@@ -190,14 +189,14 @@ public class RemoveOpTest extends RepositoryTestCase {
     public void testPathsPrecondition() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("No paths to remove were indicated");
-        geogig.command(RemoveOp.class).call();
+        repo.command(RemoveOp.class).call();
     }
 
     @Test
     public void testTruncateAndRecursivePrecondition() {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("recursive and truncate arguments are mutually exclusive");
-        geogig.command(RemoveOp.class).addPathToRemove("tree").setRecursive(true).setTruncate(true)
+        repo.command(RemoveOp.class).addPathToRemove("tree").setRecursive(true).setTruncate(true)
                 .call();
     }
 
@@ -208,7 +207,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
                 "Cannot remove tree " + pointsName + " if recursive or truncate is not specified");
-        geogig.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(false)
+        repo.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(false)
                 .setTruncate(false).call();
     }
 
@@ -217,7 +216,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         insert(points1, points2, points3);
         insert(lines1, lines2, lines3);
 
-        DiffObjectCount result = geogig.command(RemoveOp.class).addPathToRemove(linesName)
+        DiffObjectCount result = repo.command(RemoveOp.class).addPathToRemove(linesName)
                 .setTruncate(true).call();
         assertEquals(0, result.getTreesRemoved());
         assertEquals(1, result.getTreesChanged());

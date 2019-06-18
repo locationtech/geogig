@@ -9,12 +9,15 @@
  */
 package org.locationtech.geogig.rocksdb.integration;
 
-import org.locationtech.geogig.repository.Context;
+import org.junit.Before;
+import org.junit.Rule;
 
 public class RocksCheckSparsePathTest
         extends org.locationtech.geogig.test.integration.CheckSparsePathTest {
 
-    protected @Override Context createInjector() {
-        return RocksStorageModule.createContext(repositoryDirectory);
+    public @Rule RocksdbTestRepositoryURIBuilder uriBuilder = new RocksdbTestRepositoryURIBuilder();
+
+    public @Before void before() {
+        testRepository.setURIBuilder(uriBuilder);
     }
 }

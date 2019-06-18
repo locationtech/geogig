@@ -23,8 +23,7 @@ public final class CanonicalNodeOrder extends NodeOrdering {
 
     public static final CanonicalNodeOrder INSTANCE = new CanonicalNodeOrder();
 
-    @Override
-    public int compare(Node nr1, Node nr2) {
+    public @Override int compare(Node nr1, Node nr2) {
         return CanonicalNodeNameOrder.INSTANCE.compare(nr1.getName(), nr2.getName());
     }
 

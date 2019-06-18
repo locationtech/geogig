@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -22,9 +21,6 @@ import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedMap.Builder;
 
 import lombok.NonNull;
 
@@ -104,26 +100,12 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
             this.buckets = buckets;
         }
 
-        public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
-            Builder<Integer, Bucket> builder = ImmutableSortedMap.naturalOrder();
-            for (Bucket ib : this.buckets) {
-                builder.put(Integer.valueOf(ib.getIndex()), ib);
-            }
-            return builder.build();
-        }
-
         public @Override int numTrees() {
             return childTreeCount;
         }
 
         public @Override int bucketsSize() {
             return buckets.length;
-        }
-
-        public @Override @Deprecated void forEachBucket(BiConsumer<Integer, Bucket> consumer) {
-            for (int i = 0; i < buckets.length; i++) {
-                consumer.accept(Integer.valueOf(buckets[i].getIndex()), buckets[i]);
-            }
         }
 
         public @Override void forEachBucket(Consumer<Bucket> consumer) {
@@ -162,10 +144,6 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
     public @Override List<Node> trees() {
         return Collections.emptyList();
-    }
-
-    public @Override ImmutableSortedMap<Integer, Bucket> buckets() {
-        return ImmutableSortedMap.of();
     }
 
     public @Override Iterable<Bucket> getBuckets() {

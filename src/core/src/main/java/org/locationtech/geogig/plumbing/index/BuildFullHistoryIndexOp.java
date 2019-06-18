@@ -71,8 +71,7 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
      * 
      * @return the number of trees that were built
      */
-    @Override
-    protected Integer _call() {
+    protected @Override Integer _call() {
         checkArgument(treeRefSpec != null, "Tree ref spec not provided.");
 
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);

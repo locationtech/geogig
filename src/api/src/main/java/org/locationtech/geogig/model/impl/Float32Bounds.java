@@ -124,13 +124,11 @@ public class Float32Bounds {
         return xmin > xmax;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         return "[" + xmin + "," + xmax + "," + ymin + "," + ymax + "]";
     }
 
-    @Override
-    public boolean equals(Object obj) {
+    public @Override boolean equals(Object obj) {
         if (obj == null) {
             return false;
         }
@@ -152,8 +150,7 @@ public class Float32Bounds {
 
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         if (isNull())
             return 1;
         return Float.floatToRawIntBits(xmin) ^ Float.floatToRawIntBits(ymin)

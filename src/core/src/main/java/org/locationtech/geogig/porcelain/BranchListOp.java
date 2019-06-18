@@ -49,8 +49,7 @@ public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
     protected ImmutableList<Ref> _call() {
 
         final Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 if (locals && input.getName().startsWith(Ref.HEADS_PREFIX)) {
                     return true;
                 }

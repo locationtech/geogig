@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.opengis.feature.type.PropertyDescriptor;
 
 import com.google.common.base.Preconditions;
 
@@ -71,8 +71,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
         return this;
     }
 
-    @Override
-    protected MergeScenarioReport _call() {
+    protected @Override MergeScenarioReport _call() {
 
         Preconditions.checkArgument(consumer != null, "No consumer provided.");
 

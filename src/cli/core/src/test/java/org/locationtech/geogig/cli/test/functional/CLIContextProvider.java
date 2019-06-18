@@ -21,9 +21,11 @@ import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 
+import cucumber.api.Scenario;
 import cucumber.api.java.After;
 import cucumber.api.java.Before;
 import cucumber.runtime.java.StepDefAnnotation;
+import lombok.Getter;
 
 /**
  * A global state that allows to set up repositories for cucumber functional tests, and can be
@@ -44,8 +46,7 @@ import cucumber.runtime.java.StepDefAnnotation;
 public class CLIContextProvider {
 
     private static ThreadLocal<CLIContextProvider> threadLocal = new ThreadLocal<CLIContextProvider>() {
-        @Override
-        protected CLIContextProvider initialValue() {
+        protected @Override CLIContextProvider initialValue() {
             return new CLIContextProvider();
         }
     };
@@ -66,6 +67,8 @@ public class CLIContextProvider {
     private Map<String, CLIContext> repositories = new HashMap<>();
 
     private TestRepoURIBuilder URIBuilder;
+
+    private @Getter TestPlatform platform;
 
     public TestRepoURIBuilder getURIBuilder() {
         return URIBuilder;
@@ -94,12 +97,14 @@ public class CLIContextProvider {
      * <p>
      * This mehtod is idempotent, only the first call makes effect, hence it's safe to call it from
      * any step definition class where it's used.
+     * 
+     * @param scenario
      */
-    public synchronized void before() throws Throwable {
+    public synchronized void before(Scenario scenario) throws Throwable {
         if (tempFolder != null) {
             return;
         }
-        URIBuilder.before();
+        URIBuilder.before(scenario);
 
         tempFolder = new TemporaryFolder();
         tempFolder.create();
@@ -108,8 +113,8 @@ public class CLIContextProvider {
         this.homeDir = tempFolder.newFolder("userhome");
         this.workingDir = tempFolder.newFolder("data");
 
-        CLITestContextBuilder testContextBuilder = new CLITestContextBuilder(
-                new TestPlatform(workingDir, homeDir));
+        platform = new TestPlatform(workingDir, homeDir);
+        CLITestContextBuilder testContextBuilder = new CLITestContextBuilder(platform);
         GlobalContextBuilder.builder(testContextBuilder);
     }
 
@@ -120,13 +125,15 @@ public class CLIContextProvider {
      * <p>
      * This mehtod is idempotent, only the first call makes effect, hence it's safe to call it from
      * any step definition class where it's used.
+     * 
+     * @param scenario
      */
-    public synchronized void after() {
+    public synchronized void after(Scenario scenario) {
         if (tempFolder == null) {
             return;
         }
         try {
-            URIBuilder.after();
+            URIBuilder.after(scenario);
         } finally {
             try {
                 repositories.values().forEach((c) -> c.dispose());
@@ -167,10 +174,6 @@ public class CLIContextProvider {
     public CLIContext getOrCreateRepositoryContext(final String repoName) throws Exception {
         CLIContext context = this.repositories.get(repoName);
         if (context == null) {
-            File homeDirectory = this.homeDir;
-            File workDir = this.workingDir;
-            TestPlatform platform = new TestPlatform(workDir, homeDirectory);
-
             URI repoURI = URIBuilder.newRepositoryURI(repoName, platform);
             context = new CLIContext(repoURI, platform);
             context.geogigCLI.execute("config", "--global", "user.name", "gabriel");

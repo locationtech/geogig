@@ -69,8 +69,7 @@ public class DefaultGeometryDiffImpl {
         return geometryValueAsString(oldGeom) + "\t" + geometryValueAsString(newGeom);
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof DefaultGeometryDiffImpl)) {
             return false;
         }

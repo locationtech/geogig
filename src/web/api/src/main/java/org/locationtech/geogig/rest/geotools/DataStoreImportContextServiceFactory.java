@@ -19,7 +19,8 @@ public class DataStoreImportContextServiceFactory {
 
     public static DataStoreImportContextService getContextService(String format) {
         // look up the context builder from the ServiceLoader
-        final ServiceLoader<DataStoreImportContextService> svcLoader = ServiceLoader.load(DataStoreImportContextService.class);
+        final ServiceLoader<DataStoreImportContextService> svcLoader = ServiceLoader
+                .load(DataStoreImportContextService.class);
         final Iterator<DataStoreImportContextService> iterator = svcLoader.iterator();
         while (iterator.hasNext()) {
             final DataStoreImportContextService context = iterator.next();

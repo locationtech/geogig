@@ -29,8 +29,8 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
     public void writeEndDocument() throws StreamWriterException;
 
     /**
-     * Starts a new Element. This should create a new element under the current element. Use this when the element to be
-     * written is complex and has nested elements.
+     * Starts a new Element. This should create a new element under the current element. Use this
+     * when the element to be written is complex and has nested elements.
      *
      * @param name The name of the element to write.
      */
@@ -46,7 +46,8 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
     public void writeCDataElement(String name, @Nullable Object value) throws StreamWriterException;
 
     /**
-     * Starts a new Array. This is similar to writeStartElement, but starts an array of repeated elements.
+     * Starts a new Array. This is similar to writeStartElement, but starts an array of repeated
+     * elements.
      *
      * @param name The name of the element to write
      */
@@ -63,7 +64,8 @@ public interface StreamingWriter extends AutoCloseable, Flushable {
 
     public void writeArrayElement(String name, @Nullable Object value) throws StreamWriterException;
 
-    public void writeCDataArrayElement(String name, @Nullable Object value) throws StreamWriterException;
+    public void writeCDataArrayElement(String name, @Nullable Object value)
+            throws StreamWriterException;
 
     public void writeAttribute(String name, String value) throws StreamWriterException;
 }

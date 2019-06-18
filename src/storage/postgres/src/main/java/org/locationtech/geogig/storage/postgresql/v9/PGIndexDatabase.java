@@ -10,8 +10,6 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.rollbackAndRethrow;
 
@@ -38,12 +36,10 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDuplicator;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.datastream.DataStreamValueSerializerV2;
 import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
@@ -56,7 +52,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
 
 /**
  * PostgreSQL implementation for {@link IndexDatabase}.
@@ -69,10 +64,9 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     private final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
 
-    @Inject
     public PGIndexDatabase(final ConfigDatabase configdb, final Hints hints)
             throws URISyntaxException {
-        this(configdb, Environment.get(hints), readOnly(hints));
+        this(configdb, Environment.get(hints), Hints.isRepoReadOnly(hints));
     }
 
     protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
@@ -80,17 +74,12 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return cacheIdentifier;
     }
 
-    private static boolean readOnly(Hints hints) {
-        return hints == null ? false : hints.getBoolean(Hints.OBJECTS_READ_ONLY);
-    }
-
     public PGIndexDatabase(final ConfigDatabase configdb, final Environment config,
             final boolean readOnly) {
         super(configdb, config, readOnly);
     }
 
-    @Override
-    public void open() {
+    public @Override void open() {
         super.open();
         repositoryId = config.getRepositoryId();
         if (this.dataSource != null) {
@@ -100,41 +89,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         }
     }
 
-    @Override
-    public void close() {
-        super.close();
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return readOnly;
-    }
-
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.INDEX.configure(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.INDEX.verify(configdb, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
-    }
-
-    @Override
-    protected String objectsTable() {
+    protected @Override String objectsTable() {
         return config.getTables().indexObjects();
     }
 
-    @Override
-    protected String tableNameForType(RevObject.TYPE type, PGId pgid) {
+    protected @Override String tableNameForType(RevObject.TYPE type, PGId pgid) {
         final String tableName;
         if (type == null) {
             tableName = objectsTable();
@@ -154,9 +113,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return tableName;
     }
 
-    @Override
-    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
-            @Nullable Map<String, Object> metadata) {
+    public @Override IndexInfo createIndexInfo(String treeName, String attributeName,
+            IndexType strategy, @Nullable Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String sql = format(
                 "INSERT INTO %s (repository, treeName, attributeName, strategy, metadata) VALUES(?, ?, ?, ?, ?)",
@@ -192,9 +150,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return index;
     }
 
-    @Override
-    public IndexInfo updateIndexInfo(String treeName, String attributeName, IndexType strategy,
-            Map<String, Object> metadata) {
+    public @Override IndexInfo updateIndexInfo(String treeName, String attributeName,
+            IndexType strategy, Map<String, Object> metadata) {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
@@ -244,8 +201,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return index;
     }
 
-    @Override
-    public Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
+    public @Override Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         final String sql = format(
                 "SELECT strategy, metadata FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
                 config.getTables().index());
@@ -281,8 +237,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return Optional.ofNullable(index);
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos(String treeName) {
+    public @Override List<IndexInfo> getIndexInfos(String treeName) {
         final String sql = format(
                 "SELECT attributeName, strategy, metadata FROM %s WHERE repository = ? AND treeName = ?",
                 config.getTables().index());
@@ -318,8 +273,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return indexes;
     }
 
-    @Override
-    public List<IndexInfo> getIndexInfos() {
+    public @Override List<IndexInfo> getIndexInfos() {
         final String sql = format(
                 "SELECT treeName, attributeName, strategy, metadata FROM %s WHERE repository = ?",
                 config.getTables().index());
@@ -354,8 +308,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return indexes;
     }
 
-    @Override
-    public boolean dropIndex(IndexInfo index) {
+    public @Override boolean dropIndex(IndexInfo index) {
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
                 config.getTables().index());
@@ -384,8 +337,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return false;
     }
 
-    @Override
-    public void clearIndex(IndexInfo index) {
+    public @Override void clearIndex(IndexInfo index) {
         PGId pgIndexId = PGId.valueOf(index.getId());
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)",
@@ -409,8 +361,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         }
     }
 
-    @Override
-    public void addIndexedTree(IndexInfo index, ObjectId originalTree, ObjectId indexedTree) {
+    public @Override void addIndexedTree(IndexInfo index, ObjectId originalTree,
+            ObjectId indexedTree) {
         PGId pgIndexId = PGId.valueOf(index.getId());
         PGId pgTreeId = PGId.valueOf(originalTree);
         PGId pgIndexedTreeId = PGId.valueOf(indexedTree);
@@ -452,8 +404,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         }
     }
 
-    @Override
-    public Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
+    public @Override Optional<ObjectId> resolveIndexedTree(IndexInfo index, ObjectId treeId) {
         final PGId pgIndexId = PGId.valueOf(index.getId());
         final PGId pgTreeId = PGId.valueOf(treeId);
         final String sql = format(

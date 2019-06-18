@@ -9,23 +9,22 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.locationtech.geogig.repository.Repository;
+
+import lombok.NonNull;
 
 public class LocalPackBuilder extends AbstractPackBuilder {
 
     private final Repository localRepo;
 
-    public LocalPackBuilder(Repository localRepo) {
-        checkNotNull(localRepo);
+    public LocalPackBuilder(@NonNull Repository localRepo) {
         checkState(localRepo.isOpen());
         this.localRepo = localRepo;
     }
 
-    @Override
-    public Pack build() {
+    public @Override Pack build() {
         PackImpl pack = new PackImpl(localRepo, tags, missingCommits, missingIndexes);
         return pack;
     }

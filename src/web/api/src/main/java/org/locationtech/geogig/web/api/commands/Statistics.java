@@ -14,7 +14,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.geotools.util.Range;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -88,7 +87,7 @@ public class Statistics extends AbstractWebAPICommand {
         if (since != null && !since.trim().isEmpty()) {
             Date untilTime = new Date();
             Date sinceTime = new Date(geogig.command(ParseTimestamp.class).setString(since).call());
-            logOp.setTimeRange(new Range<Date>(Date.class, sinceTime, untilTime));
+            logOp.setTimeRange(com.google.common.collect.Range.closed(sinceTime, untilTime));
         }
         if (this.until != null) {
             Optional<ObjectId> until;

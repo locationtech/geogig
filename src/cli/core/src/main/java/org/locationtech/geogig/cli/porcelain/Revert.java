@@ -61,8 +61,7 @@ public class Revert extends AbstractCommand implements CLICommand {
     /**
      * Executes the revert command.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(commits.size() > 0 || abort || continueRevert,
                 "nothing specified for reverting");
 

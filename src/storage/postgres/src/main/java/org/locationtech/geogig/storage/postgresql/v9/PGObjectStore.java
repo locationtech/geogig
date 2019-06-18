@@ -60,6 +60,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -84,12 +85,14 @@ import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import lombok.NonNull;
+
 /**
  * PostgreSQL implementation for {@link ObjectStore}.
  * <p>
  * TODO: document/force use of {@code SET constraint_exclusion=ON}
  */
-public class PGObjectStore implements ObjectStore {
+public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     static final Logger LOG = LoggerFactory.getLogger(PGObjectStore.class);
 
@@ -115,24 +118,19 @@ public class PGObjectStore implements ObjectStore {
 
     private SharedResourceReference resources;
 
-    protected final boolean readOnly;
-
-    public PGObjectStore(final ConfigDatabase configdb, final Environment config,
+    public PGObjectStore(final @NonNull ConfigDatabase configdb, final @NonNull Environment config,
             boolean readOnly) {
-        Preconditions.checkNotNull(configdb);
-        Preconditions.checkNotNull(config);
+        super(readOnly);
         Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
         // REVISIT: the following check should be done at open() instead?
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         this.configdb = configdb;
         this.config = config;
-        this.readOnly = readOnly;
     }
 
-    @Override
-    public void open() {
-        if (dataSource != null) {
+    public @Override void open() {
+        if (isOpen()) {
             return;
         }
         dataSource = PGStorage.newDataSource(config);
@@ -170,6 +168,7 @@ public class PGObjectStore implements ObjectStore {
         resources.trySetThreadPoolSize(threadPoolSize);
 
         this.sharedCache = CacheManager.INSTANCE.acquire(getCacheIdentifier(connectionConfig));
+        super.open();
     }
 
     /**
@@ -183,29 +182,23 @@ public class PGObjectStore implements ObjectStore {
         return cacheIdentifier;
     }
 
-    @Override
-    public boolean isOpen() {
-        return dataSource != null;
-    }
-
-    @Override
-    public void close() {
-        if (this.dataSource == null) {
-            return;
-        }
-        DataSource ds = this.dataSource;
-        SharedResourceReference res = this.resources;
-        ObjectCache sharedCache = this.sharedCache;
-        this.dataSource = null;
-        this.resources = null;
-        this.sharedCache = null;
-        try {
-            PGStorage.closeDataSource(ds);
-        } finally {
-            if (res != null) {
-                SHARED_RESOURCES.release(res);
+    public @Override void close() {
+        if (isOpen()) {
+            super.close();
+            DataSource ds = this.dataSource;
+            SharedResourceReference res = this.resources;
+            ObjectCache sharedCache = this.sharedCache;
+            this.dataSource = null;
+            this.resources = null;
+            this.sharedCache = null;
+            try {
+                PGStorage.closeDataSource(ds);
+            } finally {
+                if (res != null) {
+                    SHARED_RESOURCES.release(res);
+                }
+                CacheManager.INSTANCE.release(sharedCache);
             }
-            CacheManager.INSTANCE.release(sharedCache);
         }
     }
 
@@ -223,8 +216,7 @@ public class PGObjectStore implements ObjectStore {
         return config.getTables().objects();
     }
 
-    @Override
-    public boolean exists(final ObjectId id) {
+    public @Override boolean exists(final ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
@@ -249,8 +241,7 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    @Override
-    public List<ObjectId> lookUp(final String partialId) {
+    public @Override List<ObjectId> lookUp(final String partialId) {
         checkNotNull(partialId, "argument partialId is null");
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
@@ -284,8 +275,7 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    @Override
-    public RevObject get(ObjectId id) throws IllegalArgumentException {
+    public @Override RevObject get(ObjectId id) throws IllegalArgumentException {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "db is closed");
 
@@ -298,8 +288,8 @@ public class PGObjectStore implements ObjectStore {
         return obj;
     }
 
-    @Override
-    public <T extends RevObject> T get(ObjectId id, Class<T> type) throws IllegalArgumentException {
+    public @Override <T extends RevObject> T get(ObjectId id, Class<T> type)
+            throws IllegalArgumentException {
         checkNotNull(id, "argument id is null");
         checkNotNull(type, "argument class is null");
         checkState(isOpen(), "db is closed");
@@ -312,16 +302,14 @@ public class PGObjectStore implements ObjectStore {
         return type.cast(obj);
     }
 
-    @Override
-    public RevObject getIfPresent(ObjectId id) {
+    public @Override RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "db is closed");
         config.checkRepositoryExists();
         return getIfPresent(id, RevObject.class);
     }
 
-    @Override
-    public <T extends RevObject> T getIfPresent(final ObjectId id, final Class<T> type)
+    public @Override <T extends RevObject> T getIfPresent(final ObjectId id, final Class<T> type)
             throws IllegalArgumentException {
 
         checkNotNull(id, "argument id is null");
@@ -353,45 +341,38 @@ public class PGObjectStore implements ObjectStore {
         return type.cast(obj);
     }
 
-    @Override
-    public RevTree getTree(ObjectId id) {
+    public @Override RevTree getTree(ObjectId id) {
         return get(id, RevTree.class);
     }
 
-    @Override
-    public RevFeature getFeature(ObjectId id) {
+    public @Override RevFeature getFeature(ObjectId id) {
         return get(id, RevFeature.class);
     }
 
-    @Override
-    public RevFeatureType getFeatureType(ObjectId id) {
+    public @Override RevFeatureType getFeatureType(ObjectId id) {
         return get(id, RevFeatureType.class);
     }
 
-    @Override
-    public RevCommit getCommit(ObjectId id) {
+    public @Override RevCommit getCommit(ObjectId id) {
         return get(id, RevCommit.class);
     }
 
-    @Override
-    public RevTag getTag(ObjectId id) {
+    public @Override RevTag getTag(ObjectId id) {
         return get(id, RevTag.class);
     }
 
-    @Override
-    public Iterator<RevObject> getAll(Iterable<ObjectId> ids) {
+    public @Override Iterator<RevObject> getAll(Iterable<ObjectId> ids) {
         return getAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public Iterator<RevObject> getAll(final Iterable<ObjectId> ids, final BulkOpListener listener) {
+    public @Override Iterator<RevObject> getAll(final Iterable<ObjectId> ids,
+            final BulkOpListener listener) {
         return getAll(ids, listener, RevObject.class);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    public <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids, BulkOpListener listener,
-            Class<T> type) {
+    public @Override <T extends RevObject> Iterator<T> getAll(Iterable<ObjectId> ids,
+            BulkOpListener listener, Class<T> type) {
 
         checkNotNull(ids, "ids is null");
         checkNotNull(listener, "listener is null");
@@ -404,8 +385,7 @@ public class PGObjectStore implements ObjectStore {
         return stream;
     }
 
-    @Override
-    public <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
+    public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
         checkNotNull(refs, "refs is null");
         checkNotNull(listener, "listener is null");
@@ -419,8 +399,7 @@ public class PGObjectStore implements ObjectStore {
         return stream;
     }
 
-    @Override
-    public boolean put(final RevObject object) {
+    public @Override boolean put(final RevObject object) {
         checkNotNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
         checkWritable();
@@ -447,21 +426,18 @@ public class PGObjectStore implements ObjectStore {
         }
     }
 
-    @Override
-    public void putAll(Iterator<? extends RevObject> objects) {
+    public @Override void putAll(Iterator<? extends RevObject> objects) {
         putAll(objects, BulkOpListener.NOOP_LISTENER);
     }
 
-    @Override
-    public void delete(ObjectId objectId) {
+    public @Override void delete(ObjectId objectId) {
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
         config.checkRepositoryExists();
         delete(objectId, dataSource);
     }
 
-    @Override
-    public void deleteAll(Iterator<ObjectId> ids) {
+    public @Override void deleteAll(Iterator<ObjectId> ids) {
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
@@ -669,8 +645,7 @@ public class PGObjectStore implements ObjectStore {
             return null != abortFlag.get();
         }
 
-        @Override
-        public Void call() {
+        public @Override Void call() {
             if (isAborted()) {
                 return null;
             }
@@ -784,8 +759,8 @@ public class PGObjectStore implements ObjectStore {
     /**
      * Override to optimize batch insert.
      */
-    @Override
-    public void putAll(final Iterator<? extends RevObject> objects, final BulkOpListener listener) {
+    public @Override void putAll(final Iterator<? extends RevObject> objects,
+            final BulkOpListener listener) {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
@@ -881,8 +856,7 @@ public class PGObjectStore implements ObjectStore {
     /**
      * Override to optimize batch delete.
      */
-    @Override
-    public void deleteAll(final Iterator<ObjectId> ids, final BulkOpListener listener) {
+    public @Override void deleteAll(final Iterator<ObjectId> ids, final BulkOpListener listener) {
         checkNotNull(ids, "argument objectId is null");
         checkNotNull(listener, "argument listener is null");
         checkWritable();
@@ -930,17 +904,6 @@ public class PGObjectStore implements ObjectStore {
             }
         }
         return count;
-    }
-
-    protected void checkOpen() {
-        Preconditions.checkState(isOpen(), "Database is closed");
-    }
-
-    protected void checkWritable() {
-        checkOpen();
-        if (readOnly) {
-            throw new IllegalStateException("db is read only.");
-        }
     }
 
     private static class SharedResourceReference {
@@ -1001,8 +964,7 @@ public class PGObjectStore implements ObjectStore {
     private static class ObjectStoreSharedResources
             extends ConnectionManager<ConnectionConfig, SharedResourceReference> {
 
-        @Override
-        protected SharedResourceReference connect(ConnectionConfig config) {
+        protected @Override SharedResourceReference connect(ConnectionConfig config) {
             final String threadGroupName = String.format("PG ODB threads for %s:%d/%s",
                     config.getServer(), config.getPortNumber(), config.getDatabaseName());
             final ThreadGroup threadGroup = new ThreadGroup(threadGroupName);
@@ -1010,8 +972,7 @@ public class PGObjectStore implements ObjectStore {
             return ref;
         }
 
-        @Override
-        protected void disconnect(SharedResourceReference ref) {
+        protected @Override void disconnect(SharedResourceReference ref) {
             if (ref.executor != null) {
                 ref.executor.shutdownNow();
             }

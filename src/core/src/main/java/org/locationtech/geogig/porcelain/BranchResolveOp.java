@@ -12,11 +12,12 @@ package org.locationtech.geogig.porcelain;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
+
+import lombok.NonNull;
 
 /**
  * Resolves the branch specified or the current branch one if no branch name was given

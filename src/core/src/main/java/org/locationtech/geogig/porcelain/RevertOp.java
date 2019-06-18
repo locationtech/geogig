@@ -10,7 +10,6 @@
 package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.impl.Blobs.putBlob;
 import static org.locationtech.geogig.storage.impl.Blobs.readLines;
@@ -59,6 +58,8 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 
+import lombok.NonNull;
+
 /**
  * Given one or more existing commits, revert the changes that the related patches introduce, and
  * record some new commits that record them. This requires your working tree to be clean (no
@@ -96,9 +97,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         return addCommit(commit.get());
     }
 
-    public RevertOp addCommit(final ObjectId commit) {
-        checkNotNull(commit);
-
+    public RevertOp addCommit(final @NonNull ObjectId commit) {
         if (this.commits == null) {
             this.commits = new ArrayList<ObjectId>();
         }
@@ -402,8 +401,6 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private static final Comparator<DiffEntry> comparator = (l, r) -> {
-        checkNotNull(l);
-        checkNotNull(r);
         return CanonicalNodeNameOrder.INSTANCE.compare(l.name(), r.name());
     };
 
@@ -487,7 +484,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     private String resolveCommitter() {
         final String namekey = "user.name";
 
-        String name = getClientData(namekey, String.class)
+        String name = getClientData(namekey)
                 .orElseGet(() -> command(ConfigGet.class).setName(namekey).call().orElse(null));
 
         checkState(name != null,
@@ -500,7 +497,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
     private String resolveCommitterEmail() {
         final String emailkey = "user.email";
 
-        String email = getClientData(emailkey, String.class)
+        String email = getClientData(emailkey)
                 .orElseGet(() -> command(ConfigGet.class).setName(emailkey).call().orElse(null));
 
         checkState(email != null,

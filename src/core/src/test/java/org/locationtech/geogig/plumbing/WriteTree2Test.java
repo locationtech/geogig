@@ -17,6 +17,7 @@ import java.util.SortedSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.Node;
@@ -35,13 +36,11 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.diff.MutableTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -60,23 +59,18 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private WriteTree2 command;
 
-    private GeoGIG geogig;
-
     private ObjectDatabase objectDb;
 
     private RevTree leftTree;
 
     private RevTree rightTree;
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        geogig = getGeogig();
-        command = geogig.command(WriteTree2.class);
-        objectDb = geogig.getRepository().objectDatabase();
+    protected @Override void setUpInternal() throws Exception {
+        command = repo.command(WriteTree2.class);
+        objectDb = repo.objectDatabase();
     }
 
-    @Override
-    public void tearDownInternal() {
+    public @Override void tearDownInternal() {
         if (objectDb != null) {
             objectDb.close();
         }
@@ -525,7 +519,7 @@ public class WriteTree2Test extends RepositoryTestCase {
     }
 
     private ImmutableMap<String, NodeRef> getTreeRefsByPath(ObjectId newRepoRoot) {
-        Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class)
+        Iterator<NodeRef> iterator = repo.command(LsTreeOp.class)
                 .setReference(newRepoRoot.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .call();
 
@@ -537,8 +531,8 @@ public class WriteTree2Test extends RepositoryTestCase {
             boolean includeFeatures) {
 
         Strategy strategy = includeFeatures ? Strategy.DEPTHFIRST : Strategy.DEPTHFIRST_ONLY_TREES;
-        Iterator<NodeRef> iterator = geogig.command(LsTreeOp.class)
-                .setReference(repoRoot.toString()).setStrategy(strategy).call();
+        Iterator<NodeRef> iterator = repo.command(LsTreeOp.class).setReference(repoRoot.toString())
+                .setStrategy(strategy).call();
         ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
         return refsByPath;
     }
@@ -595,17 +589,17 @@ public class WriteTree2Test extends RepositoryTestCase {
     private RevTree createHeadTree(NodeRef... treeRefs) {
         RevTree root = createFromRefs(objectDb, treeRefs);
         objectDb.put(root);
-        RevCommitBuilder cb = RevCommit.builder().platform(geogig.getPlatform());
+        RevCommitBuilder cb = RevCommit.builder().platform(testRepository.getPlatform());
         ObjectId treeId = root.getId();
 
         RevCommit commit = cb.treeId(treeId).committer("Gabriel Roldan").author("Gabriel Roldan")
                 .build();
         objectDb.put(commit);
 
-        SymRef head = (SymRef) geogig.command(RefParse.class).setName(Ref.HEAD).call().get();
+        SymRef head = (SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get();
         final String currentBranch = head.getTarget();
 
-        geogig.command(UpdateRef.class).setName(currentBranch).setNewValue(commit.getId()).call();
+        repo.command(UpdateRef.class).setName(currentBranch).setNewValue(commit.getId()).call();
 
         verifyRepositoryTree(NodeRef.ROOT, treeId);
         verifyTreeStructure(treeId, treeRefs);
@@ -625,7 +619,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree createStageHeadTree(NodeRef... treeRefs) {
         RevTree root = createFromRefs(objectDb, treeRefs);
-        geogig.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(root.getId()).call();
+        repo.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(root.getId()).call();
         return root;
     }
 
@@ -712,7 +706,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         RevFeature revFeature = RevFeature.builder().build(feature);
         db.put(revFeature);
-        Envelope bounds = (Envelope) feature.getBounds();
+        Envelope bounds = (Envelope) feature.getDefaultGeometryBounds();
         return RevObjectFactory.defaultInstance().createNode(id, revFeature.getId(), ObjectId.NULL,
                 TYPE.FEATURE, bounds, null);
     }

@@ -70,8 +70,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
         return this;
     }
 
-    @Override
-    protected MergeScenarioReport _call() {
+    protected @Override MergeScenarioReport _call() {
         if (consumer == null) {
             consumer = new MergeScenarioConsumer();
         }
@@ -115,8 +114,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             this.theirs = Iterators.peekingIterator(theirs);
         }
 
-        @Override
-        protected MergeDiffRef computeNext() {
+        protected @Override MergeDiffRef computeNext() {
             DiffEntry left = ours.hasNext() ? ours.peek() : null;
             DiffEntry right = theirs.hasNext() ? theirs.peek() : null;
 

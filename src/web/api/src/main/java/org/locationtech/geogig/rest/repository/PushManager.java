@@ -86,7 +86,7 @@ public class PushManager {
             throw new RuntimeException("Tried to end a connection that didn't exist.");
         }
 
-        if(Strings.isNullOrEmpty(refspec)) {
+        if (Strings.isNullOrEmpty(refspec)) {
             return;
         }
         // Do not use the geogig instance after this, but the tx one!

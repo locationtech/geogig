@@ -38,7 +38,7 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -76,15 +76,13 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         this.remoteRepo = remoteRepo;
     }
 
-    @Override
-    public void open() throws RepositoryConnectionException {
+    public @Override void open() throws RepositoryConnectionException {
         if (remoteRepo == null) {
-            remoteRepo = RepositoryResolver.load(remoteRepoLocation);
+            remoteRepo = RepositoryFinder.INSTANCE.open(remoteRepoLocation);
         }
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         if (remoteRepo != null) {
             remoteRepo.close();
             remoteRepo = null;
@@ -94,8 +92,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     /**
      * @return the remote's HEAD {@link Ref}.
      */
-    @Override
-    public Optional<Ref> headRef() {
+    public @Override Optional<Ref> headRef() {
         final Optional<Ref> currHead = remoteRepo.command(RefParse.class).setName(Ref.HEAD).call();
         return currHead;
     }
@@ -107,12 +104,10 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param getTags whether to return refs in the {@code refs/tags} namespace
      * @return an immutable set of refs from the remote
      */
-    @Override
-    public ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+    public @Override ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
         Predicate<Ref> filter = new Predicate<Ref>() {
-            @Override
-            public boolean apply(Ref input) {
+            public @Override boolean apply(Ref input) {
                 boolean keep = false;
                 if (getHeads) {
                     keep = input.getName().startsWith(Ref.HEADS_PREFIX);
@@ -149,8 +144,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * 
      * @param refspec the refspec to delete
      */
-    @Override
-    public Optional<Ref> deleteRef(String refspec) {
+    public @Override Optional<Ref> deleteRef(String refspec) {
         Optional<Ref> deletedRef = remoteRepo.command(UpdateRef.class).setName(refspec)
                 .setDelete(true).call();
         return deletedRef;
@@ -162,8 +156,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param refspec the refspec to parse
      * @return the matching {@link Ref} or {@link Optional#empty()} if the ref could not be found
      */
-    @Override
-    protected Optional<Ref> getRemoteRef(String refspec) {
+    protected @Override Optional<Ref> getRemoteRef(String refspec) {
         return remoteRepo.command(RefParse.class).setName(refspec).call();
     }
 
@@ -175,8 +168,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param delete if true, the remote ref will be deleted
      * @return the updated ref
      */
-    @Override
-    protected Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId, boolean delete) {
+    protected @Override Optional<Ref> updateRemoteRef(String refspec, ObjectId commitId,
+            boolean delete) {
         Optional<Ref> updatedRef = remoteRepo.command(UpdateRef.class).setName(refspec)
                 .setNewValue(commitId).setDelete(delete).call();
 
@@ -273,8 +266,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
     /**
      * @return the {@link RepositoryWrapper} for this remote
      */
-    @Override
-    public RepositoryWrapper getRemoteWrapper() {
+    public @Override RepositoryWrapper getRemoteWrapper() {
         return new LocalRepositoryWrapper(remoteRepo);
     }
 
@@ -284,13 +276,12 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param objectId the object to get
      * @return the fetched object
      */
-    @Override
-    protected Optional<RevObject> getObject(ObjectId objectId) {
+    protected @Override Optional<RevObject> getObject(ObjectId objectId) {
         return remoteRepo.command(RevObjectParse.class).setObjectId(objectId).call();
     }
 
-    @Override
-    protected FilteredDiffIterator getFilteredChanges(final Repository local, RevCommit commit) {
+    protected @Override FilteredDiffIterator getFilteredChanges(final Repository local,
+            RevCommit commit) {
         ObjectId parent = ObjectId.NULL;
         if (commit.getParentIds().size() > 0) {
             parent = commit.getParentIds().get(0);
@@ -310,8 +301,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return the depth of the repository, or {@link Optional#empty()} if the repository is not
      *         shallow
      */
-    @Override
-    public Optional<Integer> getDepth() {
+    public @Override Optional<Integer> getDepth() {
         return remoteRepo.getDepth();
     }
 }

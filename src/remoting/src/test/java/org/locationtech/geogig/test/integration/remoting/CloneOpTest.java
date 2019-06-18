@@ -23,6 +23,8 @@ import java.util.stream.IntStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -48,9 +50,6 @@ import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -70,10 +69,9 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
     protected Repository cloneRepo;
 
-    @Override
-    protected void setUpInternal() throws Exception {
-        remoteRepo = remoteGeogig.repo;
-        cloneRepo = localGeogig.repo;
+    protected @Override void setUpInternal() throws Exception {
+        remoteRepo = super.originRepo;
+        cloneRepo = super.localRepo;
     }
 
     @Test
@@ -85,7 +83,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         for (Feature f : features) {
             ObjectId oId = insertAndAdd(remoteRepo, f);
             final RevCommit commit = remoteRepo.command(CommitOp.class)
-                    .setMessage("commit of " + f.getIdentifier()).call();
+                    .setMessage("commit of " + f.getId()).call();
             expected.addFirst(commit);
             Optional<RevObject> childObject = remoteRepo.command(RevObjectParse.class)
                     .setObjectId(oId).call();
@@ -105,8 +103,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
@@ -131,7 +128,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneLargerTreeSingleCommit() throws Exception {
         final int nfeatures = 10_000;
-        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        List<Feature> features = createPointFeatures(nfeatures);
         insert(remoteRepo, features);
         add(remoteRepo);
 
@@ -140,8 +137,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
     }
@@ -212,8 +208,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         // Make sure the local repository got all of the commits
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
@@ -227,7 +222,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneLargerTreeSeveralCommits() throws Exception {
         final int nfeatures = 10_000;
-        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        List<Feature> features = createPointFeatures(nfeatures);
 
         final int featuresPerCommit = 100;
         List<RevCommit> commits = insertAndCommit(features, featuresPerCommit);
@@ -238,8 +233,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
 
         logged = newArrayList(cloneRepo.command(LogOp.class).call());
         assertEquals(commits, logged);
@@ -250,7 +244,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneLargerTreeSeveralCommitsAndChangeTypes() throws Exception {
         final int nfeatures = 1_000;
-        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        List<Feature> features = createPointFeatures(nfeatures);
         // inserts
         {
             final int featuresPerCommit = 100;
@@ -261,7 +255,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
             createBranch(remoteRepo, "updates_branch");
 
             final int featuresPerCommit = 10;
-            List<SimpleFeature> updates = features.subList(0, nfeatures / 2);
+            List<Feature> updates = features.subList(0, nfeatures / 2);
             updates.forEach((f) -> f.setAttribute("sp", f.getAttribute("sp") + " changed"));
             insertAndCommit(updates, featuresPerCommit);
 
@@ -278,7 +272,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
             final String parent = pointsName + "/";
             List<String> featurePaths = new ArrayList<>();
             for (int i = 0; i < features.size(); i += 2) {
-                featurePaths.add(parent + features.get(i).getID());
+                featurePaths.add(parent + features.get(i).getId());
             }
             remoteRepo.workingTree().delete(featurePaths.iterator(), new DefaultProgressListener());
             add(remoteRepo);
@@ -293,8 +287,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -305,10 +299,10 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneExpandedTree() throws Exception {
         final int nfeatures = 1_000;
-        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        List<Feature> features = createPointFeatures(nfeatures);
         RevCommit leafTreeCommit, bucketTreeCommit;
         {
-            List<SimpleFeature> leafTreeNodes = features.subList(0, 512);
+            List<Feature> leafTreeNodes = features.subList(0, 512);
             leafTreeCommit = insertAndCommit(leafTreeNodes, leafTreeNodes.size()).get(0);
             bucketTreeCommit = insertAndCommit(features, features.size()).get(0);
         }
@@ -316,8 +310,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -328,23 +322,23 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneCollapsedTree() throws Exception {
         final int nfeatures = 1_000;
-        List<SimpleFeature> features = createPointFeatures(nfeatures);
+        List<Feature> features = createPointFeatures(nfeatures);
         RevCommit leafTreeCommit, bucketTreeCommit;
         {
             bucketTreeCommit = insertAndCommit(features, features.size()).get(0);
-            List<SimpleFeature> removeNodes = features.subList(512, features.size());
+            List<Feature> removeNodes = features.subList(512, features.size());
             super.delete(remoteRepo, removeNodes);
             super.add(remoteRepo);
-            String msg = "Deleted features " + removeNodes.get(0).getID() + " to "
-                    + removeNodes.get(removeNodes.size() - 1).getID();
+            String msg = "Deleted features " + removeNodes.get(0).getId() + " to "
+                    + removeNodes.get(removeNodes.size() - 1).getId();
             leafTreeCommit = super.commit(remoteRepo, msg);
         }
 
         // clone from the remote
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setProgressListener(SIMPLE_PROGRESS)//
                 .call();
 
@@ -355,31 +349,29 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     private List<RevCommit> insertAndCommit(List<? extends Feature> features,
             final int featuresPerCommit) throws Exception {
         List<RevCommit> commits = new LinkedList<>();
-        int i = 0;
         for (List<? extends Feature> partition : Iterables.partition(features, featuresPerCommit)) {
             insert(remoteRepo, partition);
             add(remoteRepo);
-            String from = partition.get(0).getIdentifier().toString();
-            String to = partition.get(partition.size() - 1).getIdentifier().toString();
+            String from = partition.get(0).getId();
+            String to = partition.get(partition.size() - 1).getId();
             String message = String.format("commit features %s to %s", from, to);
             RevCommit commit = remoteRepo.command(CommitOp.class).setMessage(message)
                     .setProgressListener(SIMPLE_PROGRESS).call();
             commits.add(0, commit);
-            i++;
         }
         return commits;
     }
 
-    private List<SimpleFeature> createPointFeatures(final int nfeatures) {
-        List<SimpleFeature> features;
+    private List<Feature> createPointFeatures(final int nfeatures) {
+        List<Feature> features;
 
-        SimpleFeatureType type = super.pointsType;
+        FeatureType type = super.pointsType;
         features = new ArrayList<>();
         IntStream.range(0, nfeatures).forEach((index) -> {
             String wkt = String.format("POINT(-0.%s 0.%s)", index, index);
             String fid = String.valueOf(index);
             Object[] values = { fid, Integer.valueOf(index), wkt };
-            SimpleFeature feature = (SimpleFeature) super.feature(type, fid, values);
+            Feature feature = super.feature(type, fid, values);
             features.add(feature);
         });
 
@@ -401,7 +393,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
                     .setObjectId(oId).call();
             assertTrue(childObject.isPresent());
             RevTag tag = remoteRepo.command(TagCreateOp.class).setCommitId(commit.getId())
-                    .setName(f.getIdentifier().getID()).call();
+                    .setName(f.getId()).call();
             tags.add(tag);
         }
 
@@ -425,8 +417,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         CloneOp clone = cloneOp();
         clone.setDepth(0);
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
         TestSupport.verifySameContents(remoteRepo, cloneRepo);
 
@@ -505,8 +496,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setBranch("master").call();
 
         TestSupport.verifySameRefs(remoteRepo, cloneRepo);
@@ -570,8 +561,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // clone from the remote
         CloneOp clone = cloneOp();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI())//
-                .setCloneURI(localGeogig.envHome.toURI())//
+        clone.setRemoteURI(remoteRepo.getLocation())//
+                .setCloneURI(localRepo.getLocation())//
                 .setBranch("Branch1")//
                 .call();
         // TestSupport.verifySameContents(remoteRepo, cloneRepo);
@@ -597,8 +588,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     public void testCloneEmptyRepo() throws Exception {
         CloneOp clone = cloneOp();
         // clone.setRepositoryURL(remoteGeogig.envHome.toURI().toString()).call();
-        clone.setRemoteURI(remoteGeogig.envHome.toURI()).setCloneURI(localGeogig.envHome.toURI())
-                .call();
+        clone.setRemoteURI(remoteRepo.getLocation()).setCloneURI(localRepo.getLocation()).call();
         TestSupport.verifyRepositoryContents(cloneRepo);
     }
 

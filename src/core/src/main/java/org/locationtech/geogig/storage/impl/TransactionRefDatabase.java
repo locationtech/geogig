@@ -14,7 +14,6 @@ import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
 import static org.locationtech.geogig.model.Ref.append;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,10 +35,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * A {@link RefDatabase} decorator for a specific {@link GeogigTransaction transaction}.
@@ -53,8 +53,8 @@ import com.google.common.collect.Maps;
  * {@link WorkingTree} , are given this instance of {@code RefDatabase} and can do its work without
  * ever noticing its "running inside a transaction". For the command nothing changes.
  * <p>
- * {@link TransactionRefDatabase#create() create()} shall be called before this decorator gets used
- * in order for the transaction refs namespace to be created and all original references copied in
+ * {@link TransactionRefDatabase#open() create()} shall be called before this decorator gets used in
+ * order for the transaction refs namespace to be created and all original references copied in
  * there, and {@link TransactionRefDatabase#close() close()} for the transaction refs namespace to
  * be deleted.
  * 
@@ -85,19 +85,16 @@ public class TransactionRefDatabase implements RefDatabase {
         return append(TRANSACTIONS_PREFIX, transactionId.toString());
     }
 
-    @Override
-    public void lock() throws TimeoutException {
+    public @Override void lock() throws TimeoutException {
         refDb.lock();
     }
 
-    @Override
-    public void unlock() {
+    public @Override void unlock() {
         refDb.unlock();
     }
 
-    @Override
-    public void create() {
-        refDb.create();
+    public @Override void open() {
+        refDb.open();
 
         // copy HEADS
         copyIfPresent(Ref.HEAD, Ref.WORK_HEAD, Ref.STAGE_HEAD, Ref.CHERRY_PICK_HEAD, Ref.MERGE_HEAD,
@@ -156,16 +153,14 @@ public class TransactionRefDatabase implements RefDatabase {
      * Releases all the references for this transaction, but does not close the original
      * {@link RefDatabase}
      */
-    @Override
-    public void close() {
+    public @Override void close() {
         refDb.removeAll(this.txNamespace);
     }
 
     /**
      * Gets the requested ref value from {@code transactions/<tx id>/<name>}
      */
-    @Override
-    public String getRef(final String name) {
+    public @Override String getRef(final String name) {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
@@ -178,8 +173,7 @@ public class TransactionRefDatabase implements RefDatabase {
         return value;
     }
 
-    @Override
-    public String getSymRef(final String name) {
+    public @Override String getSymRef(final String name) {
         String internalName;
         String value;
         if (name.startsWith("changed") || name.startsWith("orig")) {
@@ -192,15 +186,13 @@ public class TransactionRefDatabase implements RefDatabase {
         return value;
     }
 
-    @Override
-    public void putRef(final String refName, final String refValue) {
+    public @Override void putRef(final String refName, final String refValue) {
         String internalName = toChangedInternal(refName);
         LOGGER.debug("update {} as {}", refName, internalName);
         refDb.putRef(internalName, refValue);
     }
 
-    @Override
-    public void putSymRef(final String name, final String val) {
+    public @Override void putSymRef(final String name, final String val) {
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
         String internalName = toChangedInternal(name);
@@ -208,20 +200,17 @@ public class TransactionRefDatabase implements RefDatabase {
         refDb.putSymRef(internalName, val);
     }
 
-    @Override
-    public String remove(final String refName) {
+    public @Override String remove(final String refName) {
         String internal = toChangedInternal(refName);
         String removedValue = refDb.remove(internal);
         return removedValue;
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return getAll("");
     }
 
-    @Override
-    public Map<String, String> getAll(final String prefix) {
+    public @Override Map<String, String> getAll(final String prefix) {
         Map<String, String> changed = refDb.getAll(append(this.txChangedNamespace, prefix));
         return toExternal(changed);
     }
@@ -239,8 +228,7 @@ public class TransactionRefDatabase implements RefDatabase {
             this.newValue = newv;
         }
 
-        static ChangedRef of(String name, String oldv, String newv) {
-            Preconditions.checkNotNull(name);
+        static ChangedRef of(@NonNull String name, String oldv, String newv) {
             Preconditions.checkArgument(oldv != null || newv != null);
             Preconditions.checkArgument(!Objects.equals(oldv, newv));
             return new ChangedRef(name, oldv, newv);
@@ -278,40 +266,7 @@ public class TransactionRefDatabase implements RefDatabase {
         return changes;
     }
 
-    /**
-     * The names of the refs that either have changed from their original value or didn't exist at
-     * the time this method is called
-     */
-    public @Deprecated ImmutableSet<String> getChangedRefs() {
-        Map<String, String> externalOriginals;
-        Map<String, String> externalChanged;
-        {
-            Map<String, String> originals = refDb.getAll(this.txOrigNamespace);
-            Map<String, String> changed = refDb.getAll(this.txChangedNamespace);
-
-            externalOriginals = toExternal(originals);
-            externalChanged = toExternal(changed);
-        }
-        MapDifference<String, String> difference;
-        difference = Maps.difference(externalOriginals, externalChanged);
-
-        Map<String, String> changes = new HashMap<>();
-        // include all new refs
-        changes.putAll(difference.entriesOnlyOnRight());
-
-        // include all changed refs, with the new values
-        for (Map.Entry<String, ValueDifference<String>> e : difference.entriesDiffering()
-                .entrySet()) {
-            String name = e.getKey();
-            ValueDifference<String> valueDifference = e.getValue();
-            String newValue = valueDifference.rightValue();
-            changes.put(name, newValue);
-        }
-        return ImmutableSet.copyOf(changes.keySet());
-    }
-
-    @Override
-    public Map<String, String> removeAll(String namespace) {
+    public @Override Map<String, String> removeAll(String namespace) {
         final String txMappedNamespace = toChangedInternal(namespace);
         Map<String, String> removed = refDb.removeAll(txMappedNamespace);
         Map<String, String> external = toExternal(removed);
@@ -367,13 +322,11 @@ public class TransactionRefDatabase implements RefDatabase {
         return txValue;
     }
 
-    @Override
-    public void configure() {
-        // No-op
+    public @Override boolean isOpen() {
+        return refDb.isOpen();
     }
 
-    @Override
-    public boolean checkConfig() {
-        return true;
+    public @Override boolean isReadOnly() {
+        return refDb.isReadOnly();
     }
 }

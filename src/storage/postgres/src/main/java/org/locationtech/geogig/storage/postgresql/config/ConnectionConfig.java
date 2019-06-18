@@ -8,7 +8,8 @@ import java.net.URISyntaxException;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
 
 public class ConnectionConfig implements Cloneable {
 
@@ -18,8 +19,7 @@ public class ConnectionConfig implements Cloneable {
      * Checks if both connection configs target the same database regardless of the schema, user,
      * and password they're connected with
      */
-    public boolean isSameDatabase(ConnectionConfig other) {
-        Preconditions.checkNotNull(other);
+    public boolean isSameDatabase(@NonNull ConnectionConfig other) {
         boolean same = Objects.equal(key.server, other.key.server) && //
                 Objects.equal(key.portNumber, other.key.portNumber) && //
                 Objects.equal(key.databaseName, other.key.databaseName);
@@ -30,7 +30,7 @@ public class ConnectionConfig implements Cloneable {
      * Checks if both connection configs target the same database and schema regardless of the user
      * and password they're connected with
      */
-    public boolean isSameDatabaseAndSchema(ConnectionConfig other) {
+    public boolean isSameDatabaseAndSchema(@NonNull ConnectionConfig other) {
         boolean same = isSameDatabase(other) && //
                 Objects.equal(key.schema, other.key.schema)
                 && Objects.equal(key.tablePrefix, other.key.tablePrefix);
@@ -111,8 +111,7 @@ public class ConnectionConfig implements Cloneable {
         return toURIInternal(null, false);
     }
 
-    public URI toURI(final String repositoryName) {
-        Preconditions.checkNotNull(repositoryName);
+    public URI toURI(final @NonNull String repositoryName) {
         return toURIInternal(repositoryName, false);
     }
 
@@ -151,8 +150,7 @@ public class ConnectionConfig implements Cloneable {
         return repoURI;
     }
 
-    @Override
-    public boolean equals(Object o) {
+    public @Override boolean equals(Object o) {
         if (!(o instanceof ConnectionConfig)) {
             return false;
         }
@@ -161,8 +159,7 @@ public class ConnectionConfig implements Cloneable {
                 && equal(key.tablePrefix, d.key.tablePrefix);
     }
 
-    @Override
-    public int hashCode() {
+    public @Override int hashCode() {
         return Objects.hashCode(key, key.schema, key.tablePrefix);
     }
 

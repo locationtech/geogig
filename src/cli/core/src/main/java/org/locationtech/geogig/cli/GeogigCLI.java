@@ -42,8 +42,8 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.FileRepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -67,6 +67,8 @@ import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Key;
 import com.google.inject.Module;
+
+import lombok.NonNull;
 
 /**
  * Command Line Interface for geogig.
@@ -137,8 +139,7 @@ public class GeogigCLI {
      * @param platform the platform to use
      * @see Platform
      */
-    public void setPlatform(Platform platform) {
-        checkNotNull(platform);
+    public void setPlatform(@NonNull Platform platform) {
         this.platform = platform;
     }
 
@@ -263,7 +264,7 @@ public class GeogigCLI {
      * try opening, if present, may return null Repository but the GeoGIG instance is still valid
      * and may being used to init a repo;
      */
-    public GeoGIG newGeoGIG(Hints hints) {
+    public @NonNull GeoGIG newGeoGIG(Hints hints) {
         Context inj = newGeogigInjector(hints);
 
         GeoGIG geogig = new GeoGIG(inj);
@@ -605,7 +606,7 @@ public class GeogigCLI {
             globalOnly = true;
         } else {
             try {
-                uri = RepositoryResolver.resolveRepoUriFromString(platform, repoURI);
+                uri = RepositoryFinder.INSTANCE.resolveRepoUriFromString(platform, repoURI);
                 globalOnly = false;
             } catch (URISyntaxException e) {
                 uri = platform.getUserHome().toURI();
@@ -616,16 +617,16 @@ public class GeogigCLI {
         Optional<String> unaliased = Optional.empty();
 
         final Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
-        final RepositoryResolver resolver = RepositoryResolver.lookup(uri);
+        final RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(uri);
         final boolean repoExists = resolver.repoExists(uri);
-        try (ConfigDatabase config = resolver.getConfigDatabase(uri, context, globalOnly)) {
+        try (ConfigDatabase config = resolver.resolveConfigDatabase(uri, context, globalOnly)) {
             if (!globalOnly && repoExists) {
                 unaliased = config.get(configParam);
             }
             if (!unaliased.isPresent()) {
                 unaliased = config.getGlobal(configParam);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             String msg = "Unable to acquire config to check alias for " + aliasedCommand;
             LOGGER.error(msg, e);
             try {
@@ -637,11 +638,14 @@ public class GeogigCLI {
 
         if (!unaliased.isPresent()) {
             // see if we can fall back to a file global config
-            if (repoURI == null || !"file".equals(uri.getScheme())) {
-                try (ConfigDatabase global = FileRepositoryResolver
+            if (repoURI == null || !"file".equals(uri.getScheme())
+                    && RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("file")) {
+
+                try (ConfigDatabase global = RepositoryFinder.INSTANCE
                         .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
                     unaliased = global.getGlobal(configParam);
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    Throwables.throwIfUnchecked(e);
                     throw new RuntimeException(e);
                 }
             }
@@ -667,8 +671,7 @@ public class GeogigCLI {
             final String commandName) {
         Map<String, JCommander> candidates = Maps.filterEntries(commands,
                 new Predicate<Map.Entry<String, JCommander>>() {
-                    @Override
-                    public boolean apply(@Nullable Entry<String, JCommander> entry) {
+                    public @Override boolean apply(@Nullable Entry<String, JCommander> entry) {
                         char[] s1 = entry.getKey().toCharArray();
                         char[] s2 = commandName.toCharArray();
                         int[] prev = new int[s2.length + 1];
@@ -790,14 +793,12 @@ public class GeogigCLI {
                 // Don't skip the first update
                 private volatile long lastRun = 0;
 
-                @Override
-                public void started() {
+                public @Override void started() {
                     super.started();
                     lastRun = -(delayNanos + 1);
                 }
 
-                @Override
-                public void setDescription(String s, Object... args) {
+                public @Override void setDescription(String s, Object... args) {
                     lastRun = platform.nanoTime();
                     try {
                         console.println();
@@ -808,8 +809,7 @@ public class GeogigCLI {
                     }
                 }
 
-                @Override
-                public synchronized void complete() {
+                public @Override synchronized void complete() {
                     // avoid double logging if caller missbehaves
                     if (super.isCompleted()) {
                         return;
@@ -825,8 +825,7 @@ public class GeogigCLI {
                     }
                 }
 
-                @Override
-                public void setProgress(float percent) {
+                public @Override void setProgress(float percent) {
                     super.setProgress(percent);
                     long nanoTime = platform.nanoTime();
                     if ((nanoTime - lastRun) > delayNanos) {

@@ -25,12 +25,14 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.ValidatingFeatureFactoryImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.model.NodeRef;
@@ -91,8 +93,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     /**
      * Executes the export command using the provided options.
      */
-    @Override
-    protected void runInternal(GeogigCLI cli) throws IOException {
+    protected @Override void runInternal(GeogigCLI cli) throws IOException {
         if (args.size() != 2) {
             printUsage(cli);
             throw new CommandFailedException();
@@ -135,8 +136,8 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
                     .call();
             checkParameter(type.equals(TYPE.FEATURETYPE),
                     "Provided reference does not resolve to a feature type: ", sFeatureTypeId);
-            outputFeatureType = (SimpleFeatureType) cli.getGeogig().command(RevObjectParse.class)
-                    .setObjectId(id.get()).call(RevFeatureType.class).get().type();
+            outputFeatureType = GT.adapt(cli.getGeogig().command(RevObjectParse.class)
+                    .setObjectId(id.get()).call(RevFeatureType.class).get().type());
             featureTypeId = id.get();
         } else {
             try {
@@ -192,7 +193,8 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
 
         Function<Feature, Optional<Feature>> function = (feature) -> {
 
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType,
+                    new ValidatingFeatureFactoryImpl());
             for (Property property : feature.getProperties()) {
                 if (property instanceof GeometryAttribute) {
                     builder.set(featureType.getGeometryDescriptor().getName(), property.getValue());
@@ -242,12 +244,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
                 .setObjectId(featureTypeTree.get().getMetadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
-            if (revFeatureType.type() instanceof SimpleFeatureType) {
-                return (SimpleFeatureType) revFeatureType.type();
-            } else {
-                throw new InvalidParameterException(
-                        "Cannot find feature type for the specified path");
-            }
+            return GT.adapt(revFeatureType.type());
         } else {
             throw new InvalidParameterException("Cannot find feature type for the specified path");
         }

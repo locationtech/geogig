@@ -19,8 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.geotools.data.DataUtilities;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
+import org.locationtech.geogig.feature.FeatureType;
+import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -34,8 +36,6 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -71,8 +71,7 @@ public class HashObjectTest extends RepositoryTestCase {
 
     private RevTag tag2;
 
-    @Override
-    protected void setUpInternal() throws Exception {
+    protected @Override void setUpInternal() throws Exception {
         featureType1 = RevFeatureType.builder().type(pointsType).build();
         featureType2 = RevFeatureType.builder().type(linesType).build();
         featureType1Duplicate = RevFeatureType.builder().type(pointsType).build();
@@ -111,7 +110,7 @@ public class HashObjectTest extends RepositoryTestCase {
 
         commit2 = b.build();
 
-        final SimpleFeatureType coverageFeatureType;
+        final FeatureType coverageFeatureType;
         final Feature coverageFeature;
         {
             List<String> attributeDescriptorSpecs = new ArrayList<>();
@@ -129,8 +128,8 @@ public class HashObjectTest extends RepositoryTestCase {
                 }
             }
             final String spec = Joiner.on(',').join(attributeDescriptorSpecs);
-            coverageFeatureType = DataUtilities.createType("http://geoserver.org/test", "TestType",
-                    spec);
+            coverageFeatureType = FeatureTypes.createType("http://geoserver.org/test#TestType",
+                    spec.split(","));
 
             coverageFeature = feature(coverageFeatureType, "TestType.Coverage.1",
                     attributeSampleValues.toArray());
@@ -191,8 +190,8 @@ public class HashObjectTest extends RepositoryTestCase {
 
     @Test
     public void testHashFeatureWithMapProperty() throws Exception {
-        SimpleFeatureType featureType = DataUtilities.createType("http://geoserver.org/test",
-                "TestType", "str:String, map:java.util.Map");
+        FeatureType featureType = FeatureTypes.createType("http://geoserver.org/test#TestType",
+                "str:String", "map:java.util.Map");
 
         Map<String, Object> map1, map2, map3;
         map1 = new HashMap<>();

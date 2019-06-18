@@ -18,6 +18,7 @@ import java.util.List;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -26,9 +27,9 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.TransformException;
@@ -52,16 +53,16 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         insertAndAdd(lines2);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
         insertAndAdd(points3);
         insertAndAdd(lines3);
 
         insertAndAdd(points1_modified);
 
-        geogig.command(CommitOp.class).call();
+        repo.command(CommitOp.class).call();
 
-        helper = new QLTestHelper(geogig);
+        helper = new QLTestHelper(repo);
     }
 
     @Override
@@ -214,7 +215,9 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
     @Test
     public void bboxCRSReprojection()
             throws NoSuchAuthorityCodeException, TransformException, FactoryException {
-        BoundingBox wgs84Bounds = lines2.getBounds();
+        Envelope bounds = lines2.getDefaultGeometryBounds();
+        ReferencedEnvelope wgs84Bounds = new ReferencedEnvelope(CRS.decode("EPSG:4326"));
+        wgs84Bounds.init(bounds);
         GeneralEnvelope wmBounds = CRS.transform(wgs84Bounds, CRS.decode("EPSG:3857"));
 
         String bboxStr = wmBounds.getMinimum(0) + ", " + wmBounds.getMinimum(1) + ", "

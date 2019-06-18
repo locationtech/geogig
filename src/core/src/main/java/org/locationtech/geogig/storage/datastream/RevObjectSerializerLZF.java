@@ -18,12 +18,13 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
-import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.ChunkDecoder;
 import com.ning.compress.lzf.LZFDecoder;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 import com.ning.compress.lzf.util.ChunkDecoderFactory;
+
+import lombok.NonNull;
 
 /**
  * Wrapper Factory that deflates/inflates data written to/read from streams using LZF compression.
@@ -38,28 +39,24 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
      */
     private static final ChunkDecoder CHUNK_DECODER = ChunkDecoderFactory.optimalInstance();
 
-    public RevObjectSerializerLZF(final RevObjectSerializer factory) {
-        Preconditions.checkNotNull(factory);
+    public RevObjectSerializerLZF(final @NonNull RevObjectSerializer factory) {
         this.factory = factory;
     }
 
-    @Override
-    public RevObject read(ObjectId id, InputStream rawData) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream rawData) throws IOException {
         // decompress the stream
         LZFInputStream inflatedInputeStream = new LZFInputStream(CHUNK_DECODER, rawData);
         return factory.read(id, inflatedInputeStream);
 
     }
 
-    @Override
-    public RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
             throws IOException {
         byte[] decoded = LZFDecoder.decode(data, offset, length);
         return factory.read(id, decoded, 0, decoded.length);
     }
 
-    @Override
-    public void write(RevObject o, OutputStream out) throws IOException {
+    public @Override void write(RevObject o, OutputStream out) throws IOException {
         // compress the stream
         LZFOutputStream deflatedOutputStream = new LZFOutputStream(out);
         deflatedOutputStream.setFinishBlockOnFlush(true);
@@ -67,8 +64,7 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
         deflatedOutputStream.flush();
     }
 
-    @Override
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         return factory.getDisplayName() + "/LZF";
     }
 }

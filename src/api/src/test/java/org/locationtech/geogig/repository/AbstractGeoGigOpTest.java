@@ -25,8 +25,7 @@ public class AbstractGeoGigOpTest {
     @Test
     public void testCall() {
         AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
-            @Override
-            protected String _call() {
+            protected @Override String _call() {
                 return "myValue";
             }
 
@@ -42,13 +41,11 @@ public class AbstractGeoGigOpTest {
         AtomicBoolean postCalled2 = new AtomicBoolean(false);
         CommandListener listener1 = new CommandListener() {
 
-            @Override
-            public void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(AbstractGeoGigOp<?> command) {
                 preCalled1.set(true);
             }
 
-            @Override
-            public void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals(result, "myValue");
                 postCalled1.set(true);
@@ -56,21 +53,18 @@ public class AbstractGeoGigOpTest {
         };
         CommandListener listener2 = new CommandListener() {
 
-            @Override
-            public void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(AbstractGeoGigOp<?> command) {
                 preCalled2.set(true);
             }
 
-            @Override
-            public void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals("myValue", result);
                 postCalled2.set(true);
             }
         };
         AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
-            @Override
-            protected String _call() {
+            protected @Override String _call() {
                 return "myValue";
             }
         };
@@ -87,13 +81,11 @@ public class AbstractGeoGigOpTest {
         AtomicBoolean postCalled3 = new AtomicBoolean(false);
         CommandListener listener3 = new CommandListener() {
 
-            @Override
-            public void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(AbstractGeoGigOp<?> command) {
                 preCalled3.set(true);
             }
 
-            @Override
-            public void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals(null, result);
                 assertEquals(commandException, exception);
@@ -102,8 +94,7 @@ public class AbstractGeoGigOpTest {
         };
 
         AbstractGeoGigOp<String> testOp2 = new AbstractGeoGigOp<String>() {
-            @Override
-            protected String _call() {
+            protected @Override String _call() {
                 throw commandException;
             }
         };
@@ -122,8 +113,7 @@ public class AbstractGeoGigOpTest {
     @Test
     public void testProgressListener() {
         AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
-            @Override
-            protected String _call() {
+            protected @Override String _call() {
                 return "myValue";
             }
         };
@@ -150,8 +140,7 @@ public class AbstractGeoGigOpTest {
     public void testContext() {
         Context context = mock(Context.class);
         AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
-            @Override
-            protected String _call() {
+            protected @Override String _call() {
                 return "myValue";
             }
         };

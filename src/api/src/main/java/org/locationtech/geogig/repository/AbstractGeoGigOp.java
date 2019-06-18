@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.repository;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,13 +16,14 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.geotools.util.Converters;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
+
+import lombok.NonNull;
 
 /**
  * Provides a base implementation for internal GeoGig operations.
@@ -41,7 +41,7 @@ public abstract class AbstractGeoGigOp<T> {
 
     protected Context context;
 
-    private Map<Serializable, Object> metadata;
+    private Map<String, String> metadata;
 
     /**
      * Interface for a listener that will be notified before and after the op is called.
@@ -87,23 +87,18 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return a content holder for client code data that can be used by decorators/interceptors
      */
-    public Map<Serializable, Object> getClientData() {
+    public Map<String, String> getClientData() {
         if (metadata == null) {
             metadata = new HashMap<>();
         }
         return metadata;
     }
 
-    protected <V> Optional<V> getClientData(Serializable key, Class<V> type) {
+    protected Optional<String> getClientData(@NonNull String key) {
         if (metadata == null) {
             return Optional.empty();
         }
-        V res = null;
-        Object value = metadata.get(key);
-        if (value != null) {
-            res = Converters.convert(value, type);
-        }
-        return Optional.ofNullable(res);
+        return Optional.ofNullable(metadata.get(key));
     }
 
     /**

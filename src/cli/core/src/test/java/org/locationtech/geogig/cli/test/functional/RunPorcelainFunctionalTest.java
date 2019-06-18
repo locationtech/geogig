@@ -23,6 +23,7 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , features = { "src/test/resources/features/porcelain" })
+        , features = { "src/test/resources/features/porcelain" }//
+        , tags = "~@FileSystemReposOnly")
 public class RunPorcelainFunctionalTest {
 }

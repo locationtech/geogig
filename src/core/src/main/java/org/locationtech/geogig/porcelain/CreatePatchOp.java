@@ -46,8 +46,7 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
         return this;
     }
 
-    @Override
-    protected Patch _call() {
+    protected @Override Patch _call() {
         Patch patch = new Patch();
         Map<ObjectId, RevFeatureType> featureTypes = Maps.newHashMap();
         while (diffs.hasNext()) {

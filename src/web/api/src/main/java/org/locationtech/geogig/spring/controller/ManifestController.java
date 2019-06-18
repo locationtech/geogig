@@ -46,7 +46,7 @@ public class ManifestController extends AbstractRepositoryController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManifestController.class);
 
-    @RequestMapping(method = {PUT, POST, DELETE, PATCH, TRACE, OPTIONS})
+    @RequestMapping(method = { PUT, POST, DELETE, PATCH, TRACE, OPTIONS })
     public void catchAll() {
         // if we hit this controller, it's a 405
         supportedMethods(Sets.newHashSet(GET.toString()));
@@ -65,8 +65,8 @@ public class ManifestController extends AbstractRepositoryController {
             // set the current head on the Manifest
             manifest.setCurrentHead(repositoryService.getCurrentHead(provider, repoName));
             // set the branch list on the manifest
-            manifest.setBranchList(repositoryService.getBranchList(provider, repoName,
-                    Boolean.valueOf(remotes)));
+            manifest.setBranchList(
+                    repositoryService.getBranchList(provider, repoName, Boolean.valueOf(remotes)));
             // set the tag list on the manifest
             manifest.setTagList(repositoryService.getTagList(provider, repoName));
             // encode the manifest

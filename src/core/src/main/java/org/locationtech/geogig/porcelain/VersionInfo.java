@@ -153,8 +153,7 @@ public class VersionInfo {
         return this.buildTime;
     }
 
-    @Override
-    public String toString() {
+    public @Override String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Project Version: ").append(getProjectVersion()).append('\n');
         sb.append("Build Time: ").append(getBuildTime()).append('\n');

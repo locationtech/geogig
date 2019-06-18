@@ -21,8 +21,7 @@ public class HintsModule extends AbstractModule {
 
     }
 
-    @Override
-    protected void configure() {
+    protected @Override void configure() {
         bind(Hints.class).toInstance(instance);
     }
 }

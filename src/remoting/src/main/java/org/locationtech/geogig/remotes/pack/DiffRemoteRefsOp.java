@@ -50,8 +50,7 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
 
     private boolean getTags = false;
 
-    @Override
-    protected List<RefDiff> _call() {
+    protected @Override List<RefDiff> _call() {
         checkState(remote != null, "no remote provided");
         // list of refs/remotes/<remote>/<refname> or refs/heads according to formatAsRemoteRefs
         Map<String, Ref> remotes;
@@ -101,8 +100,7 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
 
             // (name) -> Ref.localName(name).equals(mappedBranchName)
             Predicate<String> fn = new Predicate<String>() {
-                @Override
-                public boolean apply(String name) {
+                public @Override boolean apply(String name) {
                     return Ref.localName(name).equals(mappedBranchName);
                 }
             };

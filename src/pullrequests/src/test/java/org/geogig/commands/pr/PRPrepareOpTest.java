@@ -21,6 +21,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -31,13 +32,12 @@ import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Iterators;
 
 public class PRPrepareOpTest {
 
-    public @Rule TestSupport testSupport = new TestSupport();
+    public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
     /**
      * <pre>
@@ -105,19 +105,19 @@ public class PRPrepareOpTest {
         return prtx;
     }
 
-    private void createConflicts(SimpleFeature... features) {
-        for (SimpleFeature base : features) {
-            SimpleFeature toOrigin = TestData.clone(base);
+    private void createConflicts(Feature... features) {
+        for (Feature base : features) {
+            Feature toOrigin = TestData.clone(base);
             toOrigin.setAttribute("sp", "modified on origin");
 
             origin.checkout("master").insert(toOrigin).add()
-                    .commit(String.format("change %s on origin", base.getID()));
+                    .commit(String.format("change %s on origin", base.getId()));
 
-            SimpleFeature toClone = TestData.clone(base);
+            Feature toClone = TestData.clone(base);
             toClone.setAttribute("sp", "modified on fork");
 
             clone.checkout("issuerBranch").insert(toClone).add()
-                    .commit(String.format("change %s on clone", base.getID()));
+                    .commit(String.format("change %s on clone", base.getId()));
         }
     }
 
@@ -186,9 +186,9 @@ public class PRPrepareOpTest {
         assertEquals(request.getTargetBranch(), origin.getRef("HEAD").peel().localName());
 
         //@formatter:off
-        SimpleFeature c1 = TestData.clone(TestData.point1); c1.setAttribute("sp", "manually set");
-        SimpleFeature c2 = TestData.clone(TestData.line1);  c2.setAttribute("sp", "manually set");
-        SimpleFeature c3 = TestData.clone(TestData.poly1);  c3.setAttribute("sp", "manually set");
+        Feature c1 = TestData.clone(TestData.point1); c1.setAttribute("sp", "manually set");
+        Feature c2 = TestData.clone(TestData.line1);  c2.setAttribute("sp", "manually set");
+        Feature c3 = TestData.clone(TestData.poly1);  c3.setAttribute("sp", "manually set");
         //@formatter:on
 
         Context context = clone.checkout("issuerBranch").getContext();
@@ -251,9 +251,9 @@ public class PRPrepareOpTest {
         // got the conflicts from the first test merge run, now get the target and issuer branches
         // updated so the PR runs behind on both ends
 
-        SimpleFeature r1 = TestData.clone(TestData.point1);
-        SimpleFeature r2 = TestData.clone(TestData.line1);
-        SimpleFeature r3 = TestData.clone(TestData.poly1);
+        Feature r1 = TestData.clone(TestData.point1);
+        Feature r2 = TestData.clone(TestData.line1);
+        Feature r3 = TestData.clone(TestData.poly1);
         r1.setAttribute("sp", "same value at both ends cancel out the conflict");
         r2.setAttribute("sp", "same value at both ends cancel out the conflict");
         r3.setAttribute("sp", "same value at both ends cancel out the conflict");
@@ -288,9 +288,9 @@ public class PRPrepareOpTest {
         assertEquals(request.getTargetBranch(), origin.getRef("HEAD").peel().localName());
 
         //@formatter:off
-        SimpleFeature c1 = TestData.clone(TestData.point1); c1.setAttribute("sp", "manually set");
-        SimpleFeature c2 = TestData.clone(TestData.line1);  c2.setAttribute("sp", "manually set");
-        SimpleFeature c3 = TestData.clone(TestData.poly1);  c3.setAttribute("sp", "manually set");
+        Feature c1 = TestData.clone(TestData.point1); c1.setAttribute("sp", "manually set");
+        Feature c2 = TestData.clone(TestData.line1);  c2.setAttribute("sp", "manually set");
+        Feature c3 = TestData.clone(TestData.poly1);  c3.setAttribute("sp", "manually set");
         //@formatter:on
 
         Context context = clone.checkout("issuerBranch").getContext();

@@ -10,10 +10,7 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.FORMAT_NAME;
-import static org.locationtech.geogig.storage.postgresql.PGStorageProvider.VERSION;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
 
@@ -32,10 +29,8 @@ import javax.sql.DataSource;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.storage.ConfigDatabase;
+import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.StorageType;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
@@ -43,15 +38,14 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.inject.Inject;
 
-public class PGRefDatabase implements RefDatabase {
+import lombok.NonNull;
+
+public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGRefDatabase.class);
 
     private Environment config;
-
-    private ConfigDatabase configDB;
 
     private DataSource dataSource;
 
@@ -59,42 +53,38 @@ public class PGRefDatabase implements RefDatabase {
 
     private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
 
-    @Inject
-    public PGRefDatabase(ConfigDatabase configDB, Hints hints) throws URISyntaxException {
-        this(configDB, Environment.get(hints));
-    }
+    public PGRefDatabase(Hints hints) throws URISyntaxException {
+        super(Hints.isRepoReadOnly(hints));
+        Environment config = Environment.get(hints);
 
-    public PGRefDatabase(ConfigDatabase configDB, Environment config) {
-        Preconditions.checkNotNull(configDB);
-        Preconditions.checkNotNull(config);
         Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
                 config.getRepositoryName());
         Preconditions.checkState(config.isRepositorySet());
-        this.configDB = configDB;
+
         this.config = config;
         this.refsTableName = config.getTables().refs();
     }
 
-    @Override
-    public void configure() throws RepositoryConnectionException {
-        StorageType.OBJECT.configure(configDB, FORMAT_NAME, VERSION);
-    }
+    // public static PGRefDatabase create(ConfigDatabase configDB, Environment config) {
+    // Preconditions.checkNotNull(configDB);
+    // Preconditions.checkNotNull(config);
+    // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
+    // config.getRepositoryName());
+    // Preconditions.checkState(config.isRepositorySet());
+    // this.configDB = configDB;
+    // this.config = config;
+    // this.refsTableName = config.getTables().refs();
+    // }
 
-    @Override
-    public boolean checkConfig() throws RepositoryConnectionException {
-        return StorageType.OBJECT.verify(configDB, FORMAT_NAME, VERSION);
-    }
-
-    @Override
-    public synchronized void create() {
-        if (dataSource != null) {
-            return;
+    public @Override synchronized void open() {
+        if (!isOpen()) {
+            dataSource = PGStorage.newDataSource(config);
+            super.open();
         }
-        dataSource = PGStorage.newDataSource(config);
     }
 
-    @Override
-    public synchronized void close() {
+    public @Override synchronized void close() {
+        super.close();
         if (dataSource != null) {
             try {
                 PGStorage.closeDataSource(dataSource);
@@ -104,8 +94,7 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public void lock() throws TimeoutException {
+    public @Override void lock() throws TimeoutException {
         lockWithTimeout(30);
     }
 
@@ -141,8 +130,7 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public void unlock() {
+    public @Override void unlock() {
         final int repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c != null) {
@@ -166,10 +154,7 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public String getRef(String name) {
-        checkNotNull(name);
-
+    public @Override String getRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -182,9 +167,7 @@ public class PGRefDatabase implements RefDatabase {
         return value;
     }
 
-    @Override
-    public String getSymRef(String name) {
-        checkNotNull(name);
+    public @Override String getSymRef(@NonNull String name) {
         String value = getInternal(name);
         if (value == null) {
             return null;
@@ -231,15 +214,11 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public void putRef(String name, String value) {
+    public @Override void putRef(String name, String value) {
         putInternal(name, value);
     }
 
-    @Override
-    public void putSymRef(String name, String value) {
-        checkNotNull(name);
-        checkNotNull(value);
+    public @Override void putSymRef(@NonNull String name, @NonNull String value) {
         checkArgument(!name.equals(value), "Trying to store cyclic symbolic ref: %s", name);
         checkArgument(!name.startsWith("ref: "),
                 "Wrong value, should not contain 'ref: ': %s -> '%s'", name, value);
@@ -289,8 +268,7 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public String remove(final String refName) {
+    public @Override String remove(final String refName) {
         final int repo = config.getRepositoryId();
         final String path = Ref.parentPath(refName) + "/";
         final String localName = Ref.simpleName(refName);
@@ -330,13 +308,11 @@ public class PGRefDatabase implements RefDatabase {
         }
     }
 
-    @Override
-    public Map<String, String> getAll() {
+    public @Override Map<String, String> getAll() {
         return getAll("/", Ref.HEADS_PREFIX, Ref.TAGS_PREFIX, Ref.REMOTES_PREFIX);
     }
 
-    @Override
-    public Map<String, String> getAll(final String prefix) {
+    public @Override Map<String, String> getAll(final String prefix) {
         Preconditions.checkNotNull(prefix, "namespace can't be null");
         return getAll(new String[] { prefix });
     }
@@ -381,8 +357,7 @@ public class PGRefDatabase implements RefDatabase {
         return all;
     }
 
-    @Override
-    public Map<String, String> removeAll(final String namespace) {
+    public @Override Map<String, String> removeAll(final String namespace) {
         Preconditions.checkNotNull(namespace, "provided namespace is null");
         try (Connection cx = PGStorage.newConnection(dataSource)) {
             cx.setAutoCommit(false);

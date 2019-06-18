@@ -40,8 +40,17 @@
       </dependency>
       <dependency>
         <groupId>org.locationtech.geogig</groupId>
-        <artifactId>geogig-datastore</artifactId>
+        <artifactId>geogig-gt-datastore</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.locationtech.geogig</groupId>
+        <artifactId>geogig-gt-adapter</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-cql</artifactId>
       </dependency>
       <dependency>
         <groupId>com.github.jsqlparser</groupId>
@@ -89,6 +98,11 @@
         <artifactId>geogig-core</artifactId>
         <version>${project.version}</version>
         <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-epsg-hsql</artifactId>
         <scope>test</scope>
       </dependency>
   </dependencies>

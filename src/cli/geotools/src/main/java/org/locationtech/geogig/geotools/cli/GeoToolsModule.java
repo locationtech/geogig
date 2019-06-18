@@ -32,8 +32,7 @@ public class GeoToolsModule implements CLIModule {
     /**
      * @see CLIModule#configure(com.google.inject.Binder)
      */
-    @Override
-    public void configure(Binder binder) {
+    public @Override void configure(Binder binder) {
         binder.bind(PGCommandProxy.class);
         binder.bind(ShpCommandProxy.class);
         binder.bind(GeoJsonCommandProxy.class);

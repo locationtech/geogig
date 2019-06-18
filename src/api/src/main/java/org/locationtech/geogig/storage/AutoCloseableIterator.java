@@ -30,20 +30,17 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
     /**
      * Closes the iterator, performing any last-minute work.
      */
-    @Override
-    public void close();
+    public @Override void close();
 
     /**
      * @return true if the iterator has another element
      */
-    @Override
-    public boolean hasNext();
+    public @Override boolean hasNext();
 
     /**
      * @return the next element in the iterator
      */
-    @Override
-    public T next();
+    public @Override T next();
 
     /**
      * @return an empty iterator that does nothing on close.
@@ -51,18 +48,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
     public static <T> AutoCloseableIterator<T> emptyIterator() {
         return new AutoCloseableIterator<T>() {
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 // Do Nothing
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return false;
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 return null;
             }
 
@@ -82,18 +76,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         }
         return new AutoCloseableIterator<T>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return source.hasNext();
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 return source.next();
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 // Do Nothing
             }
 
@@ -105,18 +96,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
         return new AutoCloseableIterator<T>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return source.hasNext();
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 return source.next();
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 closeAction.accept(source);
             }
 
@@ -134,19 +122,16 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
             AutoCloseableIterator<? extends T> source, Function<T, C> transformFunction) {
         return new AutoCloseableIterator<C>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return source.hasNext();
             }
 
-            @Override
-            public C next() {
+            public @Override C next() {
                 T nextObj = source.next();
                 return transformFunction.apply(nextObj);
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 source.close();
             }
 
@@ -166,16 +151,14 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
             T next = null;
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 if (next == null) {
                     next = computeNext();
                 }
                 return next != null;
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 if (next == null && !hasNext()) {
                     throw new NoSuchElementException();
                 }
@@ -184,8 +167,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
                 return returnValue;
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 source.close();
             }
 
@@ -206,18 +188,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
         return new AutoCloseableIterator<T>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return concatenated.hasNext();
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 return concatenated.next();
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 its.close();
             }
 
@@ -235,21 +214,18 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
             AutoCloseableIterator<T> second) {
         return new AutoCloseableIterator<T>() {
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return first.hasNext() || second.hasNext();
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 if (first.hasNext()) {
                     return first.next();
                 }
                 return second.next();
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 first.close();
                 second.close();
             }
@@ -263,13 +239,11 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
         return new AutoCloseableIterator<T>() {
             private int count;
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return count < limit && iterator.hasNext();
             }
 
-            @Override
-            public T next() {
+            public @Override T next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
                 }
@@ -277,8 +251,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
                 return iterator.next();
             }
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 iterator.close();
             }
         };
@@ -289,18 +262,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
 
         return new AutoCloseableIterator<List<T>>() {
 
-            @Override
-            public void close() {
+            public @Override void close() {
                 iterator.close();
             }
 
-            @Override
-            public boolean hasNext() {
+            public @Override boolean hasNext() {
                 return iterator.hasNext();
             }
 
-            @Override
-            public List<T> next() {
+            public @Override List<T> next() {
                 if (!hasNext()) {
                     throw new NoSuchElementException();
                 }

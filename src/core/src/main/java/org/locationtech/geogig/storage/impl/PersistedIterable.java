@@ -10,7 +10,6 @@
 package org.locationtech.geogig.storage.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -31,7 +30,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.Varint;
 
@@ -43,6 +41,8 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
+
+import lombok.NonNull;
 
 public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
@@ -72,10 +72,8 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         this(tmpDir, serializer, DEFAULT_BUFFER_SIZE, false);
     }
 
-    public PersistedIterable(final @Nullable Path tmpDir, Serializer<T> serializer,
+    public PersistedIterable(final @Nullable Path tmpDir, @NonNull Serializer<T> serializer,
             final int bufferSize, final boolean compress) {
-        checkNotNull(serializer);
-        checkNotNull(bufferSize);
         checkArgument(bufferSize > 0, "bufferSize shall be > 0");
         this.serializer = serializer;
         this.tmpDir = tmpDir;
@@ -84,10 +82,8 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         this.compress = compress;
     }
 
-    public PersistedIterable(final Path file, Serializer<T> serializer, boolean deleteOnClose,
-            boolean flushOnClose, boolean compress) {
-        checkNotNull(file);
-        checkNotNull(serializer);
+    public PersistedIterable(final @NonNull Path file, @NonNull Serializer<T> serializer,
+            boolean deleteOnClose, boolean flushOnClose, boolean compress) {
         this.tmpDir = null;
         this.serializer = serializer;
         this.serializedFile = file;
@@ -112,8 +108,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return new PersistedIterable<>(file, serializer, deleteOnClose, flushOnClose, compress);
     }
 
-    @Override
-    public void close() {
+    public @Override void close() {
         lock.writeLock().lock();
         try {
             if (flushOnClose) {
@@ -138,8 +133,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return this.size;
     }
 
-    public void addAll(Iterable<T> collection) {
-        checkNotNull(collection);
+    public void addAll(@NonNull Iterable<T> collection) {
         lock.writeLock().lock();
         try {
             for (T t : collection) {
@@ -160,7 +154,6 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     }
 
     private void addInternal(@NonNull T value) {
-        checkNotNull(value);
         this.buffer.add(value);
         this.size++;
         if (buffer.size() == bufferSize) {
@@ -221,8 +214,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         return stream;
     }
 
-    @Override
-    public Iterator<T> iterator() {
+    public @Override Iterator<T> iterator() {
 
         Iterator<T> iterator = Collections.emptyIterator();
 
@@ -272,8 +264,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             this.in = in;
         }
 
-        @Override
-        protected T computeNext() {
+        protected @Override T computeNext() {
             try {
                 T read = serializer.read(in);
                 return read;
@@ -311,8 +302,8 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
         private byte[] buffer = new byte[4096];
 
-        @Override
-        public void write(DataOutputStream out, @Nullable String value) throws IOException {
+        public @Override void write(DataOutputStream out, @Nullable String value)
+                throws IOException {
             if (value == null) {
                 Varint.writeSignedVarInt(-1, out);
                 return;
@@ -324,8 +315,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
         }
 
         @Nullable
-        @Override
-        public String read(DataInputStream in) throws IOException {
+        public @Override String read(DataInputStream in) throws IOException {
             final int length = Varint.readSignedVarInt(in);
             if (-1 == length) {
                 return null;

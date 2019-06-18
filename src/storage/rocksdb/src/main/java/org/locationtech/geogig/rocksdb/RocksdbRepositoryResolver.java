@@ -58,7 +58,7 @@ public class RocksdbRepositoryResolver extends FileRepositoryResolver {
     }
 
     public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
-        File refsdir = new File(resolveDotGeogigDirectory(repoURI), "refs");
+        File refsdir = resolveDotGeogigDirectory(repoURI);
         boolean readOnly = Hints.isRepoReadOnly(hints);
         return new FileRefDatabase(refsdir, readOnly);
     }

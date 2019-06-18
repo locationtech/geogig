@@ -24,12 +24,13 @@ before_script:
   - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
   - echo 'password = ' >> ~/.geogig-pg-tests.properties
 script:
-  - mvn -B test -Dfmt.skip=true -Ppostgres,experimental,online
+  # - mvn -B test -Dfmt.skip=true -Ppostgres,experimental,online
+  - mvn -B test -Dfmt.skip=true -Pexperimental
 services: postgresql
 addons:
   postgresql: "10"
   apt:
     packages:
-      - postgresql-10-postgis-2.5
+      - postgresql-10-postgis-2.4
 notifications:
   email: false

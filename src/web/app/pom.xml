@@ -30,14 +30,6 @@
           </archive>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
-        <configuration>
-          <reload>automatic</reload>
-          <scanIntervalSeconds>5</scanIntervalSeconds>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
   <dependencies>

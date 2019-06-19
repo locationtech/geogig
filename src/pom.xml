@@ -51,21 +51,19 @@
     <springweb.version>4.3.7.RELEASE</springweb.version>
     <servlet-api.version>3.1.0</servlet-api.version>
     <jetty.version>9.4.1.v20170120</jetty.version>
-    <appassembler.plugin.version>1.2.2</appassembler.plugin.version>
-    <war.plugin.version>2.4</war.plugin.version>
-    <jetty.plugin.version>7.1.6.v20100715</jetty.plugin.version>
-    <dependency.plugin.version>2.2</dependency.plugin.version>
-    <surefire.plugin.version>2.17</surefire.plugin.version>
-    <assembly.plugin.version>2.2-beta-5</assembly.plugin.version>
-    <maven-jar-plugin-version>3.0.2</maven-jar-plugin-version>
-    <git-commit-id-plugin-version>2.2.2</git-commit-id-plugin-version>
-    <maven-compiler-plugin-version>3.7.0</maven-compiler-plugin-version>
-    <maven-resources-plugin-version>3.0.1</maven-resources-plugin-version>
-    <maven-source-plugin-version>3.0.1</maven-source-plugin-version>
-    <maven-surefire-report-plugin-version>2.20.1</maven-surefire-report-plugin-version>
-    <maven-javadoc-plugin-vesion>3.0.0</maven-javadoc-plugin-vesion>
-    <formatter-maven-plugin.version>2.8.1</formatter-maven-plugin.version>
-    <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
+    <appassembler.plugin.version>2.1.0</appassembler.plugin.version>
+    <dependency.plugin.version>3.1.1</dependency.plugin.version>
+    <surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
+    <assembly.plugin.version>3.1.1</assembly.plugin.version>
+    <maven-jar-plugin-version>3.1.2</maven-jar-plugin-version>
+    <git-commit-id-plugin-version>3.0.0</git-commit-id-plugin-version>
+    <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
+    <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
+    <maven-source-plugin-version>3.1.0</maven-source-plugin-version>
+    <maven-surefire-report-plugin-version>3.0.0-M3</maven-surefire-report-plugin-version>
+    <maven-javadoc-plugin-vesion>3.1.0</maven-javadoc-plugin-vesion>
+    <formatter-maven-plugin.version>2.9.0</formatter-maven-plugin.version>
+    <maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
   </properties>
 
 
@@ -457,19 +455,9 @@
           <version>${maven-javadoc-plugin-vesion}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-war-plugin</artifactId>
-          <version>${war.plugin.version}</version>
-        </plugin>
-        <plugin>
           <groupId>pl.project13.maven</groupId>
           <artifactId>git-commit-id-plugin</artifactId>
           <version>${git-commit-id-plugin-version}</version>
-        </plugin>
-        <plugin>
-          <groupId>org.mortbay.jetty</groupId>
-          <artifactId>jetty-maven-plugin</artifactId>
-          <version>${jetty.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -784,7 +772,7 @@
           <plugin>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok-maven-plugin</artifactId>
-            <version>1.18.4.0</version>
+            <version>1.18.6.0</version>
             <executions>
               <execution>
                 <!-- we don't want the delombok'ed files to be compiled, so attach to the compile instead of the generate-sources 
@@ -822,7 +810,7 @@
           </plugin>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.7</version>
+            <version>1.8</version>
             <executions>
               <execution>
                 <id>echo</id>
@@ -905,7 +893,7 @@
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.8.2</version>
+            <version>0.8.4</version>
             <configuration>
               <excludes>
                 <exclude>**/*Exception.class</exclude>

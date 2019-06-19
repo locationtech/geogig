@@ -45,7 +45,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZF;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;

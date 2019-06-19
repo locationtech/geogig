@@ -106,7 +106,16 @@ public abstract class DAGNode {
         }
 
         protected @Override Node resolve(RevTree tree) {
-            return tree.getFeature(this.nodeIndex);
+            try {
+                return tree.getFeature(this.nodeIndex);
+            } catch (IndexOutOfBoundsException e) {
+                e.printStackTrace();
+                try {
+                    return tree.getFeature(this.nodeIndex);
+                } catch (IndexOutOfBoundsException e2) {
+                    throw e2;
+                }
+            }
         }
     }
 

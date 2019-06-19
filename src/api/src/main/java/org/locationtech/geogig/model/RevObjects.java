@@ -421,6 +421,19 @@ public @UtilityClass class RevObjects {
         return sb.toString();
     }
 
+    public static String toShortString(@NonNull RevTree tree) {
+        String stree = String.format(
+                "%s(%s)[size:%,d, tree nodes:%,d, feature nodes:%,d, subtrees:%,d, buckets: %,d]",
+                tree.getClass().getSimpleName(), //
+                toShortString(tree.getId()), //
+                tree.size(), //
+                tree.treesSize(), //
+                tree.featuresSize(), //
+                tree.numTrees(), //
+                tree.bucketsSize());
+        return stree;
+    }
+
     public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {
         Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
         return float32Bounds.isNull() ? null : float32Bounds;

@@ -79,13 +79,12 @@ public class TreeCache {
         }
     }
 
-    public Integer getTreeId(RevTree tree) {
-        Integer cacheId = oidMapping.inverse().get(tree.getId());
-        if (cacheId == null) {
-            cacheId = Integer.valueOf(idSequence.incrementAndGet());
-            oidMapping.put(cacheId, tree.getId());
-            cache.put(cacheId, tree);
-        }
+    public Integer getTreeId(final RevTree tree) {
+        Integer cacheId = oidMapping.inverse().computeIfAbsent(tree.getId(), treeId -> {
+            Integer newId = Integer.valueOf(idSequence.getAndIncrement());
+            cache.put(newId, tree);
+            return newId;
+        });
         return cacheId;
     }
 

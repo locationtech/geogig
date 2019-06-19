@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import static org.locationtech.geogig.flatbuffers.FlatBuffers.newBuilder;
+
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -26,19 +27,12 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.FlatBufferBuilder.ByteBufferFactory;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
 public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
-
-    private static final ByteBufferFactory BYTE_BUFFER_FACTORY = capacity -> ByteBuffer
-            .allocate(capacity).order(ByteOrder.LITTLE_ENDIAN);
-
-    static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
-            .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
 
     private final FlatBuffers flatBuffers = new FlatBuffers();
 
@@ -65,7 +59,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
         if (o instanceof FBRevObject) {
             dataBuffer = ((FBRevObject<?>) o).getTable().getByteBuffer().duplicate();
         } else {
-            FlatBufferBuilder fbb = WRITE_BUFFERS.get();
+            FlatBufferBuilder fbb = newBuilder();
             fbb.clear();
             flatBuffers.encode(o, fbb);
             dataBuffer = fbb.dataBuffer();

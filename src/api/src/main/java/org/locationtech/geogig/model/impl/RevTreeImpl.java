@@ -58,6 +58,9 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         }
 
         public @Override Node getTree(int index) {
+            if (trees == null) {
+                throw new IndexOutOfBoundsException("index: " + index + ", size: 0");
+            }
             return trees[index];
         }
 
@@ -74,6 +77,9 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
         }
 
         public @Override Node getFeature(int index) {
+            if (features == null) {
+                throw new IndexOutOfBoundsException("index: " + index + ", size: 0");
+            }
             return features[index];
         }
 

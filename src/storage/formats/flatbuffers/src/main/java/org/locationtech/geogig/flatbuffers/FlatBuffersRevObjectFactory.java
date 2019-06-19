@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import static org.locationtech.geogig.flatbuffers.FlatBuffers.newBuilder;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,12 +48,6 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
     private static RevObjectFactory DEFAULT_IMPL = new RevObjectFactoryImpl();
 
     private FlatBuffers encoder = new FlatBuffers();
-
-    private FlatBufferBuilder newBuilder() {
-        FlatBufferBuilder fbb = FlatBuffersRevObjectSerializer.WRITE_BUFFERS.get();
-        fbb.clear();
-        return fbb;
-    }
 
     private ByteBuffer copy(ByteBuffer dataBuffer) {
         ByteBuffer bb = ByteBuffer.allocate(dataBuffer.remaining());

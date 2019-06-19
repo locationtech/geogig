@@ -186,6 +186,9 @@ public interface RevTree extends RevObject {
         return trees().size();
     }
 
+    /**
+     * @throws IndexOutOfBoundsException
+     */
     public default Node getTree(int index) {
         return trees().get(index);
     }
@@ -229,6 +232,9 @@ public interface RevTree extends RevObject {
         return features().size();
     }
 
+    /**
+     * @throws IndexOutOfBoundsException
+     */
     public default Node getFeature(int index) {
         return features().get(index);
     }

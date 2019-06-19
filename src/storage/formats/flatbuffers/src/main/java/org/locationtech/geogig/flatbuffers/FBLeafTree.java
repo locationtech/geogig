@@ -75,6 +75,30 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
         return builder.build();
     }
 
+    public @Override Node getFeature(int index) {
+        final int treesSize = treesSize();
+        final LeafTree table = getTable();
+        final int numNodes = table.nodesIdsLength();
+        final int nodeIndex = index + treesSize;
+        if (nodeIndex >= numNodes) {
+            throw new IndexOutOfBoundsException(String.format(
+                    "Num feature nodes: %d, requested index: %d", numNodes - treesSize, index));
+        }
+        FBNode featureNode = FBNode.featureNode(table, nodeIndex);
+        return featureNode;
+    }
+
+    public @Override Node getTree(int index) {
+        final int treesSize = treesSize();
+        if (index >= treesSize) {
+            throw new IndexOutOfBoundsException(
+                    String.format("Num tree nodes: %d, requested index: %d", treesSize, index));
+        }
+        final LeafTree table = getTable();
+        FBNode treeNode = FBNode.treeNode(table, index);
+        return treeNode;
+    }
+
     public @Override int bucketsSize() {
         return 0;
     }
@@ -92,9 +116,10 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
 
     public @Override void forEachFeature(Consumer<Node> consumer) {
         final int treesSize = treesSize();
-        final int numNodes = getTable().nodesIdsLength();
+        final LeafTree table = getTable();
+        final int numNodes = table.nodesIdsLength();
         for (int nodeIndex = treesSize; nodeIndex < numNodes; nodeIndex++) {
-            consumer.accept(FBNode.featureNode(getTable(), nodeIndex));
+            consumer.accept(FBNode.featureNode(table, nodeIndex));
         }
     }
 

@@ -252,7 +252,7 @@
             <artifactId>error_prone_annotations</artifactId>
           </exclusion>
           <exclusion>
-          <groupId>com.google.j2objc</groupId>
+            <groupId>com.google.j2objc</groupId>
             <artifactId>j2objc-annotations</artifactId>
           </exclusion>
           <exclusion>
@@ -514,6 +514,26 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M2</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.6.1</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
@@ -631,10 +651,10 @@
           <skipJavaFormatting>false</skipJavaFormatting>
         </configuration>
       </plugin>
-	<plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-        </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
 
     </plugins>
   </build>
@@ -657,7 +677,7 @@
         <module>experimental</module>
       </modules>
     </profile>
-   <profile>
+    <profile>
       <id>fortify</id>
       <activation>
         <activeByDefault>false</activeByDefault>

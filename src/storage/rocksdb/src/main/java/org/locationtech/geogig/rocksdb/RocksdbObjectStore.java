@@ -98,7 +98,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
 
-        RevObjectSerializer defaultSerializer = new RevObjectSerializerProxy();
+        RocksdbSerializationProxy defaultSerializer = new RocksdbSerializationProxy();
         RevObjectSerializer serializer = defaultSerializer;
         final Optional<String> serializerValue = dbhandle.getMetadata("serializer");
         if (serializerValue.isPresent()) {

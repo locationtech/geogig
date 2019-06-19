@@ -1,6 +1,6 @@
-<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-    <id>cli-assembly</id>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>cli-assembly-directory</id>
     
     <includeBaseDirectory>false</includeBaseDirectory>
     
@@ -40,10 +40,6 @@
         <file>
             <source>../../../NOTICE.txt</source>
         </file>
-        <file>
-            <source>target/geogig-build/libexec/maven-metadata-appassembler.xml</source>
-            <outputDirectory>misc</outputDirectory>
-        </file>
     </files>
     
     <fileSets>
@@ -52,13 +48,6 @@
             <outputDirectory>/libexec</outputDirectory>
             <includes>
                 <include>*.jar</include>
-            </includes>
-        </fileSet>
-        <fileSet>
-            <directory>../../doc/manpages/build/man1</directory>
-            <outputDirectory>/man</outputDirectory>
-            <includes>
-                <include>*</include>
             </includes>
         </fileSet>
     </fileSets>

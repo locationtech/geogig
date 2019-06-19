@@ -15,6 +15,6 @@ import org.locationtech.geogig.storage.cache.SharedCacheTest;
 public class CaffeineSharedCacheTest extends SharedCacheTest {
 
     protected @Override SharedCache createCache(int l1Capacity, long maxCacheSizeBytes) {
-        return new CaffeineSharedCache(l1Capacity, maxCacheSizeBytes);
+        return new CaffeineSharedCache(maxCacheSizeBytes);
     }
 }

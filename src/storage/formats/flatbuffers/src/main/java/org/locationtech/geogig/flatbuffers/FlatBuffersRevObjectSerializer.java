@@ -44,6 +44,8 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
 
     private @Getter @Setter boolean lengthPrefixed;
 
+    private final @Getter String displayName = "Flat Buffers";
+
     public FlatBuffersRevObjectSerializer() {
         this(false);
     }
@@ -54,10 +56,6 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
 
     public @Override boolean supportsStreaming() {
         return isLengthPrefixed();
-    }
-
-    public @Override String getDisplayName() {
-        return "Flat Buffers";
     }
 
     public @Override void write(@NonNull RevObject o, @NonNull OutputStream out)
@@ -133,7 +131,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
                 } else if (dataBuffer.position() == 0) {
                     return Arrays.copyOf(array, dataBuffer.remaining());
                 }
-            }else {
+            } else {
                 byte[] array = new byte[dataBuffer.remaining()];
                 dataBuffer.duplicate().get(array);
                 return array;

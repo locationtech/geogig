@@ -14,8 +14,6 @@ import org.locationtech.geogig.storage.cache.SharedCacheBuilder;
 
 public class CaffeineCacheBuilder implements SharedCacheBuilder {
 
-    private static final int DEFAULT_L1_CAPACITY = 10_000;
-
     private long maxSizeBytes;
 
     public @Override int getPriority() {
@@ -27,7 +25,7 @@ public class CaffeineCacheBuilder implements SharedCacheBuilder {
     }
 
     public @Override SharedCache build() {
-        return new CaffeineSharedCache(DEFAULT_L1_CAPACITY, maxSizeBytes);
+        return new CaffeineSharedCache(maxSizeBytes);
     }
 
 }

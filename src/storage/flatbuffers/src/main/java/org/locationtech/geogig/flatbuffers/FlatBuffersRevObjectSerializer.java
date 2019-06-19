@@ -9,12 +9,14 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -33,7 +35,7 @@ import lombok.Setter;
 public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
 
     private static final ByteBufferFactory BYTE_BUFFER_FACTORY = capacity -> ByteBuffer
-            .allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN);
+            .allocate(capacity).order(ByteOrder.LITTLE_ENDIAN);
 
     static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
             .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
@@ -119,5 +121,30 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
             Preconditions.checkArgument(size == length - Integer.BYTES);
         }
         return flatBuffers.decode(id, data, offset + padding, length - padding);
+    }
+
+    public byte[] encode(@NonNull RevObject obj) {
+        if (obj instanceof FBRevObject) {
+            ByteBuffer dataBuffer = ((FBRevObject<?>) obj).getTable().getByteBuffer();
+            if (dataBuffer.hasArray()) {
+                byte[] array = dataBuffer.array();
+                if (array.length == dataBuffer.remaining()) {
+                    return array;
+                } else if (dataBuffer.position() == 0) {
+                    return Arrays.copyOf(array, dataBuffer.remaining());
+                }
+            }else {
+                byte[] array = new byte[dataBuffer.remaining()];
+                dataBuffer.duplicate().get(array);
+                return array;
+            }
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            write(obj, out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return out.toByteArray();
     }
 }

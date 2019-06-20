@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream;
+package org.locationtech.geogig.storage.format.lz4;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

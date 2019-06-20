@@ -7,7 +7,7 @@
  * Contributors:
  * Erik Merkle (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream;
+package org.locationtech.geogig.storage.format.lzf;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -15,8 +15,8 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2_1;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2_2;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZF;
 import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
+import org.locationtech.geogig.storage.format.lzf.RevObjectSerializerLZF;
 
 /**
  * 

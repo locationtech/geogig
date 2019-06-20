@@ -44,17 +44,6 @@ public class RevObjectSerializerProxy implements RevObjectSerializer {
      * The serialized object is added a header that's one unsigned byte with the index of the
      * corresponding factory in this array
      */
-    private static final RevObjectSerializer[] DEFAULT_SUPPORTED_FORMATS = { //
-            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV1.INSTANCE), //
-            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2.INSTANCE), //
-            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_1.INSTANCE), //
-            new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_2.INSTANCE)//
-    };
-
-    /**
-     * The serialized object is added a header that's one unsigned byte with the index of the
-     * corresponding factory in this array
-     */
     private final RevObjectSerializer[] supportedFormats;
 
     private final int maxFormatCode;
@@ -63,10 +52,6 @@ public class RevObjectSerializerProxy implements RevObjectSerializer {
      * The serialization factory used for writing is the highest supported version one
      */
     private final RevObjectSerializer writer;
-
-    public RevObjectSerializerProxy() {
-        this(DEFAULT_SUPPORTED_FORMATS);
-    }
 
     public RevObjectSerializerProxy(@NonNull RevObjectSerializer... supportedFormats) {
         this.supportedFormats = supportedFormats;

@@ -15,8 +15,8 @@ import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2_1;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2_2;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZF;
 import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
+import org.locationtech.geogig.storage.format.lzf.RevObjectSerializerLZF;
 
 /**
  * @since 2.0
@@ -33,6 +33,8 @@ class RocksdbSerializationProxy extends RevObjectSerializerProxy {
             // The above formats oughta stay like that for backwards compatibility
             , new FlatBuffersRevObjectSerializer()//
     };
+
+    static final RocksdbSerializationProxy INSTANCE = new RocksdbSerializationProxy();
 
     public RocksdbSerializationProxy() {
         super(SUPPORTED_FORMATS);

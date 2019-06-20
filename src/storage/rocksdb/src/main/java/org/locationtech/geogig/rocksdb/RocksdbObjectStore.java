@@ -45,7 +45,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
 import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZF;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -98,7 +97,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
 
-        RevObjectSerializer defaultSerializer = new RevObjectSerializerProxy();
+        RocksdbSerializationProxy defaultSerializer = new RocksdbSerializationProxy();
         RevObjectSerializer serializer = defaultSerializer;
         final Optional<String> serializerValue = dbhandle.getMetadata("serializer");
         if (serializerValue.isPresent()) {

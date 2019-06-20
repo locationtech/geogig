@@ -21,8 +21,6 @@ import org.locationtech.geogig.model.RevTree;
 
 public interface DAGStorageProvider {
 
-    public TreeCache getTreeCache();
-
     public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException;
 
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);

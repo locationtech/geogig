@@ -10,8 +10,11 @@
 package org.locationtech.geogig.model;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +52,8 @@ import org.mockito.Mockito;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
+
+import lombok.NonNull;
 
 /**
  * Abstract test suite to assess the conformance of {@link RevObjectFactory} implementations to the
@@ -104,7 +109,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createCommitNoParents() throws IOException {
-        List<ObjectId> parents = Collections.emptyList();
+        List<ObjectId> parents = emptyList();
         String message = "sample commit message";
         testCommit(id1, id2, parents, person1, person2, message);
     }
@@ -130,13 +135,13 @@ public abstract class RevObjectFactoryConformanceTest {
     public @Test final void createCommitNullId() throws IOException {
         ex.expect(NullPointerException.class);
         ex.expectMessage("id");
-        testCommit(null, id2, Collections.emptyList(), person1, person2, "message");
+        testCommit(null, id2, emptyList(), person1, person2, "message");
     }
 
     public @Test final void createCommitNullTreeId() throws IOException {
         ex.expect(NullPointerException.class);
         ex.expectMessage("treeId");
-        testCommit(id1, null, Collections.emptyList(), person1, person2, "message");
+        testCommit(id1, null, emptyList(), person1, person2, "message");
     }
 
     public @Test final void createCommitNullParents() throws IOException {
@@ -155,19 +160,19 @@ public abstract class RevObjectFactoryConformanceTest {
     public @Test final void createCommitNullAuthor() throws IOException {
         ex.expect(NullPointerException.class);
         ex.expectMessage("author");
-        testCommit(id1, id2, Collections.emptyList(), null, person2, "message");
+        testCommit(id1, id2, emptyList(), null, person2, "message");
     }
 
     public @Test final void createCommitNullCommitter() throws IOException {
         ex.expect(NullPointerException.class);
         ex.expectMessage("committer");
-        testCommit(id1, id2, Collections.emptyList(), person1, null, "message");
+        testCommit(id1, id2, emptyList(), person1, null, "message");
     }
 
     public @Test final void createCommitNullMessage() throws IOException {
         ex.expect(NullPointerException.class);
         ex.expectMessage("message");
-        testCommit(id1, id2, Collections.emptyList(), person1, person2, null);
+        testCommit(id1, id2, emptyList(), person1, person2, null);
     }
 
     private Bucket testCreateBucket(ObjectId bucketTree, int bucketIndex, double x1, double x2,
@@ -278,8 +283,9 @@ public abstract class RevObjectFactoryConformanceTest {
         testCreateNode("id", id1, id2, type, null, null);
     }
 
-    private RevTree testCreateLeafTree(ObjectId id, long size, List<Node> trees,
-            List<Node> features) {
+    private RevTree testCreateLeafTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
+            @NonNull List<Node> features) {
+
         RevTree actual = factory.createTree(id, size, trees, features);
         assertNotNull(actual);
         RevTree expected = DEFAULT.createTree(id, size, trees, features);
@@ -291,6 +297,25 @@ public abstract class RevObjectFactoryConformanceTest {
         assertEquals(features.size(), expected.featuresSize());
         assertEquals(0, expected.bucketsSize());
         RevObjectTestUtil.deepEquals(expected, actual);
+
+        for (int i = 0; i < trees.size(); i++) {
+            assertEquals(trees.get(i), actual.getTree(i));
+        }
+        for (int i = 0; i < features.size(); i++) {
+            assertEquals(features.get(i), actual.getFeature(i));
+        }
+        try {
+            actual.getTree(trees.size() + 1);
+            fail("expected IndexOutOfBoundsException");
+        } catch (IndexOutOfBoundsException ex) {
+            assertTrue(true);
+        }
+        try {
+            actual.getFeature(features.size() + 1);
+            fail("expected IndexOutOfBoundsException");
+        } catch (IndexOutOfBoundsException ex) {
+            assertTrue(true);
+        }
         return actual;
     }
 
@@ -317,45 +342,45 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafEmpty() {
-        testCreateLeafTree(id1, 0, Collections.emptyList(), Collections.emptyList());
+        testCreateLeafTree(id1, 0, emptyList(), emptyList());
     }
 
     public @Test final void createTreeLeafNegativeSize() {
         ex.expect(IllegalArgumentException.class);
         ex.expectMessage("negative size");
-        testCreateLeafTree(id1, -1, Collections.emptyList(), Collections.emptyList());
+        testCreateLeafTree(id1, -1, emptyList(), emptyList());
     }
 
     public @Test final void createTreeLeafNullId() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("id");
-        testCreateLeafTree(null, 0, Collections.emptyList(), Collections.emptyList());
+        testCreateLeafTree(null, 0, emptyList(), emptyList());
     }
 
     public @Test final void createTreeLeafNullTrees() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("trees");
-        testCreateLeafTree(id1, 0, null, Collections.emptyList());
+        testCreateLeafTree(id1, 0, null, emptyList());
     }
 
     public @Test final void createTreeLeafNullFeatures() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("features");
-        testCreateLeafTree(id1, 0, Collections.emptyList(), null);
+        testCreateLeafTree(id1, 0, emptyList(), null);
     }
 
     public @Test final void createTreeLeafNullElementInTrees() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("null node in trees at index 1");
         List<Node> trees = newArrayList(treeNode("t1", id1, id5), null, treeNode("t2", id2, id5));
-        testCreateLeafTree(id1, 0, trees, Collections.emptyList());
+        testCreateLeafTree(id1, 0, trees, emptyList());
     }
 
     public @Test final void createTreeLeafNullElementInFeatures() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("null node in features at index 1");
         List<Node> features = newArrayList(featureNode("f1", id1), null, featureNode("f2", id2));
-        testCreateLeafTree(id1, 0, Collections.emptyList(), features);
+        testCreateLeafTree(id1, 0, emptyList(), features);
     }
 
     public @Test final void createTreeLeafFeatureNodeInTrees() {
@@ -364,7 +389,7 @@ public abstract class RevObjectFactoryConformanceTest {
         List<Node> trees = newArrayList(treeNode("t1", id1, id5), treeNode("t2", id2, id5), //
                 featureNode("f1", id3)// WRONG
         );
-        testCreateLeafTree(id1, 0, trees, Collections.emptyList());
+        testCreateLeafTree(id1, 0, trees, emptyList());
     }
 
     public @Test final void createTreeLeafTreeNodeInFeatures() {
@@ -373,7 +398,7 @@ public abstract class RevObjectFactoryConformanceTest {
         List<Node> features = newArrayList(featureNode("f1", id1), featureNode("f2", id2), //
                 treeNode("t1", id3, id5)// WRONG
         );
-        testCreateLeafTree(id1, 0, Collections.emptyList(), features);
+        testCreateLeafTree(id1, 0, emptyList(), features);
     }
 
     public @Test final void createTreeLeaf() {
@@ -386,7 +411,7 @@ public abstract class RevObjectFactoryConformanceTest {
     public @Test final void createTreeLeafFeatureNodesWithExtraData() {
         List<Node> features = newArrayList(featureNodeFull("f1", id1, 1),
                 featureNodeFull("f2", id2, 2));
-        testCreateLeafTree(id1, 0, Collections.emptyList(), features);
+        testCreateLeafTree(id1, 0, emptyList(), features);
     }
 
     public @Test final void createTreeLeafFeatureNodesSomeWithExtraData() {
@@ -395,14 +420,14 @@ public abstract class RevObjectFactoryConformanceTest {
                 featureNode("f2", id2), // without extra data
                 featureNodeFull("f3", id3, 3), // with extra data
                 featureNode("f4", id4));// without extra data
-        testCreateLeafTree(id5, 10, Collections.emptyList(), features);
+        testCreateLeafTree(id5, 10, emptyList(), features);
     }
 
     public @Test final void createTreeLeafTreeNodesWithExtraData() {
         List<Node> trees = newArrayList(treeNodeFull("t1", id1, id2, 1),
                 treeNodeFull("t2", id3, id4, 2), treeNodeFull("t3", id5, id6, 3),
                 treeNodeFull("t4", id7, id8, 4));
-        testCreateLeafTree(id5, 10, trees, Collections.emptyList());
+        testCreateLeafTree(id5, 10, trees, emptyList());
     }
 
     public @Test final void createTreeLeafTreeNodesSomeWithExtraData() {
@@ -411,7 +436,7 @@ public abstract class RevObjectFactoryConformanceTest {
                 treeNode("t2", id3, id4), // without extra data
                 treeNodeFull("t3", id5, id6, 3), // with extra data
                 treeNode("t4", id7, id8));// without extra data
-        testCreateLeafTree(id5, 10, trees, Collections.emptyList());
+        testCreateLeafTree(id5, 10, trees, emptyList());
     }
 
     public @Test final void createTreeLeafTreeAndFeatureNodesWithExtraData() {
@@ -711,7 +736,7 @@ public abstract class RevObjectFactoryConformanceTest {
     public @Test final void createFeatureNullId() {
         ex.expect(NullPointerException.class);
         ex.expectMessage("id");
-        testCreateFeature(null, Collections.emptyList());
+        testCreateFeature(null, emptyList());
     }
 
     public @Test final void createFeatureNullValues() {
@@ -721,7 +746,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createFeatureEmptyValues() {
-        testCreateFeature(id1, Collections.emptyList());
+        testCreateFeature(id1, emptyList());
     }
 
     private Node featureNode(String name, ObjectId oid) {

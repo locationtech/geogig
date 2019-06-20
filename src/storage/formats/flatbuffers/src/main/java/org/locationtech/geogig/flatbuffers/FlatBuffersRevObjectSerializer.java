@@ -9,12 +9,15 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import static org.locationtech.geogig.flatbuffers.FlatBuffers.newBuilder;
+
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -24,7 +27,6 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 import com.google.flatbuffers.FlatBufferBuilder;
-import com.google.flatbuffers.FlatBufferBuilder.ByteBufferFactory;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -32,15 +34,11 @@ import lombok.Setter;
 
 public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
 
-    private static final ByteBufferFactory BYTE_BUFFER_FACTORY = capacity -> ByteBuffer
-            .allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN);
-
-    static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
-            .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
-
     private final FlatBuffers flatBuffers = new FlatBuffers();
 
     private @Getter @Setter boolean lengthPrefixed;
+
+    private final @Getter String displayName = "Flat Buffers";
 
     public FlatBuffersRevObjectSerializer() {
         this(false);
@@ -54,10 +52,6 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
         return isLengthPrefixed();
     }
 
-    public @Override String getDisplayName() {
-        return "Flat Buffers";
-    }
-
     public @Override void write(@NonNull RevObject o, @NonNull OutputStream out)
             throws IOException {
 
@@ -65,7 +59,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
         if (o instanceof FBRevObject) {
             dataBuffer = ((FBRevObject<?>) o).getTable().getByteBuffer().duplicate();
         } else {
-            FlatBufferBuilder fbb = WRITE_BUFFERS.get();
+            FlatBufferBuilder fbb = newBuilder();
             fbb.clear();
             flatBuffers.encode(o, fbb);
             dataBuffer = fbb.dataBuffer();
@@ -119,5 +113,30 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
             Preconditions.checkArgument(size == length - Integer.BYTES);
         }
         return flatBuffers.decode(id, data, offset + padding, length - padding);
+    }
+
+    public byte[] encode(@NonNull RevObject obj) {
+        if (obj instanceof FBRevObject) {
+            ByteBuffer dataBuffer = ((FBRevObject<?>) obj).getTable().getByteBuffer();
+            if (dataBuffer.hasArray()) {
+                byte[] array = dataBuffer.array();
+                if (array.length == dataBuffer.remaining()) {
+                    return array;
+                } else if (dataBuffer.position() == 0) {
+                    return Arrays.copyOf(array, dataBuffer.remaining());
+                }
+            } else {
+                byte[] array = new byte[dataBuffer.remaining()];
+                dataBuffer.duplicate().get(array);
+                return array;
+            }
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            write(obj, out);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return out.toByteArray();
     }
 }

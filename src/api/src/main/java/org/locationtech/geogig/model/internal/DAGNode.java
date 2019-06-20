@@ -10,14 +10,16 @@
 package org.locationtech.geogig.model.internal;
 
 import org.locationtech.geogig.model.Node;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.ObjectStore;
 
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
 public abstract class DAGNode {
 
-    public abstract Node resolve(TreeCache cache);
+    public abstract Node resolve(ObjectStore store);
 
     public static DAGNode of(Node node) {
         return new DirectDAGNode(node);
@@ -35,7 +37,7 @@ public abstract class DAGNode {
             this.node = node;
         }
 
-        public @Override Node resolve(TreeCache cache) {
+        public @Override Node resolve(ObjectStore store) {
             return node;
         }
 
@@ -53,17 +55,17 @@ public abstract class DAGNode {
 
     public abstract static @Accessors(fluent = true) class LazyDAGNode extends DAGNode {
 
-        protected final @Getter int leafRevTreeId;
+        protected final @Getter ObjectId leafRevTreeId;
 
         protected final @Getter int nodeIndex;
 
-        public LazyDAGNode(final int leafRevTreeId, final int nodeIndex) {
+        public LazyDAGNode(final ObjectId leafRevTreeId, final int nodeIndex) {
             this.leafRevTreeId = leafRevTreeId;
             this.nodeIndex = nodeIndex;
         }
 
-        public @Override final Node resolve(TreeCache cache) {
-            RevTree tree = cache.resolve(leafRevTreeId);
+        public @Override final Node resolve(ObjectStore store) {
+            RevTree tree = store.getTree(leafRevTreeId);
             return resolve(tree);
         }
 
@@ -78,7 +80,7 @@ public abstract class DAGNode {
                 return false;
             }
             LazyDAGNode l = (LazyDAGNode) o;
-            return leafRevTreeId == l.leafRevTreeId && nodeIndex == l.nodeIndex;
+            return leafRevTreeId.equals(l.leafRevTreeId) && nodeIndex == l.nodeIndex;
         }
 
         public @Override String toString() {
@@ -89,7 +91,7 @@ public abstract class DAGNode {
 
     public static final class TreeDAGNode extends LazyDAGNode {
 
-        TreeDAGNode(int leafRevTreeId, int nodeIndex) {
+        TreeDAGNode(ObjectId leafRevTreeId, int nodeIndex) {
             super(leafRevTreeId, nodeIndex);
         }
 
@@ -101,7 +103,7 @@ public abstract class DAGNode {
 
     public static final class FeatureDAGNode extends LazyDAGNode {
 
-        FeatureDAGNode(int leafRevTreeId, int nodeIndex) {
+        FeatureDAGNode(ObjectId leafRevTreeId, int nodeIndex) {
             super(leafRevTreeId, nodeIndex);
         }
 
@@ -110,11 +112,11 @@ public abstract class DAGNode {
         }
     }
 
-    public static DAGNode treeNode(final int cacheTreeId, final int nodeIndex) {
+    public static DAGNode treeNode(final ObjectId cacheTreeId, final int nodeIndex) {
         return new TreeDAGNode(cacheTreeId, nodeIndex);
     }
 
-    public static DAGNode featureNode(final int cacheTreeId, final int nodeIndex) {
+    public static DAGNode featureNode(final ObjectId cacheTreeId, final int nodeIndex) {
         return new FeatureDAGNode(cacheTreeId, nodeIndex);
     }
 }

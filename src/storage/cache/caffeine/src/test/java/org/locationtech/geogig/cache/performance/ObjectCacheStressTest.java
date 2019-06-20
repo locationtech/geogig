@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 
 import org.geotools.util.TableWriter;
 import org.locationtech.geogig.cache.caffeine.CaffeineSharedCache;
+import org.locationtech.geogig.flatbuffers.FlatBuffersRevObjectSerializer;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -46,7 +47,6 @@ import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.cache.CacheIdentifier;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.cache.SharedCache;
-import org.locationtech.geogig.storage.datastream.v2_3.DataStreamRevObjectSerializerV2_3;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -62,6 +62,8 @@ public class ObjectCacheStressTest {
 
     // private final RevObjectFactory objectFactory = new FlatBuffersRevObjectFactory();
     private final RevObjectFactory objectFactory = new RevObjectFactoryImpl();
+
+    static final int runCount = 2;
 
     final int numPutAndGetThreads = 16;
 
@@ -99,17 +101,15 @@ public class ObjectCacheStressTest {
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2.INSTANCE)//
             // , new LZ4SerializationFactory(DataStreamSerializationFactoryV2_1.INSTANCE)//
             // new LZ4SerializationFactory(DataStreamSerializationFactoryV2_3.INSTANCE)//
-            // DataStreamSerializationFactoryV2_2.INSTANCE//
-            DataStreamRevObjectSerializerV2_3.INSTANCE//
-    // new FlatBuffersRevObjectSerializer()//
+            // DataStreamSerializationFactoryV2_2.INSTANCE, //
+            new FlatBuffersRevObjectSerializer()//
     );
 
     public static void main(String[] args) {
         ObjectCacheStressTest test = new ObjectCacheStressTest();
-        int L1Capacity = 0;// test.treeCount;
         long maxSizeBytes = 32L * 1024 * 1024 * 1024;
         SharedCache sharedCache;
-        sharedCache = new CaffeineSharedCache(L1Capacity, maxSizeBytes);
+        sharedCache = new CaffeineSharedCache(maxSizeBytes);
         // sharedCache = new GuavaSharedCache(L1Capacity, maxSizeBytes);
         System.err.println("set up: object factory: " + test.objectFactory.getClass().getName());
         try {
@@ -119,7 +119,6 @@ public class ObjectCacheStressTest {
             System.exit(-1);
         }
         final String cacheImplName = sharedCache.getClass().getSimpleName();
-        final int runCount = 10;
 
         if (test.treeCount > 0) {
             for (int i = 1; i <= runCount; i++) {

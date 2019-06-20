@@ -5,23 +5,19 @@
 
   <parent>
     <groupId>org.locationtech.geogig</groupId>
-    <artifactId>geogig</artifactId>
+    <artifactId>geogig-storage</artifactId>
     <version>2.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>geogig-storage</artifactId>
+  <artifactId>geogig-storage-formats</artifactId>
   <packaging>pom</packaging>
-  <name>Storage backends</name>
+  <name>Storage RevObject serialization formats</name>
 
   <properties>
-    <project.relativePath>storage</project.relativePath>
+     <project.relativePath>storage/formats</project.relativePath>
   </properties>
 
   <modules>
-    <module>formats</module>
-    <module>temporary-rocksdb</module>
-    <module>postgres</module>
-    <module>rocksdb</module>
-    <module>cache</module>
+    <module>flatbuffers</module>
   </modules>
 </project>

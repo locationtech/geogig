@@ -41,6 +41,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Base class for strategy objects that define the internal structure of a {@link RevTree}.
@@ -50,6 +51,7 @@ import lombok.NonNull;
  *          general, the {@link RevTreeBuilder} that's using this object will do so as part of its
  *          own clean up phase before returning from its own {@code build()} method.
  */
+@Slf4j
 public abstract class ClusteringStrategy extends NodeOrdering {
 
     private static final long serialVersionUID = 1L;
@@ -313,10 +315,9 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 shrinkIfUnderflow(dag);
             } catch (IllegalStateException e) {
                 if (remove) {
-                    System.out.printf(
-                            "!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s\n",
+                    log.error(String.format("!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s",
                             nodeId.name(), dag.getId(), pre, post, deltaSize,
-                            Thread.currentThread().getName());
+                            Thread.currentThread().getName()));
                 }
                 throw e;
             }
@@ -326,8 +327,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         }
         return deltaSize;
     }
-
-    static final TreeId failingDag = TreeId.fromString("[1, 0, 2, 2, 3, 2, 0, 0, 2, 2, 3, 1]");
 
     private void shrinkIfUnderflow(final DAG dag) {
         if (dag.numBuckets() == 0) {
@@ -344,10 +343,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         }
         Set<NodeId> childrenRecursive = getChildrenRecursiveAndClearBuckets(dag);
         int collectedSize = childrenRecursive.size();
-
-        if (dag.getId().equals(failingDag)) {
-            System.err.printf("expected: %d, collected: %d\n", childCount, collectedSize);
-        }
 
         if (collectedSize != childCount) {
             throw new IllegalStateException(String.format("expected %s, got %s, at: %s", childCount,
@@ -418,7 +413,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                     checkState(root.numChildren() == 0);
 
                     // initialize buckets
-                    preloadBuckets(original);
                     original.forEachBucket(bucket -> {
                         TreeId dagBucketId = root.getId().newChild(bucket.getIndex());
                         ObjectId bucketId = bucket.getObjectId();
@@ -431,14 +425,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             root.setMirrored();
         }
 
-    }
-
-    private void preloadBuckets(RevTree tree) {
-        if (tree.bucketsSize() > 0) {
-            List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
-            tree.forEachBucket(bucket -> ids.add(bucket.getObjectId()));
-            this.storageProvider.getTreeCache().preload(ids);
-        }
     }
 
     protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
@@ -489,9 +475,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             return Collections.emptyMap();
         }
 
-        final TreeCache treeCache = storageProvider.getTreeCache();
-        final int cacheTreeId = treeCache.getTreeId(tree).intValue();
-
+        final ObjectId cacheTreeId = tree.getId();
         Map<NodeId, DAGNode> dagNodes = new HashMap<>();
 
         final int treesSize = tree.treesSize();
@@ -503,7 +487,8 @@ public abstract class ClusteringStrategy extends NodeOrdering {
 
         final int featuresSize = tree.featuresSize();
         for (int i = 0; i < featuresSize; i++) {
-            NodeId nodeId = computeId(tree.getFeature(i));
+            Node featureNode = tree.getFeature(i);
+            NodeId nodeId = computeId(featureNode);
             DAGNode dagNode = DAGNode.featureNode(cacheTreeId, i);
             dagNodes.put(nodeId, dagNode);
         }

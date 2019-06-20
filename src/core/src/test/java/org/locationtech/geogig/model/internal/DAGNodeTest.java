@@ -14,9 +14,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,42 +27,43 @@ import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 public class DAGNodeTest {
 
-    private TreeCache cache;
-
     private RevTree featuresTree;
+
+    private ObjectStore store;
 
     @Before
     public void before() {
-        ObjectStore store = new HeapObjectStore();
+        store = new HeapObjectStore();
         store.open();
-        cache = mock(TreeCache.class);
         featuresTree = RevObjectTestSupport.INSTANCE.createFeaturesTree(store, "f", 512);
     }
 
     @Test
     public void lazyFeatureNodeCreate() {
-        DAGNode node = DAGNode.featureNode(5, 511);
+        DAGNode node = DAGNode.featureNode(featuresTree.getId(), 511);
         assertTrue(node instanceof FeatureDAGNode);
         FeatureDAGNode fnode = (FeatureDAGNode) node;
-        assertEquals(5, fnode.leafRevTreeId);
+        assertEquals(featuresTree.getId(), fnode.leafRevTreeId);
         assertEquals(511, fnode.nodeIndex);
         assertFalse("a lazy feature node can never be nil", node.isNull());
     }
 
     @Test
     public void lazyFeatureNodeEquals() {
-        DAGNode node = DAGNode.featureNode(5, 511);
-        assertEquals(node, DAGNode.featureNode(5, 511));
-        assertNotEquals(node, DAGNode.featureNode(5, 510));
-        assertNotEquals(node, DAGNode.featureNode(4, 511));
+        DAGNode expected = DAGNode.featureNode(featuresTree.getId(), 511);
+        DAGNode actual;
+
+        actual = DAGNode.featureNode(featuresTree.getId(), 511);
+        assertEquals(expected, actual);
+
+        actual = DAGNode.featureNode(featuresTree.getId(), 510);
+        assertNotEquals(expected, actual);
     }
 
     @Test
     public void lazyFeatureNodeResolve() {
-        DAGNode node = DAGNode.featureNode(5, 511);
-
-        when(cache.resolve(eq(5))).thenReturn(featuresTree);
-        Node resolved = node.resolve(cache);
+        DAGNode node = DAGNode.featureNode(featuresTree.getId(), 511);
+        Node resolved = node.resolve(store);
         assertNotNull(resolved);
         Node expected = featuresTree.features().get(511);
         RevObjectTestUtil.deepEquals(expected, resolved);

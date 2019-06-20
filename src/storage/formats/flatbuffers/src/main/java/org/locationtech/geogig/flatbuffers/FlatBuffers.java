@@ -10,6 +10,7 @@
 package org.locationtech.geogig.flatbuffers;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,12 +57,25 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;
+import com.google.flatbuffers.FlatBufferBuilder.ByteBufferFactory;
 
 import lombok.NonNull;
 
 final class FlatBuffers {
 
     private static final int[] EMPTY_OFFSETS_VECTOR = {};
+
+    private static final ByteBufferFactory BYTE_BUFFER_FACTORY = capacity -> ByteBuffer
+            .allocate(capacity).order(ByteOrder.LITTLE_ENDIAN);
+
+    private static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
+            .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
+
+    static FlatBufferBuilder newBuilder() {
+        FlatBufferBuilder fbb = WRITE_BUFFERS.get();
+        fbb.clear();
+        return fbb;
+    }
 
     public byte[] encode(@NonNull RevObject o) {
         FlatBufferBuilder fbb = new FlatBufferBuilder();

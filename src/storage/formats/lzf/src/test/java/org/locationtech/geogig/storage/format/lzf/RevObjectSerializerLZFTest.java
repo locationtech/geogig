@@ -7,15 +7,16 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.datastream;
+package org.locationtech.geogig.storage.format.lzf;
 
 import org.locationtech.geogig.storage.RevObjectSerializer;
+import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2_1;
 import org.locationtech.geogig.storage.impl.RevObjectSerializerConformanceTest;
 
-public class RevObjectSerializerLZ4Test extends RevObjectSerializerConformanceTest {
+public class RevObjectSerializerLZFTest extends RevObjectSerializerConformanceTest {
 
     protected @Override RevObjectSerializer newObjectSerializer() {
-        return new RevObjectSerializerLZ4(DataStreamRevObjectSerializerV2_1.INSTANCE);
+        return new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2_1.INSTANCE);
     }
 
 }

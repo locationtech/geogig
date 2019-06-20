@@ -29,6 +29,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.Varint;
@@ -39,8 +41,6 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
-import com.ning.compress.lzf.LZFInputStream;
-import com.ning.compress.lzf.LZFOutputStream;
 
 import lombok.NonNull;
 
@@ -181,9 +181,12 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
 
     private DataOutputStream createOutStream(Path tmpFile) throws IOException {
         OutputStream outStream = Files.newOutputStream(tmpFile, StandardOpenOption.APPEND);
-        outStream = new BufferedOutputStream(outStream, 16 * 1024);
+        final int bufferSize = 16 * 1024;
         if (this.compress) {
-            outStream = new LZFOutputStream(outStream);
+            boolean syncFlush = false;
+            outStream = new GZIPOutputStream(outStream, bufferSize, syncFlush);
+        } else {
+            outStream = new BufferedOutputStream(outStream, 16 * 1024);
         }
         return new DataOutputStream(outStream);
     }
@@ -230,7 +233,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                     in = new BufferedInputStream(in, 16 * 1024);
                     in = ByteStreams.limit(in, streamLimit);
                     if (this.compress) {
-                        in = new LZFInputStream(in);
+                        in = new GZIPInputStream(in);
                     }
                     DataInputStream dataIn = new DataInputStream(in);
                     StreamIterator<T> streamIt = new StreamIterator<T>(serializer, dataIn);

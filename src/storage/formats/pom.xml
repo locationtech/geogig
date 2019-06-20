@@ -19,5 +19,7 @@
 
   <modules>
     <module>flatbuffers</module>
+    <module>lz4</module>
+    <module>lzf</module>
   </modules>
 </project>

@@ -44,7 +44,7 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV2;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerLZF;
+import org.locationtech.geogig.storage.format.lzf.RevObjectSerializerLZF;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 import org.rocksdb.ReadOptions;
 import org.rocksdb.RocksDB;
@@ -74,7 +74,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     private ReadOptions bulkReadOptions;
 
     public RocksdbObjectStore(@NonNull File dbdir, boolean readOnly) {
-        super(readOnly);
+        super(RocksdbSerializationProxy.INSTANCE, readOnly);
         this.dbDirectory = dbdir;
     }
 
@@ -97,8 +97,6 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         this.bulkReadOptions.setFillCache(false);
         this.bulkReadOptions.setVerifyChecksums(false);
 
-        RocksdbSerializationProxy defaultSerializer = new RocksdbSerializationProxy();
-        RevObjectSerializer serializer = defaultSerializer;
         final Optional<String> serializerValue = dbhandle.getMetadata("serializer");
         if (serializerValue.isPresent()) {
             String sval = serializerValue.get();
@@ -107,9 +105,10 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         } else {
             // pre 1.0 serializer, for backwards compatibility with repos created before initial
             // release
-            serializer = new RevObjectSerializerLZF(DataStreamRevObjectSerializerV2.INSTANCE);
+            RevObjectSerializer serializer = new RevObjectSerializerLZF(
+                    DataStreamRevObjectSerializerV2.INSTANCE);
+            super.setSerializationFactory(serializer);
         }
-        super.setSerializationFactory(serializer);
         super.open();
     }
 

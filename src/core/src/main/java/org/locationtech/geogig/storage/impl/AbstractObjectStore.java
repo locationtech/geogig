@@ -31,7 +31,6 @@ import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.RevObjectSerializer;
-import org.locationtech.geogig.storage.datastream.RevObjectSerializerProxy;
 
 import com.google.common.io.Closeables;
 
@@ -45,14 +44,6 @@ import lombok.NonNull;
 public abstract class AbstractObjectStore extends AbstractStore implements ObjectStore {
 
     private RevObjectSerializer serializer;
-
-    public AbstractObjectStore() {
-        this(false);
-    }
-
-    public AbstractObjectStore(boolean readOnly) {
-        this(new RevObjectSerializerProxy(), readOnly);
-    }
 
     public AbstractObjectStore(final @NonNull RevObjectSerializer serializer, boolean readOnly) {
         super(readOnly);

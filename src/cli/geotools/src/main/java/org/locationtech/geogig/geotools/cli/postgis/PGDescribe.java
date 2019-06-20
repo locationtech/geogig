@@ -11,11 +11,11 @@ package org.locationtech.geogig.geotools.cli.postgis;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
+import org.locationtech.geogig.geotools.cli.base.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Describes a table from a PostGIS database.
@@ -24,14 +24,10 @@ import com.beust.jcommander.ParametersDelegate;
  * 
  * @see DescribeOp
  */
-@Parameters(commandNames = "describe", commandDescription = "Describe a PostGIS table")
+@Command(name = "describe", description = "Describe a PostGIS table")
 public class PGDescribe extends DataStoreDescribe implements CLICommand {
 
-    /**
-     * Common arguments for PostGIS commands.
-     */
-    @ParametersDelegate
-    public PGCommonArgs commonArgs = new PGCommonArgs();
+    public @ParentCommand PGCommandProxy commonArgs;
 
     final PGSupport support = new PGSupport();
 

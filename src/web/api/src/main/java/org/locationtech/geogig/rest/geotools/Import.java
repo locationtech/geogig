@@ -179,12 +179,11 @@ public class Import extends AbstractWebAPICommand {
                 .getContextService(requestFormat);
         // build DataStore from options
         DataStoreImportOp<?> command = buildImportOp(ctxService, transaction);
-        final String commandDescription = ctxService.getCommandDescription();
+        final String description = ctxService.getCommandDescription();
         if (asyncContext == null) {
             asyncContext = AsyncContext.get();
         }
-        final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command,
-                commandDescription);
+        final AsyncContext.AsyncCommand<?> asyncCommand = asyncContext.run(command, description);
 
         context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }

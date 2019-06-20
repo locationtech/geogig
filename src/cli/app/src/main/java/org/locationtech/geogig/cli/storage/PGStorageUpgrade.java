@@ -24,15 +24,16 @@ import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.postgresql.commands.PGDatabaseUpgrade;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Stopwatch;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
+
 @RequiresRepository(false)
-@Parameters(commandNames = "postgres-upgrade", commandDescription = "Upgrade the schema of a geogig PostgreSQL databse to the latest version")
+@Command(name = "postgres-upgrade", description = "Upgrade the schema of a geogig PostgreSQL databse to the latest version")
 public class PGStorageUpgrade extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<base URI> The URI without a repository name. (e.g. geogig postgres-upgrade postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = 1)
+    @Parameters(description = "<base URI> The URI without a repository name. (e.g. geogig postgres-upgrade postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = "1")
     private List<URI> baseuri = new ArrayList<>();
 
     protected @Override void runInternal(GeogigCLI cli) throws IOException {

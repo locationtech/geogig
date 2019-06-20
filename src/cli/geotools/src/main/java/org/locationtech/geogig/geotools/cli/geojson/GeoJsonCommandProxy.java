@@ -9,10 +9,13 @@
  */
 package org.locationtech.geogig.geotools.cli.geojson;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for GeoJSON specific commands.
@@ -25,19 +28,10 @@ import com.beust.jcommander.Parameters;
  * @see GeoJsonImport
  */
 
-@Parameters(commandNames = "geojson", commandDescription = "GeoGig/GeoJSON integration utilities")
-public class GeoJsonCommandProxy implements CLICommandExtension {
+@Command(name = "geojson", description = "GeoGig/GeoJSON integration utilities", //
+        subcommands = { GeoJsonImport.class, GeoJsonExport.class })
+public class GeoJsonCommandProxy extends CLISubCommand {
 
-    /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
-     */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander();
-        commander.setProgramName("geogig geojson");
-        commander.addCommand("import", new GeoJsonImport());
-        commander.addCommand("export", new GeoJsonExport());
-        return commander;
-    }
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
 
 }

@@ -24,36 +24,35 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @RequiresRepository(true)
-@Parameters(commandNames = {
-        "update" }, commandDescription = "Update the extra attributes of an index.")
+@Command(name = "update", aliases = "up", description = "Update the extra attributes of an index.")
 public class UpdateIndex extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to update the index for.")
+    @Option(names = "--tree", required = true, description = "Name or path of the feature tree to update the index for.")
     private String treeRefSpec;
 
-    @Parameter(names = { "-a", "--attribute" }, description = "Attribute to update the index for.")
+    @Option(names = { "-a", "--attribute" }, description = "Attribute to update the index for.")
     private String attribute;
 
-    @Parameter(names = { "-e",
+    @Option(names = { "-e",
             "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
 
-    @Parameter(names = { "-o",
+    @Option(names = { "-o",
             "--overwrite" }, description = "Replace existing list of extra attributes held by the index")
     private boolean overwrite;
 
-    @Parameter(names = {
+    @Option(names = {
             "--add" }, description = "Add new attributes to existing list of extra attributes held by the index")
     private boolean add;
 
-    @Parameter(names = "--bounds", description = "If specified, the max bounds of the spatial index will be updated to this parameter. <minx,miny,maxx,maxy>")
+    @Option(names = "--bounds", description = "If specified, the max bounds of the spatial index will be updated to this parameter. <minx,miny,maxx,maxy>")
     private String bbox;
 
-    @Parameter(names = "--index-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
+    @Option(names = "--index-history", description = "If specified, indexes will be rebuilt for all commits in the history.")
     private boolean indexHistory = false;
 
     protected @Override void runInternal(GeogigCLI cli)

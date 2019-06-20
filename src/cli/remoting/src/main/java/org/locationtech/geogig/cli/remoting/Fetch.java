@@ -22,8 +22,9 @@ import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.TransferSummary;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Fetches named heads or tags from one or more other repositories, along with the objects necessary
@@ -42,27 +43,26 @@ import com.beust.jcommander.Parameters;
  * @see FetchOp
  */
 @RemotesReadOnly
-@Parameters(commandNames = "fetch", commandDescription = "Download objects and refs from another repository")
+@Command(name = "fetch", description = "Download objects and refs from another repository")
 public class Fetch extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--all", description = "Fetch from all remotes.")
+    @Option(names = "--all", description = "Fetch from all remotes.")
     private boolean all = false;
 
-    @Parameter(names = { "-p",
+    @Option(names = { "-p",
             "--prune" }, description = "After fetching, remove any remote-tracking branches which no longer exist on the remote.")
     private boolean prune = false;
 
-    @Parameter(names = { "--depth" }, description = "Depth of the fetch.")
+    @Option(names = { "--depth" }, description = "Depth of the fetch.")
     private int depth = 0;
 
-    @Parameter(names = {
-            "--fulldepth" }, description = "Fetch the full history from the repository.")
+    @Option(names = { "--fulldepth" }, description = "Fetch the full history from the repository.")
     private boolean fulldepth = false;
 
-    @Parameter(names = { "-I", "--include-indexes" }, description = "Fetch also spatial indexes")
+    @Option(names = { "-I", "--include-indexes" }, description = "Fetch also spatial indexes")
     private boolean withIndexes = false;
 
-    @Parameter(description = "[<repository>...]")
+    @Parameters(description = "[<repository>...]")
     private List<String> args;
 
     /**

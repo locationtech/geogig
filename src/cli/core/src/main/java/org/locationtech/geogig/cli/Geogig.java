@@ -32,7 +32,6 @@ import org.locationtech.geogig.cli.porcelain.Config;
 import org.locationtech.geogig.cli.porcelain.Conflicts;
 import org.locationtech.geogig.cli.porcelain.Diff;
 import org.locationtech.geogig.cli.porcelain.FormatPatch;
-import org.locationtech.geogig.cli.porcelain.Help;
 import org.locationtech.geogig.cli.porcelain.Init;
 import org.locationtech.geogig.cli.porcelain.Log;
 import org.locationtech.geogig.cli.porcelain.Ls;
@@ -45,86 +44,75 @@ import org.locationtech.geogig.cli.porcelain.Show;
 import org.locationtech.geogig.cli.porcelain.Squash;
 import org.locationtech.geogig.cli.porcelain.Status;
 import org.locationtech.geogig.cli.porcelain.Tag;
-import org.locationtech.geogig.cli.porcelain.Version;
 import org.locationtech.geogig.cli.porcelain.index.IndexCommandProxy;
 
-import com.google.inject.AbstractModule;
+import lombok.Getter;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
-/**
- * Guice module providing builtin commands for the {@link GeogigCLI CLI} app.
- * 
- * @see Add
- * @see Apply
- * @see Branch
- * @see Cat
- * @see Checkout
- * @see CherryPick
- * @see Clean
- * @see Commit
- * @see Config
- * @see Conflicts
- * @see Diff
- * @see FormatPatch
- * @see VerifyPatch
- * @see Help
- * @see Init
- * @see Merge
- * @see Log
- * @see RemoteExtension
- * @see Remove
- * @see Status
- * @see Rebase
- * @see Reset
- * @see Clone
- * @see Push
- * @see Pull
- * @see Show
- * @see Fetch
- * @see Version
- * @see RebuildGraph
- */
-public class BuiltinCommandsModule extends AbstractModule implements CLIModule {
+@Command(name = "geogig", //
+        mixinStandardHelpOptions = true, //
+        usageHelpAutoWidth = true, //
+        versionProvider = VersionProvider.class, //
+        subcommands = { //
+                // CommandLine.HelpCommand adds support for `geogig help` as well as --help given by
+                // mixinStandardHelpOptions
+                CommandLine.HelpCommand.class, RevParse.class//
+                , Add.class//
+                , Apply.class//
+                , Blame.class//
+                , Branch.class//
+                , Cat.class//
+                , Checkout.class//
+                , CherryPick.class//
+                , Clean.class//
+                , Commit.class//
+                , Config.class//
+                , Conflicts.class//
+                , Diff.class//
+                , DiffTree.class//
+                , FormatPatch.class//
+                , VerifyPatch.class//
+                , Init.class//
+                , Insert.class//
+                , Log.class//
+                , Ls.class//
+                , LsTree.class//
+                , Merge.class//
+                , MergeBase.class//
+                , Remove.class//
+                , Status.class//
+                , Rebase.class//
+                , Reset.class//
+                , Revert.class//
+                , RevList.class//
+                , Show.class//
+                , ShowRef.class//
+                , Squash.class//
+                , Tag.class//
+                , WalkGraph.class//
+                , RebuildGraph.class//
+                , IndexCommandProxy.class//
+        }//
+)
+public class Geogig implements Runnable {
 
-    protected @Override void configure() {
-        bind(RevParse.class);
-        bind(Add.class);
-        bind(Apply.class);
-        bind(Blame.class);
-        bind(Branch.class);
-        bind(Cat.class);
-        bind(Checkout.class);
-        bind(CherryPick.class);
-        bind(Clean.class);
-        bind(Commit.class);
-        bind(Config.class);
-        bind(Conflicts.class);
-        bind(Diff.class);
-        bind(DiffTree.class);
-        bind(FormatPatch.class);
-        bind(VerifyPatch.class);
-        bind(Help.class);
-        bind(Init.class);
-        bind(Insert.class);
-        bind(Log.class);
-        bind(Ls.class);
-        bind(LsTree.class);
-        bind(Merge.class);
-        bind(Log.class);
-        bind(MergeBase.class);
-        bind(Remove.class);
-        bind(Status.class);
-        bind(Rebase.class);
-        bind(Reset.class);
-        bind(Revert.class);
-        bind(RevList.class);
-        bind(Show.class);
-        bind(ShowRef.class);
-        bind(Squash.class);
-        bind(Tag.class);
-        bind(WalkGraph.class);
-        bind(Version.class);
-        bind(RebuildGraph.class);
-        bind(IndexCommandProxy.class);
+    private @Spec CommandSpec commandSpec;
+
+    @Option(names = "--repo", description = "URI of the repository to execute the command against. Defaults to current directory.")
+    private String repoURI;
+
+    private @Getter GeogigCLI geogigCLI;
+
+    public Geogig(GeogigCLI geogigCLI) {
+        this.geogigCLI = geogigCLI;
     }
 
+    public @Override void run() {
+        CommandLine commandLine = commandSpec.commandLine();
+        commandLine.usage(commandLine.getOut());
+    }
 }

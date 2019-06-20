@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.plumbing;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,9 +25,9 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.google.common.collect.Lists;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Determines if the current directory is inside a geogig repository.
@@ -40,17 +41,17 @@ import com.google.common.collect.Lists;
  * </ul>
  */
 @ReadOnly
-@Parameters(commandNames = "rev-parse", commandDescription = "Resolve parameters according to the arguments")
+@Command(name = "rev-parse", description = "Resolve parameters according to the arguments")
 public class RevParse extends AbstractCommand {
 
-    @Parameter(names = "--resolve-geogig-uri", description = "Print out the repository location")
+    @Option(names = "--resolve-geogig-uri", description = "Print out the repository location")
     private boolean resolve_geogig_uri;
 
-    @Parameter(names = "--is-inside-work-tree", description = "Check if the current directory is inside a geogig repository and print out the repository location")
+    @Option(names = "--is-inside-work-tree", description = "Check if the current directory is inside a geogig repository and print out the repository location")
     private boolean is_inside_work_tree;
 
-    @Parameter(description = "[refSpec]... where refSpec is of the form [<object id>|<ref name>][^<parent index>]+[~<ancestor index>]+")
-    private List<String> refSpecs = Lists.newArrayList();
+    @Parameters(description = "[refSpec]... where refSpec is of the form [<object id>|<ref name>][^<parent index>]+[~<ancestor index>]+")
+    private List<String> refSpecs = new ArrayList<>();
 
     /**
      * Executes the rev-parse command using the provided options.

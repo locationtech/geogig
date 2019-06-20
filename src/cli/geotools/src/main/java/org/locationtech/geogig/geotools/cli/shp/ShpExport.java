@@ -52,8 +52,9 @@ import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Exports features from a feature type into a shapefile.
@@ -61,24 +62,24 @@ import com.beust.jcommander.Parameters;
  * @see ExportOp
  */
 @ReadOnly
-@Parameters(commandNames = "export", commandDescription = "Export to Shapefile")
+@Command(name = "export", description = "Export to Shapefile")
 public class ShpExport extends AbstractShpCommand implements CLICommand {
 
-    @Parameter(description = "<path> <shapefile>", arity = 2)
+    @Parameters(description = "<path> <shapefile>", arity = "2")
     public List<String> args = new ArrayList<>();
 
-    @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
+    @Option(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = {
+    @Option(names = {
             "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = {
+    @Option(names = {
             "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
@@ -86,7 +87,7 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
     /**
      * Charset to use for encoding attributes in DBF file
      */
-    @Parameter(names = {
+    @Option(names = {
             "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
     public String charset = "ISO-8859-1";
 

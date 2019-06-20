@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,11 +31,12 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.BranchRenameOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * With no arguments the command will display all existing branches with the current branch
@@ -78,38 +80,38 @@ import com.google.common.collect.Lists;
  * @see BranchDeleteOp
  * @see BranchRenameOp
  */
-@Parameters(commandNames = "branch", commandDescription = "List, create, or delete branches")
+@Command(name = "branch", aliases = "br", description = "List, create, or delete branches")
 public class Branch extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<branch name> [<start point>]")
-    private List<String> branchName = Lists.newArrayList();
+    @Parameters(description = "<branch name> [<start point>]")
+    private List<String> branchName = new ArrayList<>();
 
-    @Parameter(names = { "--checkout",
+    @Option(names = { "--checkout",
             "-c" }, description = "automatically checkout the new branch when the command is used to create a branch")
     private boolean checkout;
 
-    @Parameter(names = { "--delete", "-d" })
+    @Option(names = { "--delete", "-d" })
     private boolean delete = false;
 
-    @Parameter(names = { "--orphan", "-o" }, description = "create an orphan branch")
+    @Option(names = { "--orphan", "-o" }, description = "create an orphan branch")
     private boolean orphan = false;
 
-    @Parameter(names = { "--force",
+    @Option(names = { "--force",
             "-f" }, description = "Force renaming/creating of a branch if the specified branc name already exists")
     private boolean force = false;
 
-    @Parameter(names = { "--verbose", "-v",
+    @Option(names = { "--verbose", "-v",
             "Verbose output for list mode. Shows branch commit id and commit message." })
     private boolean verbose = false;
 
-    @Parameter(names = { "--remote",
+    @Option(names = { "--remote",
             "-r" }, description = "List or delete (if used with -d) the remote-tracking branches.")
     private boolean remotes = false;
 
-    @Parameter(names = { "--all", "-a" }, description = "List all branches, both local and remote")
+    @Option(names = { "--all", "-a" }, description = "List all branches, both local and remote")
     private boolean all = false;
 
-    @Parameter(names = { "--rename", "-m" }, description = "Rename branch ")
+    @Option(names = { "--rename", "-m" }, description = "Rename branch ")
     private boolean rename = false;
 
     public @Override void runInternal(final GeogigCLI cli) throws IOException {

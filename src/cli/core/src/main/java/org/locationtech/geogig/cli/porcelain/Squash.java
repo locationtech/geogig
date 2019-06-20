@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.cli.porcelain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,9 +22,9 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.SquashOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.google.common.collect.Lists;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Squashes a set of commits into a single one.
@@ -38,13 +39,13 @@ import com.google.common.collect.Lists;
  * 
  * @see org.locationtech.geogig.porcelain.LogOp
  */
-@Parameters(commandNames = "squash", commandDescription = "Squash commits")
+@Command(name = "squash", description = "Squash commits")
 public class Squash extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<since_commit> <until_commit>", arity = 2)
-    private List<String> commits = Lists.newArrayList();
+    @Parameters(description = "<since_commit> <until_commit>", arity = "2")
+    private List<String> commits = new ArrayList<>();
 
-    @Parameter(names = "-m", description = "Commit message")
+    @Option(names = "-m", description = "Commit message")
     private String message;
 
     /**

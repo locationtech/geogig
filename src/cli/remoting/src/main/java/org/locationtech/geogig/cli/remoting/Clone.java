@@ -36,8 +36,9 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Clones a repository into a newly created directory, creates remote-tracking branches for each
@@ -63,35 +64,35 @@ import com.beust.jcommander.Parameters;
  */
 @RemotesReadOnly
 @RequiresRepository(false)
-@Parameters(commandNames = "clone", commandDescription = "Clone a repository into a new directory")
+@Command(name = "clone", description = "Clone a repository into a new directory")
 public class Clone extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-b",
+    @Option(names = { "-b",
             "--branch" }, description = "Branch to checkout when clone is finished.")
     private String branch;
 
-    @Parameter(names = {
+    @Option(names = {
             "--depth" }, description = "Depth of the clone.  If depth is less than 1, a full clone will be performed.")
     private int depth = 0;
 
-    @Parameter(names = { "-u", "--username" }, description = "user name")
+    @Option(names = { "-u", "--username" }, description = "user name")
     private String username = null;
 
-    @Parameter(names = { "-p", "--password" }, description = "password")
+    @Option(names = { "-p", "--password" }, description = "password")
     private String password = null;
 
-    @Parameter(names = {
+    @Option(names = {
             "--filter" }, description = "Ini filter file.  This will create a sparse clone.")
     private String filterFile;
 
-    @Parameter(names = {
+    @Option(names = {
             "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=rocksdb:rocksdb.version=1")
     private String config;
 
-    @Parameter(description = "<repository> [<directory>|<clone URI>]")
+    @Parameters(description = "<repository> [<directory>|<clone URI>]")
     private List<String> args = new ArrayList<>(2);
 
-    @Parameter(names = { "-I", "--include-indexes" }, description = "Clone also spatial indexes")
+    @Option(names = { "-I", "--include-indexes" }, description = "Clone also spatial indexes")
     private boolean withIndexes = false;
 
     /**

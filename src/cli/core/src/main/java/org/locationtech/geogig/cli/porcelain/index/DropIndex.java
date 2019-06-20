@@ -20,17 +20,17 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.porcelain.index.DropIndexOp;
 import org.locationtech.geogig.repository.Repository;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @RequiresRepository(true)
-@Parameters(commandNames = { "drop" }, commandDescription = "Remove an index from the repository.")
+@Command(name = "drop", aliases = "dr", description = "Remove an index from the repository.")
 public class DropIndex extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree of the index to drop.")
+    @Option(names = "--tree", required = true, description = "Name or path of the feature tree of the index to drop.")
     private String treeRefSpec;
 
-    @Parameter(names = { "-a",
+    @Option(names = { "-a",
             "--attribute" }, description = "Indexed attribute of the index to drop.")
     private String attribute;
 

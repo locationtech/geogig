@@ -22,32 +22,29 @@ import org.locationtech.geogig.geotools.geopkg.GeopkgImportResult;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Pulls changes from a geopackage audit log into the current branch
  *
  */
 @RequiresRepository(true)
-@Parameters(commandNames = "pull", commandDescription = "Import changes from a Geopackage audit log created with geopkg push")
+@Command(name = "pull", description = "Import changes from a Geopackage audit log created with geopkg push")
 public class GeopkgPull extends AbstractCommand {
 
-    /**
-     * Common arguments for Geopackage commands.
-     */
-    @ParametersDelegate
-    final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+    public @ParentCommand GeopkgCommandProxy commonArgs;
 
-    @Parameter(names = { "-t",
+    @Option(names = { "-t",
             "--table" }, description = "Feature table to import.  Required if tables are from multiple commits.")
     String table = null;
 
     @VisibleForTesting
-    @Parameter(names = { "-m", "--message" }, description = "Commit message to ")
+    @Option(names = { "-m", "--message" }, description = "Commit message to ")
     String commitMessage;
 
     final GeopkgSupport support = new GeopkgSupport();

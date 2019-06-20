@@ -18,14 +18,14 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.DataStoreExport;
+import org.locationtech.geogig.geotools.cli.base.DataStoreExport;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Exports features from a feature type into a PostGIS database.
@@ -33,14 +33,10 @@ import com.beust.jcommander.ParametersDelegate;
  * @see ExportOp
  */
 @ReadOnly
-@Parameters(commandNames = "export", commandDescription = "Export to PostGIS")
+@Command(name = "export", description = "Export to PostGIS")
 public class PGExport extends DataStoreExport implements CLICommand {
 
-    /**
-     * Common arguments for PostGIS commands.
-     */
-    @ParametersDelegate
-    public PGCommonArgs commonArgs = new PGCommonArgs();
+    public @ParentCommand PGCommandProxy commonArgs;
 
     final PGSupport support = new PGSupport();
 

@@ -39,26 +39,28 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Strings;
 import com.google.common.base.Suppliers;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows formatted information about a commit, tree, feature or feature type
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "show", commandDescription = "Displays information about a commit, feature or feature type")
+@Command(name = "show", description = "Displays information about a commit, feature or feature type")
 public class Show extends AbstractCommand implements CLICommand {
 
     /**
      * The path to the element to display.
      */
-    @Parameter(description = "<reference>")
-    private List<String> refs = new ArrayList<String>();
+    @Parameters(description = "<reference>")
+    private List<String> refs = new ArrayList<>();
 
-    @Parameter(names = { "--raw" }, description = "Produce machine-readable output")
+    @Option(names = { "--raw" }, description = "Produce machine-readable output")
     private boolean raw;
 
     /**

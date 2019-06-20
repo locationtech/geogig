@@ -1,0 +1,5 @@
+org.locationtech.geogig.cli.remoting.Clone
+org.locationtech.geogig.cli.remoting.Fetch
+org.locationtech.geogig.cli.remoting.Pull
+org.locationtech.geogig.cli.remoting.Push
+org.locationtech.geogig.cli.remoting.RemoteExtension

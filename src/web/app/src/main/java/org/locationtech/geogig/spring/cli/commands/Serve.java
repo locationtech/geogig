@@ -15,6 +15,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
+import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
@@ -23,15 +24,15 @@ import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.rest.repository.MultiRepositoryProvider;
 import org.locationtech.geogig.rest.repository.RepositoryProvider;
 import org.locationtech.geogig.rest.repository.SingleRepositoryProvider;
 import org.locationtech.geogig.spring.main.JettyServer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * This command starts an embedded server to serve up a repository.
@@ -45,17 +46,17 @@ import com.beust.jcommander.Parameters;
  * @see JettServer
  */
 @RequiresRepository(false)
-@Parameters(commandNames = "serve", commandDescription = "Serves a repository through the web api")
-public class Serve extends AbstractCommand {
+@Command(name = "serve", description = "Serves a repository through the web api")
+public class Serve extends AbstractCommand implements CLICommand{
 
-    @Parameter(description = "Repository location (directory).", required = false, arity = 1)
+    @Parameters(description = "Repository location (directory).", arity = "0..1")
     private List<String> repo;
 
-    @Parameter(names = { "--multirepo",
+    @Option(names = { "--multirepo",
             "-m" }, description = "Serve all of the repositories in the directory.", required = false)
     private boolean multiRepo = false;
 
-    @Parameter(names = { "--port", "-p" }, description = "Port to run server on")
+    @Option(names = { "--port", "-p" }, description = "Port to run server on")
     private int port = 8182;
 
     @Override

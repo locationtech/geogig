@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,10 +33,12 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.jts.geom.Envelope;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows changes between commits, commits and working tree, etc.
@@ -53,31 +56,31 @@ import com.google.common.collect.Lists;
  * @see DiffOp
  */
 @ReadOnly
-@Parameters(commandNames = "diff", commandDescription = "Show changes between commits, commit and working tree, etc")
+@Command(name = "diff", description = "Show changes between commits, commit and working tree, etc")
 public class Diff extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
-    private List<String> refSpec = Lists.newArrayList();
+    @Parameters(description = "[<commit> [<commit>]]", arity = "1..2")
+    private List<String> refSpec = new ArrayList<>();
 
-    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
-    private List<String> paths = Lists.newArrayList();
+    @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")
+    private List<String> paths = new ArrayList<>();
 
-    @Parameter(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
+    @Option(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
     private boolean cached;
 
-    @Parameter(names = "--summary", description = "List only summary of changes")
+    @Option(names = "--summary", description = "List only summary of changes")
     private boolean summary;
 
-    @Parameter(names = "--nogeom", description = "Do not show detailed coordinate changes in geometries")
+    @Option(names = "--nogeom", description = "Do not show detailed coordinate changes in geometries")
     private boolean nogeom;
 
-    @Parameter(names = "--bounds", description = "Show only the bounds of the difference between the two trees")
+    @Option(names = "--bounds", description = "Show only the bounds of the difference between the two trees")
     private boolean bounds;
 
-    @Parameter(names = "--crs", description = "Coordinate reference system for --bounds (defaults to EPSG:4326 with lon/lat axis order)")
+    @Option(names = "--crs", description = "Coordinate reference system for --bounds (defaults to EPSG:4326 with lon/lat axis order)")
     private String boundsCrs;
 
-    @Parameter(names = "--count", description = "Only count the number of changes between the two trees")
+    @Option(names = "--count", description = "Only count the number of changes between the two trees")
     private boolean count;
 
     /**

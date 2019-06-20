@@ -21,8 +21,9 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.plumbing.remotes.RemoteException;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Adds a remote for the repository with the given name and URL.
@@ -41,19 +42,19 @@ import com.beust.jcommander.Parameters;
  * @see RemoteAddOp
  */
 @ReadOnly
-@Parameters(commandNames = "remote add", commandDescription = "Add a remote for the repository")
+@Command(name = "remote add", description = "Add a remote for the repository")
 public class RemoteAdd extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-t", "--track" }, description = "branch to track")
+    @Option(names = { "-t", "--track" }, description = "branch to track")
     private String branch = "*";
 
-    @Parameter(names = { "-u", "--username" }, description = "user name")
+    @Option(names = { "-u", "--username" }, description = "user name")
     private String username = null;
 
-    @Parameter(names = { "-p", "--password" }, description = "password")
+    @Option(names = { "-p", "--password" }, description = "password")
     private String password = null;
 
-    @Parameter(description = "<name> <url>")
+    @Parameters(description = "<name> <url>")
     private List<String> params = new ArrayList<String>();
 
     /**

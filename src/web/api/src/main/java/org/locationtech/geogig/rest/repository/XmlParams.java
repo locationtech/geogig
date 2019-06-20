@@ -10,13 +10,13 @@
 package org.locationtech.geogig.rest.repository;
 
 import java.io.File;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.beust.jcommander.internal.Lists;
 
 /**
  *
@@ -40,7 +40,7 @@ class XmlParams extends AbstractParameterSet {
     @Override
     public String[] getValuesArray(String key) {
         NodeList nodes = options.getElementsByTagName(key);
-        List<String> values = Lists.newLinkedList();
+        List<String> values = new LinkedList<>();
         if (nodes != null) {
             for (int i = 0; i < nodes.getLength(); i++) {
                 Node item = nodes.item(i);

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,10 +24,11 @@ import org.locationtech.geogig.porcelain.RevertConflictsException;
 import org.locationtech.geogig.porcelain.RevertOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.internal.Lists;
 import com.google.common.base.Suppliers;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Given one or more existing commits, revert the changes that the related patches introduce, and
@@ -43,19 +45,19 @@ import com.google.common.base.Suppliers;
  * 
  * @see RevertOp
  */
-@Parameters(commandNames = "revert", commandDescription = "Revert commits to undo the changes made")
+@Command(name = "revert", description = "Revert commits to undo the changes made")
 public class Revert extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<commits>...", variableArity = true)
-    private List<String> commits = Lists.newArrayList();
+    @Parameters(description = "<commits>...")
+    private List<String> commits = new ArrayList<>();
 
-    @Parameter(names = "--no-commit", description = "Do not create new commit with reverted changes")
+    @Option(names = "--no-commit", description = "Do not create new commit with reverted changes")
     private boolean noCommit;
 
-    @Parameter(names = "--continue", description = "Continue a revert process stopped because of conflicts")
+    @Option(names = "--continue", description = "Continue a revert process stopped because of conflicts")
     private boolean continueRevert;
 
-    @Parameter(names = "--abort", description = "Abort a revert process stopped because of conflicts")
+    @Option(names = "--abort", description = "Abort a revert process stopped because of conflicts")
     private boolean abort;
 
     /**

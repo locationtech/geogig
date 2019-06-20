@@ -28,26 +28,27 @@ import org.locationtech.geogig.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.io.Closeables;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Verifies that a patch can be applied
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "verify-patch", commandDescription = "Verifies that a patch can be applied")
+@Command(name = "verify-patch", description = "Verifies that a patch can be applied")
 public class VerifyPatch extends AbstractCommand {
 
     /**
      * The path to the patch file
      */
-    @Parameter(description = "<patch>")
+    @Parameters(description = "<patch>")
     private List<String> patchFiles = new ArrayList<String>();
 
-    @Parameter(names = {
-            "--reverse" }, description = "Check if the patch can be applied in reverse")
+    @Option(names = { "--reverse" }, description = "Check if the patch can be applied in reverse")
     private boolean reverse;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

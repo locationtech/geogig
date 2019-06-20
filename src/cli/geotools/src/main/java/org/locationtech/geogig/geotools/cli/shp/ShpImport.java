@@ -25,8 +25,9 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.filter.Filter;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Imports features from one or more shapefiles.
@@ -35,33 +36,33 @@ import com.beust.jcommander.Parameters;
  * 
  * @see ImportOp
  */
-@Parameters(commandNames = "import", commandDescription = "Import Shapefile")
+@Command(name = "import", description = "Import Shapefile")
 public class ShpImport extends AbstractShpCommand implements CLICommand {
 
     /**
      * Shapefiles to import.
      */
-    @Parameter(description = "<shapefile> [<shapefile>]...")
+    @Parameters(description = "<shapefile> [<shapefile>]...")
     List<String> shapeFile;
 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = { "--create",
+    @Option(names = { "--create",
             "-c" }, description = "Only create the schema, do not actually import its features")
     boolean onlyCreate;
 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = {
+    @Option(names = {
             "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = {
+    @Option(names = {
             "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
@@ -69,31 +70,31 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
      * Destination path to add features to. Only allowed when importing a single table
      */
-    @Parameter(names = { "-d", "--dest" }, description = "Path to import to")
+    @Option(names = { "-d", "--dest" }, description = "Path to import to")
     String destTable;
 
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = {
+    @Option(names = {
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
     /**
      * Charset to use for decoding attributes in DBF file
      */
-    @Parameter(names = {
+    @Option(names = {
             "--charset" }, description = "Use the specified charset to decode attributes. Default is ISO-8859-1.")
     String charset = "ISO-8859-1";
 
-    @Parameter(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
+    @Option(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
     String cqlFilter;
 
     /**

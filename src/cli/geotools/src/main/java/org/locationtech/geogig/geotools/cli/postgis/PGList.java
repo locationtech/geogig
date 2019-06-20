@@ -12,11 +12,11 @@ package org.locationtech.geogig.geotools.cli.postgis;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.DataStoreList;
+import org.locationtech.geogig.geotools.cli.base.DataStoreList;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Lists tables from a PostGIS database.
@@ -26,14 +26,10 @@ import com.beust.jcommander.ParametersDelegate;
  * @see ListOp
  */
 @ReadOnly
-@Parameters(commandNames = "list", commandDescription = "List available feature types in a database")
+@Command(name = "list", description = "List available feature types in a database")
 public class PGList extends DataStoreList implements CLICommand {
 
-    /**
-     * Common arguments for PostGIS commands.
-     */
-    @ParametersDelegate
-    public PGCommonArgs commonArgs = new PGCommonArgs();
+    public @ParentCommand PGCommandProxy commonArgs;
 
     final PGSupport support = new PGSupport();
 

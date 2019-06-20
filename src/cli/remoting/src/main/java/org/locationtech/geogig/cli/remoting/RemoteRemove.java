@@ -20,8 +20,8 @@ import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.plumbing.remotes.RemoteException;
 import org.locationtech.geogig.plumbing.remotes.RemoteRemoveOp;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * Remove the remote named <name>. All remote-tracking branches and configuration settings for the
@@ -38,10 +38,10 @@ import com.beust.jcommander.Parameters;
  * @see RemoteRemoveOp
  */
 @ObjectDatabaseReadOnly
-@Parameters(commandNames = "rm", commandDescription = "Remove a remote from the repository")
+@Command(name = "rm", description = "Remove a remote from the repository")
 public class RemoteRemove extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<name>")
+    @Parameters(description = "<name>")
     private List<String> params;
 
     /**

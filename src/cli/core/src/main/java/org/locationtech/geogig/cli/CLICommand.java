@@ -11,11 +11,11 @@ package org.locationtech.geogig.cli;
 
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.Config;
-import org.locationtech.geogig.cli.porcelain.Help;
 import org.locationtech.geogig.cli.porcelain.Init;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Help;
+import picocli.CommandLine.ParameterException;
 
 /**
  * Base interface for command executed through the command line interface.
@@ -32,7 +32,12 @@ import com.beust.jcommander.ParameterException;
  *                       of a repository.
  * 
  */
-public interface CLICommand {
+public interface CLICommand extends Runnable {
+
+    default String getCommandName() {
+        Command annotation = getClass().getAnnotation(Command.class);
+        return annotation.name();
+    }
 
     /**
      * Executes the CLI command represented by the implementation.

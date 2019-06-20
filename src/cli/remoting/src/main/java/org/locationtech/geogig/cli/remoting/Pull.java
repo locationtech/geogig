@@ -28,9 +28,11 @@ import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Objects;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Incorporates changes from a remote repository into the current branch.
@@ -49,26 +51,25 @@ import com.google.common.base.Objects;
  * @see PullOp
  */
 @RemotesReadOnly
-@Parameters(commandNames = "pull", commandDescription = "Fetch from and merge with another repository or a local branch")
+@Command(name = "pull", description = "Fetch from and merge with another repository or a local branch")
 public class Pull extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--all", description = "Fetch all remotes.")
+    @Option(names = "--all", description = "Fetch all remotes.")
     private boolean all = false;
 
-    @Parameter(names = "--rebase", description = "Rebase the current branch on top of the upstream branch after fetching.")
+    @Option(names = "--rebase", description = "Rebase the current branch on top of the upstream branch after fetching.")
     private boolean rebase = false;
 
-    @Parameter(names = { "--depth" }, description = "Depth of the pull.")
+    @Option(names = { "--depth" }, description = "Depth of the pull.")
     private int depth = 0;
 
-    @Parameter(names = {
-            "--fulldepth" }, description = "Pull the full history from the repository.")
+    @Option(names = { "--fulldepth" }, description = "Pull the full history from the repository.")
     private boolean fulldepth = false;
 
-    @Parameter(names = { "-I", "--include-indexes" }, description = "Pull also spatial indexes")
+    @Option(names = { "-I", "--include-indexes" }, description = "Pull also spatial indexes")
     private boolean withIndexes = false;
 
-    @Parameter(description = "[<repository> [<refspec>...]]")
+    @Parameters(description = "[<repository> [<refspec>...]]")
     private List<String> args;
 
     /**

@@ -35,9 +35,11 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * You can query/set/unset options with this command. The name is actually the section and the key
@@ -62,32 +64,32 @@ import com.google.common.base.Joiner;
  */
 @ObjectDatabaseReadOnly
 @RequiresRepository(false)
-@Parameters(commandNames = "config", commandDescription = "Get and set repository or global options")
+@Command(name = "config", aliases = "cfg", description = "Get and set repository or global options")
 public class Config extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--global", description = "Use global config file.")
+    @Option(names = "--global", description = "Use global config file.")
     private boolean global = false;
 
-    @Parameter(names = "--local", description = "Use repository config file.")
+    @Option(names = "--local", description = "Use repository config file.")
     private boolean local = false;
 
-    @Parameter(names = "--get", description = "Get the value for a given key.")
+    @Option(names = "--get", description = "Get the value for a given key.")
     private boolean get = false;
 
-    @Parameter(names = "--unset", description = "Remove the line matching the given key.")
+    @Option(names = "--unset", description = "Remove the line matching the given key.")
     private boolean unset = false;
 
-    @Parameter(names = "--remove-section", description = "Remove the given section.")
+    @Option(names = "--remove-section", description = "Remove the given section.")
     private boolean remove_section = false;
 
-    @Parameter(names = { "--list", "-l" }, description = "List all variables.")
+    @Option(names = { "--list", "-l" }, description = "List all variables.")
     private boolean list = false;
 
-    @Parameter(names = {
+    @Option(names = {
             "--rootUri" }, description = "Specify a root URI for a collection of repositories.  Only global access will be available.")
     private String rootUri = null;
 
-    @Parameter(description = "name value (name is section.key format, value is only required when setting)")
+    @Parameters(description = "name value (name is section.key format, value is only required when setting)")
     private List<String> nameValuePair;
 
     /**

@@ -13,7 +13,7 @@
   <name>GeoGig Command Line Interface</name>
 
   <properties>
-    <project.relativePath>cli</project.relativePath>
+    <project.relativePath>picocli</project.relativePath>
   </properties>
 
   <modules>

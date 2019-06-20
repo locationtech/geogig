@@ -26,7 +26,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.geotools.cli.DataStoreExport;
+import org.locationtech.geogig.geotools.cli.base.DataStoreExport;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
 import org.locationtech.geogig.geotools.geopkg.InterchangeFormat;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
@@ -35,10 +35,11 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.annotations.VisibleForTesting;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Exports features from a feature type into a Geopackage database.
@@ -47,18 +48,15 @@ import com.google.common.annotations.VisibleForTesting;
  */
 @RequiresRepository(true)
 @ReadOnly
-@Parameters(commandNames = "export", commandDescription = "Export to Geopackage")
+@Command(name = "export", description = "Export to Geopackage")
 public class GeopkgExport extends DataStoreExport implements CLICommand {
-    /**
-     * Common arguments for Geopackage commands.
-     */
-    @ParametersDelegate
-    final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+
+    public @ParentCommand GeopkgCommandProxy commonArgs;
 
     final GeopkgSupport support = new GeopkgSupport();
 
     @VisibleForTesting
-    @Parameter(names = { "-i",
+    @Option(names = { "-i",
             "--interchange" }, description = "Export as geogig mobile interchange format")
     boolean interchangeFormat;
 

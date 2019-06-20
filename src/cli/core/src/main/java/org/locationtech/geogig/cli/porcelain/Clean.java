@@ -28,16 +28,17 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
-@Parameters(commandNames = "clean", commandDescription = "Deletes untracked features from working tree")
+@Command(name = "clean", description = "Deletes untracked features from working tree")
 public class Clean extends AbstractCommand {
 
-    @Parameter(description = "<path>")
+    @Parameters(description = "<path>")
     private List<String> path = new ArrayList<String>();
 
-    @Parameter(names = { "--dry-run",
+    @Option(names = { "--dry-run",
             "-n" }, description = "Don't actually remove anything, just show what would be done.")
     private boolean dryRun;
 

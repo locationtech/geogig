@@ -35,8 +35,9 @@ import org.locationtech.geogig.porcelain.ValueAndCommit;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows information about the commits and authors that have modified the current attributes of a
@@ -44,19 +45,19 @@ import com.beust.jcommander.Parameters;
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "blame", commandDescription = "Shows information about authors of modifications for a single feature")
+@Command(name = "blame", description = "Shows information about authors of modifications for a single feature")
 public class Blame extends AbstractCommand {
 
     /**
      * The path to the element to analyze.
      */
-    @Parameter(description = "<path>")
+    @Parameters(description = "<path>")
     private List<String> paths = new ArrayList<String>();
 
-    @Parameter(names = { "--porcelain" }, description = "Use porcelain output format")
+    @Option(names = { "--porcelain" }, description = "Use porcelain output format")
     private boolean porcelain = false;
 
-    @Parameter(names = { "--no-values" }, description = "Do not show values, only attribute names")
+    @Option(names = { "--no-values" }, description = "Do not show values, only attribute names")
     private boolean noValues = false;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

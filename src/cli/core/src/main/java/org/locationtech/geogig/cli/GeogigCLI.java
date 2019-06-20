@@ -11,29 +11,19 @@ package org.locationtech.geogig.cli;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.ServiceLoader;
-import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
-import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
+import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultPlatform;
@@ -42,50 +32,31 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.RepositoryFinder;
-import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.inject.Binding;
-import com.google.inject.Guice;
-import com.google.inject.Key;
-import com.google.inject.Module;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
+import picocli.CommandLine.ParameterException;
 
 /**
  * Command Line Interface for geogig.
  * <p>
- * Looks up and executes {@link CLICommand} implementations provided by any {@link Guice}
- * {@link Module} that implements {@link CLIModule} declared in any classpath's
- * {@code META-INF/services/com.google.inject.Module} file.
+ * Looks up and executes {@link CLICommand} implementations provided by any
+ * {@link CLICommandExtension} declared in any classpath's
+ * {@code META-INF/services/org.locationtech.geogig.cli.CLICommandExtension} file.
  */
+@Slf4j
 public class GeogigCLI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigCLI.class);
-
-    private static final com.google.inject.Injector commandsInjector;
-    static {
-        Iterable<CLIModule> plugins = ServiceLoader.load(CLIModule.class);
-        commandsInjector = Guice.createInjector(plugins);
-    }
 
     private Context geogigInjector;
 
@@ -334,21 +305,23 @@ public class GeogigCLI {
      * 
      * @return a collection of keys, one for each command
      */
-    private Collection<Key<?>> findCommands() {
-        Map<Key<?>, Binding<?>> commands = commandsInjector.getBindings();
-        return commands.keySet();
+    private List<CLICommand> findCommands() {
+        List<CLICommand> subcomands = new ServiceFinder().lookupServices(CLICommand.class);
+        return subcomands;
     }
 
-    public JCommander newCommandParser() {
-        JCommander jc = new JCommander(this);
-        jc.setProgramName("geogig");
-        for (Key<?> cmd : findCommands()) {
-            Object obj = commandsInjector.getInstance(cmd);
-            if (obj instanceof CLICommand || obj instanceof CLICommandExtension) {
-                jc.addCommand(obj);
+    public CommandLine buildRootCommand() {
+        Geogig command = new Geogig(this);
+        CommandLine cmdline = new CommandLine(command);
+        cmdline.setCommandName("geogig");
+        cmdline.setPosixClusteredShortOptionsAllowed(true);
+        for (CLICommand extension : findCommands()) {
+            cmdline.addSubcommand(extension.getCommandName(), extension);
+            if (log.isDebugEnabled()) {
+                log.debug("Registered command extension {}", extension.getCommandName());
             }
         }
-        return jc;
+        return cmdline;
     }
 
     @VisibleForTesting
@@ -369,7 +342,7 @@ public class GeogigCLI {
             return 0;
         } catch (ParameterException paramParseException) {
             exception = paramParseException;
-            consoleMessage = paramParseException.getMessage() + ". See geogig --help";
+            // consoleMessage = paramParseException.getMessage() + ". See geogig --help";
 
         } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
@@ -429,144 +402,183 @@ public class GeogigCLI {
     private void executeInternal(String... args) throws ParameterException, CommandFailedException,
             IOException, CannotRunGeogigOperationException {
         checkNotNull(args, "args is null");
+        INSTANCE.set(this);
+        // String repoURI = parseRepoURI(args);
+        // if (repoURI != null) {
+        // this.repositoryURI = repoURI;
+        // URI uri = URI.create(repoURI);
+        // File pwd = this.platform.pwd();
+        // if (Strings.isNullOrEmpty(uri.getScheme())) {
+        // pwd = new File(uri.toString());
+        // } else if ("file".equals(uri.getScheme())) {
+        // pwd = new File(uri);
+        // }
+        // this.platform.setWorkingDir(pwd);
+        // }
 
-        JCommander mainCommander = newCommandParser();
-        String repoURI = parseRepoURI(args);
-        if (repoURI != null) {
-            this.repositoryURI = repoURI;
-            URI uri = URI.create(repoURI);
-            File pwd = this.platform.pwd();
-            if (Strings.isNullOrEmpty(uri.getScheme())) {
-                pwd = new File(uri.toString());
-            } else if ("file".equals(uri.getScheme())) {
-                pwd = new File(uri);
-            }
-            this.platform.setWorkingDir(pwd);
-        }
-        if (args.length == 0) {
-            printShortCommandList(mainCommander);
-            return;
-        }
-        {
-            String commandName = args[0];
-            JCommander commandParser = mainCommander.getCommands().get(commandName);
-            if (commandParser == null) {
-                args = unalias(this.repositoryURI, args);
-                commandName = args[0];
-                commandParser = mainCommander.getCommands().get(commandName);
-            }
+        CommandLine cmd = buildRootCommand();
+        cmd.execute(args);
+        // try {
+        // ParseResult parseResult = cmd.parseArgs(args);
+        // // Did user request usage help (--help)?
+        // if (cmd.isUsageHelpRequested()) {
+        // cmd.usage(cmd.getOut());
+        // cmd.getCommandSpec().exitCodeOnUsageHelp();
+        // return;
+        // // Did user request version help (--version)?
+        // } else if (cmd.isVersionHelpRequested()) {
+        // cmd.printVersionHelp(cmd.getOut());
+        // cmd.getCommandSpec().exitCodeOnVersionHelp();
+        // return;
+        // }
+        // // invoke the business logic
+        // List<CommandLine> subcommands = parseResult.asCommandLineList();
+        // CLICommand cliCommand = subcommands.get(subcommands.size() - 1).getCommand();
+        // cliCommand.run(this);
+        // // invalid user input: print error message and usage help
+        // } catch (ParameterException ex) {
+        // if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
+        // ex.getCommandLine().usage(cmd.getErr());
+        // }
+        // throw ex;
+        // }
 
-            if (commandParser == null) {
-                consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
-                // check for similar commands
-                Map<String, JCommander> candidates = spellCheck(mainCommander.getCommands(),
-                        commandName);
-                if (!candidates.isEmpty()) {
-                    String msg = candidates.size() == 1 ? "Did you mean this?"
-                            : "Did you mean one of these?";
-                    consoleReader.println();
-                    consoleReader.println(msg);
-                    for (String name : candidates.keySet()) {
-                        consoleReader.println("\t" + name);
-                    }
-                }
-                consoleReader.flush();
-                throw new InvalidParameterException(
-                        String.format("'%s' is not a command.", commandName));
-            }
-
-            Object object = commandParser.getObjects().get(0);
-            if (object instanceof CLICommandExtension) {
-                args = Arrays.asList(args).subList(1, args.length)
-                        .toArray(new String[args.length - 1]);
-                mainCommander = ((CLICommandExtension) object).getCommandParser();
-                if (args.length == 1 && "--help".equals(args[0])) {
-                    printUsage(mainCommander);
-                    return;
-                }
-            }
-        }
-
-        mainCommander.parse(args);
-        final String parsedCommand = mainCommander.getParsedCommand();
-        if (null == parsedCommand) {
-            if (mainCommander.getObjects().size() == 0) {
-                printUsage(mainCommander);
-            } else if (mainCommander.getObjects().get(0) instanceof CLICommandExtension) {
-                CLICommandExtension extension = (CLICommandExtension) mainCommander.getObjects()
-                        .get(0);
-                printUsage(extension.getCommandParser());
-            } else {
-                printUsage(mainCommander);
-                throw new CommandFailedException();
-            }
-        } else {
-            JCommander jCommander = mainCommander.getCommands().get(parsedCommand);
-            List<Object> objects = jCommander.getObjects();
-            CLICommand cliCommand = (CLICommand) objects.get(0);
-            Class<? extends CLICommand> cmdClass = cliCommand.getClass();
-            if (cliCommand instanceof AbstractCommand && ((AbstractCommand) cliCommand).help) {
-                ((AbstractCommand) cliCommand).printUsage(this);
-                getConsole().flush();
-                return;
-            }
-            Hints hints = gatherHints(cmdClass);
-            this.hints = hints;
-
-            if (cmdClass.isAnnotationPresent(RequiresRepository.class)
-                    && cmdClass.getAnnotation(RequiresRepository.class).value()) {
-                String workingDir;
-                Platform platform = getPlatform();
-                if (platform == null || platform.pwd() == null) {
-                    workingDir = "Couln't determine working directory.";
-                } else {
-                    workingDir = platform.pwd().getAbsolutePath();
-                }
-                if (getGeogig() == null) {
-                    throw new InvalidParameterException(
-                            "Not in a geogig repository: " + workingDir);
-                }
-            }
-
-            cliCommand.run(this);
-            getConsole().flush();
-        }
+        // String repoURI = parseRepoURI(args);
+        // if (repoURI != null) {
+        // this.repositoryURI = repoURI;
+        // URI uri = URI.create(repoURI);
+        // File pwd = this.platform.pwd();
+        // if (Strings.isNullOrEmpty(uri.getScheme())) {
+        // pwd = new File(uri.toString());
+        // } else if ("file".equals(uri.getScheme())) {
+        // pwd = new File(uri);
+        // }
+        // this.platform.setWorkingDir(pwd);
+        // }
+        // if (args.length == 0) {
+        // printShortCommandList(mainCommander);
+        // return;
+        // }
+        // {
+        // String commandName = args[0];
+        // JCommander commandParser = mainCommander.getCommands().get(commandName);
+        // if (commandParser == null) {
+        // args = unalias(this.repositoryURI, args);
+        // commandName = args[0];
+        // commandParser = mainCommander.getCommands().get(commandName);
+        // }
+        //
+        // if (commandParser == null) {
+        // consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
+        // // check for similar commands
+        // Map<String, JCommander> candidates = spellCheck(mainCommander.getSubcommands()Commands(),
+        // commandName);
+        // if (!candidates.isEmpty()) {
+        // String msg = candidates.size() == 1 ? "Did you mean this?"
+        // : "Did you mean one of these?";
+        // consoleReader.println();
+        // consoleReader.println(msg);
+        // for (String name : candidates.keySet()) {
+        // consoleReader.println("\t" + name);
+        // }
+        // }
+        // consoleReader.flush();
+        // throw new InvalidParameterException(
+        // String.format("'%s' is not a command.", commandName));
+        // }
+        //
+        // Object object = commandParser.getObjects().get(0);
+        // if (object instanceof CLICommandExtension) {
+        // args = Arrays.asList(args).subList(1, args.length)
+        // .toArray(new String[args.length - 1]);
+        // mainCommander = ((CLICommandExtension) object).getCommandParser();
+        // if (args.length == 1 && "--help".equals(args[0])) {
+        // printUsage(mainCommander);
+        // return;
+        // }
+        // }
+        // }
+        //
+        // mainCommander.parse(args);
+        // final String parsedCommand = mainCommander.getParsedCommand();
+        // if (null == parsedCommand) {
+        // if (mainCommander.getObjects().size() == 0) {
+        // printUsage(mainCommander);
+        // } else if (mainCommander.getObjects().get(0) instanceof CLICommandExtension) {
+        // CLICommandExtension extension = (CLICommandExtension) mainCommander.getObjects()
+        // .get(0);
+        // printUsage(extension.getCommandParser());
+        // } else {
+        // printUsage(mainCommander);
+        // throw new CommandFailedException();
+        // }
+        // } else {
+        // JCommander jCommander = mainCommander.getCommands().get(parsedCommand);
+        // List<Object> objects = jCommander.getObjects();
+        // CLICommand cliCommand = (CLICommand) objects.get(0);
+        // Class<? extends CLICommand> cmdClass = cliCommand.getClass();
+        // if (cliCommand instanceof AbstractCommand && ((AbstractCommand) cliCommand).help) {
+        // ((AbstractCommand) cliCommand).printUsage(this);
+        // getConsole().flush();
+        // return;
+        // }
+        // Hints hints = gatherHints(cmdClass);
+        // this.hints = hints;
+        //
+        // if (cmdClass.isAnnotationPresent(RequiresRepository.class)
+        // && cmdClass.getAnnotation(RequiresRepository.class).value()) {
+        // String workingDir;
+        // Platform platform = getPlatform();
+        // if (platform == null || platform.pwd() == null) {
+        // workingDir = "Couln't determine working directory.";
+        // } else {
+        // workingDir = platform.pwd().getAbsolutePath();
+        // }
+        // if (getGeogig() == null) {
+        // throw new InvalidParameterException(
+        // "Not in a geogig repository: " + workingDir);
+        // }
+        // }
+        //
+        // cliCommand.run(this);
+        // getConsole().flush();
+        // }
     }
 
-    private String parseRepoURI(String[] args) {
-        for (Iterator<String> it = Iterators.forArray(args); it.hasNext();) {
-            String a = it.next();
-            if ("--repo".equals(a)) {
-                Preconditions.checkArgument(it.hasNext(),
-                        "Argument --repo must be followed by a repository URI");
-                String uri = it.next();
-                try {
-                    new URI(uri);
-                } catch (URISyntaxException e) {
-                    throw new IllegalArgumentException("Invalid repository URI: '" + uri + "'");
-                }
-                return uri;
-            }
-        }
-        return null;
-    }
+    // private String parseRepoURI(String[] args) {
+    // for (Iterator<String> it = Iterators.forArray(args); it.hasNext();) {
+    // String a = it.next();
+    // if ("--repo".equals(a)) {
+    // Preconditions.checkArgument(it.hasNext(),
+    // "Argument --repo must be followed by a repository URI");
+    // String uri = it.next();
+    // try {
+    // new URI(uri);
+    // } catch (URISyntaxException e) {
+    // throw new IllegalArgumentException("Invalid repository URI: '" + uri + "'");
+    // }
+    // return uri;
+    // }
+    // }
+    // return null;
+    // }
 
     /**
      * This method should be used instead of {@link JCommander#usage()} so the help string is
      * printed to the cli's {@link #getConsole() console} (and hence to wherever its output is sent)
      * instead of directly to {@code System.out}
      */
-    public void printUsage(JCommander mainCommander) {
-        StringBuilder out = new StringBuilder();
-        mainCommander.usage(out);
-        Console console = getConsole();
-        try {
-            console.println(out.toString());
-            console.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    // public void printUsage(CommandLine mainCommander) {
+    // StringBuilder out = new StringBuilder();
+    // mainCommander.usage(out);
+    // Console console = getConsole();
+    // try {
+    // console.println(out.toString());
+    // console.flush();
+    // } catch (IOException e) {
+    // throw new RuntimeException(e);
+    // }
+    // }
 
     private Hints gatherHints(Class<? extends CLICommand> cmdClass) {
         Hints hints = new Hints();
@@ -584,187 +596,6 @@ public class GeogigCLI {
 
         if (cmdClass.isAnnotationPresent(annotation)) {
             hints.set(key, Boolean.TRUE);
-        }
-    }
-
-    /**
-     * If the passed arguments contains an alias, it replaces it by the full command corresponding
-     * to that alias and returns anew set of arguments
-     * 
-     * IF not, it returns the passed arguments
-     * 
-     * @param args
-     * @return
-     */
-    private String[] unalias(@Nullable String repoURI, String[] args) {
-        final String aliasedCommand = args[0];
-        final String configParam = "alias." + aliasedCommand;
-        URI uri;
-        boolean globalOnly;
-        if (repoURI == null) {
-            uri = platform.pwd().toURI();
-            globalOnly = true;
-        } else {
-            try {
-                uri = RepositoryFinder.INSTANCE.resolveRepoUriFromString(platform, repoURI);
-                globalOnly = false;
-            } catch (URISyntaxException e) {
-                uri = platform.getUserHome().toURI();
-                globalOnly = true;
-            }
-        }
-
-        Optional<String> unaliased = Optional.empty();
-
-        final Context context = GlobalContextBuilder.builder().build(Hints.readOnly());
-        final RepositoryResolver resolver = RepositoryFinder.INSTANCE.lookup(uri);
-        final boolean repoExists = resolver.repoExists(uri);
-        try (ConfigDatabase config = resolver.resolveConfigDatabase(uri, context, globalOnly)) {
-            if (!globalOnly && repoExists) {
-                unaliased = config.get(configParam);
-            }
-            if (!unaliased.isPresent()) {
-                unaliased = config.getGlobal(configParam);
-            }
-        } catch (Exception e) {
-            String msg = "Unable to acquire config to check alias for " + aliasedCommand;
-            LOGGER.error(msg, e);
-            try {
-                consoleReader.println(msg);
-            } catch (IOException e1) {
-                throw new RuntimeException(e1);
-            }
-        }
-
-        if (!unaliased.isPresent()) {
-            // see if we can fall back to a file global config
-            if (repoURI == null || !"file".equals(uri.getScheme())
-                    && RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("file")) {
-
-                try (ConfigDatabase global = RepositoryFinder.INSTANCE
-                        .resolveConfigDatabase(platform.pwd().toURI(), context, true)) {
-                    unaliased = global.getGlobal(configParam);
-                } catch (Exception e) {
-                    Throwables.throwIfUnchecked(e);
-                    throw new RuntimeException(e);
-                }
-            }
-            if (!unaliased.isPresent()) {
-                return args;
-            }
-        }
-        Iterable<String> tokens = Splitter.on(" ").split(unaliased.get());
-        List<String> allArgs = Lists.newArrayList(tokens);
-        allArgs.addAll(Lists.newArrayList(Arrays.copyOfRange(args, 1, args.length)));
-        return allArgs.toArray(new String[0]);
-    }
-
-    /**
-     * Return all commands with a command name at a levenshtein distance of less than 3, as
-     * potential candidates for a mistyped command
-     * 
-     * @param commands the list of all available commands
-     * @param commandName the command name
-     * @return a map filtered according to distance between command names
-     */
-    private Map<String, JCommander> spellCheck(Map<String, JCommander> commands,
-            final String commandName) {
-        Map<String, JCommander> candidates = Maps.filterEntries(commands,
-                new Predicate<Map.Entry<String, JCommander>>() {
-                    public @Override boolean apply(@Nullable Entry<String, JCommander> entry) {
-                        char[] s1 = entry.getKey().toCharArray();
-                        char[] s2 = commandName.toCharArray();
-                        int[] prev = new int[s2.length + 1];
-                        for (int j = 0; j < s2.length + 1; j++) {
-                            prev[j] = j;
-                        }
-                        for (int i = 1; i < s1.length + 1; i++) {
-                            int[] curr = new int[s2.length + 1];
-                            curr[0] = i;
-                            for (int j = 1; j < s2.length + 1; j++) {
-                                int d1 = prev[j] + 1;
-                                int d2 = curr[j - 1] + 1;
-                                int d3 = prev[j - 1];
-                                if (s1[i - 1] != s2[j - 1]) {
-                                    d3 += 1;
-                                }
-                                curr[j] = Math.min(Math.min(d1, d2), d3);
-                            }
-                            prev = curr;
-                        }
-                        return prev[s2.length] < 3;
-                    }
-                });
-        return candidates;
-    }
-
-    /**
-     * This prints out only porcelain commands
-     * 
-     * @param mainCommander
-     * 
-     * @throws IOException
-     */
-    public void printShortCommandList(JCommander mainCommander) {
-        TreeSet<String> commandNames = Sets.newTreeSet();
-        int longestCommandLenght = 0;
-        // do this to ignore aliases
-        for (String name : mainCommander.getCommands().keySet()) {
-            JCommander command = mainCommander.getCommands().get(name);
-            Class<? extends Object> clazz = command.getObjects().get(0).getClass();
-            String packageName = clazz.getPackage().getName();
-            if (!packageName.startsWith("org.locationtech.geogig.cli.plumbing")) {
-                commandNames.add(name);
-                longestCommandLenght = Math.max(longestCommandLenght, name.length());
-            }
-        }
-        Console console = getConsole();
-        try {
-            console.println("usage: geogig [--repo <URI>] <command> [<args>]");
-            console.println();
-            console.println("The most commonly used geogig commands are:");
-            for (String cmd : commandNames) {
-                console.print(Strings.padEnd(cmd, longestCommandLenght, ' '));
-                console.print("\t");
-                console.println(mainCommander.getCommandDescription(cmd));
-            }
-            console.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * This prints out all commands, including plumbing ones, without description
-     * 
-     * @param mainCommander
-     * @throws IOException
-     */
-    public void printCommandList(JCommander mainCommander) {
-        TreeSet<String> commandNames = Sets.newTreeSet();
-        int longestCommandLenght = 0;
-        // do this to ignore aliases
-        for (String name : mainCommander.getCommands().keySet()) {
-            commandNames.add(name);
-            longestCommandLenght = Math.max(longestCommandLenght, name.length());
-        }
-        Console console = getConsole();
-        try {
-            console.println("usage: geogig <command> [<args>]");
-            console.println();
-            int i = 0;
-            for (String cmd : commandNames) {
-                console.print(Strings.padEnd(cmd, longestCommandLenght, ' '));
-                i++;
-                if (i % 3 == 0) {
-                    console.println();
-                } else {
-                    console.print("\t");
-                }
-            }
-            console.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -871,6 +702,12 @@ public class GeogigCLI {
             });
         }
         return this.progressListener;
+    }
+
+    private static ThreadLocal<GeogigCLI> INSTANCE = new ThreadLocal<>();
+
+    public static @NonNull GeogigCLI get() {
+        return INSTANCE.get();
     }
 
 }

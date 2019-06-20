@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,12 +38,13 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Plumbing command to shows changes between trees
@@ -50,21 +52,21 @@ import com.google.common.collect.Sets;
  * @see DiffTree
  */
 @ReadOnly
-@Parameters(commandNames = "diff-tree", commandDescription = "Show changes between trees")
+@Command(name = "diff-tree", description = "Show changes between trees")
 public class DiffTree extends AbstractCommand implements CLICommand {
 
     private static final String LINE_BREAK = "\n";
 
-    @Parameter(description = "[<treeish> [<treeish>]] [-- <path>...]", arity = 2)
-    private List<String> refSpec = Lists.newArrayList();
+    @Parameters(description = "[<treeish> [<treeish>]]", arity = "2")
+    private List<String> refSpec = new ArrayList<>();
 
-    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
-    private List<String> paths = Lists.newArrayList();
+    @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")
+    private List<String> paths = new ArrayList<>();
 
-    @Parameter(names = "--describe", description = "add description of versions for each modified element")
+    @Option(names = "--describe", description = "add description of versions for each modified element")
     private boolean describe;
 
-    @Parameter(names = "--tree-stats", description = "shows only statistics of modified elements in each changed tree")
+    @Option(names = "--tree-stats", description = "shows only statistics of modified elements in each changed tree")
     private boolean treeStats;
 
     /**

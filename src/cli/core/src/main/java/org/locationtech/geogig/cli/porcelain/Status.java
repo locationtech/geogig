@@ -32,9 +32,10 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.Iterators;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 /**
  * Displays features that have differences between the index and the current HEAD commit and
@@ -51,13 +52,13 @@ import com.google.common.collect.Iterators;
  * @see Add
  */
 @ReadOnly
-@Parameters(commandNames = "status", commandDescription = "Show the working tree status")
+@Command(name = "status", aliases = "st", description = "Show the working tree status")
 public class Status extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--limit", description = "Limit number of displayed changes. Must be >= 0.")
+    @Option(names = "--limit", description = "Limit number of displayed changes. Must be >= 0.")
     private Long limit = 50L;
 
-    @Parameter(names = "--all", description = "Force listing all changes (overrides limit).")
+    @Option(names = "--all", description = "Force listing all changes (overrides limit).")
     private boolean all = false;
 
     /**

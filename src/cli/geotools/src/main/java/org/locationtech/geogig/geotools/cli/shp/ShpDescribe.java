@@ -19,20 +19,21 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
-import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
+import org.locationtech.geogig.geotools.cli.base.DataStoreDescribe;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.io.Files;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * Describes the schema of a shapefile.
  */
 @RequiresRepository(false)
-@Parameters(commandNames = "describe", commandDescription = "Describe a shapefile schema")
+@Command(name = "describe", description = "Describe a shapefile schema")
 public class ShpDescribe extends AbstractShpCommand implements CLICommand {
 
-    @Parameter(description = "<shapefile>... path to the shapefile to describe", arity = 1)
+    @Parameters(description = "<shapefile>... path to the shapefile to describe", arity = "*")
     public List<String> args = new ArrayList<>(2);
 
     protected @Override void runInternal(GeogigCLI cli)

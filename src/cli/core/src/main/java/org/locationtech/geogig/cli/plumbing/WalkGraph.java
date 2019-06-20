@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -31,21 +32,21 @@ import org.locationtech.geogig.plumbing.WalkGraphOp;
 import org.locationtech.geogig.plumbing.WalkGraphOp.Listener;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.google.common.collect.Lists;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  *
  */
 @ReadOnly
-@Parameters(commandNames = "walk-graph", commandDescription = "Visit objects in history graph in post order (referenced objects before referring objects)")
+@Command(name = "walk-graph", description = "Visit objects in history graph in post order (referenced objects before referring objects)")
 public class WalkGraph extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<[refspec]:[path]>", arity = 1)
-    private List<String> refList = Lists.newArrayList();
+    @Parameters(description = "<[refspec]:[path]>", arity = "1")
+    private List<String> refList = new ArrayList<>();
 
-    @Parameter(names = { "-v",
+    @Option(names = { "-v",
             "--verbose" }, description = "Verbose output, include metadata, object id, and object type among object path.")
     private boolean verbose;
 

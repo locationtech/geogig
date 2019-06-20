@@ -22,13 +22,14 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  *
  */
-@Parameters(commandNames = "rm", commandDescription = "Remove features or trees")
+@Command(name = "rm", description = "Remove features or trees")
 public class Remove extends AbstractCommand implements CLICommand {
 
     /**
@@ -36,14 +37,14 @@ public class Remove extends AbstractCommand implements CLICommand {
      * tree, and tree itself. If a path resolving to a tree is used and this flag is set to false,
      * the path will not be deleted, nor its contents
      */
-    @Parameter(names = { "-r",
+    @Option(names = { "-r",
             "--recursive" }, description = "Recursively remove trees, including the tree nodes themselves")
     private boolean recursive;
 
-    @Parameter(names = { "-t", "--truncate" }, description = "Truncate trees, leaving them empty")
+    @Option(names = { "-t", "--truncate" }, description = "Truncate trees, leaving them empty")
     private boolean truncate;
 
-    @Parameter(description = "<path_to_remove>  [<path_to_remove>]...")
+    @Parameters(description = "<path_to_remove>  [<path_to_remove>]...")
     private List<String> pathsToRemove = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

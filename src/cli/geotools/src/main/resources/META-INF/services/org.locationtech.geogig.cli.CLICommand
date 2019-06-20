@@ -1,0 +1,4 @@
+org.locationtech.geogig.geotools.cli.geojson.GeoJsonCommandProxy
+org.locationtech.geogig.geotools.cli.geopkg.GeopkgCommandProxy
+org.locationtech.geogig.geotools.cli.postgis.PGCommandProxy
+org.locationtech.geogig.geotools.cli.shp.ShpCommandProxy

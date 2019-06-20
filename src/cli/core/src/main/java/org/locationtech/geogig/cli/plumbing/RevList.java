@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -31,11 +32,13 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows list of commits.
@@ -43,11 +46,49 @@ import com.google.common.collect.Range;
  * @see org.locationtech.geogig.porcelain.LogOp
  */
 @ReadOnly
-@Parameters(commandNames = "rev-list", commandDescription = "Show list of commits")
+@Command(name = "rev-list", description = "Show list of commits")
 public class RevList extends AbstractCommand implements CLICommand {
 
-    @ParametersDelegate
-    public final RevListArgs args = new RevListArgs();
+    /**
+     * The commits to use for starting the list of output commits
+     * 
+     */
+    @Parameters(description = "< [<commit> ...]|[<since>..<until>]")
+    public List<String> commits = new ArrayList<String>();
+
+    @Option(names = { "--max", "-n" }, description = "Maximum number of commits to log.")
+    public Integer limit;
+
+    @Option(names = "--skip", description = "Skip number commits before starting to show the commit output.")
+    public Integer skip;
+
+    @Option(names = "--since", description = "Maximum number of commits to log")
+    public String since;
+
+    @Option(names = "--until", description = "Maximum number of commits to log")
+    public String until;
+
+    @Option(names = "--author", description = "Return only commits by authors with names maching the passed regular expression")
+    public String author;
+
+    @Option(names = "--committer", description = "Return only commits by committer with names maching the passed regular expression")
+    public String committer;
+
+    @Option(names = { "--path",
+            "-p" }, description = "Print only commits that have modified the given path(s)")
+    public List<String> pathNames = new ArrayList<>();
+
+    @Option(names = "--summary", description = "Show summary of changes for each commit")
+    public boolean summary;
+
+    @Option(names = "--topo-order", description = "Avoid showing commits on multiple lines of history intermixed")
+    public boolean topo;
+
+    @Option(names = "--first-parent", description = "Use only the first parent of each commit, showing a linear history")
+    public boolean firstParent;
+
+    @Option(names = "--changed", description = "Show paths affected by each commit")
+    public boolean changed;
 
     private GeoGIG geogig;
 
@@ -57,16 +98,16 @@ public class RevList extends AbstractCommand implements CLICommand {
      * Executes the revlist command using the provided options.
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(!args.commits.isEmpty(), "No starting commit provided");
+        checkParameter(!this.commits.isEmpty(), "No starting commit provided");
 
         geogig = cli.getGeogig();
 
-        LogOp op = geogig.command(LogOp.class).setTopoOrder(args.topo)
-                .setFirstParentOnly(args.firstParent);
+        LogOp op = geogig.command(LogOp.class).setTopoOrder(this.topo)
+                .setFirstParentOnly(this.firstParent);
 
-        for (String commit : args.commits) {
+        for (String commit : this.commits) {
             if (commit.contains("..")) {
-                checkParameter(args.commits.size() == 1,
+                checkParameter(this.commits.size() == 1,
                         "Only one value accepted when using <since>..<until> syntax");
                 List<String> sinceUntil = ImmutableList.copyOf((Splitter.on("..").split(commit)));
                 checkParameter(sinceUntil.size() == 2 || sinceUntil.size() == 1,
@@ -103,38 +144,38 @@ public class RevList extends AbstractCommand implements CLICommand {
                 op.addCommit(commitId.get());
             }
         }
-        if (args.author != null && !args.author.isEmpty()) {
-            op.setAuthor(args.author);
+        if (this.author != null && !this.author.isEmpty()) {
+            op.setAuthor(this.author);
         }
-        if (args.committer != null && !args.committer.isEmpty()) {
-            op.setCommiter(args.committer);
+        if (this.committer != null && !this.committer.isEmpty()) {
+            op.setCommiter(this.committer);
         }
-        if (args.skip != null) {
-            op.setSkip(args.skip.intValue());
+        if (this.skip != null) {
+            op.setSkip(this.skip.intValue());
         }
-        if (args.limit != null) {
-            op.setLimit(args.limit.intValue());
+        if (this.limit != null) {
+            op.setLimit(this.limit.intValue());
         }
-        if (args.since != null || args.until != null) {
+        if (this.since != null || this.until != null) {
             Date since = new Date(0);
             Date until = new Date();
-            if (args.since != null) {
-                since = new Date(geogig.command(ParseTimestamp.class).setString(args.since).call());
+            if (this.since != null) {
+                since = new Date(geogig.command(ParseTimestamp.class).setString(this.since).call());
             }
-            if (args.until != null) {
-                until = new Date(geogig.command(ParseTimestamp.class).setString(args.until).call());
+            if (this.until != null) {
+                until = new Date(geogig.command(ParseTimestamp.class).setString(this.until).call());
             }
             op.setTimeRange(Range.closed(since, until));
         }
-        if (!args.pathNames.isEmpty()) {
-            for (String s : args.pathNames) {
+        if (!this.pathNames.isEmpty()) {
+            for (String s : this.pathNames) {
                 op.addPath(s);
             }
         }
         Iterator<RevCommit> log = op.call();
         console = cli.getConsole();
 
-        RawPrinter printer = new RawPrinter(args.changed);
+        RawPrinter printer = new RawPrinter(this.changed);
         while (log.hasNext()) {
             printer.print(log.next());
             console.flush();

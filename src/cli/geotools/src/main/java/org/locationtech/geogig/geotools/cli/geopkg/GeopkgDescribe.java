@@ -13,12 +13,13 @@ import java.io.File;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.geotools.cli.DataStoreDescribe;
+import org.locationtech.geogig.geotools.cli.base.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Preconditions;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Describes a table from a Geopackage database.
@@ -27,13 +28,10 @@ import com.google.common.base.Preconditions;
  * 
  * @see DescribeOp
  */
-@Parameters(commandNames = "describe", commandDescription = "Describe a Geopackage table")
+@Command(name = "describe", description = "Describe a Geopackage table")
 public class GeopkgDescribe extends DataStoreDescribe implements CLICommand {
-    /**
-     * Common arguments for Geopackage commands.
-     */
-    @ParametersDelegate
-    final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+
+    public @ParentCommand GeopkgCommandProxy commonArgs;
 
     final GeopkgSupport support = new GeopkgSupport();
 

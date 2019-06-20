@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.cli.shp;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
@@ -20,8 +21,6 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-
-import com.beust.jcommander.internal.Maps;
 
 /**
  * A template for shapefile commands; provides out of the box support for the --help argument so
@@ -51,7 +50,7 @@ public abstract class AbstractShpCommand extends AbstractCommand implements CLIC
         checkParameter(file.exists(), "File does not exist '%s'", shapefile);
 
         try {
-            Map<String, Serializable> params = Maps.newHashMap();
+            Map<String, Serializable> params = new HashMap<>();
             params.put(ShapefileDataStoreFactory.URLP.key, new File(shapefile).toURI().toURL());
             params.put(ShapefileDataStoreFactory.NAMESPACEP.key, "http://www.opengis.net/gml");
             params.put(ShapefileDataStoreFactory.CREATE_SPATIAL_INDEX.key, Boolean.FALSE);

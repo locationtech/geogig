@@ -22,25 +22,26 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * Displays a list of refs in a repository
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "show-ref", commandDescription = "Shows a list of refs")
+@Command(name = "show-ref", description = "Shows a list of refs")
 public class ShowRef extends AbstractCommand implements CLICommand {
 
     /**
      * The path to the element to display. Accepts all the notation types accepted by the RevParse
      * class
      */
-    @Parameter(description = "<pattern>")
+    @Parameters(description = "<pattern>")
     private List<String> patterns = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

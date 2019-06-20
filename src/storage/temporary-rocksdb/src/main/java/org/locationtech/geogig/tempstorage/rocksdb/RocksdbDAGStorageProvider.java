@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.internal.DAG;
 import org.locationtech.geogig.model.internal.DAGNode;
 import org.locationtech.geogig.model.internal.DAGStorageProvider;
 import org.locationtech.geogig.model.internal.NodeId;
-import org.locationtech.geogig.model.internal.TreeCache;
 import org.locationtech.geogig.model.internal.TreeId;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.rocksdb.RocksDB;
@@ -36,8 +35,6 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
 
     private final ObjectStore objectStore;
 
-    private final TreeCache treeCache;
-
     private Path directory;
 
     private RocksdbHandle dagDb, nodeDb;
@@ -47,12 +44,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     private final RocksdbDAGStore dagStore;
 
     public RocksdbDAGStorageProvider(ObjectStore source) {
-        this(source, new TreeCache(source));
-    }
-
-    public RocksdbDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.objectStore = source;
-        this.treeCache = treeCache;
         this.dagStore = new RocksdbDAGStore(this::getOrCreateDagDb);
         this.nodeStore = new RocksdbNodeStore(this::getOrCreateNodeDb);
     }
@@ -106,10 +98,6 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         }
     }
 
-    public @Override TreeCache getTreeCache() {
-        return treeCache;
-    }
-
     public @Override List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
         return dagStore.getTrees(ids);
     }
@@ -125,7 +113,7 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
     public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
         Map<NodeId, DAGNode> dagNodes = nodeStore.getAll(nodeIds);
         Map<NodeId, Node> res = new HashMap<>();
-        dagNodes.forEach((id, node) -> res.put(id, node.resolve(treeCache)));
+        dagNodes.forEach((id, node) -> res.put(id, node.resolve(objectStore)));
         return res;
     }
 

@@ -50,9 +50,9 @@ final @UtilityClass class DAGSerializer {
             } else {
                 output.writeByte(MAGIC_LAZY_FEATURE);
             }
-            final int leafRevTreeId = ln.leafRevTreeId();
+            final ObjectId leafRevTreeId = ln.leafRevTreeId();
             final int nodeIndex = ln.nodeIndex();
-            Varint.writeUnsignedVarInt(leafRevTreeId, output);
+            leafRevTreeId.writeTo(output);
             Varint.writeUnsignedVarInt(nodeIndex, output);
         }
 
@@ -66,13 +66,13 @@ final @UtilityClass class DAGSerializer {
             return DAGNode.of(node);
         }
         case MAGIC_LAZY_TREE: {
-            int treeCacheId = Varint.readUnsignedVarInt(in);
+            ObjectId treeCacheId = ObjectId.readFrom(in);
             int nodeIndex = Varint.readUnsignedVarInt(in);
             DAGNode node = DAGNode.treeNode(treeCacheId, nodeIndex);
             return node;
         }
         case MAGIC_LAZY_FEATURE: {
-            int treeCacheId = Varint.readUnsignedVarInt(in);
+            ObjectId treeCacheId = ObjectId.readFrom(in);
             int nodeIndex = Varint.readUnsignedVarInt(in);
             DAGNode node = DAGNode.featureNode(treeCacheId, nodeIndex);
             return node;

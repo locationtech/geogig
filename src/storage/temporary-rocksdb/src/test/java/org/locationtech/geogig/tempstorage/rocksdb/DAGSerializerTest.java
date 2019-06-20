@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.internal.DAGNode;
 import org.locationtech.geogig.model.internal.NodeId;
 import org.locationtech.jts.geom.Envelope;
@@ -19,7 +20,8 @@ public class DAGSerializerTest {
 
     @Test
     public void lazyFeatureNodeEncodeDecode() throws IOException {
-        DAGNode node = DAGNode.featureNode(5, 511);
+        ObjectId oid = ObjectId.create(1, 2, 3);
+        DAGNode node = DAGNode.featureNode(oid, 511);
         ByteArrayDataOutput out = ByteStreams.newDataOutput();
         DAGSerializer.encode(node, out);
 

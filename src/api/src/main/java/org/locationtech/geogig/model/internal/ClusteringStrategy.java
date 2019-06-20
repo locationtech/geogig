@@ -413,7 +413,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                     checkState(root.numChildren() == 0);
 
                     // initialize buckets
-                    preloadBuckets(original);
                     original.forEachBucket(bucket -> {
                         TreeId dagBucketId = root.getId().newChild(bucket.getIndex());
                         ObjectId bucketId = bucket.getObjectId();
@@ -426,14 +425,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             root.setMirrored();
         }
 
-    }
-
-    private void preloadBuckets(RevTree tree) {
-        if (tree.bucketsSize() > 0) {
-            List<ObjectId> ids = new ArrayList<>(tree.bucketsSize());
-            tree.forEachBucket(bucket -> ids.add(bucket.getObjectId()));
-            this.storageProvider.getTreeCache().preload(ids);
-        }
     }
 
     protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
@@ -484,8 +475,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             return Collections.emptyMap();
         }
 
-        final TreeCache treeCache = storageProvider.getTreeCache();
-        final int cacheTreeId = treeCache.getTreeId(tree).intValue();
+        final ObjectId cacheTreeId = tree.getId();
         Map<NodeId, DAGNode> dagNodes = new HashMap<>();
 
         final int treesSize = tree.treesSize();

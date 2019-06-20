@@ -22,7 +22,10 @@ public interface DAGStorageProviderFactory extends PriorityService {
     public DAGStorageProvider newInstance(@NonNull ObjectStore treeStore);
 
     public static DAGStorageProviderFactory defaultInstance() {
-        return new ServiceFinder().environmentVariable(ENV_VARIABLE).systemProperty(ENV_VARIABLE)
+        ServiceFinder serviceFinder = new ServiceFinder().environmentVariable(ENV_VARIABLE)
+                .systemProperty(ENV_VARIABLE);
+        DAGStorageProviderFactory factory = serviceFinder
                 .lookupDefaultService(DAGStorageProviderFactory.class);
+        return factory;
     }
 }

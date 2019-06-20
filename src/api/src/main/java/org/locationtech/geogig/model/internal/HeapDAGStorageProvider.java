@@ -34,15 +34,8 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     private ObjectStore source;
 
-    private TreeCache treeCache;
-
     public HeapDAGStorageProvider(ObjectStore source) {
-        this(source, new TreeCache(source));
-    }
-
-    public HeapDAGStorageProvider(ObjectStore source, TreeCache treeCache) {
         this.source = source;
-        this.treeCache = treeCache;
         this.nodes = new ConcurrentHashMap<>();
         this.trees = new TreeMap<>();
     }
@@ -98,7 +91,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         nodeIds.forEach((nid) -> {
             DAGNode dagNode = nodes.get(nid);
             Preconditions.checkState(dagNode != null);
-            Node node = dagNode.resolve(treeCache);
+            Node node = dagNode.resolve(source);
             res.put(nid, node);
         });
         return res;
@@ -115,10 +108,6 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
     public @Override void save(Map<TreeId, DAG> dags) {
         // trees.putAll(Maps.transformValues(dags, (d) -> d.clone()));
         trees.putAll(dags);
-    }
-
-    public @Override TreeCache getTreeCache() {
-        return treeCache;
     }
 
     public long nodeCount() {

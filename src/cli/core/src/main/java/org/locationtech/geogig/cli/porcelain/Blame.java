@@ -51,8 +51,8 @@ public class Blame extends AbstractCommand {
     /**
      * The path to the element to analyze.
      */
-    @Parameters(description = "<path>")
-    private List<String> paths = new ArrayList<String>();
+    @Parameters(arity = "1", description = "Path to the feature to bleam (e.g. roads/1)")
+    private List<String> featurePath = new ArrayList<String>();
 
     @Option(names = { "--porcelain" }, description = "Use porcelain output format")
     private boolean porcelain = false;
@@ -61,13 +61,13 @@ public class Blame extends AbstractCommand {
     private boolean noValues = false;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(paths.size() < 2, "Only one path allowed");
-        checkParameter(!paths.isEmpty(), "A path must be specified");
+        checkParameter(featurePath.size() < 2, "Only one path allowed");
+        checkParameter(!featurePath.isEmpty(), "A path must be specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        String path = paths.get(0);
+        String path = featurePath.get(0);
 
         try {
             BlameReport report = geogig.command(BlameOp.class).setPath(path).call();

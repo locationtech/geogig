@@ -57,7 +57,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
 
     private static final String LINE_BREAK = "\n";
 
-    @Parameters(description = "[<treeish> [<treeish>]]", arity = "2")
+    @Parameters(arity = "0..2", description = "[<treeish> [<treeish>]]")
     private List<String> refSpec = new ArrayList<>();
 
     @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")

@@ -89,7 +89,7 @@ public class Config extends AbstractCommand implements CLICommand {
             "--rootUri" }, description = "Specify a root URI for a collection of repositories.  Only global access will be available.")
     private String rootUri = null;
 
-    @Parameters(description = "name value (name is section.key format, value is only required when setting)")
+    @Parameters(arity = "0..2", description = "name value (name is section.key format, value is only required when setting)")
     private List<String> nameValuePair;
 
     /**

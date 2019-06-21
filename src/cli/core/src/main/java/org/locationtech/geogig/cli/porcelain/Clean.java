@@ -35,7 +35,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "clean", description = "Deletes untracked features from working tree")
 public class Clean extends AbstractCommand {
 
-    @Parameters(description = "<path>")
+    @Parameters(arity = "0..1", description = "<path>")
     private List<String> path = new ArrayList<String>();
 
     @Option(names = { "--dry-run",

@@ -44,7 +44,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "ls-tree", description = "Obtain information about features in the index and the working tree.")
 public class LsTree extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<[refspec]:[path]>", arity = "1")
+    @Parameters(description = "<[refspec]:[path]>", arity = "0..1")
     private List<String> refList = new ArrayList<>();
 
     @Option(names = {

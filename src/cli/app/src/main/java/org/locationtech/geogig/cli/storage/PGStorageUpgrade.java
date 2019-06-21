@@ -33,7 +33,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "postgres-upgrade", description = "Upgrade the schema of a geogig PostgreSQL databse to the latest version")
 public class PGStorageUpgrade extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<base URI> The URI without a repository name. (e.g. geogig postgres-upgrade postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = "1")
+    @Parameters(arity = "1", description = "<base URI> The URI without a repository name. (e.g. geogig postgres-upgrade postgresql://localhost:5432/geogig_db?user=...&password=...)")
     private List<URI> baseuri = new ArrayList<>();
 
     protected @Override void runInternal(GeogigCLI cli) throws IOException {

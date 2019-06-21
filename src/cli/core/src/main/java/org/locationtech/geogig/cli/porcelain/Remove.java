@@ -44,15 +44,15 @@ public class Remove extends AbstractCommand implements CLICommand {
     @Option(names = { "-t", "--truncate" }, description = "Truncate trees, leaving them empty")
     private boolean truncate;
 
-    @Parameters(description = "<path_to_remove>  [<path_to_remove>]...")
-    private List<String> pathsToRemove = new ArrayList<String>();
+    @Parameters(arity = "1..*", description = "<path_to_remove>  [<path_to_remove>]...")
+    private List<String> paths = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         Console console = cli.getConsole();
 
         // check that there is something to remove
-        if (pathsToRemove.isEmpty()) {
+        if (paths.isEmpty()) {
             printUsage(cli);
             throw new CommandFailedException();
         }
@@ -61,7 +61,7 @@ public class Remove extends AbstractCommand implements CLICommand {
         RemoveOp op = cli.getGeogig().command(RemoveOp.class).setRecursive(recursive)
                 .setTruncate(truncate);
 
-        for (String pathToRemove : pathsToRemove) {
+        for (String pathToRemove : paths) {
             op.addPathToRemove(pathToRemove);
         }
 

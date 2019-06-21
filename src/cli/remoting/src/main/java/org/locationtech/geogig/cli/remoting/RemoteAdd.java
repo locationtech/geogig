@@ -54,7 +54,7 @@ public class RemoteAdd extends AbstractCommand implements CLICommand {
     @Option(names = { "-p", "--password" }, description = "password")
     private String password = null;
 
-    @Parameters(description = "<name> <url>")
+    @Parameters(arity = "2", description = "<name> <url>")
     private List<String> params = new ArrayList<String>();
 
     /**

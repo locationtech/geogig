@@ -50,7 +50,7 @@ public class RevParse extends AbstractCommand {
     @Option(names = "--is-inside-work-tree", description = "Check if the current directory is inside a geogig repository and print out the repository location")
     private boolean is_inside_work_tree;
 
-    @Parameters(description = "[refSpec]... where refSpec is of the form [<object id>|<ref name>][^<parent index>]+[~<ancestor index>]+")
+    @Parameters(arity = "*", description = "[refSpec]... where refSpec is of the form [<object id>|<ref name>][^<parent index>]+[~<ancestor index>]+")
     private List<String> refSpecs = new ArrayList<>();
 
     /**

@@ -66,7 +66,7 @@ public class Add extends AbstractCommand implements CLICommand {
             "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
-    @Parameters(description = "<patterns>...")
+    @Parameters(arity = "*", description = "<patterns>...")
     private List<String> patterns = new ArrayList<String>();
 
     /**

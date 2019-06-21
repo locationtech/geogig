@@ -49,8 +49,8 @@ import picocli.CommandLine.Parameters;
 @Command(name = "checkout", aliases = "co", description = "Checkout a branch or paths to the working tree")
 public class Checkout extends AbstractCommand implements CLICommand {
 
-    @Parameters(arity = "1", description = "<branch|commit>")
-    private List<String> branchOrStartPoint = new ArrayList<>();
+    @Parameters(arity = "1", description = "refspec (branch, commit id, etc) to checkout to the working tree")
+    private List<String> commitish = new ArrayList<>();
 
     @Option(names = { "--force",
             "-f" }, description = "When switching branches, proceed even if the index or the "
@@ -70,14 +70,12 @@ public class Checkout extends AbstractCommand implements CLICommand {
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
-        checkParameter(branchOrStartPoint.size() != 0 || !paths.isEmpty(),
-                "no branch or paths specified");
-        checkParameter(branchOrStartPoint.size() < 2, "too many arguments");
+        checkParameter(commitish.size() != 0 || !paths.isEmpty(), "no branch or paths specified");
+        checkParameter(commitish.size() < 2, "too many arguments");
 
         try {
             final Console console = cli.getConsole();
-            String branchOrCommit = (branchOrStartPoint.size() > 0 ? branchOrStartPoint.get(0)
-                    : null);
+            String branchOrCommit = (commitish.size() > 0 ? commitish.get(0) : null);
 
             CheckoutResult result = geogig.command(CheckoutOp.class).setForce(force)
                     .setSource(branchOrCommit).addPaths(paths).setOurs(ours).setTheirs(theirs)

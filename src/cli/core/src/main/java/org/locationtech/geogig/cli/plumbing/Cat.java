@@ -44,7 +44,7 @@ public class Cat extends AbstractCommand {
      * The path to the element to display. Accepts all the notation types accepted by the RevParse
      * class
      */
-    @Parameters(description = "<path>")
+    @Parameters(arity = "1", description = "<path>")
     private List<String> paths = new ArrayList<String>();
 
     /**

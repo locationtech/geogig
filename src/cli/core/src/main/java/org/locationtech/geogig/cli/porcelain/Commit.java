@@ -73,8 +73,8 @@ public class Commit extends AbstractCommand implements CLICommand {
             "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
-    @Parameters(description = "<pathFilter>  [<paths_to_commit]...")
-    private List<String> pathFilters = Lists.newLinkedList();
+    @Parameters(arity = "*", description = "If given, commit only the indicated paths")
+    private List<String> paths = Lists.newLinkedList();
 
     @Option(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
     private boolean allowEmpty;
@@ -120,7 +120,7 @@ public class Commit extends AbstractCommand implements CLICommand {
                         "Provided reference does not resolve to a commit");
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
-            commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
+            commit = commitOp.setPathFilters(paths).setProgressListener(progress).call();
         } catch (NothingToCommitException | IllegalStateException notificationError) {
             throw new CommandFailedException(notificationError.getMessage(), true);
         }

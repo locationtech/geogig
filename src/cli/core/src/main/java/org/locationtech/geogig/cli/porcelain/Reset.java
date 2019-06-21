@@ -82,7 +82,7 @@ public class Reset extends AbstractCommand implements CLICommand {
     @Option(names = { "--soft" }, description = "Does not affect index or working tree.")
     private boolean soft;
 
-    @Parameters(description = "[<commit>]", arity = "1")
+    @Parameters(description = "[<commit>]", arity = "0..1")
     private List<String> commit;
 
     @Option(names = { "--path", "-p" }, description = "Reset only the paths indicated")

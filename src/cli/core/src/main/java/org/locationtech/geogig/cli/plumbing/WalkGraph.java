@@ -43,7 +43,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "walk-graph", description = "Visit objects in history graph in post order (referenced objects before referring objects)")
 public class WalkGraph extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<[refspec]:[path]>", arity = "1")
+    @Parameters(description = "<[refspec]:[path]>", arity = "0..1")
     private List<String> refList = new ArrayList<>();
 
     @Option(names = { "-v",

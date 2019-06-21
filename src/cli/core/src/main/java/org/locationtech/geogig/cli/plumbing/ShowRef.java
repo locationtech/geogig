@@ -41,7 +41,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
      * The path to the element to display. Accepts all the notation types accepted by the RevParse
      * class
      */
-    @Parameters(description = "<pattern>")
+    @Parameters(arity = "*", description = "<pattern>")
     private List<String> patterns = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

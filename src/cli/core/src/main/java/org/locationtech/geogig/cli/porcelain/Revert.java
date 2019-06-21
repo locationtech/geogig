@@ -48,7 +48,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "revert", description = "Revert commits to undo the changes made")
 public class Revert extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<commits>...")
+    @Parameters(arity = "1..*", description = "<commit>...")
     private List<String> commits = new ArrayList<>();
 
     @Option(names = "--no-commit", description = "Do not create new commit with reverted changes")

@@ -42,8 +42,8 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
     /**
      * Shapefiles to import.
      */
-    @Parameters(description = "<shapefile> [<shapefile>]...")
-    List<String> shapeFile;
+    @Parameters(description = "<shapefile> [<shapefile>]... Files to import")
+    List<String> files;
 
     /**
      * do not replace or delete features
@@ -101,10 +101,10 @@ public class ShpImport extends AbstractShpCommand implements CLICommand {
      * Executes the import command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(shapeFile != null && !shapeFile.isEmpty(), "No shapefile specified");
+        checkParameter(files != null && !files.isEmpty(), "No shapefile specified");
 
         final ProgressListener progressListener = cli.getProgressListener();
-        for (String shp : shapeFile) {
+        for (String shp : files) {
 
             DataStore dataStore = null;
             try {

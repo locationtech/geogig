@@ -27,7 +27,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "postgres-ddl", description = "Creates a DDL script to initialize a Geogig PostgreSQL database")
 public class PGCreateDDL extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<base URI> The URI without a repository name. (e.g. geogig postgres-ddl postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = "1")
+    @Parameters(arity = "1", description = "<base URI> The URI without a repository name. (e.g. geogig postgres-ddl postgresql://localhost:5432/geogig_db?user=...&password=...)")
     private List<URI> baseuri = new ArrayList<>();
 
     protected @Override void runInternal(GeogigCLI cli) throws IOException {

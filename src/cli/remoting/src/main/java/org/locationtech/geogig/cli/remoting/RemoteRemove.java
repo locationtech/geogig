@@ -41,25 +41,25 @@ import picocli.CommandLine.Parameters;
 @Command(name = "rm", description = "Remove a remote from the repository")
 public class RemoteRemove extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<name>")
-    private List<String> params;
+    @Parameters(arity = "1", description = "<name> Name of remote to remove")
+    private List<String> name;
 
     /**
      * Executes the remote remove command.
      */
     public @Override void runInternal(GeogigCLI cli) {
-        if (params == null || params.size() != 1) {
+        if (name == null || name.size() != 1) {
             printUsage(cli);
             throw new CommandFailedException();
         }
 
         try {
-            cli.getGeogig().command(RemoteRemoveOp.class).setName(params.get(0)).call();
+            cli.getGeogig().command(RemoteRemoveOp.class).setName(name.get(0)).call();
         } catch (RemoteException e) {
             switch (e.statusCode) {
             case REMOTE_NOT_FOUND:
                 throw new InvalidParameterException(
-                        "Could not find a remote called '" + params.get(0) + "'.", e);
+                        "Could not find a remote called '" + name.get(0) + "'.", e);
             default:
                 throw new CommandFailedException(e.getMessage(), e);
             }

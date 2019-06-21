@@ -52,8 +52,8 @@ public class Apply extends AbstractCommand {
     /**
      * The path to the patch file
      */
-    @Parameters(description = "<patch>")
-    private List<String> patchFiles = new ArrayList<String>();
+    @Parameters(arity = "1", description = "Patch file")
+    private List<String> file = new ArrayList<String>();
 
     /**
      * Check if patch can be applied
@@ -78,13 +78,13 @@ public class Apply extends AbstractCommand {
     private boolean summary;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(patchFiles.size() < 2, "Only one single patch file accepted");
-        checkParameter(!patchFiles.isEmpty(), "No patch file specified");
+        checkParameter(file.size() < 2, "Only one single patch file accepted");
+        checkParameter(!file.isEmpty(), "No patch file specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        File patchFile = new File(patchFiles.get(0));
+        File patchFile = new File(file.get(0));
         checkParameter(patchFile.exists(), "Patch file cannot be found");
         FileInputStream stream;
         try {

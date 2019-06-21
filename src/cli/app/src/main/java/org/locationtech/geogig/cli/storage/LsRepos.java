@@ -57,7 +57,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "ls-repos", description = "List repositories under a base URI")
 public class LsRepos extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<base URI> The URI without a repository name. (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = "1")
+    @Parameters(arity = "1", description = "<base URI> The URI without a repository name. (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)")
     private List<URI> baseuri = new ArrayList<>();
 
     @Option(names = { "-v", "--verbose" }, description = "verbose output")

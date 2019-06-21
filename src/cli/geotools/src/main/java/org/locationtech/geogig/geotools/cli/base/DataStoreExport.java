@@ -59,7 +59,7 @@ import picocli.CommandLine.Parameters;
 @ReadOnly
 public abstract class DataStoreExport extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "[<commit-ish>:]<path> <table> (define source feature type tree and target table name)", arity = "0..2")
+    @Parameters(description = "[<commit-ish>:]<path> <table> (define source feature type tree and target table name)", arity = "2")
     public List<String> args = new ArrayList<>();
 
     @Option(names = { "--overwrite", "-o" }, description = "Overwrite output table")

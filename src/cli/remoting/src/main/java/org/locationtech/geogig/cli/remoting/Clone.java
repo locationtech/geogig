@@ -89,7 +89,7 @@ public class Clone extends AbstractCommand implements CLICommand {
             "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=rocksdb:rocksdb.version=1")
     private String config;
 
-    @Parameters(description = "<repository> [<directory>|<clone URI>]")
+    @Parameters(arity = "1..2", description = "<repository> [<directory>|<clone URI>]")
     private List<String> args = new ArrayList<>(2);
 
     @Option(names = { "-I", "--include-indexes" }, description = "Clone also spatial indexes")

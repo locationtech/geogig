@@ -50,7 +50,7 @@ public class Tag extends AbstractCommand implements CLICommand {
     @Option(names = "-d", description = "Delete tag")
     private boolean delete;
 
-    @Parameters(description = "<tag_name> [tag_commit]")
+    @Parameters(arity = "0..2", description = "<tag_name> [tag_commit]")
     private List<String> nameAndCommit = new ArrayList<>();
 
     /**

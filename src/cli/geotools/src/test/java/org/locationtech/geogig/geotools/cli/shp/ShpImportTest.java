@@ -54,8 +54,8 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImport() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.run(cli);
     }
@@ -63,8 +63,8 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportFileNotExist() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add("file://nonexistent.shp");
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add("file://nonexistent.shp");
         importCommand.run(cli);
     }
 
@@ -78,7 +78,7 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportEmptyShapefileList() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
+        importCommand.files = new ArrayList<String>();
         exception.expect(InvalidParameterException.class);
         importCommand.run(cli);
     }
@@ -94,8 +94,8 @@ public class ShpImportTest extends RepositoryTestCase {
     public void testImportException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         exception.expect(MockitoException.class);
         importCommand.run(cli);
     }
@@ -103,8 +103,8 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportGetNamesException() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
@@ -113,8 +113,8 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportFeatureSourceException() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createFactoryWithGetFeatureSourceException();
         exception.expect(CommandFailedException.class);
         importCommand.run(cli);
@@ -123,16 +123,16 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testNullDataStore() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createNullTestFactory();
         importCommand.run(cli);
     }
 
     public void testImportWithFidAttribute() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.fidAttribute = "label";
         importCommand.run(cli);
@@ -141,8 +141,8 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportWithWrongFidAttribute() throws Exception {
         ShpImport importCommand = new ShpImport();
-        importCommand.shapeFile = new ArrayList<String>();
-        importCommand.shapeFile.add(ShpImport.class.getResource("shape.shp").getFile());
+        importCommand.files = new ArrayList<String>();
+        importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.fidAttribute = "wrong";
         exception.expect(InvalidParameterException.class);

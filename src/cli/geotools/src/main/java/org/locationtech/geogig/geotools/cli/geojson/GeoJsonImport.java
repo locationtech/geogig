@@ -37,7 +37,7 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
     /**
      * GeoJSON files to import.
      */
-    @Parameters(description = "<geojson> [<geojson>]...", arity = "1..")
+    @Parameters(description = "<file> [<file>]... GeoJSON files to import", arity = "1..")
     List<String> geoJSONList;
 
     /**

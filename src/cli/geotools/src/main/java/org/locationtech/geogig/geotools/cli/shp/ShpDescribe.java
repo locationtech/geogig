@@ -33,14 +33,14 @@ import picocli.CommandLine.Parameters;
 @Command(name = "describe", description = "Describe a shapefile schema")
 public class ShpDescribe extends AbstractShpCommand implements CLICommand {
 
-    @Parameters(description = "<shapefile>... path to the shapefile to describe", arity = "*")
-    public List<String> args = new ArrayList<>(2);
+    @Parameters(description = "<shapefile>... path to the shapefiles to describe", arity = "1..*")
+    public List<String> files = new ArrayList<>(2);
 
     protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
-        checkParameter(!args.isEmpty(), "No shapefile argument provided");
+        checkParameter(!files.isEmpty(), "No shapefile argument provided");
 
-        for (String shapefile : args) {
+        for (String shapefile : files) {
             DataStoreDescribe cmd = new DataStoreDescribe() {
                 protected @Override DataStore getDataStore() {
                     DataStore dataStore = ShpDescribe.this.getDataStore(shapefile, null);

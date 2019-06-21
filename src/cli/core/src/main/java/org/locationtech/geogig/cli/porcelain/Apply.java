@@ -52,7 +52,7 @@ public class Apply extends AbstractCommand {
     /**
      * The path to the patch file
      */
-    @Parameters(arity = "1", description = "Patch file")
+    @Parameters(description = "Patch file")
     private List<String> file = new ArrayList<String>();
 
     /**

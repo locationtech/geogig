@@ -44,7 +44,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "cherry-pick", aliases = "chp", description = "Apply the changes introduced by existing commits")
 public class CherryPick extends AbstractCommand implements CLICommand {
 
-    @Parameters(arity = "1", description = "refspec resolving to the commit to cherry pick")
+    @Parameters(description = "refspec resolving to the commit to cherry pick")
     private List<String> commits = new ArrayList<>();
 
     public @Override void runInternal(GeogigCLI cli) {

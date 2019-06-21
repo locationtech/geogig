@@ -38,7 +38,7 @@ public class UpdateIndex extends AbstractCommand implements CLICommand {
     private String attribute;
 
     @Option(names = { "-e",
-            "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
+            "--extra-attributes" }, split = ",", description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
 
     @Option(names = { "-o",

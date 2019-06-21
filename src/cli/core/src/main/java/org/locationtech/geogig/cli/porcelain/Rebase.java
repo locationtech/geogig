@@ -78,7 +78,7 @@ public class Rebase extends AbstractCommand implements CLICommand {
             "--squash" }, description = "Squash commits instead of applying them one by one. A message has to be provided to use for the squashed commit")
     private String squash;
 
-    @Parameters(arity = "0..2", description = "[<upstream>] [<branch>]")
+    @Parameters(description = "[<upstream>] [<branch>]")
     private List<String> arguments;
 
     /**

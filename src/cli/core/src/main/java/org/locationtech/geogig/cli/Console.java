@@ -54,6 +54,10 @@ public class Console {
         this(System.in, System.out);
     }
 
+    PrintStream out() {
+        return out;
+    }
+
     /**
      * Creates a Console that reads from and writes to the provided streams.
      * 

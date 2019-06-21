@@ -11,12 +11,19 @@ package org.locationtech.geogig.cli;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.NumberFormat;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
@@ -39,12 +46,19 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
+import picocli.CommandLine.IExecutionExceptionHandler;
+import picocli.CommandLine.IParameterExceptionHandler;
 import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.ParseResult;
+import picocli.CommandLine.UnmatchedArgumentException;
 
 /**
  * Command Line Interface for geogig.
@@ -315,6 +329,7 @@ public class GeogigCLI {
         CommandLine cmdline = new CommandLine(command);
         cmdline.setCommandName("geogig");
         cmdline.setPosixClusteredShortOptionsAllowed(true);
+        cmdline.setTrimQuotes(true);
         for (CLICommand extension : findCommands()) {
             cmdline.addSubcommand(extension.getCommandName(), extension);
             if (log.isDebugEnabled()) {
@@ -339,12 +354,10 @@ public class GeogigCLI {
         boolean printError = true;
         try {
             executeInternal(args);
+            consoleReader.flush();
             return 0;
-        } catch (ParameterException paramParseException) {
-            exception = paramParseException;
-            // consoleMessage = paramParseException.getMessage() + ". See geogig --help";
-
-        } catch (IllegalArgumentException | InvalidParameterException paramValidationError) {
+        } catch (ParameterException | IllegalArgumentException
+                | InvalidParameterException paramValidationError) {
             exception = paramValidationError;
             consoleMessage = paramValidationError.getMessage();
         } catch (CannotRunGeogigOperationException cannotRun) {
@@ -382,13 +395,13 @@ public class GeogigCLI {
                 close();
             }
         }
-        if (printError) {
-            try {
+        try {
+            if (printError) {
                 consoleReader.println(Optional.ofNullable(consoleMessage).orElse("Unknown Error"));
-                consoleReader.flush();
-            } catch (IOException e) {
-                LOGGER.error("Error writing to the console. Original error: {}", consoleMessage, e);
             }
+            consoleReader.flush();
+        } catch (IOException e) {
+            LOGGER.error("Error writing to the console. Original error: {}", consoleMessage, e);
         }
         return -1;
     }
@@ -403,182 +416,73 @@ public class GeogigCLI {
             IOException, CannotRunGeogigOperationException {
         checkNotNull(args, "args is null");
         INSTANCE.set(this);
-        // String repoURI = parseRepoURI(args);
-        // if (repoURI != null) {
-        // this.repositoryURI = repoURI;
-        // URI uri = URI.create(repoURI);
-        // File pwd = this.platform.pwd();
-        // if (Strings.isNullOrEmpty(uri.getScheme())) {
-        // pwd = new File(uri.toString());
-        // } else if ("file".equals(uri.getScheme())) {
-        // pwd = new File(uri);
-        // }
-        // this.platform.setWorkingDir(pwd);
-        // }
+        String repoURI = parseRepoURI(args);
+        if (repoURI != null) {
+            this.repositoryURI = repoURI;
+            URI uri = URI.create(repoURI);
+            File pwd = this.platform.pwd();
+            if (Strings.isNullOrEmpty(uri.getScheme())) {
+                pwd = new File(uri.toString());
+            } else if ("file".equals(uri.getScheme())) {
+                pwd = new File(uri);
+            }
+            this.platform.setWorkingDir(pwd);
+        }
 
+        final AtomicReference<Exception> cmdException = new AtomicReference<Exception>();
+        IExecutionExceptionHandler exceptionHandler = new IExecutionExceptionHandler() {
+            public @Override int handleExecutionException(Exception ex, CommandLine commandLine,
+                    ParseResult parseResult) {
+                cmdException.set(ex);
+                return 0;
+            }
+        };
+        IParameterExceptionHandler parameterExceptionHandler = new IParameterExceptionHandler() {
+            public @Override int handleParseException(ParameterException ex, String[] args) {
+                String message = ex.getMessage();
+                if (ex instanceof UnmatchedArgumentException) {
+                    StringWriter sw = new StringWriter();
+                    UnmatchedArgumentException.printSuggestions(ex, new PrintWriter(sw));
+                    message = "Unknown command. " + sw.toString();
+                }
+                cmdException.set(new InvalidParameterException(message, ex));
+                return 0;
+            }
+        };
         CommandLine cmd = buildRootCommand();
+        cmd.setOut(new PrintWriter(consoleReader.out()));
+        cmd.setExecutionExceptionHandler(exceptionHandler);
+        cmd.setParameterExceptionHandler(parameterExceptionHandler);
         cmd.execute(args);
-        // try {
-        // ParseResult parseResult = cmd.parseArgs(args);
-        // // Did user request usage help (--help)?
-        // if (cmd.isUsageHelpRequested()) {
-        // cmd.usage(cmd.getOut());
-        // cmd.getCommandSpec().exitCodeOnUsageHelp();
-        // return;
-        // // Did user request version help (--version)?
-        // } else if (cmd.isVersionHelpRequested()) {
-        // cmd.printVersionHelp(cmd.getOut());
-        // cmd.getCommandSpec().exitCodeOnVersionHelp();
-        // return;
-        // }
-        // // invoke the business logic
-        // List<CommandLine> subcommands = parseResult.asCommandLineList();
-        // CLICommand cliCommand = subcommands.get(subcommands.size() - 1).getCommand();
-        // cliCommand.run(this);
-        // // invalid user input: print error message and usage help
-        // } catch (ParameterException ex) {
-        // if (!UnmatchedArgumentException.printSuggestions(ex, cmd.getErr())) {
-        // ex.getCommandLine().usage(cmd.getErr());
-        // }
-        // throw ex;
-        // }
+        Exception exception = cmdException.get();
+        if (exception != null) {
+            Throwables.throwIfInstanceOf(exception, ParameterException.class);
+            Throwables.throwIfInstanceOf(exception, CommandFailedException.class);
+            Throwables.throwIfInstanceOf(exception, IOException.class);
+            Throwables.throwIfInstanceOf(exception, CannotRunGeogigOperationException.class);
+            Throwables.throwIfUnchecked(exception);
+            throw new RuntimeException(exception);
+        }
 
-        // String repoURI = parseRepoURI(args);
-        // if (repoURI != null) {
-        // this.repositoryURI = repoURI;
-        // URI uri = URI.create(repoURI);
-        // File pwd = this.platform.pwd();
-        // if (Strings.isNullOrEmpty(uri.getScheme())) {
-        // pwd = new File(uri.toString());
-        // } else if ("file".equals(uri.getScheme())) {
-        // pwd = new File(uri);
-        // }
-        // this.platform.setWorkingDir(pwd);
-        // }
-        // if (args.length == 0) {
-        // printShortCommandList(mainCommander);
-        // return;
-        // }
-        // {
-        // String commandName = args[0];
-        // JCommander commandParser = mainCommander.getCommands().get(commandName);
-        // if (commandParser == null) {
-        // args = unalias(this.repositoryURI, args);
-        // commandName = args[0];
-        // commandParser = mainCommander.getCommands().get(commandName);
-        // }
-        //
-        // if (commandParser == null) {
-        // consoleReader.println(args[0] + " is not a geogig command. See geogig --help.");
-        // // check for similar commands
-        // Map<String, JCommander> candidates = spellCheck(mainCommander.getSubcommands()Commands(),
-        // commandName);
-        // if (!candidates.isEmpty()) {
-        // String msg = candidates.size() == 1 ? "Did you mean this?"
-        // : "Did you mean one of these?";
-        // consoleReader.println();
-        // consoleReader.println(msg);
-        // for (String name : candidates.keySet()) {
-        // consoleReader.println("\t" + name);
-        // }
-        // }
-        // consoleReader.flush();
-        // throw new InvalidParameterException(
-        // String.format("'%s' is not a command.", commandName));
-        // }
-        //
-        // Object object = commandParser.getObjects().get(0);
-        // if (object instanceof CLICommandExtension) {
-        // args = Arrays.asList(args).subList(1, args.length)
-        // .toArray(new String[args.length - 1]);
-        // mainCommander = ((CLICommandExtension) object).getCommandParser();
-        // if (args.length == 1 && "--help".equals(args[0])) {
-        // printUsage(mainCommander);
-        // return;
-        // }
-        // }
-        // }
-        //
-        // mainCommander.parse(args);
-        // final String parsedCommand = mainCommander.getParsedCommand();
-        // if (null == parsedCommand) {
-        // if (mainCommander.getObjects().size() == 0) {
-        // printUsage(mainCommander);
-        // } else if (mainCommander.getObjects().get(0) instanceof CLICommandExtension) {
-        // CLICommandExtension extension = (CLICommandExtension) mainCommander.getObjects()
-        // .get(0);
-        // printUsage(extension.getCommandParser());
-        // } else {
-        // printUsage(mainCommander);
-        // throw new CommandFailedException();
-        // }
-        // } else {
-        // JCommander jCommander = mainCommander.getCommands().get(parsedCommand);
-        // List<Object> objects = jCommander.getObjects();
-        // CLICommand cliCommand = (CLICommand) objects.get(0);
-        // Class<? extends CLICommand> cmdClass = cliCommand.getClass();
-        // if (cliCommand instanceof AbstractCommand && ((AbstractCommand) cliCommand).help) {
-        // ((AbstractCommand) cliCommand).printUsage(this);
-        // getConsole().flush();
-        // return;
-        // }
-        // Hints hints = gatherHints(cmdClass);
-        // this.hints = hints;
-        //
-        // if (cmdClass.isAnnotationPresent(RequiresRepository.class)
-        // && cmdClass.getAnnotation(RequiresRepository.class).value()) {
-        // String workingDir;
-        // Platform platform = getPlatform();
-        // if (platform == null || platform.pwd() == null) {
-        // workingDir = "Couln't determine working directory.";
-        // } else {
-        // workingDir = platform.pwd().getAbsolutePath();
-        // }
-        // if (getGeogig() == null) {
-        // throw new InvalidParameterException(
-        // "Not in a geogig repository: " + workingDir);
-        // }
-        // }
-        //
-        // cliCommand.run(this);
-        // getConsole().flush();
-        // }
     }
 
-    // private String parseRepoURI(String[] args) {
-    // for (Iterator<String> it = Iterators.forArray(args); it.hasNext();) {
-    // String a = it.next();
-    // if ("--repo".equals(a)) {
-    // Preconditions.checkArgument(it.hasNext(),
-    // "Argument --repo must be followed by a repository URI");
-    // String uri = it.next();
-    // try {
-    // new URI(uri);
-    // } catch (URISyntaxException e) {
-    // throw new IllegalArgumentException("Invalid repository URI: '" + uri + "'");
-    // }
-    // return uri;
-    // }
-    // }
-    // return null;
-    // }
-
-    /**
-     * This method should be used instead of {@link JCommander#usage()} so the help string is
-     * printed to the cli's {@link #getConsole() console} (and hence to wherever its output is sent)
-     * instead of directly to {@code System.out}
-     */
-    // public void printUsage(CommandLine mainCommander) {
-    // StringBuilder out = new StringBuilder();
-    // mainCommander.usage(out);
-    // Console console = getConsole();
-    // try {
-    // console.println(out.toString());
-    // console.flush();
-    // } catch (IOException e) {
-    // throw new RuntimeException(e);
-    // }
-    // }
+    private String parseRepoURI(String[] args) {
+        for (Iterator<String> it = Iterators.forArray(args); it.hasNext();) {
+            String a = it.next();
+            if ("--repo".equals(a)) {
+                Preconditions.checkArgument(it.hasNext(),
+                        "Argument --repo must be followed by a repository URI");
+                String uri = it.next();
+                try {
+                    new URI(uri);
+                } catch (URISyntaxException e) {
+                    throw new IllegalArgumentException("Invalid repository URI: '" + uri + "'");
+                }
+                return uri;
+            }
+        }
+        return null;
+    }
 
     private Hints gatherHints(Class<? extends CLICommand> cmdClass) {
         Hints hints = new Hints();

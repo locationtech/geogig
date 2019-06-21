@@ -207,7 +207,10 @@ public class Environment implements Cloneable {
     }
 
     public URI toURI() {
-        return connectionConfig.toURI();
+        if (null == repositoryName) {
+            return connectionConfig.toURI();
+        }
+        return connectionConfig.toURI(repositoryName);
     }
 
 }

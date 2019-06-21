@@ -84,10 +84,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
      * Executes the export command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        if (args.size() != 2) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
+        checkParameter(args.size() == 2, "Expected [<commit-ish>:]<path> <table>");
 
         final String sourceTreeIsh = args.get(0);
         final String targetTableName = args.get(1);

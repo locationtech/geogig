@@ -81,7 +81,7 @@ public class Merge extends AbstractCommand implements CLICommand {
     @Option(names = "--abort", description = "Aborts the current merge")
     private boolean abort;
 
-    @Parameters(arity = "1..*", description = "<commitish>...")
+    @Parameters(description = "<commitish>...")
     private List<String> commits = new ArrayList<>();
 
     @Option(names = { "--quiet",

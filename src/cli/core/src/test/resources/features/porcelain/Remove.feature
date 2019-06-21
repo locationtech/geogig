@@ -27,7 +27,7 @@ Feature: "rm" command
       And I have staged "points2"
       And I have staged "lines1"
       And I run the command "commit -m Test"
-     When I run the command "rm Points -r "
+     When I run the command "rm Points -r"
      Then the response should contain "Deleted Points tree"
       
   Scenario: Try to delete a whole tree without the -r modifier
@@ -55,7 +55,7 @@ Feature: "rm" command
       And I have staged "points1"
       And I have staged "points2"
       And I have staged "lines1"
-     When I run the command "rm Points -t "
+     When I run the command "rm Points -t"
      Then the response should contain "Truncated Points tree"
      When I run the command "ls-tree -s"
      Then the response should contain "Points 0"

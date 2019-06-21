@@ -84,13 +84,6 @@ public class ShpImportTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testImportHelp() throws Exception {
-        ShpImport importCommand = new ShpImport();
-        importCommand.help = true;
-        importCommand.run(cli);
-    }
-
-    @Test
     public void testImportException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         ShpImport importCommand = new ShpImport();

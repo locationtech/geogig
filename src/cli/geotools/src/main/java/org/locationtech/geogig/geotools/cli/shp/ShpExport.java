@@ -95,10 +95,6 @@ public class ShpExport extends AbstractShpCommand implements CLICommand {
      * Executes the export command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        if (args.size() != 2) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
 
         String path = args.get(0);
         String shapefile = args.get(1);

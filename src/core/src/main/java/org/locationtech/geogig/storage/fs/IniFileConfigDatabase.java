@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
@@ -48,7 +46,6 @@ public class IniFileConfigDatabase extends AbstractStore implements ConfigDataba
         this(platform, null);
     }
 
-    @Inject
     public IniFileConfigDatabase(final Platform platform, final Hints hints) {
         this(platform, hints, false);
     }

@@ -3,7 +3,8 @@ Feature: "pg import" command
     As a Geogig User
     I want to import one or more tables from a PostGIS database
 
-  Scenario: Try importing into an empty directory
+  @FileSystemReposOnly
+  Scenario: Try importing wihthout a current repository
     Given I am in an empty directory
      When I run the command "pg import --table geogig_pg_test" on the PostGIS database
      Then the response should start with "Not in a geogig repository"

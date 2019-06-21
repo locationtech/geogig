@@ -45,7 +45,7 @@ public class VerifyPatch extends AbstractCommand {
     /**
      * The path to the patch file
      */
-    @Parameters(arity = "1", description = "<patch>")
+    @Parameters(description = "<patch>")
     private List<String> file = new ArrayList<String>();
 
     @Option(names = { "--reverse" }, description = "Check if the patch can be applied in reverse")

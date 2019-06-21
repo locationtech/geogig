@@ -21,6 +21,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;

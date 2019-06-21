@@ -38,7 +38,7 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
      * Table to describe.
      */
     @Option(names = { "--table", "-t" }, description = "Table to describe.", required = true)
-    public String table = "";
+    public String table;
 
     protected abstract DataStore getDataStore();
 

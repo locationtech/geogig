@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -154,6 +155,9 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
 
     boolean put(Connection cx, ObjectId commitId, List<ObjectId> parentIds) {
         try {
+            if (parentIds.isEmpty()) {
+                parentIds = Collections.singletonList(ObjectId.NULL);
+            }
             boolean updated;
             cx.setAutoCommit(false);
             final PGId src = PGId.valueOf(commitId);
@@ -512,8 +516,10 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     PGId dst = PGId.valueOf(rs, 1);
-                    int index = rs.getInt(4);
-                    outgoing.add(index, dst);
+                    if (!dst.isNull()) {
+                        int index = rs.getInt(4);
+                        outgoing.add(index, dst);
+                    }
                 }
             }
         }

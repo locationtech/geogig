@@ -165,7 +165,7 @@ Feature: "index create" command
     Given I have a repository
       And I have several commits
      When I run the command "index create --tree"
-     Then the response should contain "Expected a value after parameter"
+     Then the response should contain "Missing required parameter for option '--tree'"
      
   Scenario: Try to create a full history index on an empty repository
     Given I have a repository
@@ -197,4 +197,4 @@ Feature: "index create" command
     Given I have a repository
       And I have several commits
      When I run the command "index create --tree Points --extra-attributes"
-     Then the response should contain "Expected a value after parameter"
+     Then the response should contain "Missing required parameter for option '--extra-attributes'"

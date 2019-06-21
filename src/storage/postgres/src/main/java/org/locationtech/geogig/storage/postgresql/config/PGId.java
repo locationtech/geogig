@@ -73,4 +73,8 @@ public final class PGId {
         return valueOf(rs.getInt(startIndex), rs.getLong(startIndex + 1),
                 rs.getLong(startIndex + 2));
     }
+
+    public boolean isNull() {
+        return h1 == 0 && h2 == 0 && h3 == 0;
+    }
 }

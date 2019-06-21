@@ -7,5 +7,5 @@ Feature: "help" command
     Given I have a repository      
      When I run the command "help"
      Then the response should contain "commit"
-      And the response should not contain "cat-object"
-      And the response should not contain "ls-tree"
+      And the response should contain "cat"
+      And the response should contain "ls-tree"

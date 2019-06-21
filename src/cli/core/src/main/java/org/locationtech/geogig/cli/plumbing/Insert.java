@@ -51,7 +51,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "insert", description = "Inserts features in the repository")
 public class Insert extends AbstractCommand implements CLICommand {
 
-    @Parameters(arity = "*", description = "<features_definition>")
+    @Parameters(description = "<features_definition>")
     private List<String> inputs = new ArrayList<String>();
 
     @Option(names = "-f", description = "File with definition of features to insert")

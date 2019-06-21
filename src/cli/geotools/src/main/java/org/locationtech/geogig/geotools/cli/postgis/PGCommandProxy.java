@@ -14,6 +14,7 @@ import org.locationtech.geogig.cli.CLISubCommand;
 import lombok.AccessLevel;
 import lombok.Getter;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Visibility;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
@@ -40,39 +41,41 @@ public class PGCommandProxy extends CLISubCommand {
      * Machine name or IP address to connect to. Default: localhost
      */
     @Option(names = { "--host",
-            "-H" }, description = "Machine name or IP address to connect to. Default: localhost")
+            "-H" }, description = "Machine name or IP address to connect to.", defaultValue = "localhost", showDefaultValue = Visibility.ALWAYS)
     public String host = "localhost";
 
     /**
      * Port number to connect to. Default: 5432
      */
-    @Option(names = { "--port", "-P" }, description = "Port number to connect to.  Default: 5432")
+    @Option(names = { "--port",
+            "-P" }, description = "Port number to connect to.", defaultValue = "5432", showDefaultValue = Visibility.ALWAYS)
     public Integer port = 5432;
 
     /**
      * The database schema to access. Default: public
      */
     @Option(names = { "--schema",
-            "-S" }, description = "The database schema to access.  Default: public")
+            "-S" }, description = "The database schema to access.", defaultValue = "public", showDefaultValue = Visibility.ALWAYS)
     public String schema = "public";
 
     /**
      * The database to connect to. Default: database
      */
     @Option(names = { "--database",
-            "-D" }, description = "The database to connect to.  Default: database")
+            "-D" }, description = "The database to connect to.", defaultValue = "database", showDefaultValue = Visibility.ALWAYS)
     public String database = "database";
 
     /**
      * User name. Default: postgres
      */
-    @Option(names = { "--user", "-U" }, description = "User name.  Default: postgres")
+    @Option(names = { "--user",
+            "-U" }, description = "User name.", defaultValue = "postgres", showDefaultValue = Visibility.ALWAYS)
     public String username = "postgres";
 
     /**
      * Password. Default: <no password>
      */
-    @Option(names = { "--password", "-W" }, description = "Password.  Default: <no password>")
+    @Option(names = { "--password", "-W" }, description = "Password.")
     public String password = "";
 
 }

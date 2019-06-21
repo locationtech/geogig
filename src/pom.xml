@@ -670,7 +670,6 @@
       <id>experimental</id>
       <modules>
         <module>experimental</module>
-        <module>picocli</module>
       </modules>
     </profile>
     <profile>

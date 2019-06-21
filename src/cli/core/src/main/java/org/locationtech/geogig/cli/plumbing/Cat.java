@@ -44,8 +44,8 @@ public class Cat extends AbstractCommand {
      * The path to the element to display. Accepts all the notation types accepted by the RevParse
      * class
      */
-    @Parameters(arity = "1", description = "<path>")
-    private List<String> paths = new ArrayList<String>();
+    @Parameters(description = "<path>")
+    private List<String> path = new ArrayList<String>();
 
     /**
      * Produce binary output instead of text output
@@ -54,16 +54,16 @@ public class Cat extends AbstractCommand {
     private boolean binary;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(paths.size() < 2, "Only one refspec allowed");
-        checkParameter(!paths.isEmpty(), "A refspec must be specified");
+        checkParameter(path.size() < 2, "Only one refspec allowed");
+        checkParameter(!path.isEmpty(), "A refspec must be specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        String path = paths.get(0);
+        String spath = path.get(0);
 
         Optional<RevObject> obj;
-        RevObjectParse cmd = geogig.command(RevObjectParse.class).setRefSpec(path);
+        RevObjectParse cmd = geogig.command(RevObjectParse.class).setRefSpec(spath);
         obj = cmd.call();
         if (!obj.isPresent()) {
             obj = cmd.setSource(geogig.getContext().indexDatabase()).call();

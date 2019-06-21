@@ -41,7 +41,7 @@ public class MergeBase extends AbstractCommand implements CLICommand {
      * The commits to use for computing the common ancestor
      * 
      */
-    @Parameters(arity = "2", description = "<commit> <commit>")
+    @Parameters(description = "<commit> <commit>")
     private List<String> commits = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

@@ -42,7 +42,7 @@ public class CreateIndex extends AbstractCommand implements CLICommand {
     private boolean indexHistory = false;
 
     @Option(names = { "-e",
-            "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
+            "--extra-attributes" }, split = ",", description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
 
     @Option(names = "--bounds", description = "If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>")

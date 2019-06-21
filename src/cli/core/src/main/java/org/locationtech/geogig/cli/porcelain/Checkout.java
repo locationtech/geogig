@@ -49,7 +49,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "checkout", aliases = "co", description = "Checkout a branch or paths to the working tree")
 public class Checkout extends AbstractCommand implements CLICommand {
 
-    @Parameters(arity = "1", description = "refspec (branch, commit id, etc) to checkout to the working tree")
+    @Parameters(arity = "0..1", description = "refspec (branch, commit id, etc) to checkout to the working tree")
     private List<String> commitish = new ArrayList<>();
 
     @Option(names = { "--force",
@@ -57,7 +57,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
                     + "working tree differs from HEAD. This is used to throw away local changes.")
     private boolean force = false;
 
-    @Option(names = { "--path",
+    @Option(arity = "1..*", required = false, names = { "--path",
             "-p" }, description = "Don't switch branches just update the named paths in the "
                     + "working tree from the index tree or a named treeish object.")
     private List<String> paths = new ArrayList<>();

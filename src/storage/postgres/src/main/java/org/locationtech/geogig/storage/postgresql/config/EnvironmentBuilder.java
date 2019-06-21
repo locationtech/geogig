@@ -192,7 +192,7 @@ public class EnvironmentBuilder {
         portNumber = String.valueOf(port);
 
         List<String> path = Splitter.on('/').omitEmptyStrings().splitToList(rootRepoURI.getPath());
-        Preconditions.checkArgument(path.size() >= 1 && path.size() <= 2,
+        Preconditions.checkArgument(path.size() >= 1 && path.size() <= 3,
                 "Path in URI must be like postgresql://<server>[:<port>]/database[/<schema>]?user=<username>&password=<pwd>");
 
         dbName = path.get(0);

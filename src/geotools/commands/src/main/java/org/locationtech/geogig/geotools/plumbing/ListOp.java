@@ -56,4 +56,7 @@ public class ListOp extends AbstractGeoGigOp<Optional<List<String>>> {
         return this;
     }
 
+    public static Optional<List<String>> run(DataStore ds) {
+        return new ListOp().setDataStore(ds).call();
+    }
 }

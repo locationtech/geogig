@@ -42,7 +42,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "squash", description = "Squash commits")
 public class Squash extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "<since_commit> <until_commit>", arity = "2")
+    @Parameters(description = "<since_commit> <until_commit>")
     private List<String> commits = new ArrayList<>();
 
     @Option(names = "-m", description = "Commit message")

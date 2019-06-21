@@ -53,7 +53,7 @@ public class RevList extends AbstractCommand implements CLICommand {
      * The commits to use for starting the list of output commits
      * 
      */
-    @Parameters(arity = "1..*", description = "< [<commit> ...]|[<since>..<until>]")
+    @Parameters(description = "< [<commit> ...]|[<since>..<until>]")
     public List<String> commits = new ArrayList<String>();
 
     @Option(names = { "--max", "-n" }, description = "Maximum number of commits to log.")

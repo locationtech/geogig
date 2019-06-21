@@ -43,7 +43,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "format-patch", description = "Creates a patch with a set of changes")
 public class FormatPatch extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "[<commit> [<commit>]]", arity = "1..2")
+    @Parameters(description = "[<commit> [<commit>]]")
     private List<String> refSpec = new ArrayList<>();
 
     @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")

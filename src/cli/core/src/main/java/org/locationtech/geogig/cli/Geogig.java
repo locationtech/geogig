@@ -46,7 +46,6 @@ import org.locationtech.geogig.cli.porcelain.Status;
 import org.locationtech.geogig.cli.porcelain.Tag;
 import org.locationtech.geogig.cli.porcelain.index.IndexCommandProxy;
 
-import lombok.Getter;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Model.CommandSpec;
@@ -60,7 +59,8 @@ import picocli.CommandLine.Spec;
         subcommands = { //
                 // CommandLine.HelpCommand adds support for `geogig help` as well as --help given by
                 // mixinStandardHelpOptions
-                CommandLine.HelpCommand.class, RevParse.class//
+                CommandLine.HelpCommand.class//
+                , RevParse.class//
                 , Add.class//
                 , Apply.class//
                 , Blame.class//
@@ -105,10 +105,15 @@ public class Geogig implements Runnable {
     @Option(names = "--repo", description = "URI of the repository to execute the command against. Defaults to current directory.")
     private String repoURI;
 
-    private @Getter GeogigCLI geogigCLI;
+    private GeogigCLI geogigCLI;
 
     public Geogig(GeogigCLI geogigCLI) {
         this.geogigCLI = geogigCLI;
+    }
+
+    public GeogigCLI getGeogigCLI() {
+        this.geogigCLI.setRepositoryURI(repoURI);
+        return this.geogigCLI;
     }
 
     public @Override void run() {

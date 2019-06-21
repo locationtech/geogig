@@ -37,6 +37,7 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 
 import com.google.common.base.Joiner;
 
+import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -89,14 +90,14 @@ public class Config extends AbstractCommand implements CLICommand {
             "--rootUri" }, description = "Specify a root URI for a collection of repositories.  Only global access will be available.")
     private String rootUri = null;
 
-    @Parameters(arity = "0..2", description = "name value (name is section.key format, value is only required when setting)")
+    @Parameters(description = "name value (name is section.key format, value is only required when setting)")
     private List<String> nameValuePair;
 
     /**
      * Executes the config command using the provided options.
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-
+        checkParameter(!(local && global), "local and global are mutually exclusive");
         GeoGIG geogig = cli.getGeogig();
         boolean closeIt = geogig == null;
         if (closeIt) {
@@ -115,12 +116,8 @@ public class Config extends AbstractCommand implements CLICommand {
             ConfigAction action = resolveConfigAction();
 
             if (action == ConfigAction.CONFIG_NO_ACTION) {
-                printUsage(cli);
-                throw new CommandFailedException();
-            }
-            if (global && local) {
-                printUsage(cli);
-                throw new CommandFailedException();
+                printUsage();
+                return;
             }
             ConfigScope scope = ConfigScope.DEFAULT;
 

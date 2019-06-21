@@ -83,7 +83,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "branch", aliases = "br", description = "List, create, or delete branches")
 public class Branch extends AbstractCommand implements CLICommand {
 
-    @Parameters(arity = "0..2", description = "<branch name> [<start point>]")
+    @Parameters(description = "<branch name> [<start point>]")
     private List<String> branchName = new ArrayList<>();
 
     @Option(names = { "--checkout",

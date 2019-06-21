@@ -42,10 +42,10 @@ import picocli.CommandLine.Parameters;
  * @see RemoteAddOp
  */
 @ReadOnly
-@Command(name = "remote add", description = "Add a remote for the repository")
+@Command(name = "add", description = "Add a remote for the repository")
 public class RemoteAdd extends AbstractCommand implements CLICommand {
 
-    @Option(names = { "-t", "--track" }, description = "branch to track")
+    @Option(names = { "-t", "--track" }, description = "branch to track", defaultValue = "*")
     private String branch = "*";
 
     @Option(names = { "-u", "--username" }, description = "user name")
@@ -61,11 +61,6 @@ public class RemoteAdd extends AbstractCommand implements CLICommand {
      * Executes the remote add command using the provided options.
      */
     public @Override void runInternal(GeogigCLI cli) {
-        if (params == null || params.size() != 2) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
-
         try {
             cli.getGeogig().command(RemoteAddOp.class).setName(params.get(0)).setURL(params.get(1))
                     .setBranch(branch).setUserName(username).setPassword(password).call();

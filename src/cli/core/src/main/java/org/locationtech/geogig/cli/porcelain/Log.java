@@ -100,7 +100,7 @@ public class Log extends AbstractCommand implements CLICommand {
     @Parameters(description = "[[<until>]|[<since>..<until>]]", arity = "0..1")
     public List<String> sinceUntilPaths = new ArrayList<>();
 
-    @Option(names = { "--path",
+    @Option(arity = "1..*", names = { "--path",
             "-p" }, description = "Print only commits that have modified the given path(s)")
     public List<String> pathNames = new ArrayList<>();
 

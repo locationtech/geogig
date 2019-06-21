@@ -51,7 +51,7 @@ public class Blame extends AbstractCommand {
     /**
      * The path to the element to analyze.
      */
-    @Parameters(arity = "1", description = "Path to the feature to bleam (e.g. roads/1)")
+    @Parameters(description = "Path to the feature to bleam (e.g. roads/1)")
     private List<String> featurePath = new ArrayList<String>();
 
     @Option(names = { "--porcelain" }, description = "Use porcelain output format")

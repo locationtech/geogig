@@ -59,7 +59,7 @@ import picocli.CommandLine.Parameters;
 @Command(name = "diff", description = "Show changes between commits, commit and working tree, etc")
 public class Diff extends AbstractCommand implements CLICommand {
 
-    @Parameters(description = "[<commit> [<commit>]]", arity = "1..2")
+    @Parameters(description = "[<commit> [<commit>]]")
     private List<String> refSpec = new ArrayList<>();
 
     @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")

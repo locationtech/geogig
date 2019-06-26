@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
@@ -21,8 +22,6 @@ import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-
-import com.beust.jcommander.internal.Maps;
 
 /**
  * Support class for Geopackage commands;
@@ -45,8 +44,8 @@ class GeopkgSupport {
      * @throws CommandFailedException
      * @see DataStore
      */
-    public DataStore getDataStore(GeopkgCommonArgs commonArgs) {
-        Map<String, Serializable> params = Maps.newHashMap();
+    public DataStore getDataStore(GeopkgCommandProxy commonArgs) {
+        Map<String, Serializable> params = new HashMap<>();
         params.put(GeoPkgDataStoreFactory.DBTYPE.key, "geopkg");
         params.put(GeoPkgDataStoreFactory.DATABASE.key, commonArgs.database);
         params.put(GeoPkgDataStoreFactory.USER.key, commonArgs.username);

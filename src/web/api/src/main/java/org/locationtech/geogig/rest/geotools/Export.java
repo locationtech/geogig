@@ -173,13 +173,13 @@ public class Export extends AbstractWebAPICommand {
         command.setSourceCommitish(rootTreeIsh);
         command.setBBoxFilter(bboxFilter);
 
-        final String commandDescription = outputFormat.getCommandDescription();
+        final String description = outputFormat.getCommandDescription();
 
         AsyncContext asyncContext = this.asyncContext;
         if (asyncContext == null) {
             asyncContext = AsyncContext.get();
         }
-        final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);
+        final AsyncCommand<?> asyncCommand = asyncContext.run(command, description);
 
         context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }

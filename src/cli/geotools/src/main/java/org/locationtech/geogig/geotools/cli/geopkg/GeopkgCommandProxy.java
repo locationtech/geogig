@@ -9,10 +9,14 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
+import picocli.CommandLine.Model.CommandSpec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for geppackage specific commands.
@@ -21,27 +25,18 @@ import com.beust.jcommander.Parameters;
  * <ul>
  * <li>{@code geogig geopkg <command> <args>...}
  * </ul>
- * 
- * @see GeopkgImport
- * @see GeopkgList
- * @see GeopkgExport
- * @see GeopkgDescribe
  */
-@Parameters(commandNames = "geopkg", commandDescription = "GeoGig/Geopackage integration utilities")
-public class GeopkgCommandProxy implements CLICommandExtension {
+@Command(name = "geopkg", aliases = "gp", description = "GeoGig/Geopackage integration utilities", //
+        subcommands = { GeopkgImport.class, GeopkgList.class, GeopkgDescribe.class,
+                GeopkgExport.class, GeopkgPull.class })
+public class GeopkgCommandProxy extends CLISubCommand {
 
-    /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
-     */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander();
-        commander.setProgramName("geogig geopkg");
-        commander.addCommand("import", new GeopkgImport());
-        commander.addCommand("list", new GeopkgList());
-        commander.addCommand("describe", new GeopkgDescribe());
-        commander.addCommand("export", new GeopkgExport());
-        commander.addCommand("pull", new GeopkgPull());
-        return commander;
-    }
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
+
+    @Option(names = { "--database",
+            "-D" }, description = "The database to connect to.  Default: database.gpkg")
+    public String database = "database.gpkg";
+
+    @Option(names = { "--user", "-U" }, description = "User name.  Default: user")
+    public String username = "user";
 }

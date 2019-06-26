@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,10 +27,11 @@ import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Creates or deletes tags Usage:
@@ -39,17 +41,17 @@ import com.google.common.collect.Lists;
  * 
  * @see TagOp
  */
-@Parameters(commandNames = "tag", commandDescription = "creates/deletes tags")
+@Command(name = "tag", description = "creates/deletes tags")
 public class Tag extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "-m", description = "Tag message")
+    @Option(names = "-m", description = "Tag message")
     private String message;
 
-    @Parameter(names = "-d", description = "Delete tag")
+    @Option(names = "-d", description = "Delete tag")
     private boolean delete;
 
-    @Parameter(description = "<tag_name> [tag_commit]")
-    private List<String> nameAndCommit = Lists.newArrayList();
+    @Parameters(arity = "0..2", description = "<tag_name> [tag_commit]")
+    private List<String> nameAndCommit = new ArrayList<>();
 
     /**
      * Executes the commit command using the provided options.

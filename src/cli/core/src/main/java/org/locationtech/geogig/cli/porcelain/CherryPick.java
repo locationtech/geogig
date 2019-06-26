@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.cli.porcelain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,10 +23,10 @@ import org.locationtech.geogig.porcelain.CherryPickOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * Given an existing commit, apply the change it introduces, recording a new commit . This requires
@@ -40,11 +41,11 @@ import com.google.common.collect.Lists;
  * 
  * @see CherryPickOp
  */
-@Parameters(commandNames = "cherry-pick", commandDescription = "Apply the changes introduced by existing commits")
+@Command(name = "cherry-pick", aliases = "chp", description = "Apply the changes introduced by existing commits")
 public class CherryPick extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<commitish>...")
-    private List<String> commits = Lists.newArrayList();
+    @Parameters(description = "refspec resolving to the commit to cherry pick")
+    private List<String> commits = new ArrayList<>();
 
     public @Override void runInternal(GeogigCLI cli) {
         final GeoGIG geogig = cli.getGeogig();

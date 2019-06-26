@@ -26,22 +26,22 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 /**
  * Outputs the common ancestor of 2 commits
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "merge-base", commandDescription = "Outputs the common ancestor of 2 commits")
+@Command(name = "merge-base", description = "Outputs the common ancestor of 2 commits")
 public class MergeBase extends AbstractCommand implements CLICommand {
 
     /**
      * The commits to use for computing the common ancestor
      * 
      */
-    @Parameter(description = "<commit> <commit>")
+    @Parameters(description = "<commit> <commit>")
     private List<String> commits = new ArrayList<String>();
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

@@ -21,8 +21,9 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.plumbing.remotes.RemoteException;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Adds a remote for the repository with the given name and URL.
@@ -41,30 +42,25 @@ import com.beust.jcommander.Parameters;
  * @see RemoteAddOp
  */
 @ReadOnly
-@Parameters(commandNames = "remote add", commandDescription = "Add a remote for the repository")
+@Command(name = "add", description = "Add a remote for the repository")
 public class RemoteAdd extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-t", "--track" }, description = "branch to track")
+    @Option(names = { "-t", "--track" }, description = "branch to track", defaultValue = "*")
     private String branch = "*";
 
-    @Parameter(names = { "-u", "--username" }, description = "user name")
+    @Option(names = { "-u", "--username" }, description = "user name")
     private String username = null;
 
-    @Parameter(names = { "-p", "--password" }, description = "password")
+    @Option(names = { "-p", "--password" }, description = "password")
     private String password = null;
 
-    @Parameter(description = "<name> <url>")
+    @Parameters(arity = "2", description = "<name> <url>")
     private List<String> params = new ArrayList<String>();
 
     /**
      * Executes the remote add command using the provided options.
      */
     public @Override void runInternal(GeogigCLI cli) {
-        if (params == null || params.size() != 2) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
-
         try {
             cli.getGeogig().command(RemoteAddOp.class).setName(params.get(0)).setURL(params.get(1))
                     .setBranch(branch).setUserName(username).setPassword(password).call();

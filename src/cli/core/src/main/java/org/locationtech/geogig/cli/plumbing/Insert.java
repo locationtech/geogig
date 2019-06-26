@@ -37,23 +37,24 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 
-@Parameters(commandNames = "insert", commandDescription = "Inserts features in the repository")
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
+@Command(name = "insert", description = "Inserts features in the repository")
 public class Insert extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<features_definition>")
+    @Parameters(description = "<features_definition>")
     private List<String> inputs = new ArrayList<String>();
 
-    @Parameter(names = "-f", description = "File with definition of features to insert")
+    @Option(names = "-f", description = "File with definition of features to insert")
     private String filepath;
 
     private GeoGIG geogig;
@@ -105,7 +106,7 @@ public class Insert extends AbstractCommand implements CLICommand {
     public Map<String, List<Feature>> readFeatures(Iterable<String> lines) {
 
         Map<String, List<Feature>> features = new HashMap<>();
-        List<String> featureChanges = Lists.newArrayList();
+        List<String> featureChanges = new ArrayList<>();
         Map<String, FeatureType> featureTypes = new HashMap<>(); //
         String line;
         Iterator<String> iter = lines.iterator();

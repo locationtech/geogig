@@ -29,13 +29,13 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
-import lombok.NonNull;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * This command creates an empty geogig repository - basically a .geogig directory with
@@ -52,13 +52,13 @@ import lombok.NonNull;
  * @see InitOp
  */
 @RequiresRepository(false)
-@Parameters(commandNames = "init", commandDescription = "Create an empty geogig repository or reinitialize an existing one")
+@Command(name = "init", description = "Create an empty geogig repository or reinitialize an existing one")
 public class Init extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "Repository location (directory).", required = false, arity = 1)
+    @Parameters(description = "Repository location (directory).", arity = "0..1")
     private List<String> location = new ArrayList<>(1);
 
-    @Parameter(names = {
+    @Option(names = {
             "--config" }, description = "Extra configuration options to set while preparing repository. Separate names from values with an equals sign and delimit configuration options with a colon. Example: storage.objects=rocksdb,storage.graph=rocksdb,rocksdb.version=1")
     private String config;
 

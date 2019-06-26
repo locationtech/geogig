@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.cli;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.util.IllegalFormatException;
 
@@ -19,9 +17,11 @@ import org.fusesource.jansi.Ansi;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.ColorArg;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import lombok.NonNull;
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 /**
  * A template command.
@@ -43,31 +43,37 @@ import com.beust.jcommander.Parameters;
 @RequiresRepository(true)
 public abstract class AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--help", help = true, hidden = true)
+    @Option(names = { "help", "--help" }, usageHelp = true, hidden = true)
     public boolean help;
 
-    @Parameter(hidden = true, names = "--repo", description = "Repository location. Either a backend specific URL or the path to the folder containing the .geogig directory.")
-    public String repo;
+    protected @Spec CommandSpec commandSpec;
 
-    @Parameter(hidden = true, names = "--color", description = "Whether to apply colored output. Possible values are auto|never|always.", converter = ColorArg.Converter.class)
+    @Option(hidden = true, names = "--color", description = "Whether to apply colored output. Possible values are auto|never|always.", converter = ColorArg.Converter.class)
     public ColorArg color = ColorArg.auto;
 
-    public @Override void run(GeogigCLI cli)
-            throws InvalidParameterException, CommandFailedException {
-        checkNotNull(cli, "No GeogigCLI provided");
-        if (help) {
-            printUsage(cli);
-            return;
-        }
+    public @Override void run() {
+        run(GeogigCLI.get());
+    }
 
-        if (repo != null) {
-            cli.setRepositoryURI(repo);
+    public @Override void run(@NonNull GeogigCLI cli)
+            throws InvalidParameterException, CommandFailedException {
+
+        if (getClass().isAnnotationPresent(RequiresRepository.class)
+                && getClass().getAnnotation(RequiresRepository.class).value()) {
+            if (null == cli.getGeogig()) {
+                throw new InvalidParameterException("Not in a geogig repository");
+            }
         }
         try {
             runInternal(cli);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected void printUsage() {
+        CommandLine commandLine = commandSpec.commandLine();
+        commandLine.usage(commandLine.getOut());
     }
 
     protected Ansi newAnsi(Console console) {
@@ -118,16 +124,6 @@ public abstract class AbstractCommand implements CLICommand {
      */
     protected abstract void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException;
-
-    /**
-     * Prints the JCommander usage for this command.
-     */
-    public void printUsage(GeogigCLI cli) {
-        JCommander jc = new JCommander(this);
-        String commandName = this.getClass().getAnnotation(Parameters.class).commandNames()[0];
-        jc.setProgramName("geogig " + commandName);
-        cli.printUsage(jc);
-    }
 
     /**
      * Checks the truth of the boolean expression and throws a {@link InvalidParameterException} if

@@ -14,12 +14,13 @@ import java.io.File;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.geotools.cli.DataStoreList;
+import org.locationtech.geogig.geotools.cli.base.DataStoreList;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Preconditions;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Geopackage CLI proxy for {@link ListOp}
@@ -27,14 +28,10 @@ import com.google.common.base.Preconditions;
  * @see ListOp
  */
 @ReadOnly
-@Parameters(commandNames = "list", commandDescription = "List available feature types in a database")
+@Command(name = "list", description = "List available feature types in a database")
 public class GeopkgList extends DataStoreList implements CLICommand {
 
-    /**
-     * Common arguments for Geopackage commands.
-     */
-    @ParametersDelegate
-    final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+    public @ParentCommand GeopkgCommandProxy commonArgs;
 
     final GeopkgSupport support = new GeopkgSupport();
 

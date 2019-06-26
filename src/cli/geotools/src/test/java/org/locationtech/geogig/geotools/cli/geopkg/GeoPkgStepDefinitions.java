@@ -74,8 +74,8 @@ public class GeoPkgStepDefinitions {
     public void I_run_the_command_on_an_existing_GeoPackage_file(String commandSpec)
             throws Throwable {
         GeoPackageTestSupport support = new GeoPackageTestSupport();
-        commandSpec += " --database ";
-        commandSpec += support.createDefaultTestData().getPath();
+        String geopackage = support.createDefaultTestData().getPath();
+        commandSpec = commandSpec.replace("geopkg ", "geopkg -D " + geopackage + " ");
         String[] args = commandSpec.split(" ");
         localRepo.runCommand(args);
     }

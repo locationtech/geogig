@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.cli;
+package org.locationtech.geogig.geotools.cli.base;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +19,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
 
@@ -28,6 +29,7 @@ import org.locationtech.geogig.geotools.plumbing.ListOp;
  * @see ListOp
  */
 @ReadOnly
+@RequiresRepository(false)
 public abstract class DataStoreList extends AbstractCommand implements CLICommand {
 
     protected abstract DataStore getDataStore();
@@ -41,8 +43,7 @@ public abstract class DataStoreList extends AbstractCommand implements CLIComman
         try {
             cli.getConsole().println("Fetching feature types...");
 
-            Optional<List<String>> features = cli.getGeogig().command(ListOp.class)
-                    .setDataStore(dataStore).call();
+            Optional<List<String>> features = ListOp.run(dataStore);
 
             if (features.isPresent()) {
                 for (String featureType : features.get()) {

@@ -20,15 +20,16 @@ import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
-import org.locationtech.geogig.geotools.cli.DataStoreImport;
+import org.locationtech.geogig.geotools.cli.base.DataStoreImport;
 import org.locationtech.geogig.geotools.geopkg.GeoPkgForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
 import com.google.common.base.Preconditions;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Imports one or more tables from a Geopackage database.
@@ -37,13 +38,10 @@ import com.google.common.base.Preconditions;
  * 
  * @see ImportOp
  */
-@Parameters(commandNames = "import", commandDescription = "Import Geopackage database")
+@Command(name = "import", description = "Import Geopackage database")
 public class GeopkgImport extends DataStoreImport implements CLICommand {
-    /**
-     * Common arguments for Geopackage commands.
-     */
-    @ParametersDelegate
-    final GeopkgCommonArgs commonArgs = new GeopkgCommonArgs();
+
+    public @ParentCommand GeopkgCommandProxy commonArgs;
 
     final GeopkgSupport support = new GeopkgSupport();
 

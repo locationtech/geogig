@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.cli;
+package org.locationtech.geogig.geotools.cli.base;
 
 import java.io.IOException;
 
@@ -22,9 +22,11 @@ import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvid
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.filter.Filter;
 
-import com.beust.jcommander.Parameter;
+import picocli.CommandLine.Option;
 
 /**
  * Imports one or more feature types from a {@link DataStore} given by the concrete subclass.
@@ -36,26 +38,26 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
     /**
      * If this is set, only this table will be imported.
      */
-    @Parameter(names = { "--table", "-t" }, description = "Table to import.")
+    @Option(names = { "--table", "-t" }, description = "Table to import.")
     public String table = "";
 
     /**
      * If this is set, all tables will be imported.
      */
-    @Parameter(names = "--all", description = "Import all tables.")
+    @Option(names = "--all", description = "Import all tables.")
     public boolean all = false;
 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = {
+    @Option(names = {
             "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = {
+    @Option(names = {
             "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
@@ -63,24 +65,24 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
      * Destination path to add features to. Only allowed when importing a single table
      */
-    @Parameter(names = { "-d", "--dest" }, description = "Path to import to")
+    @Option(names = { "-d", "--dest" }, description = "Path to import to")
     String destTable;
 
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = {
+    @Option(names = {
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 
-    @Parameter(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
+    @Option(names = { "-f", "--cql-filter" }, description = "GetoTools ECQL filter")
     String cqlFilter;
 
     protected abstract String getSourceDatabaseName();
@@ -104,11 +106,13 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
                 }
             }
 
+            GeoGIG geogig = cli.getGeogig();
             cli.getConsole().println("Importing from database " + getSourceDatabaseName());
 
             ProgressListener progressListener = cli.getProgressListener();
 
-            ImportOp op = cli.getGeogig().command(ImportOp.class).setAll(all).setTable(table)
+            Repository repository = geogig.getRepository();
+            ImportOp op = repository.command(ImportOp.class).setAll(all).setTable(table)
                     .setAlter(alter).setDestinationPath(destTable).setOverwrite(!add)
                     .setDataStore(dataStore).setAdaptToDefaultFeatureType(!forceFeatureType)
                     .setFidAttribute(fidAttribute).setFilter(filter);

@@ -20,8 +20,9 @@ import org.locationtech.geogig.remotes.PushOp;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.TransferSummary;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Updates remote refs using local refs, while sending objects necessary to complete the given refs.
@@ -35,13 +36,13 @@ import com.beust.jcommander.Parameters;
  * 
  * @see PushOp
  */
-@Parameters(commandNames = "push", commandDescription = "Update remote refs along with associated objects")
+@Command(name = "push", description = "Update remote refs along with associated objects")
 public class Push extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--all", description = "Instead of naming each ref to push, specifies that all refs under refs/heads/ be pushed.")
+    @Option(names = "--all", description = "Instead of naming each ref to push, specifies that all refs under refs/heads/ be pushed.")
     private boolean all = false;
 
-    @Parameter(description = "[<repository> [<refspec>...]]")
+    @Parameters(description = "[<repository> [<refspec>...]]")
     private List<String> args;
 
     /**

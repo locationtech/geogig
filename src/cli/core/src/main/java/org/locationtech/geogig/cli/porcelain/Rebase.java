@@ -27,9 +27,11 @@ import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Forward-port local commits to the updated upstream head.
@@ -56,28 +58,27 @@ import com.google.common.base.Suppliers;
  * 
  * @see RebaseOp
  */
-@Parameters(commandNames = {
-        "rebase" }, commandDescription = "Forward-port local commits to the updated upstream head")
+@Command(name = "rebase", description = "Forward-port local commits to the updated upstream head")
 public class Rebase extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = {
+    @Option(names = {
             "--onto" }, description = "Starting point at which to create the new commits.")
     private String onto;
 
-    @Parameter(names = { "--abort" }, description = "Abort a conflicted rebase.")
+    @Option(names = { "--abort" }, description = "Abort a conflicted rebase.")
     private boolean abort;
 
-    @Parameter(names = { "--continue" }, description = "Continue a conflicted rebase.")
+    @Option(names = { "--continue" }, description = "Continue a conflicted rebase.")
     private boolean continueRebase;
 
-    @Parameter(names = { "--skip" }, description = "Skip the current conflicting commit.")
+    @Option(names = { "--skip" }, description = "Skip the current conflicting commit.")
     private boolean skip;
 
-    @Parameter(names = {
+    @Option(names = {
             "--squash" }, description = "Squash commits instead of applying them one by one. A message has to be provided to use for the squashed commit")
     private String squash;
 
-    @Parameter(description = "[<upstream>] [<branch>]")
+    @Parameters(description = "[<upstream>] [<branch>]")
     private List<String> arguments;
 
     /**

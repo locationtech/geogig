@@ -43,32 +43,33 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Exports features from a feature type into a GeoJSON file.
  * 
  * @see ExportOp
  */
-@Parameters(commandNames = "export", commandDescription = "Export GeoJSON")
+@Command(name = "export", description = "Export GeoJSON")
 public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand {
 
-    @Parameter(description = "<path> <geojson>", arity = 2)
+    @Parameters(description = "<path> <geojson>", arity = "2")
     public List<String> args;
 
-    @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output file")
+    @Option(names = { "--overwrite", "-o" }, description = "Overwrite output file")
     public boolean overwrite;
 
-    @Parameter(names = {
+    @Option(names = {
             "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = {
+    @Option(names = {
             "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
@@ -78,10 +79,6 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
      */
     protected @Override void runInternal(GeogigCLI cli)
             throws InvalidParameterException, CommandFailedException, IOException {
-        if (args.isEmpty()) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
 
         String path = args.get(0);
         String geojson = args.get(1);

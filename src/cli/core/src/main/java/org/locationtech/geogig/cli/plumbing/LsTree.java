@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -30,37 +31,38 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.jts.geom.Envelope;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  *
  */
 @ReadOnly
-@Parameters(commandNames = "ls-tree", commandDescription = "Obtain information about features in the index and the working tree.")
+@Command(name = "ls-tree", description = "Obtain information about features in the index and the working tree.")
 public class LsTree extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<[refspec]:[path]>", arity = 1)
-    private List<String> refList = Lists.newArrayList();
+    @Parameters(description = "<[refspec]:[path]>", arity = "0..1")
+    private List<String> refList = new ArrayList<>();
 
-    @Parameter(names = {
+    @Option(names = {
             "-t" }, description = "Show tree entries even when going to recurse them. Has no effect if -r was not passed. -d implies -t.")
     private boolean includeTrees;
 
-    @Parameter(names = {
+    @Option(names = {
             "-d" }, description = "Show only the named tree entry itself, not its children.")
     private boolean onlyTrees;
 
-    @Parameter(names = { "-r" }, description = "Recurse into sub-trees.")
+    @Option(names = { "-r" }, description = "Recurse into sub-trees.")
     private boolean recursive;
 
-    @Parameter(names = { "-v",
+    @Option(names = { "-v",
             "--verbose" }, description = "Verbose output, include metadata, object id, and object type along with object path.")
     private boolean verbose;
 
-    @Parameter(names = { "-s",
+    @Option(names = { "-s",
             "--size" }, description = "Print tree size (number of features). If verbose output was requested it takes precedence over size")
     private boolean printSize;
 

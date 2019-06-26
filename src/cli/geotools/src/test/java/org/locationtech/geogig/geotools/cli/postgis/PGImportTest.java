@@ -35,8 +35,12 @@ public class PGImportTest extends RepositoryTestCase {
 
     private GeogigCLI cli;
 
+    PGImport importCommand;
+
     @Before
     public void setUpInternal() throws Exception {
+        importCommand = new PGImport();
+        importCommand.commonArgs = new PGCommandProxy();
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
@@ -50,7 +54,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testImport() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.run(cli);
@@ -58,7 +61,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testNoTableNotAll() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = false;
         importCommand.table = "";
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
@@ -68,7 +70,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testAllAndTable() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.table = "table1";
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
@@ -78,7 +79,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportTable() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = false;
         importCommand.table = "table1";
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
@@ -86,15 +86,7 @@ public class PGImportTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testImportHelp() throws Exception {
-        PGImport importCommand = new PGImport();
-        importCommand.help = true;
-        importCommand.run(cli);
-    }
-
-    @Test
     public void testInvalidDatabaseParams() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.commonArgs.host = "nonexistent";
         importCommand.all = true;
         exception.expect(CommandFailedException.class);
@@ -104,7 +96,6 @@ public class PGImportTest extends RepositoryTestCase {
     @Test
     public void testImportException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
@@ -113,7 +104,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportNonExistentTable() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = false;
         importCommand.table = "nonexistent";
         importCommand.support.dataStoreFactory = TestHelper.createTestFactory();
@@ -123,7 +113,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyTable() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
         exception.expect(CommandFailedException.class);
@@ -132,7 +121,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testNullDataStore() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
@@ -141,7 +129,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportGetNamesException() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
@@ -150,7 +137,6 @@ public class PGImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportFeatureSourceException() throws Exception {
-        PGImport importCommand = new PGImport();
         importCommand.all = true;
         importCommand.support.dataStoreFactory = TestHelper
                 .createFactoryWithGetFeatureSourceException();

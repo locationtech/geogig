@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -43,15 +44,17 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.internal.Lists;
-import com.beust.jcommander.internal.Maps;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows the commit logs.
@@ -66,15 +69,70 @@ import com.google.common.collect.Range;
  * @see org.locationtech.geogig.porcelain.LogOp
  */
 @ReadOnly
-@Parameters(commandNames = "log", commandDescription = "Show commit logs")
+@Command(name = "log", aliases = "l", description = "Show commit logs")
 public class Log extends AbstractCommand implements CLICommand {
 
     public enum LOG_DETAIL {
         SUMMARY, NAMES_ONLY, STATS, NOTHING
     };
 
-    @ParametersDelegate
-    public final LogArgs args = new LogArgs();
+    @Option(names = { "--max-count", "-n" }, description = "Maximum number of commits to log.")
+    public Integer limit;
+
+    @Option(names = "--skip", description = "Skip number commits before starting to show the commit output.")
+    public Integer skip;
+
+    @Option(names = "--since", description = "Show only commits since the specified 'since' date")
+    public String since;
+
+    @Option(names = "--until", description = "Show only commits until the specified 'until' date")
+    public String until;
+
+    @Option(names = "--author", description = "Show only commits by authors with names maching the passed regular expression")
+    public String author;
+
+    @Option(names = "--committer", description = "Show only commits by committer with names maching the passed regular expression")
+    public String committer;
+
+    @Option(names = "--oneline", description = "Print only commit id and message on a single line per commit")
+    public boolean oneline;
+
+    @Parameters(description = "[[<until>]|[<since>..<until>]]", arity = "0..1")
+    public List<String> sinceUntilPaths = new ArrayList<>();
+
+    @Option(arity = "1..*", names = { "--path",
+            "-p" }, description = "Print only commits that have modified the given path(s)")
+    public List<String> pathNames = new ArrayList<>();
+
+    @Option(names = "--summary", description = "Show summary of changes for each commit")
+    public boolean summary;
+
+    @Option(names = "--stats", description = "Show stats of changes for each commit")
+    public boolean stats;
+
+    @Option(names = "--names-only", description = "Show names of changed elements")
+    public boolean names;
+
+    @Option(names = "--topo-order", description = "Avoid showing commits on multiple lines of history intermixed")
+    public boolean topo;
+
+    @Option(names = "--first-parent", description = "Use only the first parent of each commit, showing a linear history")
+    public boolean firstParent;
+
+    @Option(names = "--all", description = "Show history of all branches")
+    public boolean all;
+
+    @Option(names = "--branch", description = "Show history of selected branch")
+    public String branch;
+
+    @Option(names = "--abbrev-commit", description = "Show abbreviate commit IDs")
+    public boolean abbrev;
+
+    @Option(names = "--decoration", description = "Show reference names")
+    public boolean decoration;
+
+    @Option(names = "--utc", description = "Show date/time in UTC")
+    public boolean utcDateFormat;
 
     private Map<ObjectId, String> refs;
 
@@ -90,20 +148,20 @@ public class Log extends AbstractCommand implements CLICommand {
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(!(args.summary && args.oneline),
+        checkParameter(!(this.summary && this.oneline),
                 "--summary and --oneline cannot be used together");
-        checkParameter(!(args.stats && args.oneline),
+        checkParameter(!(this.stats && this.oneline),
                 "--stats and --oneline cannot be used together");
-        checkParameter(!(args.stats && args.oneline),
+        checkParameter(!(this.stats && this.oneline),
                 "--name-only and --oneline cannot be used together");
 
         geogig = cli.getGeogig();
 
-        LogOp op = geogig.command(LogOp.class).setTopoOrder(args.topo)
-                .setFirstParentOnly(args.firstParent);
+        LogOp op = geogig.command(LogOp.class).setTopoOrder(this.topo)
+                .setFirstParentOnly(this.firstParent);
 
         refs = Maps.newHashMap();
-        if (args.decoration) {
+        if (this.decoration) {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
             refs.put(head.get().getObjectId(), Ref.HEAD);
             ImmutableSet<Ref> set = geogig.command(ForEachRef.class)
@@ -117,10 +175,10 @@ public class Log extends AbstractCommand implements CLICommand {
                 }
             }
         }
-        if (args.all) {
+        if (this.all) {
             ImmutableSet<Ref> refs = geogig.command(ForEachRef.class)
                     .setPrefixFilter(Ref.REFS_PREFIX).call();
-            List<ObjectId> list = Lists.newArrayList();
+            List<ObjectId> list = new ArrayList<>();
             for (Ref ref : refs) {
                 list.add(ref.getObjectId());
             }
@@ -136,45 +194,45 @@ public class Log extends AbstractCommand implements CLICommand {
             for (ObjectId id : list) {
                 op.addCommit(id);
             }
-        } else if (args.branch != null) {
-            Optional<Ref> obj = geogig.command(RefParse.class).setName(args.branch).call();
-            checkParameter(obj.isPresent(), "Wrong branch name: " + args.branch);
+        } else if (this.branch != null) {
+            Optional<Ref> obj = geogig.command(RefParse.class).setName(this.branch).call();
+            checkParameter(obj.isPresent(), "Wrong branch name: " + this.branch);
             op.addCommit(obj.get().getObjectId());
         }
 
-        if (args.author != null && !args.author.isEmpty()) {
-            op.setAuthor(args.author);
+        if (this.author != null && !this.author.isEmpty()) {
+            op.setAuthor(this.author);
         }
-        if (args.committer != null && !args.committer.isEmpty()) {
-            op.setCommiter(args.committer);
+        if (this.committer != null && !this.committer.isEmpty()) {
+            op.setCommiter(this.committer);
         }
-        if (args.skip != null) {
-            op.setSkip(args.skip.intValue());
+        if (this.skip != null) {
+            op.setSkip(this.skip.intValue());
         }
-        if (args.limit != null) {
-            op.setLimit(args.limit.intValue());
+        if (this.limit != null) {
+            op.setLimit(this.limit.intValue());
         }
-        if (args.since != null || args.until != null) {
+        if (this.since != null || this.until != null) {
             Date since = new Date(0);
             Date until = new Date();
-            if (args.since != null) {
-                since = new Date(geogig.command(ParseTimestamp.class).setString(args.since).call());
+            if (this.since != null) {
+                since = new Date(geogig.command(ParseTimestamp.class).setString(this.since).call());
             }
-            if (args.until != null) {
-                until = new Date(geogig.command(ParseTimestamp.class).setString(args.until).call());
-                if (args.all) {
+            if (this.until != null) {
+                until = new Date(geogig.command(ParseTimestamp.class).setString(this.until).call());
+                if (this.all) {
                     throw new InvalidParameterException(
                             "Cannot specify 'until' commit when listing all branches");
                 }
             }
             op.setTimeRange(Range.closed(since, until));
         }
-        if (!args.sinceUntilPaths.isEmpty()) {
+        if (!this.sinceUntilPaths.isEmpty()) {
             List<String> sinceUntil = ImmutableList
-                    .copyOf((Splitter.on("..").split(args.sinceUntilPaths.get(0))));
+                    .copyOf((Splitter.on("..").split(this.sinceUntilPaths.get(0))));
             checkParameter(sinceUntil.size() == 1 || sinceUntil.size() == 2,
                     "Invalid refSpec format, expected [<until>]|[<since>..<until>]: %s",
-                    args.sinceUntilPaths.get(0));
+                    this.sinceUntilPaths.get(0));
 
             String sinceRefSpec;
             String untilRefSpec;
@@ -193,7 +251,7 @@ public class Log extends AbstractCommand implements CLICommand {
                 op.setSince(since.get());
             }
             if (untilRefSpec != null) {
-                if (args.all) {
+                if (this.all) {
                     throw new InvalidParameterException(
                             "Cannot specify 'until' commit when listing all branches");
                 }
@@ -203,8 +261,8 @@ public class Log extends AbstractCommand implements CLICommand {
                 op.setUntil(until.get());
             }
         }
-        if (!args.pathNames.isEmpty()) {
-            for (String s : args.pathNames) {
+        if (!this.pathNames.isEmpty()) {
+            for (String s : this.pathNames) {
                 op.addPath(s);
             }
         }
@@ -217,15 +275,15 @@ public class Log extends AbstractCommand implements CLICommand {
         }
 
         LogEntryPrinter printer;
-        if (args.oneline) {
+        if (this.oneline) {
             printer = new OneLineConverter();
         } else {
             LOG_DETAIL detail;
-            if (args.summary) {
+            if (this.summary) {
                 detail = LOG_DETAIL.SUMMARY;
-            } else if (args.names) {
+            } else if (this.names) {
                 detail = LOG_DETAIL.NAMES_ONLY;
-            } else if (args.stats) {
+            } else if (this.stats) {
                 detail = LOG_DETAIL.STATS;
             } else {
                 detail = LOG_DETAIL.NOTHING;
@@ -296,7 +354,7 @@ public class Log extends AbstractCommand implements CLICommand {
             final long timestamp = commit.getAuthor().getTimestamp();
 
             int timeZoneOffset = commit.getAuthor().getTimeZoneOffset();
-            if (args.utcDateFormat) {
+            if (Log.this.utcDateFormat) {
                 timeZoneOffset = 0;
             }
             String friendlyString = estimateSince(now, timestamp);
@@ -424,7 +482,7 @@ public class Log extends AbstractCommand implements CLICommand {
      */
     private String getIdAsString(ObjectId id) {
         StringBuilder sb = new StringBuilder();
-        if (args.abbrev) {
+        if (this.abbrev) {
             sb.append(id.toString().substring(0, 8));
         } else {
             sb.append(id.toString());

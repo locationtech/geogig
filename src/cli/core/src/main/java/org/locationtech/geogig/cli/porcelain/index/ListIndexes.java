@@ -26,15 +26,16 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.Iterators;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+
 @RequiresRepository(true)
-@Parameters(commandNames = { "list" }, commandDescription = "List all indexes in the repository.")
+@Command(name = "list", aliases = "l", description = "List all indexes in the repository.")
 public class ListIndexes extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--tree", description = "Name of the feature tree to list indexes for.")
+    @Option(names = "--tree", description = "Name of the feature tree to list indexes for.")
     private String treeName;
 
     protected @Override void runInternal(GeogigCLI cli)

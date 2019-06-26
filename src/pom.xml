@@ -24,6 +24,8 @@
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
     <skip.it>${skipTests}</skip.it>
+    <!-- git-commit-id-plugin slows down the build, skip by default, except in api which sets this property to false -->
+    <git.commitid.skip>true</git.commitid.skip>
 
     <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
     <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
@@ -38,6 +40,7 @@
     <guava.version>27.1-jre</guava.version>
     <guice.version>4.2.2</guice.version>
     <jcommander.version>1.48</jcommander.version>
+    <picocli.version>4.0.0-beta-2</picocli.version>
     <jsonp.version>1.0.4</jsonp.version>
     <jdt-annotation.version>1.1.0</jdt-annotation.version>
     <jts.version>1.16.1</jts.version>
@@ -272,6 +275,11 @@
         <version>${compress-lzf.version}</version>
       </dependency>
 
+      <dependency>
+          <groupId>info.picocli</groupId>
+          <artifactId>picocli</artifactId>
+          <version>${picocli.version}</version>
+      </dependency>
       <dependency>
         <!-- http://jcommander.org/ -->
         <groupId>com.beust</groupId>
@@ -586,15 +594,16 @@
           </execution>
         </executions>
         <configuration>
+          <skip>${git.commitid.skip}</skip>
           <prefix>git</prefix>
           <dateFormat>MMMM dd, yyyy 'at' HH:mm:ss z</dateFormat>
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-          <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
+          <dotGitDirectory>${maven.multiModuleProjectDirectory}/../.git</dotGitDirectory>
           <skipPoms>false</skipPoms>
           <verbose>false</verbose>
           <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>src/main/resources/git.geogig.properties</generateGitPropertiesFilename>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/git.geogig.properties</generateGitPropertiesFilename>
         </configuration>
       </plugin>
       <plugin>

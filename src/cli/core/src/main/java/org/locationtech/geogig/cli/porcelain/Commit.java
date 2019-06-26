@@ -34,10 +34,12 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Stores the current contents of the index in a new commit along with a log message from the user
@@ -52,29 +54,29 @@ import com.google.common.collect.Lists;
  * 
  * @see CommitOp
  */
-@Parameters(commandNames = "commit", commandDescription = "Record staged changes to the repository")
+@Command(name = "commit", aliases = "ci", description = "Record staged changes to the repository")
 public class Commit extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "-m", description = "Commit message")
+    @Option(names = "-m", description = "Commit message")
     private String message;
 
-    @Parameter(names = "-c", description = "Commit to reuse")
+    @Option(names = "-c", description = "Commit to reuse")
     private String commitToReuse;
 
-    @Parameter(names = "-t", description = "Commit timestamp")
+    @Option(names = "-t", description = "Commit timestamp")
     private String commitTimestamp;
 
-    @Parameter(names = "--amend", description = "Amends last commit")
+    @Option(names = "--amend", description = "Amends last commit")
     private boolean amend;
 
-    @Parameter(names = { "--quiet",
+    @Option(names = { "--quiet",
             "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
-    @Parameter(description = "<pathFilter>  [<paths_to_commit]...")
-    private List<String> pathFilters = Lists.newLinkedList();
+    @Parameters(arity = "*", description = "If given, commit only the indicated paths")
+    private List<String> paths = Lists.newLinkedList();
 
-    @Parameter(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
+    @Option(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
     private boolean allowEmpty;
 
     /**
@@ -118,7 +120,7 @@ public class Commit extends AbstractCommand implements CLICommand {
                         "Provided reference does not resolve to a commit");
                 commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
             }
-            commit = commitOp.setPathFilters(pathFilters).setProgressListener(progress).call();
+            commit = commitOp.setPathFilters(paths).setProgressListener(progress).call();
         } catch (NothingToCommitException | IllegalStateException notificationError) {
             throw new CommandFailedException(notificationError.getMessage(), true);
         }

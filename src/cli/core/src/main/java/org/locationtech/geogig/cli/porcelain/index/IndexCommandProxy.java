@@ -9,10 +9,13 @@
  */
 package org.locationtech.geogig.cli.porcelain.index;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for Index specific commands.
@@ -22,22 +25,11 @@ import com.beust.jcommander.Parameters;
  * <li>{@code geogig index <command> <args>...}
  * </ul>
  */
-@Parameters(commandNames = "index", commandDescription = "Indexing command utilities")
-public class IndexCommandProxy implements CLICommandExtension {
+@Command(name = "index", description = "Indexing command utilities" //
+        , mixinStandardHelpOptions = true//
+        , subcommands = { CreateIndex.class, UpdateIndex.class, ListIndexes.class,
+                RebuildIndex.class, DropIndex.class })
+public class IndexCommandProxy extends CLISubCommand {
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
 
-    /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
-     */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander();
-        commander.setProgramName("geogig index");
-        commander.addCommand("create", new CreateIndex());
-        commander.addCommand("update", new UpdateIndex());
-        commander.addCommand("list", new ListIndexes());
-        commander.addCommand("rebuild", new RebuildIndex());
-        commander.addCommand("drop", new DropIndex());
-
-        return commander;
-    }
 }

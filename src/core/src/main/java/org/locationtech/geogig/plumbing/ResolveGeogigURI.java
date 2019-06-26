@@ -42,6 +42,10 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
 
     private @Nullable Hints hints;
 
+    public ResolveGeogigURI() {
+
+    }
+
     @Inject
     public ResolveGeogigURI(@NonNull Platform platform, @Nullable Hints hints) {
         this.platform = platform;

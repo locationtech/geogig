@@ -9,10 +9,13 @@
  */
 package org.locationtech.geogig.geotools.cli.shp;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for shapefile specific commands.
@@ -24,20 +27,9 @@ import com.beust.jcommander.Parameters;
  * 
  * @see ShpImport
  */
-@Parameters(commandNames = "shp", commandDescription = "GeoGig/Shapefile integration utilities")
-public class ShpCommandProxy implements CLICommandExtension {
+@Command(name = "shp", description = "GeoGig/Shapefile integration utilities", //
+        subcommands = { ShpImport.class, ShpExport.class, ShpExportDiff.class, ShpDescribe.class })
+public class ShpCommandProxy extends CLISubCommand {
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
 
-    /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
-     */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander();
-        commander.setProgramName("geogig shp");
-        commander.addCommand("import", new ShpImport());
-        commander.addCommand("export", new ShpExport());
-        commander.addCommand("export-diff", new ShpExportDiff());
-        commander.addCommand("describe", new ShpDescribe());
-        return commander;
-    }
 }

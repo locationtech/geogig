@@ -28,9 +28,11 @@ import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * There are two forms of geogig reset. In the first form, copy entries from {@code <commit>} to the
@@ -68,24 +70,24 @@ import com.google.common.base.Suppliers;
  * 
  * @see ResetOp
  */
-@Parameters(commandNames = {
-        "reset" }, commandDescription = "Reset current HEAD to the specified state, optionally modifying index and working tree to match")
+@Command(name = "reset", description = "Reset current HEAD to the specified state, optionally modifying index and working tree to match")
 public class Reset extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "--hard" }, description = "Resets the index and the working tree.")
+    @Option(names = { "--hard" }, description = "Resets the index and the working tree.")
     private boolean hard;
 
-    @Parameter(names = { "--mixed" }, description = "Resets the index, but not the working tree.")
+    @Option(names = { "--mixed" }, description = "Resets the index, but not the working tree.")
     private boolean mixed;
 
-    @Parameter(names = { "--soft" }, description = "Does not affect index or working tree.")
+    @Option(names = { "--soft" }, description = "Does not affect index or working tree.")
     private boolean soft;
 
-    @Parameter(description = "[<commit>]", arity = 1)
+    @Parameters(description = "[<commit>]", arity = "0..1")
     private List<String> commit;
 
-    @Parameter(names = { "-p", "--path" }, description = "<path>...", variableArity = true)
-    private List<String> args;
+    @Option(names = { "--path",
+            "-p" }, arity = "1..*", description = "Reset only the paths indicated")
+    private List<String> paths;
 
     /**
      * Executes the reset command using the provided options.
@@ -100,8 +102,8 @@ public class Reset extends AbstractCommand implements CLICommand {
 
         ResetOp reset = cli.getGeogig().command(ResetOp.class);
         try {
-            for (int i = 0; args != null && i < args.size(); i++) {
-                reset.addPattern(args.get(i));
+            for (int i = 0; paths != null && i < paths.size(); i++) {
+                reset.addPattern(paths.get(i));
             }
 
             if (commit != null && commit.size() > 0) {

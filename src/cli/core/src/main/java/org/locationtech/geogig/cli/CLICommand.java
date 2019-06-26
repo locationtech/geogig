@@ -11,11 +11,11 @@ package org.locationtech.geogig.cli;
 
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.Config;
-import org.locationtech.geogig.cli.porcelain.Help;
 import org.locationtech.geogig.cli.porcelain.Init;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterException;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Help;
+import picocli.CommandLine.ParameterException;
 
 /**
  * Base interface for command executed through the command line interface.
@@ -25,14 +25,17 @@ import com.beust.jcommander.ParameterException;
  * {@link #run(GeogigCLI)} is only going to be called with a valid repository in place.
  * <p>
  * Commands that don't necessarily require a repository to run (e.g. {@link Init init}, {@link Help
- * help}, {@link Config config}, etc} shall not be annotated with {@link RequiresRepository
- * 
- * @RequiresRepository}, although they're free to check {@link GeogigCLI#getGeogig()} for nullity if
- *                       they need to perform one or another task depending on the precense or not
- *                       of a repository.
+ * help}, {@link Config config}, etc} shall not be annotated with {@link RequiresRepository},
+ * although they're free to check {@link GeogigCLI#getGeogig()} for nullity if they need to perform
+ * one or another task depending on the presence or not of a repository.
  * 
  */
-public interface CLICommand {
+public interface CLICommand extends Runnable {
+
+    default String getCommandName() {
+        Command annotation = getClass().getAnnotation(Command.class);
+        return annotation.name();
+    }
 
     /**
      * Executes the CLI command represented by the implementation.

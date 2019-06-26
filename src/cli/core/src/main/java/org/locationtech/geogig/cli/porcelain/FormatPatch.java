@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.porcelain;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -26,9 +27,9 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.google.common.collect.Lists;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Store changes between two version of the repository in a patch file
@@ -39,19 +40,19 @@ import com.google.common.collect.Lists;
  * @see Diff
  */
 @ReadOnly
-@Parameters(commandNames = "format-patch", commandDescription = "Creates a patch with a set of changes")
+@Command(name = "format-patch", description = "Creates a patch with a set of changes")
 public class FormatPatch extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "[<commit> [<commit>]] [-- <path>...]", arity = 2)
-    private List<String> refSpec = Lists.newArrayList();
+    @Parameters(description = "[<commit> [<commit>]]")
+    private List<String> refSpec = new ArrayList<>();
 
-    @Parameter(names = { "--path", "-p" }, hidden = true, variableArity = true)
-    private List<String> paths = Lists.newArrayList();
+    @Option(names = { "--path", "-p" }, description = "List of tree/feature paths to filter by")
+    private List<String> paths = new ArrayList<>();
 
-    @Parameter(names = { "-f", "--file" }, description = "The patch file")
+    @Option(names = { "-f", "--file" }, description = "The patch file")
     private String file;
 
-    @Parameter(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
+    @Option(names = "--cached", description = "compares the specified tree (commit, branch, etc) and the staging area")
     private boolean cached;
 
     /**

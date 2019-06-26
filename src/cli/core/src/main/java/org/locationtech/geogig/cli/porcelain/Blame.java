@@ -35,8 +35,9 @@ import org.locationtech.geogig.porcelain.ValueAndCommit;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Shows information about the commits and authors that have modified the current attributes of a
@@ -44,29 +45,29 @@ import com.beust.jcommander.Parameters;
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "blame", commandDescription = "Shows information about authors of modifications for a single feature")
+@Command(name = "blame", description = "Shows information about authors of modifications for a single feature")
 public class Blame extends AbstractCommand {
 
     /**
      * The path to the element to analyze.
      */
-    @Parameter(description = "<path>")
-    private List<String> paths = new ArrayList<String>();
+    @Parameters(description = "Path to the feature to bleam (e.g. roads/1)")
+    private List<String> featurePath = new ArrayList<String>();
 
-    @Parameter(names = { "--porcelain" }, description = "Use porcelain output format")
+    @Option(names = { "--porcelain" }, description = "Use porcelain output format")
     private boolean porcelain = false;
 
-    @Parameter(names = { "--no-values" }, description = "Do not show values, only attribute names")
+    @Option(names = { "--no-values" }, description = "Do not show values, only attribute names")
     private boolean noValues = false;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(paths.size() < 2, "Only one path allowed");
-        checkParameter(!paths.isEmpty(), "A path must be specified");
+        checkParameter(featurePath.size() < 2, "Only one path allowed");
+        checkParameter(!featurePath.isEmpty(), "A path must be specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        String path = paths.get(0);
+        String path = featurePath.get(0);
 
         try {
             BlameReport report = geogig.command(BlameOp.class).setPath(path).call();

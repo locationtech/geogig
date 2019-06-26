@@ -1,0 +1,3 @@
+org.locationtech.geogig.cli.storage.LsRepos
+org.locationtech.geogig.cli.storage.PGCreateDDL
+org.locationtech.geogig.cli.storage.PGStorageUpgrade

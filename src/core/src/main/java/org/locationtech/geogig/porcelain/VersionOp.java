@@ -37,7 +37,7 @@ public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
         Properties properties = new Properties();
         VersionInfo info = null;
         try (InputStream resource = VersionInfo.class
-                .getResourceAsStream("/git.geogig.properties")) {
+                .getResourceAsStream("/META-INF/git.geogig.properties")) {
             if (resource != null) {
                 properties.load(resource);
                 info = new VersionInfo(properties);

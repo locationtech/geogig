@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
@@ -22,9 +23,9 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CheckoutResult;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-import com.google.common.collect.Lists;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * This command checks out a branch into the working tree. Checkout also updates HEAD to set the
@@ -45,38 +46,36 @@ import com.google.common.collect.Lists;
  * 
  * @see CheckoutOp
  */
-@Parameters(commandNames = "checkout", commandDescription = "Checkout a branch or paths to the working tree")
+@Command(name = "checkout", aliases = "co", description = "Checkout a branch or paths to the working tree")
 public class Checkout extends AbstractCommand implements CLICommand {
 
-    @Parameter(arity = 1, description = "<branch|commit>")
-    private List<String> branchOrStartPoint = Lists.newArrayList();
+    @Parameters(arity = "0..1", description = "refspec (branch, commit id, etc) to checkout to the working tree")
+    private List<String> commitish = new ArrayList<>();
 
-    @Parameter(names = { "--force",
+    @Option(names = { "--force",
             "-f" }, description = "When switching branches, proceed even if the index or the "
                     + "working tree differs from HEAD. This is used to throw away local changes.")
     private boolean force = false;
 
-    @Parameter(names = { "--path",
+    @Option(arity = "1..*", required = false, names = { "--path",
             "-p" }, description = "Don't switch branches just update the named paths in the "
-                    + "working tree from the index tree or a named treeish object.", variableArity = true)
-    private List<String> paths = Lists.newArrayList();
+                    + "working tree from the index tree or a named treeish object.")
+    private List<String> paths = new ArrayList<>();
 
-    @Parameter(names = "--ours", description = "When checking out paths from the index, check out 'ours' version for unmerged paths")
+    @Option(names = "--ours", description = "When checking out paths from the index, check out 'ours' version for unmerged paths")
     private boolean ours;
 
-    @Parameter(names = "--theirs", description = "When checking out paths from the index, check out 'theirs' version for unmerged paths")
+    @Option(names = "--theirs", description = "When checking out paths from the index, check out 'theirs' version for unmerged paths")
     private boolean theirs;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         final GeoGIG geogig = cli.getGeogig();
-        checkParameter(branchOrStartPoint.size() != 0 || !paths.isEmpty(),
-                "no branch or paths specified");
-        checkParameter(branchOrStartPoint.size() < 2, "too many arguments");
+        checkParameter(commitish.size() != 0 || !paths.isEmpty(), "no branch or paths specified");
+        checkParameter(commitish.size() < 2, "too many arguments");
 
         try {
             final Console console = cli.getConsole();
-            String branchOrCommit = (branchOrStartPoint.size() > 0 ? branchOrStartPoint.get(0)
-                    : null);
+            String branchOrCommit = (commitish.size() > 0 ? commitish.get(0) : null);
 
             CheckoutResult result = geogig.command(CheckoutOp.class).setForce(force)
                     .setSource(branchOrCommit).addPaths(paths).setOurs(ours).setTheirs(theirs)

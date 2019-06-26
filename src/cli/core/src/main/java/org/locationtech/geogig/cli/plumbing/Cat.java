@@ -25,9 +25,11 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * The cat commands describes a repository element with no formatting at all. For a more elaborated
@@ -35,33 +37,33 @@ import com.google.common.base.Suppliers;
  * 
  */
 @ReadOnly
-@Parameters(commandNames = "cat", commandDescription = "Describes a repository element")
+@Command(name = "cat", description = "Describes a repository element")
 public class Cat extends AbstractCommand {
 
     /**
      * The path to the element to display. Accepts all the notation types accepted by the RevParse
      * class
      */
-    @Parameter(description = "<path>")
-    private List<String> paths = new ArrayList<String>();
+    @Parameters(description = "<path>")
+    private List<String> path = new ArrayList<String>();
 
     /**
      * Produce binary output instead of text output
      */
-    @Parameter(names = { "--binary" }, description = "Produce binary output")
+    @Option(names = { "--binary" }, description = "Produce binary output")
     private boolean binary;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(paths.size() < 2, "Only one refspec allowed");
-        checkParameter(!paths.isEmpty(), "A refspec must be specified");
+        checkParameter(path.size() < 2, "Only one refspec allowed");
+        checkParameter(!path.isEmpty(), "A refspec must be specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        String path = paths.get(0);
+        String spath = path.get(0);
 
         Optional<RevObject> obj;
-        RevObjectParse cmd = geogig.command(RevObjectParse.class).setRefSpec(path);
+        RevObjectParse cmd = geogig.command(RevObjectParse.class).setRefSpec(spath);
         obj = cmd.call();
         if (!obj.isPresent()) {
             obj = cmd.setSource(geogig.getContext().indexDatabase()).call();

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.cli.porcelain;
 
-import com.beust.jcommander.IStringConverter;
+import picocli.CommandLine.ITypeConverter;
 
 /**
  * This enumeration defines different the various usage options for color in some commands.
@@ -20,7 +20,7 @@ public enum ColorArg {
     /**
      * This converter is used to convert a String input into a valid enumeration value.
      */
-    public static class Converter implements IStringConverter<ColorArg> {
+    public static class Converter implements ITypeConverter<ColorArg> {
 
         /**
          * @param value the string to convert

@@ -15,15 +15,15 @@ Feature: General features of CLI
   Scenario: Show command candidate when command is mistyped
     Given I have a repository      
      When I run the command "brunch"
-     Then the response should contain "Did you mean this?"
+     Then the response should contain "Unknown command. Did you mean:"
       And the response should contain "branch"
       And it should exit with non-zero exit code 
      
   Scenario: Show command candidates when command is mistyped
     Given I have a repository      
      When I run the command "confit"
-     Then the response should contain "Did you mean one of these?"
+     Then the response should contain "Unknown command. Did you mean:"
       And the response should contain "config"
-      And the response should contain "commit"
+      And the response should contain "conflicts"
       And it should exit with non-zero exit code      
      

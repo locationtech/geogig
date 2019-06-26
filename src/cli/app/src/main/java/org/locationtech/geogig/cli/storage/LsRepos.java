@@ -45,23 +45,25 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+
 @RequiresRepository(false)
-@Parameters(commandNames = "ls-repos", commandDescription = "List repositories under a base URI")
+@Command(name = "ls-repos", description = "List repositories under a base URI")
 public class LsRepos extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<base URI> The URI without a repository name. (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)", arity = 1)
+    @Parameters(description = "<base URI> The URI without a repository name. (e.g. geogig ls-repos postgresql://localhost:5432/geogig_db?user=...&password=...)")
     private List<URI> baseuri = new ArrayList<>();
 
-    @Parameter(names = { "-v", "--verbose" }, description = "verbose output")
+    @Option(names = { "-v", "--verbose" }, description = "verbose output")
     private boolean verbose;
 
-    @Parameter(names = { "-c",
+    @Option(names = { "-c",
             "--csv" }, description = "If verbose output, use comma separated list instead of table output")
     private boolean csv;
 

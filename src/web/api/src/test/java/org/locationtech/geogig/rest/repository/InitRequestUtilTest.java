@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,8 +45,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import com.beust.jcommander.internal.Maps;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { GeoGigWebAPISpringConfig.class })
@@ -87,7 +86,7 @@ public class InitRequestUtilTest {
     @Test
     public void testCreateGeoGIG_RepositoryName() throws URISyntaxException, IOException,
             UnsupportedEncodingException, RepositoryConnectionException {
-        Map<String, String> params = Maps.newHashMap();
+        Map<String, String> params = new HashMap<>();
         Hints hints = InitRequestUtil.createHintsFromParameters("testRepo", params);
 
         // assert the correct Repository Name is in the Hints

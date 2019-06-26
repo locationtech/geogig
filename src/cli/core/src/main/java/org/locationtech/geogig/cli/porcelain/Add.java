@@ -24,8 +24,9 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * This command updates the index using the current content found in the working tree, to prepare
@@ -51,21 +52,21 @@ import com.beust.jcommander.Parameters;
  * 
  * @see AddOp
  */
-@Parameters(commandNames = "add", commandDescription = "Add features to the staging area")
+@Command(name = "add", description = "Add features to the staging area")
 public class Add extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "--dry-run", "-n" }, description = "Maximum number of commits to log")
+    @Option(names = { "--dry-run", "-n" }, description = "Maximum number of commits to log")
     private boolean dryRun;
 
-    @Parameter(names = { "--update",
+    @Option(names = { "--update",
             "-u" }, description = "Only add features that have already been tracked")
     private boolean updateOnly;
 
-    @Parameter(names = { "--quiet",
+    @Option(names = { "--quiet",
             "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 
-    @Parameter(description = "<patterns>...")
+    @Parameters(arity = "*", description = "<patterns>...")
     private List<String> patterns = new ArrayList<String>();
 
     /**

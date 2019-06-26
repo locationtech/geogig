@@ -9,13 +9,18 @@
  */
 package org.locationtech.geogig.cli.remoting;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 
 /**
- * {@link CLICommandExtension} that provides a {@link JCommander} for remote specific commands.
+ * {@link CLICommandExtension} that provides {@link CommandLine} {@link Command}s for remote
+ * specific commands.
  * <p>
  * Usage:
  * <ul>
@@ -26,19 +31,9 @@ import com.beust.jcommander.Parameters;
  * @see RemoteRemove
  * @see RemoteList
  */
-@Parameters(commandNames = "remote", commandDescription = "remote utilities")
-public class RemoteExtension implements CLICommandExtension {
+@Command(name = "remote", description = "remote utilities", //
+        subcommands = { RemoteAdd.class, RemoteRemove.class, RemoteList.class })
+public class RemoteExtension extends CLISubCommand {
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
 
-    /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
-     */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander(this);
-        commander.setProgramName("geogig remote");
-        commander.addCommand("add", new RemoteAdd());
-        commander.addCommand("rm", new RemoteRemove());
-        commander.addCommand("list", new RemoteList());
-        return commander;
-    }
 }

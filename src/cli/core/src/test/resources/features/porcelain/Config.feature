@@ -183,7 +183,7 @@ Feature: "config" command
   Scenario: Try to use both global and local in the same config command
     Given I have a repository
      When I run the command "config --local --global"
-     Then the response should contain "Usage:"
+     Then the response should contain "mutually exclusive"
      
   Scenario: Try to use the config command with no arguments
     Given I have a repository

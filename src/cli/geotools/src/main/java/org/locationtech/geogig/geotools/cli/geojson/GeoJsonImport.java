@@ -27,29 +27,30 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.opengis.feature.type.AttributeDescriptor;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
-@Parameters(commandNames = "import", commandDescription = "Import GeoJSON")
+@Command(name = "import", description = "Import GeoJSON")
 public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand {
 
     /**
      * GeoJSON files to import.
      */
-    @Parameter(description = "<geojson> [<geojson>]...")
+    @Parameters(description = "<file> [<file>]... GeoJSON files to import", arity = "1..")
     List<String> geoJSONList;
 
     /**
      * do not replace or delete features
      */
-    @Parameter(names = {
+    @Option(names = {
             "--add" }, description = "Do not replace or delete features on the destination path, but just add new ones")
     boolean add;
 
     /**
      * Use origin feature type
      */
-    @Parameter(names = {
+    @Option(names = {
             "--force-featuretype" }, description = "Use origin feature type even if it does not match the default destination featuretype")
     boolean forceFeatureType;
 
@@ -57,34 +58,34 @@ public class GeoJsonImport extends AbstractGeoJsonCommand implements CLICommand 
      * Set the path default feature type to the the feature type of imported features, and modify
      * existing features to match it
      */
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Set the path default feature type to the the feature type of imported features, and modify existing features to match it")
     boolean alter;
 
     /**
      * Destination path to add features to. Only allowed when importing a single table
      */
-    @Parameter(names = { "-d", "--dest" }, description = "Path to import to")
+    @Option(names = { "-d", "--dest" }, description = "Path to import to")
     String destTable;
 
     /**
      * Name to use for geometry attribute, replacing the default one ("geometry")
      */
-    @Parameter(names = {
+    @Option(names = {
             "--geom-name" }, description = "Name to use for geometry attribute, replacing the default one ('geometry')")
     String geomName;
 
     /**
      * Name to use for geometry attribute, replacing the default one ("geometry")
      */
-    @Parameter(names = {
+    @Option(names = {
             "--geom-name-auto" }, description = "Uses the name of the geometry descriptor in the destination feature type")
     boolean geomNameAuto;
 
     /**
      * The attribute to use to create the feature Id
      */
-    @Parameter(names = {
+    @Option(names = {
             "--fid-attrib" }, description = "Use the specified attribute to create the feature Id")
     String fidAttribute;
 

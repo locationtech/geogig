@@ -35,16 +35,17 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Splitter;
 import com.google.common.base.Supplier;
 
-@Parameters(commandNames = "ql", commandDescription = "executes a geogig query language statement")
-@RequiresRepository(true)
-public class QL extends AbstractCommand {
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
-    @Parameter(required = true, arity = 1, description = "Either a SELECT, UPDATE, DELETE, or INSERT statement in geogig Query Language")
+@Command(name = "ql", description = "executes a geogig query language statement")
+@RequiresRepository(true)
+public class QL extends AbstractCommand implements org.locationtech.geogig.cli.CLICommand {
+
+    @Parameters(arity = "1", description = "Either a SELECT, UPDATE, DELETE, or INSERT statement in geogig Query Language")
     private List<String> statement = new ArrayList<>(1);
 
     @Override

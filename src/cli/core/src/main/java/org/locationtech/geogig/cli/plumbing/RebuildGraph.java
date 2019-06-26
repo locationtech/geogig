@@ -18,19 +18,20 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.RebuildGraphOp;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 /**
  * Rebuilds the graph database and prints a list of commits that were incomplete or missing.
  * 
  * @see RebuildGraphOp
  */
-@Parameters(commandNames = "rebuild-graph", commandDescription = "Rebuilds the graph database.")
+@Command(name = "rebuild-graph", description = "Rebuilds the graph database.")
 public class RebuildGraph extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--quiet", description = "Print only a summary of the fixed entries.")
+    @Option(names = "--quiet", description = "Print only a summary of the fixed entries.")
     private boolean quiet = false;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {

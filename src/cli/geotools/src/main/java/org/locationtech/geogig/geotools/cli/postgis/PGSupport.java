@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.geotools.data.DataStore;
@@ -21,8 +22,6 @@ import org.geotools.data.postgis.PostgisNGDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
-
-import com.beust.jcommander.internal.Maps;
 
 /**
  * Support class for PostGIS commands
@@ -45,8 +44,8 @@ public class PGSupport {
      * @throws Exception
      * @see DataStore
      */
-    public DataStore getDataStore(PGCommonArgs commonArgs) {
-        Map<String, Serializable> params = Maps.newHashMap();
+    public DataStore getDataStore(PGCommandProxy commonArgs) {
+        Map<String, Serializable> params = new HashMap<>();
         params.put(PostgisNGDataStoreFactory.DBTYPE.key, "postgis");
         params.put(PostgisNGDataStoreFactory.HOST.key, commonArgs.host);
         params.put(PostgisNGDataStoreFactory.PORT.key, commonArgs.port.toString());

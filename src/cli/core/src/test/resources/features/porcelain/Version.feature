@@ -6,7 +6,7 @@ Feature: "version" command
     
   Scenario: I want to view the GeoGig version
     Given I am in an empty directory
-     When I run the command "version"
+     When I run the command "geogig --version"
      Then the response should contain "Project Version"
       And the response should contain "Build Time"
       And the response should contain "Git Commit ID"

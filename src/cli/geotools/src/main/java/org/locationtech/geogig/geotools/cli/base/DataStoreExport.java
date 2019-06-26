@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.cli;
+package org.locationtech.geogig.geotools.cli.base;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,7 +47,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 
-import com.beust.jcommander.Parameter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Exports features from a geogig feature type into a {@link DataStore} given by the concrete
@@ -58,21 +59,21 @@ import com.beust.jcommander.Parameter;
 @ReadOnly
 public abstract class DataStoreExport extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "[<commit-ish>:]<path> <table> (define source feature type tree and target table name)", arity = 2)
+    @Parameters(description = "[<commit-ish>:]<path> <table> (define source feature type tree and target table name)", arity = "2")
     public List<String> args = new ArrayList<>();
 
-    @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output table")
+    @Option(names = { "--overwrite", "-o" }, description = "Overwrite output table")
     public boolean overwrite;
 
-    @Parameter(names = {
+    @Option(names = {
             "--defaulttype" }, description = "Export only features with the tree default feature type if several types are found")
     public boolean defaultType;
 
-    @Parameter(names = {
+    @Option(names = {
             "--alter" }, description = "Export all features if several types are found, altering them to adapt to the output feature type")
     public boolean alter;
 
-    @Parameter(names = {
+    @Option(names = {
             "--featuretype" }, description = "Export only features with the specified feature type if several types are found")
     @Nullable
     public String sFeatureTypeId;
@@ -83,10 +84,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
      * Executes the export command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        if (args.size() != 2) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
+        checkParameter(args.size() == 2, "Expected [<commit-ish>:]<path> <table>");
 
         final String sourceTreeIsh = args.get(0);
         final String targetTableName = args.get(1);

@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.cli;
+package org.locationtech.geogig.geotools.cli.base;
 
 import java.io.IOException;
 import java.util.Map;
@@ -24,7 +24,7 @@ import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 
-import com.beust.jcommander.Parameter;
+import picocli.CommandLine.Option;
 
 /**
  * Describes a feature type from a {@link DataStore} given by the concrete subclass.
@@ -37,8 +37,8 @@ public abstract class DataStoreDescribe extends AbstractCommand implements CLICo
     /**
      * Table to describe.
      */
-    @Parameter(names = { "--table", "-t" }, description = "Table to describe.", required = true)
-    public String table = "";
+    @Option(names = { "--table", "-t" }, description = "Table to describe.", required = true)
+    public String table;
 
     protected abstract DataStore getDataStore();
 

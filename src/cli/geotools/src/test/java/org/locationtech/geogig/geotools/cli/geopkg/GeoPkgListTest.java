@@ -37,8 +37,12 @@ public class GeoPkgListTest extends RepositoryTestCase {
 
     private GeoPackageTestSupport support;
 
+    GeopkgList listCommand;
+
     @Before
     public void setUpInternal() throws Exception {
+        listCommand = new GeopkgList();
+        listCommand.commonArgs = new GeopkgCommandProxy();
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
@@ -54,22 +58,13 @@ public class GeoPkgListTest extends RepositoryTestCase {
 
     @Test
     public void testList() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         listCommand.run(cli);
     }
 
     @Test
-    public void testListHelp() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
-        listCommand.help = true;
-        listCommand.run(cli);
-    }
-
-    @Test
     public void testInvalidDatabaseParams() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = "nonexistent.gpkg";
         exception.expect(IllegalArgumentException.class);
         listCommand.run(cli);
@@ -77,7 +72,6 @@ public class GeoPkgListTest extends RepositoryTestCase {
 
     @Test
     public void testNullDataStore() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
@@ -86,7 +80,6 @@ public class GeoPkgListTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyDataStore() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
         exception.expect(CommandFailedException.class);
@@ -95,7 +88,6 @@ public class GeoPkgListTest extends RepositoryTestCase {
 
     @Test
     public void testGetNamesException() throws Exception {
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
@@ -105,7 +97,6 @@ public class GeoPkgListTest extends RepositoryTestCase {
     @Test
     public void testListException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
-        GeopkgList listCommand = new GeopkgList();
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);

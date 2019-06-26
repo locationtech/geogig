@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,10 +38,11 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Incorporates changes from the named commits (since the time their histories diverged from the
@@ -55,34 +57,34 @@ import com.google.common.collect.Lists;
  * 
  * @see MergeOp
  */
-@Parameters(commandNames = "merge", commandDescription = "Merge two or more histories into one")
+@Command(name = "merge", aliases = "m", description = "Merge two or more histories into one")
 public class Merge extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "-m", description = "Commit message")
+    @Option(names = "-m", description = "Commit message")
     private String message;
 
-    @Parameter(names = "--ours", description = "Use 'ours' strategy")
+    @Option(names = "--ours", description = "Use 'ours' strategy")
     private boolean ours;
 
-    @Parameter(names = "--theirs", description = "Use 'theirs' strategy")
+    @Option(names = "--theirs", description = "Use 'theirs' strategy")
     private boolean theirs;
 
-    @Parameter(names = "--no-commit", description = "Do not perform a commit after merging")
+    @Option(names = "--no-commit", description = "Do not perform a commit after merging")
     private boolean noCommit;
 
-    @Parameter(names = "--no-ff", description = "Create a merge commit even when the merge resolves as fast forward")
+    @Option(names = "--no-ff", description = "Create a merge commit even when the merge resolves as fast forward")
     private boolean noFastForward;
 
-    @Parameter(names = "--ff-only", description = "Refuse to merge unless the current HEAD is already up-to-date or the merge can be resolved as a fast forward")
+    @Option(names = "--ff-only", description = "Refuse to merge unless the current HEAD is already up-to-date or the merge can be resolved as a fast forward")
     private boolean fastForwardOnly;
 
-    @Parameter(names = "--abort", description = "Aborts the current merge")
+    @Option(names = "--abort", description = "Aborts the current merge")
     private boolean abort;
 
-    @Parameter(description = "<commitish>...")
-    private List<String> commits = Lists.newArrayList();
+    @Parameters(description = "<commitish>...")
+    private List<String> commits = new ArrayList<>();
 
-    @Parameter(names = { "--quiet",
+    @Option(names = { "--quiet",
             "-q" }, description = "Do not count and report changes. Useful to avoid unnecessary waits on large changesets")
     private boolean quiet;
 

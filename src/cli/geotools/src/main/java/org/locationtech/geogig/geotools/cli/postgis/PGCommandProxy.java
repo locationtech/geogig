@@ -9,10 +9,15 @@
  */
 package org.locationtech.geogig.geotools.cli.postgis;
 
-import org.locationtech.geogig.cli.CLICommandExtension;
+import org.locationtech.geogig.cli.CLISubCommand;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameters;
+import lombok.AccessLevel;
+import lombok.Getter;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Help.Visibility;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Spec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for PostGIS specific commands.
@@ -27,21 +32,50 @@ import com.beust.jcommander.Parameters;
  * @see PGDescribe
  * @see PGExport
  */
-@Parameters(commandNames = "pg", commandDescription = "GeoGig/PostGIS integration utilities")
-public class PGCommandProxy implements CLICommandExtension {
+@Command(name = "pg", description = "GeoGig/PostGIS integration utilities", //
+        subcommands = { PGImport.class, PGList.class, PGDescribe.class, PGExport.class })
+public class PGCommandProxy extends CLISubCommand {
+    private @Spec @Getter(value = AccessLevel.PROTECTED) CommandSpec spec;
 
     /**
-     * @return the JCommander parser for this extension
-     * @see JCommander
+     * Machine name or IP address to connect to. Default: localhost
      */
-    public @Override JCommander getCommandParser() {
-        JCommander commander = new JCommander();
-        commander.setProgramName("geogig pg");
-        commander.addCommand("import", new PGImport());
-        commander.addCommand("list", new PGList());
-        commander.addCommand("describe", new PGDescribe());
-        commander.addCommand("export", new PGExport());
+    @Option(names = { "--host",
+            "-H" }, description = "Machine name or IP address to connect to.", defaultValue = "localhost", showDefaultValue = Visibility.ALWAYS)
+    public String host = "localhost";
 
-        return commander;
-    }
+    /**
+     * Port number to connect to. Default: 5432
+     */
+    @Option(names = { "--port",
+            "-P" }, description = "Port number to connect to.", defaultValue = "5432", showDefaultValue = Visibility.ALWAYS)
+    public Integer port = 5432;
+
+    /**
+     * The database schema to access. Default: public
+     */
+    @Option(names = { "--schema",
+            "-S" }, description = "The database schema to access.", defaultValue = "public", showDefaultValue = Visibility.ALWAYS)
+    public String schema = "public";
+
+    /**
+     * The database to connect to. Default: database
+     */
+    @Option(names = { "--database",
+            "-D" }, description = "The database to connect to.", defaultValue = "database", showDefaultValue = Visibility.ALWAYS)
+    public String database = "database";
+
+    /**
+     * User name. Default: postgres
+     */
+    @Option(names = { "--user",
+            "-U" }, description = "User name.", defaultValue = "postgres", showDefaultValue = Visibility.ALWAYS)
+    public String username = "postgres";
+
+    /**
+     * Password. Default: <no password>
+     */
+    @Option(names = { "--password", "-W" }, description = "Password.")
+    public String password = "";
+
 }

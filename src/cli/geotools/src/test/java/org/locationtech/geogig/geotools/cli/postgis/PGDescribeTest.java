@@ -40,8 +40,12 @@ public class PGDescribeTest extends RepositoryTestCase {
 
     private Console consoleReader;
 
+    PGDescribe describeCommand;
+
     @Before
     public void setUpInternal() throws Exception {
+        describeCommand = new PGDescribe();
+        describeCommand.commonArgs = new PGCommandProxy();
         consoleReader = spy(new Console().disableAnsi());
         cli = spy(new GeogigCLI(consoleReader));
 
@@ -55,22 +59,13 @@ public class PGDescribeTest extends RepositoryTestCase {
 
     @Test
     public void testDescribe() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         describeCommand.run(cli);
     }
 
     @Test
-    public void testDescribeHelp() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
-        describeCommand.help = true;
-        describeCommand.run(cli);
-    }
-
-    @Test
     public void testInvalidDatabaseParams() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.commonArgs.host = "nonexistent";
         describeCommand.table = "table1";
         exception.expect(CommandFailedException.class);
@@ -79,7 +74,6 @@ public class PGDescribeTest extends RepositoryTestCase {
 
     @Test
     public void testDescribeNonexistentTable() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "nonexistent";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
@@ -88,7 +82,6 @@ public class PGDescribeTest extends RepositoryTestCase {
 
     @Test
     public void testNoTable() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(CommandFailedException.class);
@@ -97,7 +90,6 @@ public class PGDescribeTest extends RepositoryTestCase {
 
     @Test
     public void testNullDataStore() throws Exception {
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
@@ -107,7 +99,6 @@ public class PGDescribeTest extends RepositoryTestCase {
     @Test
     public void testDescribeException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
@@ -117,8 +108,6 @@ public class PGDescribeTest extends RepositoryTestCase {
     @Test
     public void testFlushException() throws Exception {
         doThrow(new IOException("Exception")).when(consoleReader).flush();
-
-        PGDescribe describeCommand = new PGDescribe();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(Exception.class);

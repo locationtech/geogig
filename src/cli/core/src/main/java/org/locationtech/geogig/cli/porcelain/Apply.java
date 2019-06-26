@@ -32,11 +32,13 @@ import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Applies a patch that modifies the current working tree.
@@ -44,45 +46,45 @@ import com.google.common.io.Files;
  * Patches are generated using the format-patch command, not with the diff command
  * 
  */
-@Parameters(commandNames = "apply", commandDescription = "Apply a patch to the current working tree")
+@Command(name = "apply", description = "Apply a patch to the current working tree")
 public class Apply extends AbstractCommand {
 
     /**
      * The path to the patch file
      */
-    @Parameter(description = "<patch>")
-    private List<String> patchFiles = new ArrayList<String>();
+    @Parameters(description = "Patch file")
+    private List<String> file = new ArrayList<String>();
 
     /**
      * Check if patch can be applied
      */
-    @Parameter(names = {
+    @Option(names = {
             "--check" }, description = "Do not apply. Just check that patch can be applied")
     private boolean check;
 
-    @Parameter(names = { "--reverse" }, description = "apply the patch in reverse")
+    @Option(names = { "--reverse" }, description = "apply the patch in reverse")
     private boolean reverse;
 
     /**
      * Whether to apply the patch partially and generate new patch file with rejected changes, or
      * try to apply the whole patch
      */
-    @Parameter(names = {
+    @Option(names = {
             "--reject" }, description = "Apply the patch partially and generate new patch file with rejected changes")
     private boolean reject;
 
-    @Parameter(names = {
+    @Option(names = {
             "--summary" }, description = "Do not apply. Just show a summary of changes contained in the patch")
     private boolean summary;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        checkParameter(patchFiles.size() < 2, "Only one single patch file accepted");
-        checkParameter(!patchFiles.isEmpty(), "No patch file specified");
+        checkParameter(file.size() < 2, "Only one single patch file accepted");
+        checkParameter(!file.isEmpty(), "No patch file specified");
 
         Console console = cli.getConsole();
         GeoGIG geogig = cli.getGeogig();
 
-        File patchFile = new File(patchFiles.get(0));
+        File patchFile = new File(file.get(0));
         checkParameter(patchFile.exists(), "Patch file cannot be found");
         FileInputStream stream;
         try {

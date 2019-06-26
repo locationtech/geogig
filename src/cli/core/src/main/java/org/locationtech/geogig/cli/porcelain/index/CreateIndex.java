@@ -24,29 +24,28 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 @RequiresRepository(true)
-@Parameters(commandNames = {
-        "create" }, commandDescription = "Creates a spatial index for the specified feature tree")
+@Command(name = "create", aliases = "cr", description = "Creates a spatial index for the specified feature tree")
 public class CreateIndex extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = "--tree", required = true, description = "Name or path of the feature tree to create the index for.")
+    @Option(names = "--tree", required = true, description = "Name or path of the feature tree to create the index for.")
     private String treeRefSpec;
 
-    @Parameter(names = { "-a",
+    @Option(names = { "-a",
             "--attribute" }, required = false, description = "Attribute to create the index for.")
     private String attribute;
 
-    @Parameter(names = "--index-history", description = "If specified, indexes will be created for all commits in the history.")
+    @Option(names = "--index-history", description = "If specified, indexes will be created for all commits in the history.")
     private boolean indexHistory = false;
 
-    @Parameter(names = { "-e",
-            "--extra-attributes" }, description = "Comma separated list of extra attribute names to hold inside index")
+    @Option(names = { "-e",
+            "--extra-attributes" }, split = ",", description = "Comma separated list of extra attribute names to hold inside index")
     private List<String> extraAttributes;
 
-    @Parameter(names = "--bounds", description = "If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>")
+    @Option(names = "--bounds", description = "If specified, the max bounds of the spatial index will be set to this parameter. <minx,miny,maxx,maxy>")
     private String bbox;
 
     protected @Override void runInternal(GeogigCLI cli)

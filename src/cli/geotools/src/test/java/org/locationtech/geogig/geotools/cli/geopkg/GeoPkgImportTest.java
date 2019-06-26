@@ -38,7 +38,11 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     private GeoPackageTestSupport support;
 
+    GeopkgImport importCommand;
+
     public @Override void setUpInternal() throws Exception {
+        importCommand = new GeopkgImport();
+        importCommand.commonArgs = new GeopkgCommandProxy();
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
@@ -53,7 +57,6 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportTable() throws Exception {
-        GeopkgImport importCommand = new GeopkgImport();
         importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.table = "Points";
         importCommand.run(cli);
@@ -72,7 +75,6 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportAll() throws Exception {
-        GeopkgImport importCommand = new GeopkgImport();
         importCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         importCommand.all = true;
         importCommand.run(cli);
@@ -99,7 +101,6 @@ public class GeoPkgImportTest extends RepositoryTestCase {
 
     @Test
     public void testImportFileNotExist() throws Exception {
-        GeopkgImport importCommand = new GeopkgImport();
         importCommand.commonArgs.database = "file://nonexistent.gpkg";
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage("Database file not found.");

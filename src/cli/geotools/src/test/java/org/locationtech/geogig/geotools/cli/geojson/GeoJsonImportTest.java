@@ -158,13 +158,6 @@ public class GeoJsonImportTest extends RepositoryTestCase {
     }
 
     @Test
-    public void testImportHelp() throws Exception {
-        GeoJsonImport importCommand = new GeoJsonImport();
-        importCommand.help = true;
-        importCommand.run(cli);
-    }
-
-    @Test
     public void testImportGeomNameAndGeomNameAuto() throws Exception {
         GeoJsonImport importCommand = new GeoJsonImport();
         importCommand.geoJSONList = new ArrayList<String>();

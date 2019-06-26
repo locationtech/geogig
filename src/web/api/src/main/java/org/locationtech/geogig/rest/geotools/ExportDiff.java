@@ -137,13 +137,13 @@ public class ExportDiff extends AbstractWebAPICommand {
         command.setTarget(targetStore);
         command.setSourceTreePaths(sourceTreeNames);
 
-        final String commandDescription = outputFormat.getCommandDescription();
+        final String description = outputFormat.getCommandDescription();
 
         AsyncContext asyncContext = this.asyncContext;
         if (asyncContext == null) {
             asyncContext = AsyncContext.get();
         }
-        final AsyncCommand<?> asyncCommand = asyncContext.run(command, commandDescription);
+        final AsyncCommand<?> asyncCommand = asyncContext.run(command, description);
 
         context.setResponseContent(Representations.newRepresentation(asyncCommand, false));
     }

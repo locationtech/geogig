@@ -3,10 +3,10 @@ Feature: "geopkg list" command
     As a Geogig User
     I want to list all of the features
 
-  Scenario: Try listing from an empty directory
+  Scenario: Try listing whithout a current repository
     Given I am in an empty directory
      When I run the command "geopkg list" on an existing GeoPackage file
-     Then the response should start with "Not in a geogig repository"
+     Then the response should contain "Points"
       
   Scenario: Try listing from a valid directory
     Given I have a repository

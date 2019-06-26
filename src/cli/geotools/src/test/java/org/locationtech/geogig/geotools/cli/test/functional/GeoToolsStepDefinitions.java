@@ -47,7 +47,7 @@ public class GeoToolsStepDefinitions {
         contextProvider.after(scenario);
     }
 
-    private String getPGDatabaseParameters() throws Exception {
+    private String getPGDatabaseParameters(String commandSpec) throws Exception {
         IniPGProperties properties = new IniPGProperties();
         StringBuilder sb = new StringBuilder();
         sb.append(" --host ");
@@ -68,12 +68,12 @@ public class GeoToolsStepDefinitions {
         sb.append(" --password ");
         sb.append(properties.get("database.password", String.class).orElse("postgres"));
 
-        return sb.toString();
+        return commandSpec.replace("pg ", "pg " + sb.toString().trim() + " ");
     }
 
     @When("^I run the command \"([^\"]*)\" on the PostGIS database$")
     public void I_run_the_command_on_the_PostGIS_database(String commandSpec) throws Throwable {
-        commandSpec += getPGDatabaseParameters();
+        commandSpec = getPGDatabaseParameters(commandSpec);
         String[] args = commandSpec.split(" ");
         localRepo.runCommand(args);
     }

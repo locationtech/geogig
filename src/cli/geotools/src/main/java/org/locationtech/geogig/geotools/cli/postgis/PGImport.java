@@ -11,11 +11,11 @@ package org.locationtech.geogig.geotools.cli.postgis;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
-import org.locationtech.geogig.geotools.cli.DataStoreImport;
+import org.locationtech.geogig.geotools.cli.base.DataStoreImport;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 
-import com.beust.jcommander.Parameters;
-import com.beust.jcommander.ParametersDelegate;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ParentCommand;
 
 /**
  * Imports one or more tables from a PostGIS database.
@@ -24,13 +24,10 @@ import com.beust.jcommander.ParametersDelegate;
  * 
  * @see ImportOp
  */
-@Parameters(commandNames = "import", commandDescription = "Import PostGIS database")
+@Command(name = "import", description = "Import PostGIS database")
 public class PGImport extends DataStoreImport implements CLICommand {
-    /**
-     * Common arguments for PostGIS commands.
-     */
-    @ParametersDelegate
-    public PGCommonArgs commonArgs = new PGCommonArgs();
+
+    public @ParentCommand PGCommandProxy commonArgs;
 
     final PGSupport support = new PGSupport();
 

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -37,11 +38,12 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Show existing conflicts
@@ -50,20 +52,19 @@ import com.google.common.collect.Lists;
  */
 // Currently it just print conflict descriptions, so they can be used by another tool instead.
 @ObjectDatabaseReadOnly
-@Parameters(commandNames = "conflicts", commandDescription = "Shows existing conflicts")
+@Command(name = "conflicts", description = "Shows existing conflicts")
 public class Conflicts extends AbstractCommand implements CLICommand {
 
-    @Parameter(description = "<path> [<path>...]")
-    private List<String> paths = Lists.newArrayList();
+    @Parameters(description = "<path> [<path>...]")
+    private List<String> paths = new ArrayList<>();
 
-    @Parameter(names = {
-            "--diff" }, description = "Show diffs instead of full element descriptions")
+    @Option(names = { "--diff" }, description = "Show diffs instead of full element descriptions")
     private boolean previewDiff;
 
-    @Parameter(names = { "--ids-only" }, description = "Just show ids of elements")
+    @Option(names = { "--ids-only" }, description = "Just show ids of elements")
     private boolean idsOnly;
 
-    @Parameter(names = { "--refspecs-only" }, description = "Just show refspecs of elements")
+    @Option(names = { "--refspecs-only" }, description = "Just show refspecs of elements")
     private boolean refspecsOnly;
 
     private GeoGIG geogig;

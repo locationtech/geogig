@@ -20,9 +20,10 @@ import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigException;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
 import com.google.common.collect.ImmutableList;
+
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
 /**
  * Shows a list of existing remotes.
@@ -39,10 +40,10 @@ import com.google.common.collect.ImmutableList;
  * @see RemoteListOp
  */
 @ReadOnly
-@Parameters(commandNames = "list", commandDescription = "List all remotes for the current repository")
+@Command(name = "list", description = "List all remotes for the current repository")
 public class RemoteList extends AbstractCommand implements CLICommand {
 
-    @Parameter(names = { "-v",
+    @Option(names = { "-v",
             "--verbose" }, description = "Be a little more verbose and show remote url after name.")
     boolean verbose = false;
 

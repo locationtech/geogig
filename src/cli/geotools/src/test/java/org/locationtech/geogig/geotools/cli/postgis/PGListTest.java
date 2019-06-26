@@ -35,8 +35,12 @@ public class PGListTest extends RepositoryTestCase {
 
     private GeogigCLI cli;
 
+    PGList listCommand;
+
     @Before
     public void setUpInternal() throws Exception {
+        listCommand = new PGList();
+        listCommand.commonArgs = new PGCommandProxy();
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
@@ -50,21 +54,12 @@ public class PGListTest extends RepositoryTestCase {
 
     @Test
     public void testList() throws Exception {
-        PGList listCommand = new PGList();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         listCommand.run(cli);
     }
 
     @Test
-    public void testListHelp() throws Exception {
-        PGList listCommand = new PGList();
-        listCommand.help = true;
-        listCommand.run(cli);
-    }
-
-    @Test
     public void testInvalidDatabaseParams() throws Exception {
-        PGList listCommand = new PGList();
         listCommand.commonArgs.host = "nonexistent";
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -72,7 +67,6 @@ public class PGListTest extends RepositoryTestCase {
 
     @Test
     public void testNullDataStore() throws Exception {
-        PGList listCommand = new PGList();
         listCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -80,7 +74,6 @@ public class PGListTest extends RepositoryTestCase {
 
     @Test
     public void testEmptyDataStore() throws Exception {
-        PGList listCommand = new PGList();
         listCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -88,7 +81,6 @@ public class PGListTest extends RepositoryTestCase {
 
     @Test
     public void testGetNamesException() throws Exception {
-        PGList listCommand = new PGList();
         listCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
         exception.expect(CommandFailedException.class);
         listCommand.run(cli);
@@ -97,7 +89,6 @@ public class PGListTest extends RepositoryTestCase {
     @Test
     public void testListException() throws Exception {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
-        PGList listCommand = new PGList();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
         exception.expect(MockitoException.class);
         listCommand.run(cli);

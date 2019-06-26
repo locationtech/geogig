@@ -48,31 +48,32 @@ import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 /**
  * Exports features from a feature type into a shapefile.
  *
  * @see ExportOp
  */
-@Parameters(commandNames = "export-diff", commandDescription = "Export changed features to Shapefile")
+@Command(name = "export-diff", description = "Export changed features to Shapefile")
 public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
-    @Parameter(description = "<commit1> <commit2> <path> <shapefile>", arity = 4)
+    @Parameters(description = "<commit1> <commit2> <path> <shapefile>", arity = "4")
     public List<String> args;
 
-    @Parameter(names = { "--overwrite", "-o" }, description = "Overwrite output files")
+    @Option(names = { "--overwrite", "-o" }, description = "Overwrite output files")
     public boolean overwrite;
 
-    @Parameter(names = {
+    @Option(names = {
             "--old" }, description = "Export features from the old version instead of the most recent one")
     public boolean old;
 
     /**
      * Charset to use for encoding attributes in DBF file
      */
-    @Parameter(names = {
+    @Option(names = {
             "--charset" }, description = "Use the specified charset to encode attributes. Default is ISO-8859-1.")
     public String charset = "ISO-8859-1";
 
@@ -80,10 +81,6 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
      * Executes the export command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        if (args.size() != 4) {
-            printUsage(cli);
-            throw new CommandFailedException();
-        }
 
         String commitOld = args.get(0);
         String commitNew = args.get(1);

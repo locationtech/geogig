@@ -66,24 +66,6 @@
         <artifactId>guava</artifactId>
       </dependency>
 
-      <!-- Logging -->
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-core</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback</groupId>
-        <artifactId>logback-classic</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-api</artifactId>
-      </dependency> 
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>jul-to-slf4j</artifactId>
-      </dependency>
-
       <!-- Test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>
@@ -103,6 +85,11 @@
       <dependency>
         <groupId>org.geotools</groupId>
         <artifactId>gt-epsg-hsql</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
         <scope>test</scope>
       </dependency>
   </dependencies>

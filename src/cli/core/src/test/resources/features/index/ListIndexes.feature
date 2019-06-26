@@ -39,7 +39,7 @@ Feature: "index list" command
       And I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
      When I run the command "index list --tree"
-     Then the response should contain "Expected a value after parameter --tree"
+     Then the response should contain "Missing required parameter for option '--tree'"
 
   Scenario: I try to list the indexes, specifying a non-existent tree
     Given I have a repository

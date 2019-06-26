@@ -24,6 +24,8 @@
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
     <skip.it>${skipTests}</skip.it>
+    <!-- git-commit-id-plugin slows down the build, skip by default, except in api which sets this property to false -->
+    <git.commitid.skip>true</git.commitid.skip>
 
     <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
     <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
@@ -592,15 +594,16 @@
           </execution>
         </executions>
         <configuration>
+          <skip>${git.commitid.skip}</skip>
           <prefix>git</prefix>
           <dateFormat>MMMM dd, yyyy 'at' HH:mm:ss z</dateFormat>
           <failOnNoGitDirectory>false</failOnNoGitDirectory>
           <failOnUnableToExtractRepoInfo>false</failOnUnableToExtractRepoInfo>
-          <dotGitDirectory>${project.basedir}/../../.git</dotGitDirectory>
+          <dotGitDirectory>${maven.multiModuleProjectDirectory}/../.git</dotGitDirectory>
           <skipPoms>false</skipPoms>
           <verbose>false</verbose>
           <generateGitPropertiesFile>true</generateGitPropertiesFile>
-          <generateGitPropertiesFilename>src/main/resources/git.geogig.properties</generateGitPropertiesFilename>
+          <generateGitPropertiesFilename>${project.build.outputDirectory}/META-INF/git.geogig.properties</generateGitPropertiesFilename>
         </configuration>
       </plugin>
       <plugin>

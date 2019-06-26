@@ -98,7 +98,7 @@ public @CanRunDuringConflict class QLUpdate extends AbstractGeoGigOp<Supplier<Di
             // re.printStackTrace();
             // }
             Throwable rootCause = Throwables.getRootCause(e);
-            Throwables.propagateIfInstanceOf(rootCause, IllegalArgumentException.class);
+            Throwables.throwIfInstanceOf(rootCause, IllegalArgumentException.class);
             throw new RuntimeException(e);
         } finally {
             // try {
@@ -175,7 +175,7 @@ public @CanRunDuringConflict class QLUpdate extends AbstractGeoGigOp<Supplier<Di
             checkArgument(stmt instanceof Update, "Expected UPDATE statement: %s", statement);
             update = (Update) stmt;
         } catch (JSQLParserException e) {
-            Throwables.propagateIfInstanceOf(Throwables.getRootCause(e),
+            Throwables.throwIfInstanceOf(Throwables.getRootCause(e),
                     IllegalArgumentException.class);
             throw new IllegalArgumentException("Unable to parse query: " + e.getMessage(), e);
         }

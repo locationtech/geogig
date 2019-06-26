@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -81,8 +81,7 @@ public class RefParseTest {
         when(mockCommandLocator.command(eq(ResolveObjectType.class)))
                 .thenReturn(mockResolveObjectType);
 
-        when(mockResolveObjectType.setObjectId((ObjectId) anyObject()))
-                .thenReturn(mockResolveObjectType);
+        when(mockResolveObjectType.setObjectId((ObjectId) any())).thenReturn(mockResolveObjectType);
         when(mockResolveObjectType.call()).thenReturn(TYPE.COMMIT);
     }
 

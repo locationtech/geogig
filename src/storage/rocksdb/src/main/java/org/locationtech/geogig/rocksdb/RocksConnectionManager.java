@@ -140,7 +140,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
                 if (!dbconfig.getColumnFamilyNames().contains("default")) {
                     int index = 0;
                     for (ColumnFamilyDescriptor descriptor : colDescriptors) {
-                        if (new String(descriptor.columnFamilyName()).equals("default")) {
+                        if (new String(descriptor.getName()).equals("default")) {
                             extraColumns.put("default", colFamiliesTarget.get(index));
                         }
                         index++;
@@ -188,7 +188,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         // enable bloom filter to speed up RocksDB.get() calls
         BlockBasedTableConfig tableFormatConfig = new BlockBasedTableConfig();
         BloomFilter bloomFilter = new BloomFilter();
-        tableFormatConfig.setFilter(bloomFilter);
+        tableFormatConfig.setFilterPolicy(bloomFilter);
         colFamilyOptions.setTableFormatConfig(tableFormatConfig);
 
         // cause the Windows jar doesn't come with

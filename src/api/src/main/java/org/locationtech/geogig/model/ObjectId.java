@@ -13,6 +13,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
@@ -68,7 +69,7 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
 
         NUM_CHARS = 2 * NUM_BYTES;
 
-        NULL = new ObjectId(new byte[20]);
+        NULL = new ObjectId(new byte[NUM_BYTES]);
     }
 
     final int h1;

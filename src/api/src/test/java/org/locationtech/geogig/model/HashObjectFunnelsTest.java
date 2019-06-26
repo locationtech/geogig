@@ -44,7 +44,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 
 @SuppressWarnings("deprecation")
 public class HashObjectFunnelsTest {
@@ -135,7 +134,7 @@ public class HashObjectFunnelsTest {
         };
 
         Funnel<RevCommit> commitFunnel = HashObjectFunnels.commitFunnel();
-        Hasher hasher = Hashing.sha1().newHasher();
+        Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         commitFunnel.funnel(testCommit, hasher);
 
         final byte[] rawKey = hasher.hash().asBytes();
@@ -187,7 +186,7 @@ public class HashObjectFunnelsTest {
         };
 
         Funnel<RevTree> treeFunnel = HashObjectFunnels.treeFunnel();
-        Hasher hasher = Hashing.sha1().newHasher();
+        Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         treeFunnel.funnel(testTree, hasher);
 
         byte[] rawKey = hasher.hash().asBytes();
@@ -199,7 +198,7 @@ public class HashObjectFunnelsTest {
         features.add(testNode);
         buckets.put(0, testBucket);
 
-        hasher = Hashing.sha1().newHasher();
+        hasher = ObjectId.HASH_FUNCTION.newHasher();
         treeFunnel.funnel(testTree, hasher);
 
         rawKey = hasher.hash().asBytes();
@@ -256,14 +255,14 @@ public class HashObjectFunnelsTest {
         };
 
         Funnel<RevFeature> treeFunnel = HashObjectFunnels.featureFunnel();
-        Hasher hasher = Hashing.sha1().newHasher();
+        Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         treeFunnel.funnel(testFeature, hasher);
 
         byte[] rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
         ObjectId emptyFeatureId1 = ObjectId.create(rawKey);
 
-        hasher = Hashing.sha1().newHasher();
+        hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.feature(hasher, Collections.emptyList());
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
@@ -315,14 +314,14 @@ public class HashObjectFunnelsTest {
         testSortedMap.put("key", "value");
         values.add(Optional.of(testSortedMap));
 
-        hasher = Hashing.sha1().newHasher();
+        hasher = ObjectId.HASH_FUNCTION.newHasher();
         treeFunnel.funnel(testFeature, hasher);
 
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
         ObjectId featureId1 = ObjectId.create(rawKey);
 
-        hasher = Hashing.sha1().newHasher();
+        hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.feature(hasher, Lists.transform(values, (value) -> value.orElse(null)));
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
@@ -335,7 +334,7 @@ public class HashObjectFunnelsTest {
         // Try hashing a feature with invalid value type
         values.add(Optional.of(new Object()));
         try {
-            hasher = Hashing.sha1().newHasher();
+            hasher = ObjectId.HASH_FUNCTION.newHasher();
             treeFunnel.funnel(testFeature, hasher);
             fail();
         } catch (IllegalArgumentException e) {
@@ -397,7 +396,7 @@ public class HashObjectFunnelsTest {
         };
 
         Funnel<RevTag> tagFunnel = HashObjectFunnels.tagFunnel();
-        Hasher hasher = Hashing.sha1().newHasher();
+        Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         tagFunnel.funnel(testTag, hasher);
 
         byte[] rawKey = hasher.hash().asBytes();
@@ -431,7 +430,7 @@ public class HashObjectFunnelsTest {
         };
 
         Funnel<RevFeatureType> featureTypeFunnel = HashObjectFunnels.featureTypeFunnel();
-        Hasher hasher = Hashing.sha1().newHasher();
+        Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         featureTypeFunnel.funnel(testFeatureType, hasher);
 
         byte[] rawKey = hasher.hash().asBytes();

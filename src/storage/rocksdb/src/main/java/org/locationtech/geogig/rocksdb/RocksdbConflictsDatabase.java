@@ -290,7 +290,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
                 WriteBatch batch = new WriteBatch()) {
             writeOptions.setSync(true);
             for (String path : paths) {
-                batch.remove(key(path));
+                batch.delete(key(path));
             }
             dbRef.db().write(writeOptions, batch);
         } catch (RocksDBException e) {
@@ -330,7 +330,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
                 WriteBatch batch = new WriteBatch()) {
             opts.setSync(true);
             if (pathPrefix != null) {
-                batch.remove(key(pathPrefix));
+                batch.delete(key(pathPrefix));
             }
             try (RocksIterator it = dbRef.db().newIterator()) {
                 if (prefix == null) {
@@ -341,7 +341,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
                 while (it.isValid()) {
                     byte[] key = it.key();
                     if (isPrefix(prefix, key)) {
-                        batch.remove(key);
+                        batch.delete(key);
                     } else {
                         break;
                     }

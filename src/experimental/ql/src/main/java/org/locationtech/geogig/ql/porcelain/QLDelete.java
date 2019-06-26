@@ -149,7 +149,7 @@ public @CanRunDuringConflict class QLDelete extends AbstractGeoGigOp<Supplier<Di
             checkArgument(stmt instanceof Delete, "Expected DELETE statement: %s", statement);
             delete = (Delete) stmt;
         } catch (JSQLParserException e) {
-            Throwables.propagateIfInstanceOf(Throwables.getRootCause(e),
+            Throwables.throwIfInstanceOf(Throwables.getRootCause(e),
                     IllegalArgumentException.class);
             throw new IllegalArgumentException("Unable to parse query: " + e.getMessage(), e);
         }

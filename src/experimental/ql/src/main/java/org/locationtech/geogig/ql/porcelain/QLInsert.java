@@ -120,7 +120,7 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
             // re.printStackTrace();
             // }
             Throwable rootCause = Throwables.getRootCause(e);
-            Throwables.propagateIfInstanceOf(rootCause, IllegalArgumentException.class);
+            Throwables.throwIfInstanceOf(rootCause, IllegalArgumentException.class);
             throw new RuntimeException(e);
         } finally {
             // try {
@@ -272,7 +272,7 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
             checkArgument(stmt instanceof Insert, "Expected INSERT statement: %s", statement);
             insert = (Insert) stmt;
         } catch (JSQLParserException e) {
-            Throwables.propagateIfInstanceOf(Throwables.getRootCause(e),
+            Throwables.throwIfInstanceOf(Throwables.getRootCause(e),
                     IllegalArgumentException.class);
             throw new IllegalArgumentException("Unable to parse query: " + e.getMessage(), e);
         }

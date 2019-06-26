@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools;
 
-import static org.mockito.ArgumentMatchers.anyMapOf;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -17,7 +17,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
@@ -109,9 +108,8 @@ public class TestHelper {
         testDataStore.addFeatures(new SimpleFeature[] { f1, f2, f3, f4, f5, f6, f7, f8 });
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
-                .thenReturn(testDataStore);
-        when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
+        when(factory.createDataStore(any())).thenReturn(testDataStore);
+        when(factory.canProcess(any())).thenReturn(true);
 
         return factory;
     }
@@ -121,9 +119,8 @@ public class TestHelper {
         MemoryDataStore testDataStore = new MemoryDataStore();
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
-                .thenReturn(testDataStore);
-        when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
+        when(factory.createDataStore(any())).thenReturn(testDataStore);
+        when(factory.canProcess(any())).thenReturn(true);
 
         return factory;
     }
@@ -131,8 +128,8 @@ public class TestHelper {
     public static DataStoreFactorySpi createNullTestFactory() throws Exception {
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class))).thenReturn(null);
-        when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
+        when(factory.createDataStore(any())).thenReturn(null);
+        when(factory.canProcess(any())).thenReturn(true);
 
         return factory;
     }
@@ -145,9 +142,8 @@ public class TestHelper {
         when(testDataStore.getSchema(anyString())).thenThrow(new IOException());
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
-                .thenReturn(testDataStore);
-        when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
+        when(factory.createDataStore(any())).thenReturn(testDataStore);
+        when(factory.canProcess(any())).thenReturn(true);
 
         return factory;
     }
@@ -175,9 +171,8 @@ public class TestHelper {
                 .getFeatureSource(eq(new NameImpl("table1")));
 
         final DataStoreFactorySpi factory = mock(DataStoreFactorySpi.class);
-        when(factory.createDataStore(anyMapOf(String.class, Serializable.class)))
-                .thenReturn(spyDataStore);
-        when(factory.canProcess(anyMapOf(String.class, Serializable.class))).thenReturn(true);
+        when(factory.createDataStore(any())).thenReturn(spyDataStore);
+        when(factory.canProcess(any())).thenReturn(true);
 
         return factory;
     }

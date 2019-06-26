@@ -8,6 +8,8 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -243,7 +245,7 @@ public @UtilityClass class RevObjectTestUtil {
         case CHAR_ARRAY:
             return new char[] { 'a', 'b', 'c', 'd' };
         case DATE:
-            return new java.sql.Date(1977, 01, 17);
+            return java.sql.Date.valueOf(LocalDate.of(1977, 1, 17));
         case DATETIME:
             return new java.util.Date(1000000000);
         case DOUBLE:
@@ -295,7 +297,7 @@ public @UtilityClass class RevObjectTestUtil {
         case STRING_ARRAY:
             return new String[] { "string1", "string2", "string3" };
         case TIME:
-            return new java.sql.Time(8, 59, 15);
+            return java.sql.Time.valueOf(LocalTime.of(8, 59, 15));
         case TIMESTAMP:
             return new java.sql.Timestamp(1234567890);
         case UUID:

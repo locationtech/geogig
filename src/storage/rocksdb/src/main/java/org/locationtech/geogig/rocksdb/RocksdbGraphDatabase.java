@@ -262,7 +262,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
                         WriteBatch batch = new WriteBatch()) {
                     wo.setSync(true);
                     while (it.isValid()) {
-                        batch.remove(it.key());
+                        batch.delete(it.key());
                         it.next();
                     }
                     dbRef.db().write(wo, batch);

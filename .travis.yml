@@ -7,7 +7,7 @@ jdk:
 before_install: 
   - cd src
     #  - sudo apt-get install libspatialite-dev
-install: ./mvnw -B --no-transfer-progress -U install -Dfmt.action=validate -DskipTests=true -Ptravis,postgres
+install: ./mvnw -B --no-transfer-progress -U install -Dfmt.action=validate -DskipTests=true -Ppostgres
 before_script:
 #  - psql -c 'create database geogig_tests;' -U postgres
 #  - psql -c "create extension postgis" -U postgres -d geogig_tests

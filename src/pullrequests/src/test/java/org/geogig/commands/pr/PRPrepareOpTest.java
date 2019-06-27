@@ -319,9 +319,4 @@ public class PRPrepareOpTest {
         return status;
     }
 
-    private void expectConflicts(int count) {
-        PRStatus status = getPrStatus();
-        assertEquals(count, status.getNumConflicts());
-    }
-
 }

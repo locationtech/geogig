@@ -59,7 +59,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-@SuppressWarnings("deprecation")
 public abstract class CanonicalClusteringStrategyTest {
 
     private ObjectStore store;

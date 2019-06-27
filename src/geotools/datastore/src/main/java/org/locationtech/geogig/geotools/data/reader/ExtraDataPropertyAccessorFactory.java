@@ -80,7 +80,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
                     value = Converters.convert(value, target);
                 }
             }
-            return (T) value;
+            return target.cast(value);
         }
 
         public @Override <T> void set(Object object, String xpath, T value, Class<T> target)

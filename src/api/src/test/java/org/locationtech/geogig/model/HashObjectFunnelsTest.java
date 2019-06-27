@@ -45,7 +45,6 @@ import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 
-@SuppressWarnings("deprecation")
 public class HashObjectFunnelsTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();

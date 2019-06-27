@@ -165,7 +165,7 @@ public class RepositoryResolverTest {
                     RepositoryFinder.INSTANCE.resolverAvailableForURIScheme("memory"));
             // assert Resolver can be looked up for URI
             assertNotNull("MemoryRepositoryResolver should be available",
-                    RepositoryFinder.INSTANCE.INSTANCE.lookup(uri));
+                    RepositoryFinder.INSTANCE.lookup(uri));
         } else {
             // assert Resolver is not available for "test" scheme
             assertFalse("MemoryRepositoryResolver should not be available",

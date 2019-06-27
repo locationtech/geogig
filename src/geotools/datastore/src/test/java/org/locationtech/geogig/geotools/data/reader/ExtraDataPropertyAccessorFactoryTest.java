@@ -119,7 +119,7 @@ public class ExtraDataPropertyAccessorFactoryTest {
 
     private ExtraDataPropertyAccesor findPropertyAccessor(Object object) {
         String xpath = "int";
-        Class target = Integer.class;
+        Class<?> target = Integer.class;
         Hints hints = null;
 
         List<PropertyAccessor> accessors = PropertyAccessors.findPropertyAccessors(object, xpath,

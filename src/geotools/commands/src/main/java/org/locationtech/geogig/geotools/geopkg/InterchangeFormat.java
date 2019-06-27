@@ -336,7 +336,10 @@ public class InterchangeFormat {
             importResult.setNewCommit(newCommit);
 
         } catch (MergeConflictsException e) {
-            throw new GeopkgMergeConflictsException(e, importResult);
+            if (null != importResult) {
+                importResult.close();
+            }
+            throw new GeopkgMergeConflictsException(e);
         } catch (Exception e) {
             Throwables.throwIfUnchecked(e);
             throw new RuntimeException(e);

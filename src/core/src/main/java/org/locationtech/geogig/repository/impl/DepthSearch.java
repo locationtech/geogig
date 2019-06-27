@@ -39,8 +39,6 @@ public class DepthSearch {
 
     private final ObjectStore objectDb;
 
-    private CanonicalNodeNameOrder refOrder = CanonicalNodeNameOrder.INSTANCE;
-
     /**
      * Constructs a new {@code DepthSearch} with the given parameters.
      * 
@@ -162,7 +160,7 @@ public class DepthSearch {
 
         // TODO revisit, shouldn't be using NodeOrder.bucket (a non static method) to respect the
         // ordering of the tree layout being used?
-        Integer bucket = refOrder.bucket(directChildName, subtreesDepth);
+        Integer bucket = CanonicalNodeNameOrder.bucket(directChildName, subtreesDepth);
         Bucket subtreeBucket = parent.getBucket(bucket.intValue()).orElse(null);
         if (subtreeBucket == null) {
             return Optional.empty();

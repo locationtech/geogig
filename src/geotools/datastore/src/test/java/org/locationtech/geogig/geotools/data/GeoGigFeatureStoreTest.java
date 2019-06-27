@@ -122,7 +122,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
     public void testAddFeaturesOnASeparateBranch() throws Exception {
         final String branchName = "addtest";
         final Ref branchRef = repo.command(BranchCreateOp.class).setName(branchName).call();
-        dataStore.setHead(branchName);
+        dataStore.setHead(branchRef.getName());
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> collection;
         collection = DataUtilities

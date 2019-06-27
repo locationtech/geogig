@@ -17,7 +17,6 @@ import java.io.IOException;
 
 import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.Repository;
 
 public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
 
@@ -46,7 +45,6 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
         checkNotNull(databaseFile, "GeoPackage file not provided");
         checkState(databaseFile.exists(), "GeoPackage file %s does not exist", databaseFile);
 
-        Repository repository = repository();
         ProgressListener progress = getProgressListener();
 
         InterchangeFormat interchange;

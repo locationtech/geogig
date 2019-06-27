@@ -34,7 +34,6 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
-@SuppressWarnings("deprecation")
 public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
     protected @Override RevTreeBuilder createBuiler() {
@@ -162,7 +161,6 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
         assertEquals(CanonicalNodeNameOrder.normalizedSizeLimit(0), leafFull.size());
         assertEquals(0, leafFull.bucketsSize());
 
-        final RevTree legacyExpanded;
         final RevTree expanded;
         {
             RevTreeBuilder builder = createBuiler(leafFull);

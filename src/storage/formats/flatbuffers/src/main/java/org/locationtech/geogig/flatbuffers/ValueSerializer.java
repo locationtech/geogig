@@ -58,6 +58,7 @@ import lombok.NonNull;
 
 final class ValueSerializer {
 
+    @SuppressWarnings("unchecked")
     public static int encode(@Nullable Object val, @NonNull FlatBufferBuilder builder) {
 
         byte valueType = ValueUnion.NONE;

@@ -190,9 +190,6 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
                 w.writeStartElement("result");
                 out.writeMergeConflictsResponse(mergeCommit, report, context, ours.getId(),
                         theirs.getId(), ancestor.get(), consumer);
-                w.writeStartElement("import");
-                writeImportResult(m.importResult, w, out);
-                w.writeEndElement();
                 w.writeEndElement();
             } else {
                 super.writeError(w, cause);

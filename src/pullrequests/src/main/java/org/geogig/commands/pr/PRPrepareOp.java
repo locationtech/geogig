@@ -19,7 +19,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
-import org.locationtech.geogig.porcelain.BranchResolveOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
@@ -187,11 +186,6 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
                 .call();
 
         return pullResult;
-    }
-
-    private Ref resolveCurrentBranch(GeogigTransaction prtx) {
-        return prtx.command(BranchResolveOp.class).call()
-                .orElseThrow(() -> new IllegalStateException("Can't resolve current branch"));
     }
 
     private void setRef(final GeogigTransaction transaction, String refName, ObjectId value) {

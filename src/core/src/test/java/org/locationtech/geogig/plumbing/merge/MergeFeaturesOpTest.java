@@ -41,24 +41,27 @@ public class MergeFeaturesOpTest extends RepositoryTestCase {
 
         super.insertAndAdd(ancestor);
         super.commit("common ancestor");
-        ancestorRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
-                .setChildPath(childPath).call().get();
+        ancestorRef = repo.command(FindTreeChild.class)
+                .setParent(repo.context().workingTree().getTree()).setChildPath(childPath).call()
+                .get();
 
         repo.command(BranchCreateOp.class).setName("branch").call();
 
         super.insertAndAdd(left);
         super.commit("master change");
 
-        masterChangeRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
-                .setChildPath(childPath).call().get();
+        masterChangeRef = repo.command(FindTreeChild.class)
+                .setParent(repo.context().workingTree().getTree()).setChildPath(childPath).call()
+                .get();
 
         assertEquals("branch",
                 repo.command(CheckoutOp.class).setSource("branch").call().getNewRef().localName());
         super.insertAndAdd(right);
         super.commit("branch change");
 
-        branchChangeRef = repo.command(FindTreeChild.class).setParent(repo.workingTree().getTree())
-                .setChildPath(childPath).call().get();
+        branchChangeRef = repo.command(FindTreeChild.class)
+                .setParent(repo.context().workingTree().getTree()).setChildPath(childPath).call()
+                .get();
 
         Feature merged = repo.command(MergeFeaturesOp.class)//
                 .setAncestorFeature(ancestorRef)//

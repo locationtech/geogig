@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;

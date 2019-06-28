@@ -161,7 +161,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         assertTrue(point1Oid.isPresent());
 
         ObjectId oid = point1Oid.get();
-        repo.objectDatabase().delete(oid);
+        repo.context().objectDatabase().delete(oid);
 
         String expected = "Object NodeRef[Points/Points.1 -> " + oid + "] not found.";
         exception.expect(IllegalStateException.class);

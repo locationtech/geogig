@@ -38,14 +38,14 @@ import com.google.common.collect.Lists;
 public class AddOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
-        repo.configDatabase().put("user.name", "groldan");
-        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        repo.context().configDatabase().put("user.name", "groldan");
+        repo.context().configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
     public void testAddSingleFile() throws Exception {
         insert(points1);
-        List<DiffEntry> diffs = toList(repo.workingTree().getUnstaged(null));
+        List<DiffEntry> diffs = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, diffs.size());
         assertEquals(pointsName, diffs.get(0).newPath());
         assertEquals(NodeRef.appendChild(pointsName, idP1), diffs.get(1).newPath());
@@ -57,7 +57,7 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         insert(points3);
         repo.command(AddOp.class).call();
-        List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
+        List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(Collections.emptyList(), unstaged);
     }
 
@@ -67,13 +67,15 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         insert(points3);
         repo.command(AddOp.class).call();
-        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.context().workingTree()
+                .getUnstaged(null)) {
             assertFalse(iterator.hasNext());
         }
         insert(lines1);
         insert(lines2);
         repo.command(AddOp.class).call();
-        try (AutoCloseableIterator<DiffEntry> iterator = repo.workingTree().getUnstaged(null)) {
+        try (AutoCloseableIterator<DiffEntry> iterator = repo.context().workingTree()
+                .getUnstaged(null)) {
             assertFalse(iterator.hasNext());
         }
     }
@@ -83,7 +85,7 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points1);
         insert(points2);
         repo.command(AddOp.class).addPattern("Points/Points.1").call();
-        List<DiffEntry> unstaged = toList(repo.index().getStaged(null));
+        List<DiffEntry> unstaged = toList(repo.context().stagingArea().getStaged(null));
         assertEquals(unstaged.toString(), 2, unstaged.size());
 
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
@@ -106,7 +108,7 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         insert(lines1);
         repo.command(AddOp.class).addPattern("Points").call();
-        List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
+        List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, unstaged.size());
         assertEquals(linesName, unstaged.get(0).newName());
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
@@ -118,11 +120,12 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points1);
         insert(points2);
         repo.command(AddOp.class).call();
-        List<DiffEntry> staged = toList(repo.index().getStaged(Lists.newArrayList(pointsName)));
+        List<DiffEntry> staged = toList(
+                repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
         assertEquals(3, staged.size());
         delete(points1);
         repo.command(AddOp.class).call();
-        staged = toList(repo.index().getStaged(Lists.newArrayList(pointsName)));
+        staged = toList(repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
         assertEquals(2, staged.size());
     }
 
@@ -131,12 +134,13 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points1);
         insert(points2);
         repo.command(AddOp.class).call();
-        repo.workingTree().delete(pointsName);
+        repo.context().workingTree().delete(pointsName);
         repo.command(AddOp.class).call();
-        List<DiffEntry> staged = toList(repo.index().getStaged(Lists.newArrayList(pointsName)));
+        List<DiffEntry> staged = toList(
+                repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
         assertEquals(0, staged.size());
-        assertEquals(0, repo.index().countStaged(null).featureCount());
-        assertEquals(0, repo.index().countStaged(null).treeCount());
+        assertEquals(0, repo.context().stagingArea().countStaged(null).featureCount());
+        assertEquals(0, repo.context().stagingArea().countStaged(null).treeCount());
     }
 
     @Test
@@ -148,7 +152,7 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points1_modified);
         insert(lines1);
         repo.command(AddOp.class).setUpdateOnly(true).call();
-        List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
+        List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, unstaged.size());
         assertEquals(linesName, unstaged.get(0).newName());
         assertEquals(lines1.getId(), unstaged.get(1).newName());
@@ -163,19 +167,19 @@ public class AddOpTest extends RepositoryTestCase {
 
         // stage only Lines changed
         repo.command(AddOp.class).setUpdateOnly(true).addPattern(pointsName).call();
-        List<DiffEntry> staged = toList(repo.index().getStaged(null));
+        List<DiffEntry> staged = toList(repo.context().stagingArea().getStaged(null));
         assertEquals(2, staged.size());
         assertEquals(pointsName, staged.get(0).newName());
         assertEquals(idP1, staged.get(1).newName());
 
-        List<DiffEntry> unstaged = toList(repo.workingTree().getUnstaged(null));
+        List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
 
         assertEquals(2, unstaged.size());
         assertEquals(linesName, unstaged.get(0).newName());
         assertEquals(idL1, unstaged.get(1).newName());
 
         repo.command(AddOp.class).setUpdateOnly(true).addPattern("Points").call();
-        unstaged = toList(repo.workingTree().getUnstaged(null));
+        unstaged = toList(repo.context().workingTree().getUnstaged(null));
 
         assertEquals(2, unstaged.size());
         assertEquals(linesName, unstaged.get(0).newName());
@@ -208,7 +212,7 @@ public class AddOpTest extends RepositoryTestCase {
         }
         insert(points1);
         repo.command(AddOp.class).call();
-        assertFalse(repo.conflictsDatabase().hasConflicts(null));
+        assertFalse(repo.context().conflictsDatabase().hasConflicts(null));
         repo.command(CommitOp.class).call();
         Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
@@ -239,7 +243,7 @@ public class AddOpTest extends RepositoryTestCase {
             assertTrue(true);
         }
         repo.command(AddOp.class).call();
-        assertFalse(repo.conflictsDatabase().hasConflicts(null));
+        assertFalse(repo.context().conflictsDatabase().hasConflicts(null));
         repo.command(CommitOp.class).call();
         Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
@@ -249,18 +253,18 @@ public class AddOpTest extends RepositoryTestCase {
     public void testAddModifiedFeatureType() throws Exception {
         insertAndAdd(points2, points1B);
         repo.command(CommitOp.class).call();
-        repo.workingTree().updateTypeTree(pointsName, modifiedPointsType);
+        repo.context().workingTree().updateTypeTree(pointsName, modifiedPointsType);
         repo.command(AddOp.class).call();
-        List<DiffEntry> list = toList(repo.index().getStaged(null));
+        List<DiffEntry> list = toList(repo.context().stagingArea().getStaged(null));
         assertFalse(list.isEmpty());
         String path = NodeRef.appendChild(pointsName, idP1);
         Optional<NodeRef> ref = repo.command(FindTreeChild.class).setChildPath(path)
-                .setParent(repo.index().getTree()).call();
+                .setParent(repo.context().stagingArea().getTree()).call();
         assertTrue(ref.isPresent());
         assertFalse(ref.get().getNode().getMetadataId().isPresent());
         path = NodeRef.appendChild(pointsName, idP2);
-        ref = repo.command(FindTreeChild.class).setChildPath(path).setParent(repo.index().getTree())
-                .call();
+        ref = repo.command(FindTreeChild.class).setChildPath(path)
+                .setParent(repo.context().stagingArea().getTree()).call();
         assertTrue(ref.isPresent());
         assertTrue(ref.get().getNode().getMetadataId().isPresent());
 

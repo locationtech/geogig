@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -27,6 +28,7 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
+import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
@@ -44,8 +46,14 @@ public class IndexTest extends RepositoryTestCase {
 
     private StagingArea index;
 
+    private WorkingTree workingTree;
+
+    private Geogig repo;
+
     protected @Override void setUpInternal() throws Exception {
-        index = repo.context().stagingArea();
+        index = super.repo.context().stagingArea();
+        workingTree = super.repo.context().workingTree();
+        repo = Geogig.of(super.repo.context());
     }
 
     // two features with the same content and different fid should point to the same object
@@ -93,7 +101,6 @@ public class IndexTest extends RepositoryTestCase {
     @Test
     public void testWriteEmptyPathAddAll() throws Exception {
         insert(lines1);
-        WorkingTree workingTree = repo.workingTree();
         workingTree.createTypeTree(pointsName, pointsType);
 
         List<NodeRef> workHead = toList(repo.command(LsTreeOp.class).setReference(Ref.WORK_HEAD)
@@ -116,7 +123,6 @@ public class IndexTest extends RepositoryTestCase {
 
     @Test
     public void testWriteEmptyPath() throws Exception {
-        WorkingTree workingTree = repo.workingTree();
         workingTree.createTypeTree(pointsName, pointsType);
         workingTree.createTypeTree(linesName, linesType);
 
@@ -180,9 +186,9 @@ public class IndexTest extends RepositoryTestCase {
         assertFalse(index.findStaged(appendChild(pointsName, idP2)).isPresent());
 
         assertEquals(oId1,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+                workingTree.findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertEquals(oId2,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
+                workingTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
 
         repo.command(AddOp.class).call();
 
@@ -264,14 +270,15 @@ public class IndexTest extends RepositoryTestCase {
 
         final ObjectId newRepoTreeId1;
         {
-            newRepoTreeId1 = repo.command(WriteTree2.class)
-                    .setOldRoot(tree(repo.getHead().get().getObjectId())).call();
+            Ref head = repo.command(RefParse.class).setName(Ref.HEAD).call().get();
+            newRepoTreeId1 = repo.command(WriteTree2.class).setOldRoot(tree(head.getObjectId()))
+                    .call();
 
-            RevTree newRepoTree = repo.getTree(newRepoTreeId1);
+            RevTree newRepoTree = repo.objects().getTree(newRepoTreeId1);
 
             // check feature1_1 is there
-            assertEquals(oId1_1, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)).get()
-                    .getObjectId());
+            assertEquals(oId1_1, repo.objects().tree(newRepoTree)
+                    .child(appendChild(pointsName, idP1)).get().getObjectId());
 
         }
 
@@ -286,7 +293,7 @@ public class IndexTest extends RepositoryTestCase {
             RevCommit commit = RevCommit.builder().treeId(newRepoTreeId1).parentIds(parents)
                     .build();
             ObjectId commitId = commit.getId();
-            repo.objectDatabase().put(commit);
+            repo.objects().put(commit);
             Optional<Ref> newHead = repo.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -298,24 +305,25 @@ public class IndexTest extends RepositoryTestCase {
             // it was not updated (no commit op was performed)
             newRepoTreeId2 = repo.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId1)).call();
 
-            RevTree newRepoTree = repo.getTree(newRepoTreeId2);
+            RevTree newRepoTree = repo.objects().getTree(newRepoTreeId2);
 
             // check feature1_2, feature1_2 and feature2_1
             Optional<Node> treeChild;
-            assertNotNull(
-                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2)));
+            assertNotNull(treeChild = repo.objects().tree(newRepoTree)
+                    .child(appendChild(pointsName, idP2)));
             assertEquals(oId1_2, treeChild.get().getObjectId());
 
-            assertNotNull(
-                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP3)));
+            assertNotNull(treeChild = repo.objects().tree(newRepoTree)
+                    .child(appendChild(pointsName, idP3)));
             assertEquals(oId1_3, treeChild.get().getObjectId());
 
-            assertNotNull(treeChild = repo.getTreeChild(newRepoTree, appendChild(linesName, idL1)));
+            assertNotNull(treeChild = repo.objects().tree(newRepoTree)
+                    .child(appendChild(linesName, idL1)));
             assertEquals(oId2_1, treeChild.get().getObjectId());
 
             // as well as feature1_1 from the previous commit
-            assertNotNull(
-                    treeChild = repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)));
+            assertNotNull(treeChild = repo.objects().tree(newRepoTree)
+                    .child(appendChild(pointsName, idP1)));
             assertEquals(oId1_1, treeChild.get().getObjectId());
         }
 
@@ -325,7 +333,7 @@ public class IndexTest extends RepositoryTestCase {
                     .build();
             ObjectId commitId = commit.getId();
 
-            repo.objectDatabase().put(commit);
+            repo.objects().put(commit);
             Optional<Ref> newHead = repo.command(UpdateRef.class).setName("refs/heads/master")
                     .setNewValue(commitId).call();
             assertTrue(newHead.isPresent());
@@ -344,24 +352,26 @@ public class IndexTest extends RepositoryTestCase {
             // it was not updated (no commit op was performed)
             newRepoTreeId3 = repo.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId2)).call();
 
-            RevTree newRepoTree = repo.getTree(newRepoTreeId3);
+            RevTree newRepoTree = repo.objects().getTree(newRepoTreeId3);
 
             // and check only feature1_2 and feature2_2 remain
-            assertFalse(repo.getTreeChild(newRepoTree, appendChild(pointsName, idP1)).isPresent());
-            assertFalse(repo.getTreeChild(newRepoTree, appendChild(pointsName, idP3)).isPresent());
-            assertFalse(repo.getTreeChild(newRepoTree, appendChild(linesName, idL3)).isPresent());
+            assertFalse(repo.objects().tree(newRepoTree).child(appendChild(pointsName, idP1))
+                    .isPresent());
+            assertFalse(repo.objects().tree(newRepoTree).child(appendChild(pointsName, idP3))
+                    .isPresent());
+            assertFalse(repo.objects().tree(newRepoTree).child(appendChild(linesName, idL3))
+                    .isPresent());
 
-            assertEquals(oId1_2, repo.getTreeChild(newRepoTree, appendChild(pointsName, idP2)).get()
-                    .getObjectId());
-            assertEquals(oId2_2, repo.getTreeChild(newRepoTree, appendChild(linesName, idL2)).get()
-                    .getObjectId());
+            assertEquals(oId1_2, repo.objects().tree(newRepoTree)
+                    .child(appendChild(pointsName, idP2)).get().getObjectId());
+            assertEquals(oId2_2, repo.objects().tree(newRepoTree)
+                    .child(appendChild(linesName, idL2)).get().getObjectId());
         }
 
     }
 
     @Test
     public void testAddEmptyTree() throws Exception {
-        WorkingTree workingTree = repo.workingTree();
         workingTree.createTypeTree(pointsName, pointsType);
         repo.command(AddOp.class).setUpdateOnly(false).call();
         assertTrue(index.findStaged(pointsName).isPresent());

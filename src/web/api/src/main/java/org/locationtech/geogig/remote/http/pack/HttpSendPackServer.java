@@ -9,7 +9,7 @@ import org.locationtech.geogig.remotes.pack.PackBuilder;
 import org.locationtech.geogig.remotes.pack.PackRequest;
 import org.locationtech.geogig.remotes.pack.ReceivePackOp;
 import org.locationtech.geogig.remotes.pack.SendPackOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.Repository;
 
@@ -44,7 +44,7 @@ public class HttpSendPackServer extends SendPackOp implements CommandFactory {
         return this;
     }
 
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         if (ReceivePackOp.class.equals(commandClass)) {
             HttpReceivePackServer cmd;
             cmd = super.command(HttpReceivePackServer.class).setTarget(target);

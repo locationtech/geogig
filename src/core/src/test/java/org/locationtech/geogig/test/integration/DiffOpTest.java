@@ -467,7 +467,7 @@ public class DiffOpTest extends RepositoryTestCase {
     @Test
     public void testReportTreesEmptyTree() throws Exception {
 
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.createTypeTree(linesName, linesType);
 
         List<DiffEntry> difflist = toList(diffOp.setReportTrees(true).setOldVersion(ObjectId.NULL)
@@ -497,7 +497,7 @@ public class DiffOpTest extends RepositoryTestCase {
                 "LINESTRING (1 1, 2 2)");
         delete(lines1);
         // insert(lines2);
-        WorkingTree workTree = repo.workingTree();
+        WorkingTree workTree = repo.context().workingTree();
         Name name = lines1.getType().getName();
         String parentPath = name.getLocalPart();
         workTree.insert(featureInfo(parentPath, lines1B));
@@ -560,7 +560,7 @@ public class DiffOpTest extends RepositoryTestCase {
     public void testChangedFeatureType() throws Exception {
 
         insertAndAdd(points1, points2);
-        repo.workingTree().updateTypeTree(pointsName, modifiedPointsType);
+        repo.context().workingTree().updateTypeTree(pointsName, modifiedPointsType);
         List<DiffEntry> difflist = toList(diffOp.setReportTrees(true).call());
 
         assertNotNull(difflist);

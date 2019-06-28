@@ -92,7 +92,7 @@ public class Add extends AbstractCommand implements CLICommand {
         if (!quiet) {
             console.print("Counting unstaged elements...");
             console.flush();
-            DiffObjectCount unstaged = geogig.getRepository().workingTree()
+            DiffObjectCount unstaged = geogig.getRepository().context().workingTree()
                     .countUnstaged(pathFilter);
             if (0 == unstaged.count() && !hasConflicts) {
                 console.println();
@@ -115,7 +115,8 @@ public class Add extends AbstractCommand implements CLICommand {
         if (quiet) {
             console.println("done.");
         } else {
-            DiffObjectCount staged = geogig.getRepository().index().countStaged(null);
+            DiffObjectCount staged = geogig.getRepository().context().stagingArea()
+                    .countStaged(null);
             DiffObjectCount unstaged = workTree.countUnstaged(null);
 
             console.println(String.format("%,d features and %,d trees staged for commit",

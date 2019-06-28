@@ -78,32 +78,32 @@ public class RebuildIndexTest extends AbstractIndexWebOpTest {
         // make sure old commits are indexed
         ObjectId canonicalFeatureTreeId = geogig.command(ResolveTreeish.class)
                 .setTreeish("HEAD:Points").call().get();
-        Optional<ObjectId> indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
-                canonicalFeatureTreeId);
+        Optional<ObjectId> indexedTreeId = geogig.context().indexDatabase()
+                .resolveIndexedTree(indexInfo, canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         // make sure old commits are indexed
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("HEAD~1:Points")
                 .call().get();
-        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+        indexedTreeId = geogig.context().indexDatabase().resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("branch1:Points")
                 .call().get();
-        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+        indexedTreeId = geogig.context().indexDatabase().resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("branch1~1:Points")
                 .call().get();
-        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+        indexedTreeId = geogig.context().indexDatabase().resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
 
         canonicalFeatureTreeId = geogig.command(ResolveTreeish.class).setTreeish("branch2:Points")
                 .call().get();
-        indexedTreeId = geogig.indexDatabase().resolveIndexedTree(indexInfo,
+        indexedTreeId = geogig.context().indexDatabase().resolveIndexedTree(indexInfo,
                 canonicalFeatureTreeId);
         assertTrue(indexedTreeId.isPresent());
     }

@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.WriteTree;
 import org.locationtech.geogig.remotes.SynchronizationException;
@@ -73,7 +73,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         protected @Override Evaluation evaluate(CommitNode commitNode) {
-            if (destination.graphDatabase().exists(commitNode.getObjectId())) {
+            if (destination.context().graphDatabase().exists(commitNode.getObjectId())) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             }
             return Evaluation.INCLUDE_AND_CONTINUE;
@@ -84,7 +84,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         protected @Override boolean existsInDestination(ObjectId commitId) {
-            return destination.graphDatabase().exists(commitId);
+            return destination.context().graphDatabase().exists(commitId);
         }
 
     };
@@ -101,7 +101,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         protected @Override Evaluation evaluate(CommitNode commitNode) {
-            if (!source.graphDatabase().getMapping(commitNode.getObjectId())
+            if (!source.context().graphDatabase().getMapping(commitNode.getObjectId())
                     .equals(ObjectId.NULL)) {
                 return Evaluation.EXCLUDE_AND_PRUNE;
             }
@@ -109,12 +109,12 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
         }
 
         protected @Override List<ObjectId> getParentsInternal(ObjectId commitId) {
-            return source.graphDatabase().getParents(commitId);
+            return source.context().graphDatabase().getParents(commitId);
         }
 
         protected @Override boolean existsInDestination(ObjectId commitId) {
             // If the commit has not been mapped, it hasn't been pushed to the remote yet
-            return !source.graphDatabase().getMapping(commitId).equals(ObjectId.NULL);
+            return !source.context().graphDatabase().getMapping(commitId).equals(ObjectId.NULL);
         }
 
     };
@@ -156,8 +156,8 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             RevCommit commit = (RevCommit) object.get();
 
             try (FilteredDiffIterator changes = getFilteredChanges(local, commit)) {
-                GraphDatabase graphDatabase = local.graphDatabase();
-                ObjectStore objectDatabase = local.objectDatabase();
+                GraphDatabase graphDatabase = local.context().graphDatabase();
+                ObjectStore objectDatabase = local.context().objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
                 RevTree rootTree = RevTree.EMPTY;
@@ -169,7 +169,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                     Optional<ObjectId> treeId = local.command(ResolveTreeish.class)
                             .setTreeish(mappedCommit).call();
                     if (treeId.isPresent()) {
-                        rootTree = local.getTree(treeId.get());
+                        rootTree = local.context().objectDatabase().getTree(treeId.get());
                     }
 
                 } else {
@@ -276,7 +276,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
             pushSparseCommit(local, commitToPush);
         }
 
-        ObjectId newCommitId = local.graphDatabase().getMapping(ref.getObjectId());
+        ObjectId newCommitId = local.context().graphDatabase().getMapping(ref.getObjectId());
 
         ObjectId originalRemoteRefValue = ObjectId.NULL;
         if (remoteRef.isPresent()) {
@@ -338,19 +338,20 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
      * @param remoteRef the ref to push to
      * @throws SynchronizationException
      */
-    protected void checkPush(Repository local, Ref ref, Optional<Ref> remoteRef)
+    protected void checkPush(Repository localRepo, Ref ref, Optional<Ref> remoteRef)
             throws SynchronizationException {
+        Geogig local = Geogig.of(localRepo.context());
         if (remoteRef.isPresent()) {
             if (remoteRef.get() instanceof SymRef) {
                 throw new SynchronizationException(StatusCode.CANNOT_PUSH_TO_SYMBOLIC_REF);
             }
-            ObjectId mappedId = local.graphDatabase().getMapping(remoteRef.get().getObjectId());
+            ObjectId mappedId = local.graph().getMapping(remoteRef.get().getObjectId());
             if (mappedId.equals(ref.getObjectId())) {
                 // The branches are equal, no need to push.
                 throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-            } else if (local.blobExists(mappedId)) {
-                Optional<ObjectId> ancestor = local.command(FindCommonAncestor.class)
-                        .setLeftId(mappedId).setRightId(ref.getObjectId()).call();
+            } else if (local.objects().exists(mappedId)) {
+                Optional<ObjectId> ancestor = local.graph().commonAncestor(mappedId,
+                        ref.getObjectId());
                 if (!ancestor.isPresent()) {
                     // There is no common ancestor, a push will overwrite history
                     throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);

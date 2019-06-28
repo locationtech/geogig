@@ -30,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -141,7 +142,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
             filterBlob += "filter = " + filter + "\n";
         }
         try {
-            localRepo.blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY, filterBlob.getBytes());
+            localRepo.context().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
+                    filterBlob.getBytes());
             Optional<Remote> remoteInfo = localRepo.command(RemoteResolve.class)
                     .setName(REMOTE_NAME).call();
             Preconditions.checkState(remoteInfo.isPresent());
@@ -427,7 +429,7 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         Optional<RevObject> childObject = originRepo.command(RevObjectParse.class).setObjectId(oId)
                 .call();
         assertTrue(childObject.isPresent());
-        assertEquals(commit, originRepo.objectDatabase().getCommit(commit.getId()));
+        assertEquals(commit, originRepo.context().objectDatabase().getCommit(commit.getId()));
 
         PullOp pull = pullOp();
         pull.call();
@@ -553,10 +555,10 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         ObjectId parent1Id = logged.get(0).getParentIds().get(0);
         ObjectId parent2Id = logged.get(0).getParentIds().get(1);
 
-        RevCommit parent1 = originRepo.getCommit(parent1Id);
+        RevCommit parent1 = originRepo.context().objectDatabase().getCommit(parent1Id);
         assertNotNull(parent1);
         assertEquals("Roads.2", parent1.getMessage());
-        RevCommit parent2 = originRepo.getCommit(parent2Id);
+        RevCommit parent2 = originRepo.context().objectDatabase().getCommit(parent2Id);
         assertNotNull(parent2);
         assertEquals("Roads.3", parent2.getMessage());
 
@@ -564,10 +566,10 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         parent1Id = report.getMergeCommit().getParentIds().get(0);
         parent2Id = report.getMergeCommit().getParentIds().get(1);
 
-        parent1 = localRepo.getCommit(parent1Id);
+        parent1 = localRepo.context().objectDatabase().getCommit(parent1Id);
         assertNotNull(parent1);
         assertEquals("Roads.3", parent1.getMessage());
-        parent2 = localRepo.getCommit(parent2Id);
+        parent2 = localRepo.context().objectDatabase().getCommit(parent2Id);
         assertNotNull(parent2);
         assertEquals("Roads.2", parent2.getMessage());
 
@@ -625,10 +627,10 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         ObjectId parent1Id = logged.get(0).getParentIds().get(0);
         ObjectId parent2Id = logged.get(0).getParentIds().get(1);
 
-        RevCommit parent1 = originRepo.getCommit(parent1Id);
+        RevCommit parent1 = originRepo.context().objectDatabase().getCommit(parent1Id);
         assertNotNull(parent1);
         assertEquals("Roads.2", parent1.getMessage());
-        RevCommit parent2 = originRepo.getCommit(parent2Id);
+        RevCommit parent2 = originRepo.context().objectDatabase().getCommit(parent2Id);
         assertNotNull(parent2);
         assertEquals("Roads.3", parent2.getMessage());
 
@@ -636,10 +638,10 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         parent1Id = report.getMergeCommit().getParentIds().get(0);
         parent2Id = report.getMergeCommit().getParentIds().get(1);
 
-        parent1 = localRepo.getCommit(parent1Id);
+        parent1 = localRepo.context().objectDatabase().getCommit(parent1Id);
         assertNotNull(parent1);
         assertEquals("Roads.2", parent1.getMessage());
-        parent2 = localRepo.getCommit(parent2Id);
+        parent2 = localRepo.context().objectDatabase().getCommit(parent2Id);
         assertNotNull(parent2);
         assertEquals("Roads.3", parent2.getMessage());
 
@@ -724,14 +726,16 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
     }
 
     private void assertExists(Repository repo, ObjectId... features) {
+        Geogig gig = Geogig.of(repo.context());
         for (ObjectId object : features) {
-            assertTrue(repo.blobExists(object));
+            assertTrue(gig.objects().exists(object));
         }
     }
 
     private void assertNotExists(Repository repo, ObjectId... features) {
+        Geogig gig = Geogig.of(repo.context());
         for (ObjectId object : features) {
-            assertFalse(repo.blobExists(object));
+            assertFalse(gig.objects().exists(object));
         }
     }
 

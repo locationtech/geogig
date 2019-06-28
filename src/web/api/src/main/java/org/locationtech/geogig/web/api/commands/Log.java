@@ -393,7 +393,7 @@ public class Log extends AbstractWebAPICommand {
         String path = paths.get(0);
         // This is the feature type object
         Optional<NodeRef> ref = geogig.command(FindTreeChild.class).setChildPath(path)
-                .setParent(geogig.workingTree().getTree()).call();
+                .setParent(geogig.context().workingTree().getTree()).call();
         Optional<RevObject> type = Optional.empty();
         if (ref.isPresent()) {
             type = geogig.command(RevObjectParse.class)

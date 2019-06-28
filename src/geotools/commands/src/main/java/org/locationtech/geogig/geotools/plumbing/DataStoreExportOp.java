@@ -34,8 +34,8 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 

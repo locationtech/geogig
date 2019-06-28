@@ -130,8 +130,9 @@ public class Merge extends AbstractWebAPICommand {
             });
         } catch (Exception e) {
             Repository repository = context.getRepository();
-            final RevCommit ours = repository.getCommit(currHead.get().getObjectId());
-            final RevCommit theirs = repository.getCommit(oid.get());
+            final RevCommit ours = repository.context().objectDatabase()
+                    .getCommit(currHead.get().getObjectId());
+            final RevCommit theirs = repository.context().objectDatabase().getCommit(oid.get());
             final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

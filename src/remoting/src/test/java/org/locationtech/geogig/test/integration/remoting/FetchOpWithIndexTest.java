@@ -39,8 +39,8 @@ import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.TransferSummary;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.Command.CommandListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
@@ -75,9 +75,9 @@ public class FetchOpWithIndexTest extends FetchOpTest {
         return fetchOp.setFetchIndexes(true);
     }
 
-    private CommandListener verifyFetchedIndexesListener = new CommandListener() {
+    private Command.CommandListener verifyFetchedIndexesListener = new Command.CommandListener() {
 
-        public @Override void preCall(AbstractGeoGigOp<?> command) {// nothing to do
+        public @Override void preCall(Command<?> command) {// nothing to do
             createIndexes(originRepo);
             createIndexes(upstreamRepo);
             String originURI = origin.getFetchURL();
@@ -87,7 +87,7 @@ public class FetchOpWithIndexTest extends FetchOpTest {
             command.getClientData().put(upstreamURI, upstreamRepo.getLocation().toString());
         }
 
-        public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+        public @Override void postCall(Command<?> command, @Nullable Object result,
                 @Nullable RuntimeException exception) {
             if (exception != null) {
                 return;
@@ -98,19 +98,19 @@ public class FetchOpWithIndexTest extends FetchOpTest {
 
     };
 
-    private CommandListener createSpatialIndexBeforeCloneListener = new CommandListener() {
+    private Command.CommandListener createSpatialIndexBeforeCloneListener = new Command.CommandListener() {
 
-        public @Override void preCall(AbstractGeoGigOp<?> command) {
+        public @Override void preCall(Command<?> command) {
             Repository remote = FetchOpWithIndexTest.this.originRepo;
             createIndexes(remote);
         }
 
-        public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+        public @Override void postCall(Command<?> command, @Nullable Object result,
                 @Nullable RuntimeException exception) {
         }
     };
 
-    private void verifyFetchedIndexes(AbstractGeoGigOp<?> command, TransferSummary ts) {
+    private void verifyFetchedIndexes(Command<?> command, TransferSummary ts) {
         Set<String> remotes = ts.getRefDiffs().keySet();
         for (String remoteURI : remotes) {
             FetchOp op = (FetchOp) command;

@@ -43,7 +43,7 @@ import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk;
 import org.locationtech.geogig.plumbing.diff.PostOrderDiffWalk.Consumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.remotes.SynchronizationException;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -182,9 +182,10 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
             if (((SymRef) remoteHead).getTarget().equals(updatedRef.getName())) {
                 remoteRepository.command(UpdateSymRef.class).setName(Ref.HEAD)
                         .setNewValue(ref.getName()).call();
-                RevCommit commit = remoteRepository.getCommit(ref.getObjectId());
-                remoteRepository.workingTree().updateWorkHead(commit.getTreeId());
-                remoteRepository.index().updateStageHead(commit.getTreeId());
+                RevCommit commit = remoteRepository.context().objectDatabase()
+                        .getCommit(ref.getObjectId());
+                remoteRepository.context().workingTree().updateWorkHead(commit.getTreeId());
+                remoteRepository.context().stagingArea().updateStageHead(commit.getTreeId());
             }
         }
     }
@@ -203,8 +204,8 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
     protected void walkHead(final ObjectId newHeadId, final Repository from, Repository to,
             final ProgressListener progress) {
 
-        final ObjectDatabase fromDb = from.objectDatabase();
-        final ObjectDatabase toDb = to.objectDatabase();
+        final ObjectDatabase fromDb = from.context().objectDatabase();
+        final ObjectDatabase toDb = to.context().objectDatabase();
 
         final RevObject object = fromDb.get(newHeadId);
 
@@ -399,7 +400,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         return remoteRepository.getDepth();
     }
 
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         return remoteRepository.command(commandClass);
     }
 

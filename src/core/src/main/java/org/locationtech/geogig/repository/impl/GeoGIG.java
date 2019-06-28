@@ -15,9 +15,10 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
@@ -35,7 +36,9 @@ import com.google.common.base.Preconditions;
  * on them.
  * </p>
  * 
+ * @deprecated use {@link Geogig}
  */
+@Deprecated
 public class GeoGIG {
 
     private Context context;
@@ -75,7 +78,7 @@ public class GeoGIG {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public <T extends Command<?>> T command(Class<T> commandClass) {
         return context.command(commandClass);
     }
 
@@ -144,11 +147,11 @@ public class GeoGIG {
     }
 
     public DiffObjectCount countUnstaged() {
-        return getRepository().workingTree().countUnstaged(null);
+        return getRepository().context().workingTree().countUnstaged(null);
     }
 
     public DiffObjectCount countStaged() {
-        return getRepository().index().countStaged(null);
+        return getRepository().context().stagingArea().countStaged(null);
     }
 
     public boolean isOpen() {

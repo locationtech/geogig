@@ -91,8 +91,8 @@ public class RevParseTest extends RepositoryTestCase {
     }
 
     protected @Override void setUpInternal() throws Exception {
-        repo.configDatabase().put("user.name", "groldan");
-        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        repo.context().configDatabase().put("user.name", "groldan");
+        repo.context().configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test
@@ -239,7 +239,7 @@ public class RevParseTest extends RepositoryTestCase {
         final int numCommits = 10_000;
         List<RevCommit> commits = createCommits(numCommits);
 
-        repo.objectDatabase().putAll(commits.iterator());
+        repo.context().objectDatabase().putAll(commits.iterator());
         repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId()).call();
 
         RevParse revParse = repo.command(RevParse.class);
@@ -260,7 +260,7 @@ public class RevParseTest extends RepositoryTestCase {
         RevCommit shallowCommit = commits.getLast();
         assertEquals(parentOfShallow.getId(), shallowCommit.getParentIds().get(0));
 
-        repo.objectDatabase().putAll(commits.iterator());
+        repo.context().objectDatabase().putAll(commits.iterator());
         repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId()).call();
 
         RevParse revParse = repo.command(RevParse.class);

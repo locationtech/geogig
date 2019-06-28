@@ -18,8 +18,8 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
@@ -45,7 +45,7 @@ public class RebuildGraphOp extends AbstractGeoGigOp<ImmutableList<ObjectId>> {
         ImmutableList<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true)
                 .call();
 
-        GraphDatabase graphDb = repository.graphDatabase();
+        GraphDatabase graphDb = repository.context().graphDatabase();
 
         for (Ref ref : branches) {
             Iterator<RevCommit> commits = command(LogOp.class).setUntil(ref.getObjectId()).call();

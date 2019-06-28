@@ -19,7 +19,7 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;

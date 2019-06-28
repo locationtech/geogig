@@ -126,7 +126,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();
         for (Ref remoteRef : remoteRefs) {
             Ref newRef = remoteRef;
-            GraphDatabase graphdb = local.graphDatabase();
+            GraphDatabase graphdb = local.context().graphDatabase();
             ObjectId headId = remoteRef.getObjectId();
             if (!(newRef instanceof SymRef) && graphdb.exists(headId)) {
                 ObjectId mappedCommit = graphdb.getMapping(headId);
@@ -179,9 +179,9 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 if (((SymRef) remoteHead).getTarget().equals(updatedRef.get().getName())) {
                     remoteRepo.command(UpdateSymRef.class).setName(Ref.HEAD)
                             .setNewValue(updatedRef.get().getName()).call();
-                    RevCommit commit = remoteRepo.getCommit(commitId);
-                    remoteRepo.workingTree().updateWorkHead(commit.getTreeId());
-                    remoteRepo.index().updateStageHead(commit.getTreeId());
+                    RevCommit commit = remoteRepo.context().objectDatabase().getCommit(commitId);
+                    remoteRepo.context().workingTree().updateWorkHead(commit.getTreeId());
+                    remoteRepo.context().stagingArea().updateStageHead(commit.getTreeId());
                 }
             }
         }
@@ -216,15 +216,15 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                             // This should be the base commit to preserve the sparse changes that
                             // were filtered
                             // out.
-                            newParents.add(0, from.graphDatabase().getMapping(parentId));
+                            newParents.add(0, from.context().graphDatabase().getMapping(parentId));
                             continue;
                         }
                     }
                 }
-                newParents.add(from.graphDatabase().getMapping(parentId));
+                newParents.add(from.context().graphDatabase().getMapping(parentId));
             }
             if (newParents.size() > 0) {
-                parent = from.graphDatabase().getMapping(newParents.get(0));
+                parent = from.context().graphDatabase().getMapping(newParents.get(0));
             }
             try (AutoCloseableIterator<DiffEntry> diffIter = from.command(DiffOp.class)
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
@@ -238,7 +238,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     Optional<ObjectId> treeId = to.command(ResolveTreeish.class)
                             .setTreeish(mappedCommit).call();
                     if (treeId.isPresent()) {
-                        rootTree = to.getTree(treeId.get());
+                        rootTree = to.context().objectDatabase().getTree(treeId.get());
                     }
                 }
 
@@ -254,10 +254,10 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                 builder.treeId(newTreeId);
 
                 RevCommit mapped = builder.build();
-                to.objectDatabase().put(mapped);
+                to.context().objectDatabase().put(mapped);
 
-                from.graphDatabase().map(commit.getId(), mapped.getId());
-                from.graphDatabase().map(mapped.getId(), commit.getId());
+                from.context().graphDatabase().map(commit.getId(), mapped.getId());
+                from.context().graphDatabase().map(mapped.getId(), commit.getId());
             }
 
         }

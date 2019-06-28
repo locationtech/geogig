@@ -12,10 +12,10 @@ package org.locationtech.geogig.remotes.internal;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.repository.ProgressListener;
@@ -234,8 +234,9 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
      * @throws SynchronizationException if its not safe or possible to push to the given remote ref
      *         (see {@link StatusCode} for the possible reasons)
      */
-    protected void checkPush(Repository local, Ref ref, Optional<Ref> remoteRefOpt)
+    protected void checkPush(Repository localRepo, Ref ref, Optional<Ref> remoteRefOpt)
             throws SynchronizationException {
+        Geogig local = Geogig.of(localRepo.context());
         if (!remoteRefOpt.isPresent()) {
             return;// safe to push
         }
@@ -248,9 +249,9 @@ public abstract class AbstractRemoteRepo implements IRemoteRepo {
         if (remoteObjectId.equals(localObjectId)) {
             // The branches are equal, no need to push.
             throw new SynchronizationException(StatusCode.NOTHING_TO_PUSH);
-        } else if (local.blobExists(remoteObjectId)) {
-            Optional<ObjectId> ancestor = local.command(FindCommonAncestor.class)
-                    .setLeftId(remoteObjectId).setRightId(localObjectId).call();
+        } else if (local.objects().exists(remoteObjectId)) {
+            Optional<ObjectId> ancestor = local.graph().commonAncestor(remoteObjectId,
+                    localObjectId);
             if (!ancestor.isPresent()) {
                 // There is no common ancestor, a push will overwrite history
                 throw new SynchronizationException(StatusCode.REMOTE_HAS_CHANGES);

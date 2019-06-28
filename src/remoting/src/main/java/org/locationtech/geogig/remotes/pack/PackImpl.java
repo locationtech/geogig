@@ -125,7 +125,7 @@ class PackImpl implements Pack {
         final List<RevCommit> commits = missingCommits.get(req);
         checkNotNull(commits);
 
-        final ObjectDatabase sourceStore = source.objectDatabase();
+        final ObjectDatabase sourceStore = source.context().objectDatabase();
 
         List<ObjectId[]> diffRootTreeIds = collectMissingRootTreeIdPairs(commits, sourceStore);
 
@@ -202,7 +202,7 @@ class PackImpl implements Pack {
                 // () -> source.getCommit(parentId)
                 Supplier<RevCommit> fn = new Supplier<RevCommit>() {
                     public @Override RevCommit get() {
-                        return source.getCommit(parentId);
+                        return source.context().objectDatabase().getCommit(parentId);
                     }
                 };
 
@@ -233,7 +233,7 @@ class PackImpl implements Pack {
         final List<IndexDef> indexes = missingIndexes.get(req);
         checkNotNull(indexes);
 
-        final IndexDatabase sourceStore = source.indexDatabase();
+        final IndexDatabase sourceStore = source.context().indexDatabase();
         try {
 
             final Stopwatch sw = Stopwatch.createStarted();

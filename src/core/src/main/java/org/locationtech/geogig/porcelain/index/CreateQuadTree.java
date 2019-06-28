@@ -20,9 +20,9 @@ import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.jts.geom.Envelope;
 
 /**

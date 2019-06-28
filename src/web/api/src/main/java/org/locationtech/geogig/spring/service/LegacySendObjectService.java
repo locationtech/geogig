@@ -34,7 +34,7 @@ public class LegacySendObjectService extends AbstractRepositoryService {
             InputStream request) {
         final SendObject sendObject = new SendObject();
         final Repository repository = getRepository(provider, repoName);
-        final BinaryPackedObjects unpacker = new BinaryPackedObjects(repository.objectDatabase());
+        final BinaryPackedObjects unpacker = new BinaryPackedObjects(repository.context().objectDatabase());
 
         CountingInputStream countingStream = new CountingInputStream(request);
 

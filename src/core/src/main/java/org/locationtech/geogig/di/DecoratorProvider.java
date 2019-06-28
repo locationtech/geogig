@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.locationtech.geogig.hooks.CommandHooksDecorator;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.collect.Maps;
 

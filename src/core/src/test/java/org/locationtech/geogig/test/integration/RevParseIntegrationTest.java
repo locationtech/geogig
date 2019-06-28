@@ -79,7 +79,7 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
         cb.committerTimestamp(now);
         mergeCommit = cb.build();
 
-        getRepository().objectDatabase().put(mergeCommit);
+        getRepository().context().objectDatabase().put(mergeCommit);
 
         repo.command(UpdateRef.class).setName("refs/heads/master")
                 .setOldValue(masterCommit3.getId()).setNewValue(mergeCommit.getId()).call();

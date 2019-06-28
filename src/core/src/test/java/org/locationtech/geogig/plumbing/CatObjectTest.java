@@ -34,7 +34,7 @@ public class CatObjectTest extends RepositoryTestCase {
     private static final String FEATURE_PREFIX = "Feature.";
 
     protected @Override void setUpInternal() throws Exception {
-        odb = repo.objectDatabase();
+        odb = repo.context().objectDatabase();
     }
 
     @Test

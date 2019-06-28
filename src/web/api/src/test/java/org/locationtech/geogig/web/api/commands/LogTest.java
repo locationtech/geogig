@@ -56,10 +56,10 @@ public class LogTest extends AbstractWebOpTest {
 
     @Test
     public void testBuildParameters() {
-        String timestamp1 = Long
-                .toString(testContext.get().getRepository().platform().currentTimeMillis());
-        String timestamp2 = Long
-                .toString(testContext.get().getRepository().platform().currentTimeMillis() / 2);
+        String timestamp1 = Long.toString(
+                testContext.get().getRepository().context().platform().currentTimeMillis());
+        String timestamp2 = Long.toString(
+                testContext.get().getRepository().context().platform().currentTimeMillis() / 2);
         ParameterSet options = TestParams.of("limit", "100", "offset", "10", "path", "the/path",
                 "since", "master~1", "until", "master", "sinceTime", timestamp1, "untilTime",
                 timestamp2, "page", "3", "show", "11", "firstParentOnly", "true", "countChanges",

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.dsl.Geogig;
+import org.locationtech.geogig.dsl.Objects;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -34,8 +36,8 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.MergeStatusBuilder;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
 import org.locationtech.geogig.plumbing.merge.SaveMergeCommitMessageOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Supplier;
@@ -218,6 +220,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
         final ProgressListener progress = getProgressListener();
         progress.started();
 
+        final Objects objects = geogig().objects();
         MergeStatusBuilder mergeStatusBuilder = new MergeStatusBuilder(context(), ours, commits,
                 progress);
         MergeScenarioReport mergeScenario = null;
@@ -226,10 +229,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
         List<RevCommit> revCommits = Lists.newArrayList();
         if (!headRef.getObjectId().isNull()) {
-            revCommits.add(repository().getCommit(headRef.getObjectId()));
+            revCommits.add(objects.getCommit(headRef.getObjectId()));
         }
         for (ObjectId commitId : commits) {
-            revCommits.add(repository().getCommit(commitId));
+            revCommits.add(objects.getCommit(commitId));
         }
         progress.setDescription("Checking for possible conflicts...");
         final boolean mightHaveConflicts;// either there are conflicts or two features modified by
@@ -249,13 +252,13 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     "Conflicted merge.\nCannot merge more than two commits when conflicts exist"
                             + " or features have been modified in several histories");
 
-            RevCommit headCommit = repository().getCommit(headRef.getObjectId());
+            RevCommit headCommit = objects.getCommit(headRef.getObjectId());
             ObjectId commitId = commits.get(0);
             checkArgument(!commitId.isNull(), "Cannot merge a NULL commit.");
-            checkArgument(repository().commitExists(commitId),
+            checkArgument(objects.commitExists(commitId),
                     "Not a valid commit: " + commitId.toString());
 
-            final RevCommit targetCommit = repository().getCommit(commitId);
+            final RevCommit targetCommit = objects.getCommit(commitId);
             Optional<ObjectId> ancestorCommit = command(FindCommonAncestor.class)
                     .setLeft(headCommit).setRight(targetCommit).call();
 
@@ -297,8 +300,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     headRef = doFastForwardMerge(headRef, commitId, mergeStatusBuilder);
                     continue;
                 }
-                final RevCommit headCommit = repository().getCommit(headRef.getObjectId());
-                final RevCommit targetCommit = repository().getCommit(commitId);
+                final RevCommit headCommit = objects.getCommit(headRef.getObjectId());
+                final RevCommit targetCommit = objects.getCommit(commitId);
 
                 progress.setDescription(String.format("Merging commit %s onto %s",
                         fmt(targetCommit), fmt(headCommit)));
@@ -424,9 +427,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
 
     private RevCommit commit(boolean fastForward) {
 
+        final Geogig geogig = geogig();
         RevCommit mergeCommit;
         if (fastForward) {
-            mergeCommit = repository().getCommit(commits.get(0));
+            mergeCommit = geogig.objects().getCommit(commits.get(0));
         } else {
             String commitMessage = message;
             if (commitMessage == null) {
@@ -443,7 +447,7 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
             if (noCommit) {
                 final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
                 SymRef headRef = (SymRef) currHead.get();
-                RevCommit headCommit = repository().getCommit(headRef.getObjectId());
+                RevCommit headCommit = geogig.objects().getCommit(headRef.getObjectId());
                 command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(commits.get(0)).call();
                 // TODO:how to store multiple ids when octopus merge
                 command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId())

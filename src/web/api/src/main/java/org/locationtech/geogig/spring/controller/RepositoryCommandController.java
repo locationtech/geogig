@@ -120,7 +120,7 @@ public class RepositoryCommandController extends AbstractController {
 
             final String deleteKey = deleteKeyForToken(deleteToken);
 
-            Optional<byte[]> blobValue = geogig.blobStore().getBlob(deleteKey);
+            Optional<byte[]> blobValue = geogig.context().blobStore().getBlob(deleteKey);
             if (!blobValue.isPresent()) {
                 throw new CommandSpecException("The specified token does not exist or has expired.",
                         HttpStatus.BAD_REQUEST);

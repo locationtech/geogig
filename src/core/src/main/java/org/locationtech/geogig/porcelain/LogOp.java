@@ -20,19 +20,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
-import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.plumbing.ResolveCommit;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
@@ -227,31 +223,31 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * Executes the log operation.
      * 
      * @return the list of commits that satisfy the query criteria, most recent first.
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override Iterator<RevCommit> _call() {
 
+        Geogig geogig = geogig();
         ObjectId newestCommitId;
         ObjectId oldestCommitId;
         {
             if (this.until == null) {
-                newestCommitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+                newestCommitId = geogig.refs().head().get().getObjectId();
             } else {
-                RevObject obj = command(RevObjectParse.class).setObjectId(until).call()
-                        .orElse(null);
-                if (obj instanceof RevTag) {
-                    newestCommitId = ((RevTag) obj).getCommitId();
-                } else if (obj instanceof RevCommit) {
-                    newestCommitId = this.until;
-                } else {
+                try {
+                    newestCommitId = geogig.command(ResolveCommit.class).setCommitIsh(this.until)
+                            .call().map(RevCommit::getId)
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Provided 'until' commit id does not exist: " + until));
+                } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(
-                            "Provided 'until' commit id does not exist: " + until.toString());
+                            "Provided 'until' commit id does not exist: " + until, e);
                 }
             }
             if (this.since == null) {
                 oldestCommitId = ObjectId.NULL;
             } else {
-                if (!repository().commitExists(this.since)) {
+                if (!geogig.objects().commitExists(this.since)) {
                     throw new IllegalArgumentException(
                             "Provided 'since' commit id does not exist: " + since.toString());
                 }
@@ -261,19 +257,19 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         Iterator<RevCommit> history;
         if (firstParent) {
-            history = new LinearHistoryIterator(newestCommitId, repository());
+            history = new LinearHistoryIterator(newestCommitId, geogig);
         } else {
             if (commits.isEmpty()) {
                 commits.add(newestCommitId);
             }
             if (topo) {
-                history = new TopologicalHistoryIterator(commits, repository(), graphDatabase(),
-                        oldestCommitId);
+                history = new TopologicalHistoryIterator(commits, geogig, oldestCommitId);
             } else {
-                history = new ChronologicalHistoryIterator(commits, repository());
+                history = new ChronologicalHistoryIterator(commits, geogig);
             }
         }
-        LogFilter filter = new LogFilter(oldestCommitId, timeRange, paths, author, commiter);
+        LogFilter filter = new LogFilter(geogig, oldestCommitId, timeRange, paths, author,
+                commiter);
         Iterator<RevCommit> filteredCommits = Iterators.filter(history, filter);
         if (skip != null) {
             Iterators.advance(filteredCommits, skip.intValue());
@@ -310,7 +306,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      */
     private static class ChronologicalHistoryIterator extends AbstractIterator<RevCommit> {
 
-        private final Repository repo;
+        private final Geogig repo;
 
         private Set<RevCommit> parents;
 
@@ -323,12 +319,12 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param repo the repository where the commits are stored.
          */
 
-        public ChronologicalHistoryIterator(final List<ObjectId> tips, final Repository repo) {
+        public ChronologicalHistoryIterator(final List<ObjectId> tips, final Geogig repo) {
             parents = Sets.newHashSet();
             seenCommits = Sets.newHashSet();
             for (ObjectId tip : tips) {
                 if (!tip.isNull()) {
-                    final RevCommit commit = repo.getCommit(tip);
+                    final RevCommit commit = repo.objects().getCommit(tip);
                     if (!parents.contains(commit)) {
                         parents.add(commit);
                     }
@@ -358,8 +354,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 parents.remove(mostRecent);
                 RevCommit commit;
                 for (ObjectId parent : mostRecent.getParentIds()) {
-                    if (repo.commitExists(parent)) {
-                        commit = repo.getCommit(parent);
+                    if (repo.objects().commitExists(parent)) {
+                        commit = repo.objects().getCommit(parent);
                         if (!seenCommits.contains(commit.getId())) {
                             parents.add(commit);
                             seenCommits.add(commit.getId());
@@ -378,7 +374,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      */
     private static class TopologicalHistoryIterator extends AbstractIterator<RevCommit> {
 
-        private final Repository repo;
+        private final Geogig repo;
 
         private Stack<RevCommit> tips;
 
@@ -395,18 +391,17 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * 
          * @param tipsList the list of tips to start computing history from
          * @param repo the repository where the commits are stored.
-         * @param graphDb
          */
-        public TopologicalHistoryIterator(final List<ObjectId> tipsList, final Repository repo,
-                GraphDatabase graphDb, ObjectId oldestCommitId) {
-            this.graphDb = graphDb;
+        public TopologicalHistoryIterator(final List<ObjectId> tipsList, final Geogig repo,
+                ObjectId oldestCommitId) {
+            this.graphDb = repo.graph().db();
             tips = new Stack<RevCommit>();
             stopPoints = Lists.newArrayList();
             stopPoints.add(oldestCommitId);
             this.oldestCommitId = oldestCommitId;
             for (ObjectId tip : tipsList) {
                 if (!tip.isNull()) {
-                    final RevCommit commit = repo.getCommit(tip);
+                    final RevCommit commit = repo.objects().getCommit(tip);
                     tips.add(commit);
                     stopPoints.add(tip);
                 }
@@ -431,7 +426,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     index++;
                     continue;
                 }
-                if (repo.commitExists(parentId)) {
+                if (repo.objects().commitExists(parentId)) {
                     parent = Optional.of(parentId);
                     break;
                 }
@@ -456,12 +451,12 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             } else {
                 List<ObjectId> parents = lastCommit.getParentIds();
                 for (int i = index + 1; i < parents.size(); i++) {
-                    if (repo.commitExists(parents.get(i))) {
-                        final RevCommit commit = repo.getCommit(parents.get(i));
+                    if (repo.objects().commitExists(parents.get(i))) {
+                        final RevCommit commit = repo.objects().getCommit(parents.get(i));
                         tips.push(commit);
                     }
                 }
-                lastCommit = repo.getCommit(parent.get());
+                lastCommit = repo.objects().getCommit(parent.get());
             }
 
             List<ObjectId> children = this.graphDb.getChildren(lastCommit.getId());
@@ -482,7 +477,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         private Optional<ObjectId> nextCommitId;
 
-        private final Repository repo;
+        private final Geogig repo;
 
         /**
          * Constructs a new {@code LinearHistoryIterator} with the given parameters.
@@ -491,7 +486,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param repo the repository where the commits are stored.
          */
         @SuppressWarnings("unchecked")
-        public LinearHistoryIterator(final ObjectId tip, final Repository repo) {
+        public LinearHistoryIterator(final ObjectId tip, final Geogig repo) {
             this.nextCommitId = (Optional<ObjectId>) (tip.isNull() ? Optional.empty()
                     : Optional.of(tip));
             this.repo = repo;
@@ -504,9 +499,9 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          */
         protected @Override RevCommit computeNext() {
             if (nextCommitId.isPresent()) {
-                RevCommit commit = repo.getCommit(nextCommitId.get());
+                RevCommit commit = repo.objects().getCommit(nextCommitId.get());
                 nextCommitId = commit.parentN(0);
-                if (nextCommitId.isPresent() && !repo.commitExists(nextCommitId.get())) {
+                if (nextCommitId.isPresent() && !repo.objects().commitExists(nextCommitId.get())) {
                     nextCommitId = Optional.empty();
                 }
                 return commit;
@@ -521,7 +516,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * 
      * @return {@code true} if the commit satisfies the filter criteria set to this op
      */
-    private class LogFilter implements Predicate<RevCommit> {
+    private static class LogFilter implements Predicate<RevCommit> {
 
         private boolean toReached;
 
@@ -537,6 +532,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         private FindTreeChild findTreeChild;
 
+        private @NonNull Geogig repo;
+
         /**
          * Constructs a new {@code LogFilter} with the given parameters.
          * 
@@ -547,15 +544,16 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          * @param commiter the regexp pattern to filter author names
          * @param author the regexp pattern to filter commiter names
          */
-        public LogFilter(final @NonNull ObjectId oldestCommitId,
+        public LogFilter(@NonNull Geogig repo, final @NonNull ObjectId oldestCommitId,
                 final @NonNull Range<Date> timeRange, final Set<String> paths, Pattern author,
                 Pattern commiter) {
+            this.repo = repo;
             this.oldestCommitId = oldestCommitId;
             this.timeRange = timeRange;
             this.author = author;
             this.committer = commiter;
             this.paths = paths;
-            findTreeChild = command(FindTreeChild.class);
+            findTreeChild = repo.command(FindTreeChild.class);
         }
 
         /**
@@ -590,9 +588,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             }
             if (paths != null) {
                 applies = false;
-                final Repository repository = repository();
                 // did this commit touch any of the paths?
-                RevTree commitTree = repository.getTree(commit.getTreeId());
+                RevTree commitTree = repo.objects().getTree(commit.getTreeId());
                 ObjectId currentValue, parentValue;
                 for (String path : paths) {
                     currentValue = getPathHash(commitTree, path);
@@ -600,15 +597,15 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     int parentIndex = 0;
                     do {
                         ObjectId parentId = commit.parentN(parentIndex++).orElse(ObjectId.NULL);
-                        if (parentId.isNull() || !repository.commitExists(parentId)) {
+                        if (parentId.isNull() || !repo.objects().commitExists(parentId)) {
                             // we have reached the bottom of a shallow clone or the end of history.
                             if (!currentValue.isNull()) {
                                 applies = true;
                                 break;
                             }
                         } else {
-                            RevCommit otherCommit = repository.getCommit(parentId);
-                            RevTree parentTree = repository.getTree(otherCommit.getTreeId());
+                            RevCommit otherCommit = repo.objects().getCommit(parentId);
+                            RevTree parentTree = repo.objects().getTree(otherCommit.getTreeId());
                             parentValue = getPathHash(parentTree, path);
                             if (!parentValue.equals(currentValue)) {
                                 applies = true;

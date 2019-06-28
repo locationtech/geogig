@@ -25,10 +25,10 @@ import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
@@ -79,9 +79,9 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
 
         getProgressListener().started();
 
-        Preconditions.checkArgument(repository.commitExists(commit),
+        Preconditions.checkArgument(geogig().objects().commitExists(commit),
                 "Commit could not be resolved: %s.", commit);
-        RevCommit commitToApply = repository.getCommit(commit);
+        RevCommit commitToApply = repository.context().objectDatabase().getCommit(commit);
 
         ObjectId headId = headRef.getObjectId();
 
@@ -152,8 +152,8 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
             ObjectId newTreeId = command(WriteTree2.class).call();
             RevCommit newCommit = command(CommitOp.class).setCommit(commitToApply).call();
 
-            repository.workingTree().updateWorkHead(newTreeId);
-            repository.index().updateStageHead(newTreeId);
+            repository.context().workingTree().updateWorkHead(newTreeId);
+            repository.context().stagingArea().updateStageHead(newTreeId);
 
             getProgressListener().complete();
 

@@ -21,7 +21,6 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -184,13 +183,13 @@ public class CLIContext {
 
         GeoGIG geogig = geogigCLI.newGeoGIG();
         try {
-            final WorkingTree workTree = geogig.getRepository().workingTree();
+            final WorkingTree workTree = geogig.getRepository().context().workingTree();
             workTree.delete(points1.getType().getName().getLocalPart());
             FeatureType newType = points1_FTmodified.getType();
             Name name = newType.getName();
             String parentPath = name.getLocalPart();
             RevFeatureType rft = RevFeatureType.builder().type(newType).build();
-            geogig.getRepository().objectDatabase().put(rft);
+            geogig.getRepository().context().objectDatabase().put(rft);
             String path = NodeRef.appendChild(parentPath, points1_FTmodified.getId());
             FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(points1_FTmodified),
                     rft.getId(), path);
@@ -233,13 +232,13 @@ public class CLIContext {
             RevFeatureType rft = types.get(type);
             if (rft == null) {
                 rft = RevFeatureType.builder().type(type).build();
-                geogig.getRepository().objectDatabase().put(rft);
+                geogig.getRepository().context().objectDatabase().put(rft);
                 types.put(type, rft);
             }
         }
         try {
             Repository repository = geogig.getRepository();
-            final WorkingTree workTree = repository.workingTree();
+            final WorkingTree workTree = repository.context().workingTree();
             for (Feature f : features) {
                 FeatureType ft = f.getType();
                 RevFeatureType rft = types.get(ft);
@@ -276,7 +275,7 @@ public class CLIContext {
     public boolean delete(Feature f) throws Exception {
         GeoGIG geogig = geogigCLI.newGeoGIG();
         try {
-            final WorkingTree workTree = geogig.getRepository().workingTree();
+            final WorkingTree workTree = geogig.getRepository().context().workingTree();
             Name name = f.getType().getName();
             String localPart = name.getLocalPart();
             String id = f.getId();

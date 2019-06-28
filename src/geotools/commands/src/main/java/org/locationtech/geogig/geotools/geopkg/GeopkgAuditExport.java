@@ -15,8 +15,8 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.File;
 import java.io.IOException;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
 

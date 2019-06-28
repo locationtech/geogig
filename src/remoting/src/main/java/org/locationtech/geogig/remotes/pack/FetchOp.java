@@ -32,11 +32,11 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -297,7 +297,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             ObjectId haveTip = localRef.getObjectId();
             // may the want commit exist in the local repository's object database nonetheless?
             ObjectId wantId = remoteRef.getObjectId();
-            if (!wantId.isNull() && local.objectDatabase().exists(wantId)) {
+            if (!wantId.isNull() && local.context().objectDatabase().exists(wantId)) {
                 haveTip = wantId;
             }
             req = RefRequest.want(remoteRef, haveTip);

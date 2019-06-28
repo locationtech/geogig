@@ -80,7 +80,7 @@ public class RevertOpTest extends RepositoryTestCase {
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
 
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
 
         Optional<NodeRef> points1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
@@ -140,7 +140,7 @@ public class RevertOpTest extends RepositoryTestCase {
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
 
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
 
         Optional<NodeRef> points1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
@@ -208,7 +208,7 @@ public class RevertOpTest extends RepositoryTestCase {
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
 
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
 
         Optional<NodeRef> points1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
@@ -342,7 +342,7 @@ public class RevertOpTest extends RepositoryTestCase {
 
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
         Optional<NodeRef> points1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
         assertTrue(points1Node.isPresent());
@@ -392,7 +392,7 @@ public class RevertOpTest extends RepositoryTestCase {
 
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
         Optional<NodeRef> points1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(pointsName, idP1)).setParent(headTree).call();
         assertTrue(points1Node.isPresent());
@@ -418,7 +418,7 @@ public class RevertOpTest extends RepositoryTestCase {
         final Optional<ObjectId> headTreeId = repo.command(ResolveTreeish.class)
                 .setTreeish(currHead.get().getObjectId()).call();
 
-        RevTree headTree = repo.getTree(headTreeId.get());
+        RevTree headTree = repo.context().objectDatabase().getTree(headTreeId.get());
 
         Optional<NodeRef> lines1Node = repo.command(FindTreeChild.class)
                 .setChildPath(NodeRef.appendChild(linesName, idL1)).setParent(headTree).call();

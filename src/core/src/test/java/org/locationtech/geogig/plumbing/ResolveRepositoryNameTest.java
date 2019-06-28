@@ -30,7 +30,7 @@ public class ResolveRepositoryNameTest extends RepositoryTestCase {
     @Test
     public void testConfiguredName() throws Exception {
         final String configRepoName = "myConfiguredRepoName";
-        getRepository().configDatabase().put("repo.name", configRepoName);
+        getRepository().context().configDatabase().put("repo.name", configRepoName);
         String repoName = repo.command(ResolveRepositoryName.class).call();
         assertEquals(configRepoName, repoName);
     }

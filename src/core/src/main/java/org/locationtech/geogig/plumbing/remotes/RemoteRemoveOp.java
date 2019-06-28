@@ -18,8 +18,8 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.porcelain.BranchConfig;
 import org.locationtech.geogig.porcelain.BranchConfigOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Predicate;

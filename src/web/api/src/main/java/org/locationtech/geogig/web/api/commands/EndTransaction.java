@@ -76,8 +76,9 @@ public class EndTransaction extends AbstractWebAPICommand {
                 }
             });
         } catch (MergeConflictsException m) {
-            final RevCommit ours = context.getRepository().getCommit(m.getOurs());
-            final RevCommit theirs = context.getRepository().getCommit(m.getTheirs());
+            final RevCommit ours = context.getRepository().context().objectDatabase().getCommit(m.getOurs());
+            final RevCommit theirs = context.getRepository().context().objectDatabase()
+                    .getCommit(m.getTheirs());
             final Optional<ObjectId> ancestor = transaction.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

@@ -12,7 +12,7 @@ package org.locationtech.geogig.plumbing;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;

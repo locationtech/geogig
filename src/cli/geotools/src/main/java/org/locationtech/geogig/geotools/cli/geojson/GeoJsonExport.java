@@ -176,7 +176,8 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
         checkParameter(rootTreeId.isPresent(),
                 "Couldn't resolve '" + refspec + "' to a treeish object");
 
-        RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
+        RevTree rootTree = geogig.getRepository().context().objectDatabase()
+                .getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class)
                 .setChildPath(refspec.split(":")[1]).setParent(rootTree).call();
 

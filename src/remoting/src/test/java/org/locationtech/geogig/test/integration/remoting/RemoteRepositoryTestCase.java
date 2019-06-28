@@ -303,11 +303,11 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected ObjectId insert(Repository repo, Feature f) throws Exception {
-        final WorkingTree workTree = repo.workingTree();
+        final WorkingTree workTree = repo.context().workingTree();
         Name name = f.getType().getName();
         String parentPath = name.getLocalPart();
         RevFeatureType type = RevFeatureType.builder().type(f.getType()).build();
-        repo.objectDatabase().put(type);
+        repo.context().objectDatabase().put(type);
         String path = NodeRef.appendChild(parentPath, f.getId());
         FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), type.getId(), path);
         workTree.insert(fi);
@@ -336,11 +336,11 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected void insert(Repository repo, Iterable<? extends Feature> features) throws Exception {
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
 
         FeatureType type = features.iterator().next().getType();
 
-        repo.objectDatabase().put(RevFeatureType.builder().type(type).build());
+        repo.context().objectDatabase().put(RevFeatureType.builder().type(type).build());
 
         final String treePath = type.getName().getLocalPart();
 
@@ -387,7 +387,7 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected boolean delete(GeoGIG geogig, Feature f) throws Exception {
-        final WorkingTree workTree = geogig.getRepository().workingTree();
+        final WorkingTree workTree = geogig.getRepository().context().workingTree();
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
         String id = f.getId();
@@ -396,7 +396,7 @@ public abstract class RemoteRepositoryTestCase {
     }
 
     protected void delete(Repository repo, Iterable<? extends Feature> features) throws Exception {
-        final WorkingTree workTree = repo.workingTree();
+        final WorkingTree workTree = repo.context().workingTree();
 
         Iterator<String> featurePaths = Iterators.transform(features.iterator(),
                 (f) -> f.getType().getName().getLocalPart() + "/" + f.getId());

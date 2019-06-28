@@ -38,11 +38,11 @@ import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.Blobs;
@@ -269,8 +269,10 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
 
             Repository repository = repository();
-            final RevCommit headCommit = repository.getCommit(headRef.getObjectId());
-            final RevCommit targetCommit = repository.getCommit(upstream.get());
+            final RevCommit headCommit = repository.context().objectDatabase()
+                    .getCommit(headRef.getObjectId());
+            final RevCommit targetCommit = repository.context().objectDatabase()
+                    .getCommit(upstream.get());
 
             command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId());
 
@@ -503,7 +505,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
 
                 RevCommit newCommit = builder.build();
-                repository.objectDatabase().put(newCommit);
+                repository.context().objectDatabase().put(newCommit);
 
                 rebaseHead = newCommit.getId();
 
@@ -539,7 +541,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
 
             RevCommit newCommit = builder.build();
-            repository.objectDatabase().put(newCommit);
+            repository.context().objectDatabase().put(newCommit);
 
             rebaseHead = newCommit.getId();
 

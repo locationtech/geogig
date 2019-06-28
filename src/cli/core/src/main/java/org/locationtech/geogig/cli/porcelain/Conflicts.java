@@ -177,7 +177,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
             theirsHeadId = mergeHead.get().getObjectId();
         } else {
             // It was a rebase
-            final Optional<byte[]> branchBlob = geogig.getRepository().blobStore()
+            final Optional<byte[]> branchBlob = geogig.getRepository().context().blobStore()
                     .getBlob(RebaseOp.REBASE_BRANCH_BLOB);
             Preconditions.checkState(branchBlob.isPresent(),
                     "Cannot find merge/rebase head reference");

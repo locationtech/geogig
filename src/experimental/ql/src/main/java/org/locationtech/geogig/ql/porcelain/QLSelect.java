@@ -33,8 +33,8 @@ import org.locationtech.geogig.geotools.data.GeoGigDataStore;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
@@ -206,7 +206,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
             newRefSpec = "WORK_HEAD:" + targetTableName;
         } catch (Exception e) {
             if (targetSchemaCreated) {
-                repository().workingTree().delete(targetTableName);
+                repository().context().workingTree().delete(targetTableName);
             }
             throw new RuntimeException(e);
         }

@@ -34,7 +34,7 @@ public class CleanRefsOpTest extends RepositoryTestCase {
         repo.command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(ObjectId.NULL)
                 .call();
 
-        repo.blobStore().putBlob(MergeOp.MERGE_MSG, "Merge message".getBytes());
+        repo.context().blobStore().putBlob(MergeOp.MERGE_MSG, "Merge message".getBytes());
 
         ImmutableList<String> cleanedUp = repo.command(CleanRefsOp.class).call();
         assertEquals(4, cleanedUp.size());
@@ -49,7 +49,7 @@ public class CleanRefsOpTest extends RepositoryTestCase {
         assertFalse(ref.isPresent());
         ref = repo.command(RefParse.class).setName(Ref.CHERRY_PICK_HEAD).call();
         assertFalse(ref.isPresent());
-        Optional<byte[]> mergeMsg = repo.blobStore().getBlob(MergeOp.MERGE_MSG);
+        Optional<byte[]> mergeMsg = repo.context().blobStore().getBlob(MergeOp.MERGE_MSG);
         assertFalse(mergeMsg.isPresent());
 
         // Running it again should result in nothing being cleaned up.

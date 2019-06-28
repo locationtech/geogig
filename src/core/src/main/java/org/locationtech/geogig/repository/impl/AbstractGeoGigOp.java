@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.repository.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +16,16 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.dsl.Geogig;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.StagingArea;
+import org.locationtech.geogig.repository.SubProgressListener;
+import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
@@ -31,39 +41,17 @@ import lombok.NonNull;
  * @param <T> the type of the result of the execution of the command
  * @since 1.0
  */
-public abstract class AbstractGeoGigOp<T> {
+public abstract class AbstractGeoGigOp<T> implements Command<T> {
 
     private static final ProgressListener NULL_PROGRESS_LISTENER = new DefaultProgressListener();
 
     private ProgressListener progressListener = NULL_PROGRESS_LISTENER;
 
-    private List<CommandListener> listeners;
+    private List<Command.CommandListener> listeners;
 
     protected Context context;
 
     private Map<String, String> metadata;
-
-    /**
-     * Interface for a listener that will be notified before and after the op is called.
-     */
-    public static interface CommandListener {
-        /**
-         * Called prior to the operation's {@link AbstractGeoGigOp#call()} method.
-         * 
-         * @param command the command that is going to be called
-         */
-        public void preCall(AbstractGeoGigOp<?> command);
-
-        /**
-         * Called after the operation's {@link AbstractGeoGigOp#call()} method.
-         * 
-         * @param command the command that was called
-         * @param result the value returned from the {@code call} method.
-         * @param exception the exception thrown by the command, or {@code null}.
-         */
-        public void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
-                @Nullable RuntimeException exception);
-    }
 
     /**
      * Constructs a new abstract operation.
@@ -73,13 +61,14 @@ public abstract class AbstractGeoGigOp<T> {
     }
 
     /**
-     * Adds a {@link CommandListener} to this operation.
+     * Adds a {@link Command.CommandListener} to this operation.
      * 
      * @param l the listener to add
      */
-    public void addListener(CommandListener l) {
+    @Override
+    public void addListener(Command.CommandListener l) {
         if (listeners == null) {
-            listeners = new ArrayList<AbstractGeoGigOp.CommandListener>(2);
+            listeners = new ArrayList<Command.CommandListener>(2);
         }
         listeners.add(l);
     }
@@ -87,6 +76,7 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return a content holder for client code data that can be used by decorators/interceptors
      */
+    @Override
     public Map<String, String> getClientData() {
         if (metadata == null) {
             metadata = new HashMap<>();
@@ -107,14 +97,15 @@ public abstract class AbstractGeoGigOp<T> {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    public <C extends AbstractGeoGigOp<?>> C command(Class<C> commandClass) {
+    public <C extends Command<?>> C command(Class<C> commandClass) {
         return context.command(commandClass);
     }
 
     /**
      * @param locator the command locator to use when finding commands
      */
-    public AbstractGeoGigOp<?> setContext(Context locator) {
+    @Override
+    public Command<?> setContext(Context locator) {
         this.context = locator;
         return this;
     }
@@ -122,6 +113,7 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return the {@link Context} for this command
      */
+    @Override
     public Context context() {
         return this.context;
     }
@@ -130,7 +122,8 @@ public abstract class AbstractGeoGigOp<T> {
      * @param listener the progress listener to use
      * @return {@code this}
      */
-    public AbstractGeoGigOp<T> setProgressListener(final ProgressListener listener) {
+    @Override
+    public Command<T> setProgressListener(final ProgressListener listener) {
         this.progressListener = listener == null ? NULL_PROGRESS_LISTENER : listener;
         return this;
     }
@@ -138,6 +131,7 @@ public abstract class AbstractGeoGigOp<T> {
     /**
      * @return the progress listener that is currently set
      */
+    @Override
     public ProgressListener getProgressListener() {
         return progressListener;
     }
@@ -157,6 +151,7 @@ public abstract class AbstractGeoGigOp<T> {
      * 
      * @see java.util.concurrent.Callable#call()
      */
+    @Override
     public T call() {
         try {
             notifyPre();
@@ -175,7 +170,7 @@ public abstract class AbstractGeoGigOp<T> {
         if (listeners == null) {
             return;
         }
-        for (CommandListener l : listeners) {
+        for (Command.CommandListener l : listeners) {
             l.preCall(this);
         }
     }
@@ -184,7 +179,7 @@ public abstract class AbstractGeoGigOp<T> {
         if (listeners == null) {
             return;
         }
-        for (CommandListener l : listeners) {
+        for (Command.CommandListener l : listeners) {
             l.postCall(this, result, exception);
         }
     }
@@ -257,5 +252,9 @@ public abstract class AbstractGeoGigOp<T> {
      */
     protected Repository repository() {
         return context.repository();
+    }
+
+    protected Geogig geogig() {
+        return Geogig.of(context());
     }
 }

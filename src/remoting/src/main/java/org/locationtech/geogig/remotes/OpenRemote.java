@@ -15,10 +15,10 @@ import java.util.Optional;
 
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.RemoteResolver;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 

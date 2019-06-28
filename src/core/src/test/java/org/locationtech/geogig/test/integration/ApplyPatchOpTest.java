@@ -60,10 +60,10 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addAddedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> typeTreeId = findTreeChild(root, pointsName);
-        RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
+        RevTree typeTree = repo.context().objectDatabase().getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
@@ -77,7 +77,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addRemovedFeature(path, RevFeature.builder().build(points1),
                 RevFeatureType.builder().type(pointsType).build());
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertFalse(featureBlobId.isPresent());
@@ -97,10 +97,10 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
                 RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(feaureDiff);
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertTrue(featureBlobId.isPresent());
-        try (AutoCloseableIterator<DiffEntry> unstaged = repo.workingTree()
+        try (AutoCloseableIterator<DiffEntry> unstaged = repo.context().workingTree()
                 .getUnstaged(pointsName)) {
             ArrayList<DiffEntry> diffs = Lists.newArrayList(unstaged);
             assertEquals(2, diffs.size());
@@ -285,7 +285,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         Patch rejected = repo.command(ApplyPatchOp.class).setPatch(patch).setApplyPartial(true)
                 .call();
         assertFalse(rejected.isEmpty());
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> featureBlobId = findTreeChild(root, pathRemove);
         assertFalse(featureBlobId.isPresent());
@@ -324,7 +324,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
                 RevFeatureType.builder().type(pointsType).build());
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
         repo.command(ApplyPatchOp.class).setPatch(patch.reversed()).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         Optional<Node> featureBlobId = findTreeChild(root, removedPath);
         assertTrue(featureBlobId.isPresent());
         featureBlobId = findTreeChild(root, addedPath);
@@ -342,17 +342,17 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addFeatureType(featureType);
         patch.addAlteredTree(new FeatureTypeDiff(pointsName, null, featureType.getId()));
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> typeTreeId = findTreeChild(root, pointsName);
-        RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
+        RevTree typeTree = repo.context().objectDatabase().getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
         assertEquals(featureType.getId(), typeTreeId.get().getMetadataId().get());
     }
 
     @Test
     public void testRemoveEmptyFeatureTypePatch() throws Exception {
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.createTypeTree(pointsName, pointsType);
         repo.command(AddOp.class).setUpdateOnly(false).call();
         Patch patch = new Patch();
@@ -360,7 +360,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addFeatureType(featureType);
         patch.addAlteredTree(new FeatureTypeDiff(pointsName, featureType.getId(), null));
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> typeTree = findTreeChild(root, pointsName);
         assertFalse(typeTree.isPresent());
@@ -376,7 +376,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addAlteredTree(
                 new FeatureTypeDiff(pointsName, oldFeatureType.getId(), featureType.getId()));
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> typeTree = findTreeChild(root, pointsName);
         assertTrue(typeTree.isPresent());
@@ -397,12 +397,12 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         patch.addAddedFeature(path, RevFeature.builder().build(points1B),
                 RevFeatureType.builder().type(modifiedPointsType).build());
         repo.command(ApplyPatchOp.class).setPatch(patch).call();
-        RevTree root = repo.workingTree().getTree();
+        RevTree root = repo.context().workingTree().getTree();
         assertNotNull(root);
         Optional<Node> typeTreeId = findTreeChild(root, pointsName);
         assertEquals(typeTreeId.get().getMetadataId().get(),
                 RevFeatureType.builder().type(pointsType).build().getId());
-        RevTree typeTree = repo.getTree(typeTreeId.get().getObjectId());
+        RevTree typeTree = repo.context().objectDatabase().getTree(typeTreeId.get().getObjectId());
         assertNotNull(typeTree);
         Optional<Node> featureBlobId = findTreeChild(root, path);
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),

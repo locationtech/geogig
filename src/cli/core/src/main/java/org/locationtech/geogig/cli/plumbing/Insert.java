@@ -76,7 +76,7 @@ public class Insert extends AbstractCommand implements CLICommand {
         Map<String, List<Feature>> features = readFeatures(lines);
 
         Repository repository = geogig.getRepository();
-        WorkingTree workingTree = repository.workingTree();
+        WorkingTree workingTree = repository.context().workingTree();
 
         long count = 0;
         for (String parentPath : features.keySet()) {
@@ -88,7 +88,7 @@ public class Insert extends AbstractCommand implements CLICommand {
                 if (rft == null) {
                     rft = RevFeatureType.builder().type(ft).build();
                     types.put(ft, rft);
-                    repository.objectDatabase().put(rft);
+                    repository.context().objectDatabase().put(rft);
                 }
                 String path = NodeRef.appendChild(parentPath, f.getId());
                 FeatureInfo fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(),

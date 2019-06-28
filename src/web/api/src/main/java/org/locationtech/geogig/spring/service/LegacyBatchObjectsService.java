@@ -71,7 +71,7 @@ public class LegacyBatchObjectsService extends AbstractRepositoryService {
 
         final Repository repository = getRepository(provider, repoName);
         final Deduplicator deduplicator = DeduplicationService.create();
-        BinaryPackedObjects packer = new BinaryPackedObjects(repository.objectDatabase());
+        BinaryPackedObjects packer = new BinaryPackedObjects(repository.context().objectDatabase());
 
         batchObjects.setDeduplicator(deduplicator).setHave(have).setPacker(packer).setWant(want);
         return batchObjects;

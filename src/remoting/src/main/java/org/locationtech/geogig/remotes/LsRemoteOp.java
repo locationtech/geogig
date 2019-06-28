@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;

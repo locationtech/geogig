@@ -25,7 +25,7 @@ import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.remotes.LsRemoteOp;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;

@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.postgresql.commands;
 import java.net.URI;
 import java.util.List;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;

@@ -222,7 +222,7 @@ public class LegacyMergeFeatureService extends AbstractRepositoryService {
                 SimpleFeature feature = featureBuilder
                         .buildFeature(NodeRef.nodeFromPath(featureId));
                 RevFeature revFeature = RevFeature.builder().build(GT.adapt(feature));
-                repository.objectDatabase().put(revFeature);
+                repository.context().objectDatabase().put(revFeature);
 
                 return revFeature;
             } else {

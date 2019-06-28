@@ -95,7 +95,7 @@ public class RemoveOpTest extends RepositoryTestCase {
                 .setRefSpec(Ref.WORK_HEAD + ":" + pointsName).call();
         assertFalse(id.isPresent());
         id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + pointsName).call();
-        List<DiffEntry> list = toList(repo.index().getStaged(null));
+        List<DiffEntry> list = toList(repo.context().stagingArea().getStaged(null));
         assertEquals(4, list.size());
         assertFalse(id.isPresent());
         id = repo.command(RevParse.class).setRefSpec(Ref.STAGE_HEAD + ":" + linesName).call();
@@ -145,7 +145,7 @@ public class RemoveOpTest extends RepositoryTestCase {
         assertEquals(0, result.getTreesRemoved());
 
         Repository repository = repo;
-        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        ConflictsDatabase conflicts = repository.context().conflictsDatabase();
         assertEquals(0, conflicts.getCountByPrefix(null, null));
         repo.command(CommitOp.class).call();
         Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();

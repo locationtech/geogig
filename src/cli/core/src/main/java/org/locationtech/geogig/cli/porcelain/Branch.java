@@ -230,7 +230,7 @@ public class Branch extends AbstractCommand implements CLICommand {
         if (commitId.isNull()) {
             return Optional.empty();
         }
-        RevCommit commit = geogig.getRepository().getCommit(commitId);
+        RevCommit commit = geogig.getRepository().context().objectDatabase().getCommit(commitId);
         return Optional.of(commit);
     }
 

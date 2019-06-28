@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.geogig.dsl.Geogig;
+import org.locationtech.geogig.dsl.Objects;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -128,9 +130,9 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                             || (getTags && line.startsWith("refs/tags"))) {
                         Ref remoteRef = HttpUtils.parseRef(line);
                         Ref newRef = remoteRef;
-                        if (!(newRef instanceof SymRef)
-                                && local.graphDatabase().exists(remoteRef.getObjectId())) {
-                            ObjectId mappedCommit = local.graphDatabase()
+                        if (!(newRef instanceof SymRef) && local.context().graphDatabase()
+                                .exists(remoteRef.getObjectId())) {
+                            ObjectId mappedCommit = local.context().graphDatabase()
                                     .getMapping(remoteRef.getObjectId());
                             if (mappedCommit != null) {
                                 newRef = new Ref(remoteRef.getName(), mappedCommit);
@@ -216,19 +218,22 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @return an iterator for changes that match the repository filter
      */
     @Override
-    protected FilteredDiffIterator getFilteredChanges(final Repository local, RevCommit commit) {
+    protected FilteredDiffIterator getFilteredChanges(final Repository localRepo,
+            RevCommit commit) {
         // Get affected features
+        Geogig local = Geogig.of(localRepo.context());
         ImmutableList<ObjectId> affectedFeatures = HttpUtils.getAffectedFeatures(repositoryURL,
                 commit.getId());
         // Create a list of features I have
         List<ObjectId> tracked = new LinkedList<ObjectId>();
+        Objects objects = local.objects();
         for (ObjectId id : affectedFeatures) {
-            if (local.blobExists(id)) {
+            if (objects.exists(id)) {
                 tracked.add(id);
             }
         }
         // Get changes from commit, pass filter and my list of features
-        final JsonObject message = createFetchMessage(local, commit.getId(), tracked);
+        final JsonObject message = createFetchMessage(localRepo, commit.getId(), tracked);
         final URL resourceURL;
         try {
             resourceURL = new URL(repositoryURL.toString() + "/repo/filteredchanges");
@@ -259,7 +264,7 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
             throw new RuntimeException(e);
         }
 
-        BinaryPackedChanges unpacker = new BinaryPackedChanges(local);
+        BinaryPackedChanges unpacker = new BinaryPackedChanges(localRepo);
 
         return new HttpFilteredDiffIterator(in, unpacker);
     }
@@ -339,15 +344,15 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                                 .setEnd(commonAncestor.get()).call()) {
                             // This should be the base commit to preserve changes that were filtered
                             // out.
-                            newParents.add(0, from.graphDatabase().getMapping(parentId));
+                            newParents.add(0, from.context().graphDatabase().getMapping(parentId));
                             continue;
                         }
                     }
                 }
-                newParents.add(from.graphDatabase().getMapping(parentId));
+                newParents.add(from.context().graphDatabase().getMapping(parentId));
             }
             if (newParents.size() > 0) {
-                parent = from.graphDatabase().getMapping(newParents.get(0));
+                parent = from.context().graphDatabase().getMapping(newParents.get(0));
             }
             try (AutoCloseableIterator<DiffEntry> diffIter = from.command(DiffOp.class)
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
@@ -392,8 +397,8 @@ public class HttpMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     String line = rd.readLine();
                     if (line != null) {
                         ObjectId remoteCommitId = ObjectId.valueOf(line);
-                        from.graphDatabase().map(commit.getId(), remoteCommitId);
-                        from.graphDatabase().map(remoteCommitId, commit.getId());
+                        from.context().graphDatabase().map(commit.getId(), remoteCommitId);
+                        from.context().graphDatabase().map(remoteCommitId, commit.getId());
                     }
 
                 } catch (IOException e) {

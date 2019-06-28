@@ -297,14 +297,14 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        repo.workingTree().updateTypeTree(pointsName, modifiedPointsType);
+        repo.context().workingTree().updateTypeTree(pointsName, modifiedPointsType);
         insert(points1B);
         repo.command(AddOp.class).call();
         RevCommit masterCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
         FeatureType modifiedPointsTypeB = FeatureTypes.createType(pointsNs + "#" + pointsName,
                 "sp:String", "ip:Integer", "pp:Point:srid=4326", "extraB:String");
-        repo.workingTree().updateTypeTree(pointsName, modifiedPointsTypeB);
+        repo.context().workingTree().updateTypeTree(pointsName, modifiedPointsTypeB);
         insert(points1B);
         repo.command(AddOp.class).call();
         RevCommit branchCommit = repo.command(CommitOp.class).call();

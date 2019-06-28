@@ -25,6 +25,6 @@ public interface CommandFactory {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    public <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass);
+    public <T extends Command<?>> T command(Class<T> commandClass);
 
 }

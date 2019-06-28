@@ -1,5 +1,5 @@
 /**
- * Provides GeoGig {@link org.locationtech.geogig.repository.AbstractGeoGigOp commands} for
+ * Provides GeoGig {@link org.locationtech.geogig.repository.impl.AbstractGeoGigOp commands} for
  * repositories to interact with each other in order to replicate or synchronize their contents.
  * <p>
  * Both replication and synchronization make use of the

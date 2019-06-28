@@ -13,8 +13,9 @@ import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
 
@@ -26,12 +27,12 @@ public abstract class PRCommand<T> extends AbstractGeoGigOp<T> {
 
     protected PRCommand() {
         setProgressListener(new DefaultProgressListener());
-        addListener(new CommandListener() {
-            public @Override void preCall(AbstractGeoGigOp<?> command) {
+        addListener(new Command.CommandListener() {
+            public @Override void preCall(Command<?> command) {
             }
 
             @SuppressWarnings("unchecked")
-            public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+            public @Override void postCall(Command<?> command, @Nullable Object result,
                     @Nullable RuntimeException exception) {
                 PRCommand.this.prCommandResult = (T) result;
                 PRCommand.this.error = exception;

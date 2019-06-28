@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -35,16 +36,17 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.ResolveTree;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.slf4j.Logger;
@@ -194,7 +196,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
 
             // Here we prepare the files with the info about the commits to apply in reverse
             Repository repository = repository();
-            List<RevCommit> commitsToRevert = commits.stream().map(c -> repository.getCommit(c))
+            List<RevCommit> commitsToRevert = commits.stream()
+                    .map(c -> repository.context().objectDatabase().getCommit(c))
                     .collect(Collectors.toList());
             createRevertCommitsInfoFiles(commitsToRevert);
         }
@@ -242,7 +245,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             return false;
         }
         String commitId = commitFile.get(0);
-        RevCommit commit = repository.getCommit(ObjectId.valueOf(commitId));
+        RevCommit commit = repository.context().objectDatabase()
+                .getCommit(ObjectId.valueOf(commitId));
         try (PersistedIterable<Conflict> conflicts = ConflictsUtils.newTemporaryConflictStream()) {
             if (useCommitChanges) {
                 applyRevertedChanges(commit, conflicts);
@@ -251,7 +255,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             if (createCommit && 0L == numConflicts) {
                 createCommit(commit);
             } else {
-                workingTree().updateWorkHead(repository.index().getTree().getId());
+                workingTree().updateWorkHead(repository.context().stagingArea().getTree().getId());
                 if (numConflicts > 0L) {
                     // mark conflicted elements
                     command(ConflictsWriteOp.class).setConflicts(conflicts).call();
@@ -284,18 +288,16 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
 
         progress.setDescription("Reverting commit " + commit.getId());
 
-        final Repository repository = repository();
+        final Geogig repository = geogig();
         final ObjectId parentCommitId = commit.getParentIds().isEmpty() ? ObjectId.NULL
                 : commit.getParentIds().get(0);
 
-        final ObjectId parentTreeId = parentCommitId.isNull() ? RevTree.EMPTY_TREE_ID : //
-                repository.commitExists(parentCommitId)
-                        ? repository.getCommit(parentCommitId).getTreeId()
-                        : RevTree.EMPTY_TREE_ID;
-
+        final RevTree parentTree = parentCommitId.isNull() ? RevTree.EMPTY : //
+                repository.command(ResolveTree.class).setTreeIsh(parentCommitId).call()
+                        .orElse(RevTree.EMPTY);
         // get changes (in reverse)
         final DiffTree reverseDiffCommand = command(DiffTree.class)//
-                .setNewTree(parentTreeId)//
+                .setNewTree(parentTree)//
                 .setOldTree(commit.getTreeId())//
                 .setReportTrees(false)//
                 .setPreserveIterationOrder(true);

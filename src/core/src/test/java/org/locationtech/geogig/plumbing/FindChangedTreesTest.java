@@ -115,7 +115,7 @@ public class FindChangedTreesTest extends Assert {
     public @Test void testDiffLeafRoot() {
         List<NodeRef> layers = createLayers(10);
 
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
 
         RevTree initialRoot = workingTree.getTree();
 
@@ -136,7 +136,7 @@ public class FindChangedTreesTest extends Assert {
     public @Test void testDiffLeafBucketRoot() {
         List<NodeRef> layers = createLayers(10);
 
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
 
         RevTree initialRoot = workingTree.getTree();
 
@@ -157,7 +157,7 @@ public class FindChangedTreesTest extends Assert {
             int numDeleted) {
         final List<NodeRef> initialLayers = createLayers(numlayers);
 
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
 
         final RevTree initialRoot = workingTree.getTree();
 
@@ -170,7 +170,8 @@ public class FindChangedTreesTest extends Assert {
         {
             RevTree newWorkhead = workingTree.getTree();
 
-            RevTreeBuilder tb = RevTreeBuilder.builder(repo.objectDatabase(), newWorkhead);
+            RevTreeBuilder tb = RevTreeBuilder.builder(repo.context().objectDatabase(),
+                    newWorkhead);
             deletedLayers.forEach(n -> tb.remove(n.getNode()));
 
             newWorkhead = tb.build();
@@ -189,7 +190,7 @@ public class FindChangedTreesTest extends Assert {
 
         final RevTree initialRoot = setUpMultipleChanges(numlayers, numAdded, numChanged,
                 numDeleted);
-        final RevTree finalRoot = repo.workingTree().getTree();
+        final RevTree finalRoot = repo.context().workingTree().getTree();
 
         final List<DiffEntry> res = findWithFindChangedTreesCommand(initialRoot, finalRoot);
         final int expected = numAdded + numChanged + numDeleted;
@@ -204,7 +205,7 @@ public class FindChangedTreesTest extends Assert {
 
         final RevTree initialRoot = setUpMultipleChanges(numlayers, numAdded, numChanged,
                 numDeleted);
-        final RevTree finalRoot = repo.workingTree().getTree();
+        final RevTree finalRoot = repo.context().workingTree().getTree();
 
         Stopwatch swFCT = Stopwatch.createUnstarted();
         Stopwatch swDT = Stopwatch.createUnstarted();
@@ -292,9 +293,10 @@ public class FindChangedTreesTest extends Assert {
 
     private NodeRef putFeatures(NodeRef layer, int featureCount) {
         List<FeatureInfo> features = createFeatures(layer, featureCount);
-        repo.workingTree().insert(features.iterator(), new DefaultProgressListener());
+        repo.context().workingTree().insert(features.iterator(), new DefaultProgressListener());
         Optional<NodeRef> ref = repo.command(FindTreeChild.class)
-                .setParent(repo.workingTree().getTree()).setChildPath(layer.path()).call();
+                .setParent(repo.context().workingTree().getTree()).setChildPath(layer.path())
+                .call();
         assertTrue(ref.isPresent());
         return ref.get();
     }
@@ -333,13 +335,14 @@ public class FindChangedTreesTest extends Assert {
 
     private List<NodeRef> createLayers(Map<String, FeatureType> types) {
         List<NodeRef> layers = new ArrayList<>();
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
 
-        repo.objectDatabase().putAll(Iterators.transform(types.values().iterator(),
+        repo.context().objectDatabase().putAll(Iterators.transform(types.values().iterator(),
                 (t) -> RevFeatureType.builder().type(t).build()));
 
         RevTree wt = workingTree.getTree();
-        RevTreeBuilder newWorkHeadBuilder = RevTreeBuilder.builder(repo.objectDatabase(), wt);
+        RevTreeBuilder newWorkHeadBuilder = RevTreeBuilder.builder(repo.context().objectDatabase(),
+                wt);
 
         types.forEach((treePath, featureType) -> {
             ObjectId mdId = RevFeatureType.builder().type(featureType).build().getId();

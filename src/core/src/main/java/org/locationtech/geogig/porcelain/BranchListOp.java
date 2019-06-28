@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;

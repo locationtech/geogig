@@ -114,7 +114,7 @@ public final class BinaryPackedChanges {
      * @return the number of objects written
      */
     public long write(OutputStream out, Iterator<DiffEntry> changes) throws IOException {
-        final ObjectStore objectDatabase = repository.objectDatabase();
+        final ObjectStore objectDatabase = repository.context().objectDatabase();
         out = new CountingOutputStream(out);
 
         // avoids sending the same metadata object multiple times
@@ -185,7 +185,7 @@ public final class BinaryPackedChanges {
 
         Iterator<RevObject> asObjects = asObjects(readingIterator, callback);
 
-        ObjectStore objectDatabase = repository.objectDatabase();
+        ObjectStore objectDatabase = repository.context().objectDatabase();
         CountingListener listener = BulkOpListener.newCountingListener();
         objectDatabase.putAll(asObjects, listener);
         LOGGER.info("Ingested %,d objects. Inserted: %,d. Already existing: %,d\n",

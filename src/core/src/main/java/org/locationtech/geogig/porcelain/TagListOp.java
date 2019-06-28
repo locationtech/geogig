@@ -19,7 +19,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.ForEachRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 
 import com.google.common.collect.ImmutableList;

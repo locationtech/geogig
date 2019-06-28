@@ -38,10 +38,10 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.remotes.internal.LocalRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterables;
@@ -101,7 +101,7 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
      * Executes the clone operation.
      * 
      * @return the cloned repository, in an open state
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override Repository _call() {
         checkPreconditions();
@@ -123,7 +123,8 @@ public class CloneOp extends AbstractGeoGigOp<Repository> {
 
                 if (this.cloneIndexes && remoteRepo instanceof LocalRemoteRepo) {
                     Repository localRemote = ((LocalRemoteRepo) remoteRepo).getRemoteRepository();
-                    localRemote.indexDatabase().copyIndexesTo(cloneRepo.indexDatabase());
+                    localRemote.context().indexDatabase()
+                            .copyIndexesTo(cloneRepo.context().indexDatabase());
                 }
 
             }

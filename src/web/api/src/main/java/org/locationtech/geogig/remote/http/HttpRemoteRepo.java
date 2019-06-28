@@ -48,7 +48,7 @@ import org.locationtech.geogig.remotes.internal.ObjectFunnels;
 import org.locationtech.geogig.remotes.internal.RepositoryWrapper;
 import org.locationtech.geogig.remotes.pack.ReceivePackOp;
 import org.locationtech.geogig.remotes.pack.SendPackOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
@@ -266,7 +266,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
                         }
                     }
                 };
-                ObjectStore database = local.objectDatabase();
+                ObjectStore database = local.context().objectDatabase();
                 BinaryPackedObjects packer = new BinaryPackedObjects(database);
 
                 ImmutableList<ObjectId> have = ImmutableList.copyOf(roots);
@@ -427,7 +427,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
 
         final HttpUtils.ReportingInputStream in = HttpUtils.getResponseStream(connection);
 
-        BinaryPackedObjects unpacker = new BinaryPackedObjects(local.objectDatabase());
+        BinaryPackedObjects unpacker = new BinaryPackedObjects(local.context().objectDatabase());
         BinaryPackedObjects.Callback callback = new BinaryPackedObjects.Callback() {
             @Override
             public void callback(Supplier<RevObject> supplier) {
@@ -493,7 +493,7 @@ public class HttpRemoteRepo extends AbstractRemoteRepo {
         return HttpUtils.getDepth(repositoryURL, null);
     }
 
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         if (SendPackOp.class.equals(commandClass)) {
             // invoked when a local repo calls fetch for an http remote
             return commandClass.cast(new HttpSendPackClient(this));

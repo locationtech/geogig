@@ -16,7 +16,7 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.ConflictsException;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Platform;
@@ -128,7 +128,7 @@ public class GeogigTransaction implements Context {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         T instance = context.command(commandClass);
         instance.setContext(this);
         return instance;

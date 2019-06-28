@@ -15,7 +15,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;
@@ -31,26 +31,35 @@ public class ResolveCommit extends AbstractGeoGigOp<java.util.Optional<RevCommit
 
     private String commitIsh;
 
-    protected @Override java.util.Optional<RevCommit> _call() {
-        Preconditions.checkNotNull(commitIsh, "commit-ish not provided");
+    private ObjectId id;
 
-        final ObjectId id = context.command(RevParse.class).setRefSpec(commitIsh).call()
-                .orElse(null);
+    protected @Override java.util.Optional<RevCommit> _call() {
+        Preconditions.checkArgument(commitIsh != null || id != null, "commit-ish not provided");
+
+        final ObjectId id;
+        if (this.id == null) {
+            id = context.command(RevParse.class).setRefSpec(commitIsh).call().orElse(null);
+        } else {
+            id = this.id;
+        }
 
         RevCommit commit = null;
         if (id != null) {
-            ObjectDatabase db = context.objectDatabase();
-            RevObject obj = db.get(id);
-            switch (obj.getType()) {
-            case COMMIT:
-                commit = (RevCommit) obj;
-                break;
-            case TAG:
-                commit = db.getCommit(((RevTag) obj).getCommitId());
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        String.format("'%s' resolves to a %s, not a comit", obj.getType()));
+            ObjectDatabase db = objectDatabase();
+            RevObject obj = db.getIfPresent(id);
+            if (obj != null) {
+                switch (obj.getType()) {
+                case COMMIT:
+                    commit = (RevCommit) obj;
+                    break;
+                case TAG:
+                    commit = db.getCommit(((RevTag) obj).getCommitId());
+                    break;
+                default:
+                    throw new IllegalArgumentException(
+                            String.format("'%s' resolves to a %s, not a comit",
+                                    (this.id == null ? this.commitIsh : this.id), obj.getType()));
+                }
             }
         }
         return Optional.ofNullable(commit);
@@ -58,6 +67,11 @@ public class ResolveCommit extends AbstractGeoGigOp<java.util.Optional<RevCommit
 
     public ResolveCommit setCommitIsh(String refSpec) {
         this.commitIsh = refSpec;
+        return this;
+    }
+
+    public ResolveCommit setCommitIsh(ObjectId id) {
+        this.id = id;
         return this;
     }
 }

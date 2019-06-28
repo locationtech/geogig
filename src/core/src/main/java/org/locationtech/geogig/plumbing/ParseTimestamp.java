@@ -16,8 +16,8 @@ import java.util.HashMap;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 

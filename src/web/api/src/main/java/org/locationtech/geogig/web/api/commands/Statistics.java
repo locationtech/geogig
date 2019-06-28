@@ -105,8 +105,8 @@ public class Statistics extends AbstractWebAPICommand {
         while (treeIter.hasNext()) {
             NodeRef node = treeIter.next();
             if (path == null || path.trim().isEmpty() || node.path().startsWith(path)) {
-                stats.add(new FeatureTypeStats(node.path(),
-                        context.getRepository().getTree(node.getObjectId()).size()));
+                stats.add(new FeatureTypeStats(node.path(), context.getRepository().context().objectDatabase()
+                        .getTree(node.getObjectId()).size()));
             }
         }
         log = logOp.call();

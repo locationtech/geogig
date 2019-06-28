@@ -27,9 +27,9 @@ import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.index.IndexUtils;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Builds an index for every commit a given type tree is present at. Returns the number of trees

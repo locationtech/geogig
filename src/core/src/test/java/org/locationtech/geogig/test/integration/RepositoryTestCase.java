@@ -168,11 +168,11 @@ public abstract class RepositoryTestCase extends Assert {
     protected final void doSetUp() throws IOException, ParseException, Exception {
         repo = testRepository.repository();
         assertTrue(repo.isOpen());
-        assertNotNull(repo.configDatabase());
-        assertNotNull(repo.objectDatabase());
-        assertNotNull(repo.graphDatabase());
-        assertNotNull(repo.conflictsDatabase());
-        assertNotNull(repo.blobStore());
+        assertNotNull(repo.context().configDatabase());
+        assertNotNull(repo.context().objectDatabase());
+        assertNotNull(repo.context().graphDatabase());
+        assertNotNull(repo.context().conflictsDatabase());
+        assertNotNull(repo.context().blobStore());
 
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("Gabriel Roldan").call();
@@ -253,14 +253,14 @@ public abstract class RepositoryTestCase extends Assert {
         RevFeature feature = RevFeature.builder().build(f);
         FeatureType type = f.getType();
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
-        repo.objectDatabase().put(ftype);
+        repo.context().objectDatabase().put(ftype);
         return FeatureInfo.insert(feature, ftype.getId(), path);
     }
 
     protected FeatureInfo featureInfo(FeatureType type, String id, Object... values) {
         RevFeature feature = RevFeature.builder().build(feature(type, id, values));
         RevFeatureType ftype = RevFeatureType.builder().type(type).build();
-        repo.objectDatabase().put(ftype);
+        repo.context().objectDatabase().put(ftype);
         String path = NodeRef.appendChild(type.getName().getLocalPart(), id);
         return FeatureInfo.insert(feature, ftype.getId(), path);
     }
@@ -368,7 +368,7 @@ public abstract class RepositoryTestCase extends Assert {
                 RevFeatureType rft = types.get(f.getType());
                 if (rft == null) {
                     rft = RevFeatureType.builder().type(f.getType()).build();
-                    repo.objectDatabase().put(rft);
+                    repo.context().objectDatabase().put(rft);
                     types.put(f.getType(), rft);
                 }
                 fi = FeatureInfo.insert(RevFeature.builder().build(f), rft.getId(), path);
@@ -376,7 +376,7 @@ public abstract class RepositoryTestCase extends Assert {
             }
             return fi;
         });
-        repo.workingTree().insert(infos.iterator(), DefaultProgressListener.NULL);
+        repo.context().workingTree().insert(infos.iterator(), DefaultProgressListener.NULL);
         return rfIds;
     }
 
@@ -385,7 +385,7 @@ public abstract class RepositoryTestCase extends Assert {
      */
     public ObjectId insert(GeogigTransaction transaction, Feature f) throws Exception {
         final WorkingTree workTree = (transaction != null ? transaction.workingTree()
-                : repo.workingTree());
+                : repo.context().workingTree());
 
         FeatureInfo feature = featureInfo(f);
         workTree.insert(feature);
@@ -450,7 +450,7 @@ public abstract class RepositoryTestCase extends Assert {
 
     public boolean delete(@Nullable GeogigTransaction transaction, Feature f) throws Exception {
         final WorkingTree workTree = (transaction != null ? transaction.workingTree()
-                : repo.workingTree());
+                : repo.context().workingTree());
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();
         String id = f.getId();

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Supplier;
 

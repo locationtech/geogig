@@ -12,9 +12,9 @@ package org.locationtech.geogig.plumbing;
 import java.net.URI;
 import java.util.Optional;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 /**
@@ -27,7 +27,7 @@ public class ResolveRepositoryName extends AbstractGeoGigOp<String> {
 
     /**
      * @return the name of the repository
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override String _call() {
         Optional<String> repoName = configDatabase().get("repo.name");

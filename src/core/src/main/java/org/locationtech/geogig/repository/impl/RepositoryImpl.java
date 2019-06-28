@@ -19,28 +19,13 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 
-import org.locationtech.geogig.model.Node;
-import org.locationtech.geogig.model.NodeRef;
-import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.model.RevFeature;
-import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.plumbing.FindTreeChild;
-import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -56,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
-import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
@@ -82,18 +66,6 @@ public class RepositoryImpl implements Repository {
 
     private volatile boolean open;
 
-    private @Getter ConfigDatabase configDatabase;
-
-    private @Getter RefDatabase refDatabase;
-
-    private @Getter ObjectDatabase objectDatabase;
-
-    private @Getter IndexDatabase indexDatabase;
-
-    private @Getter GraphDatabase graphDatabase;
-
-    private @Getter ConflictsDatabase conflictsDatabase;
-
     @Inject
     public RepositoryImpl(Context context) {
         this.context = context;
@@ -116,11 +88,11 @@ public class RepositoryImpl implements Repository {
         Optional<URI> repoUrl = command(ResolveGeogigURI.class).call();
         Preconditions.checkState(repoUrl.isPresent(), "Repository URL can't be located");
         this.repositoryLocation = repoUrl.get();
-        configDatabase = context.configDatabase();
-        refDatabase = context.refDatabase();
-        objectDatabase = context.objectDatabase();
-        indexDatabase = context.indexDatabase();
-        conflictsDatabase = context.conflictsDatabase();
+        ConfigDatabase configDatabase = context.configDatabase();
+        RefDatabase refDatabase = context.refDatabase();
+        ObjectDatabase objectDatabase = context.objectDatabase();
+        IndexDatabase indexDatabase = context.indexDatabase();
+        ConflictsDatabase conflictsDatabase = context.conflictsDatabase();
 
         configDatabase.open();
         refDatabase.open();
@@ -128,7 +100,7 @@ public class RepositoryImpl implements Repository {
         indexDatabase.open();
         conflictsDatabase.open();
 
-        graphDatabase = objectDatabase.getGraphDatabase();
+        GraphDatabase graphDatabase = objectDatabase.getGraphDatabase();
         graphDatabase.open();
 
         for (RepositoryListener l : listeners) {
@@ -185,156 +157,8 @@ public class RepositoryImpl implements Repository {
      * @param commandClass the kind of command to locate and instantiate
      * @return a new instance of the requested command class, with its dependencies resolved
      */
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         return context.command(commandClass);
-    }
-
-    /**
-     * Test if a blob exists in the object database
-     * 
-     * @param id the ID of the blob in the object database
-     * @return true if the blob exists with the parameter ID, false otherwise
-     */
-    public @Override boolean blobExists(final ObjectId id) {
-        return context().objectDatabase().exists(id);
-    }
-
-    /**
-     * @param revStr the string to parse
-     * @return the parsed {@link Ref}, or {@link Optional#empty()} if it did not parse.
-     */
-    public @Override Optional<Ref> getRef(final String revStr) {
-        Optional<Ref> ref = command(RefParse.class).setName(revStr).call();
-        return ref;
-    }
-
-    /**
-     * @return the {@link Ref} pointed to by HEAD, or {@link Optional#empty()} if it could not be
-     *         resolved.
-     */
-    public @Override Optional<Ref> getHead() {
-        return getRef(Ref.HEAD);
-    }
-
-    /**
-     * Determines if a commit with the given {@link ObjectId} exists in the object database.
-     * 
-     * @param id the id to look for
-     * @return true if the object was found, false otherwise
-     */
-    public @Override boolean commitExists(final ObjectId id) {
-        try {
-            RevObject revObject = context().objectDatabase().get(id);
-            return revObject instanceof RevCommit;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    /**
-     * Gets the {@link RevCommit} with the given {@link ObjectId} from the object database.
-     * 
-     * @param commitId the {@code ObjectId} for the commit
-     * @return the {@code RevCommit}
-     */
-    public @Override RevCommit getCommit(final ObjectId commitId) {
-        RevCommit commit = context().objectDatabase().getCommit(commitId);
-
-        return commit;
-    }
-
-    /**
-     * Test if a tree exists in the object database
-     * 
-     * @param id the ID of the tree in the object database
-     * @return true if the tree exists with the parameter ID, false otherwise
-     */
-    public @Override boolean treeExists(final ObjectId id) {
-        try {
-            context().objectDatabase().getTree(id);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * @return the {@link ObjectId} of the root tree
-     */
-    public @Override ObjectId getRootTreeId() {
-        // find the root tree
-        ObjectId commitId = command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
-        if (commitId.isNull()) {
-            return commitId;
-        }
-        RevCommit commit = command(RevObjectParse.class).setRefSpec(commitId.toString())
-                .call(RevCommit.class).get();
-        ObjectId treeId = commit.getTreeId();
-        return treeId;
-    }
-
-    /**
-     * @param contentId the {@link ObjectId} of the feature to get
-     * @return the {@link RevFeature} that was found in the object database
-     */
-    public @Override RevFeature getFeature(final ObjectId contentId) {
-
-        RevFeature revFeature = context().objectDatabase().getFeature(contentId);
-
-        return revFeature;
-    }
-
-    /**
-     * @return the existing {@link RevTree} pointed to by HEAD, or a new {@code RevTree} if it did
-     *         not exist
-     */
-    public @Override RevTree getOrCreateHeadTree() {
-        Optional<ObjectId> headTreeId = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
-        if (!headTreeId.isPresent()) {
-            return RevTree.EMPTY;
-        }
-        return getTree(headTreeId.get());
-    }
-
-    /**
-     * @param treeId the tree to retrieve
-     * @return the {@link RevTree} referred to by the given {@link ObjectId}
-     */
-    public @Override RevTree getTree(ObjectId treeId) {
-        return command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class).get();
-    }
-
-    /**
-     * @param path the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child, or {@link Optional#empty()} if
-     *         it wasn't found
-     */
-    public @Override Optional<Node> getRootTreeChild(String path) {
-        Optional<NodeRef> nodeRef = command(FindTreeChild.class).setChildPath(path).call();
-        if (nodeRef.isPresent()) {
-            return Optional.of(nodeRef.get().getNode());
-        } else {
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Search the given tree for the child path.
-     * 
-     * @param tree the tree to search
-     * @param childPath the path to search for
-     * @return an {@link Optional} of the {@link Node} for the child path, or
-     *         {@link Optional#empty()} if it wasn't found
-     */
-    public @Override Optional<Node> getTreeChild(RevTree tree, String childPath) {
-        Optional<NodeRef> nodeRef = command(FindTreeChild.class).setParent(tree)
-                .setChildPath(childPath).call();
-        if (nodeRef.isPresent()) {
-            return Optional.of(nodeRef.get().getNode());
-        } else {
-            return Optional.empty();
-        }
     }
 
     /**
@@ -363,27 +187,11 @@ public class RepositoryImpl implements Repository {
      * @return true if this is a sparse (mapped) clone.
      */
     public @Override boolean isSparse() {
-        return blobStore().getBlob(Blobs.SPARSE_FILTER_BLOB_KEY).isPresent();
+        return context().blobStore().getBlob(Blobs.SPARSE_FILTER_BLOB_KEY).isPresent();
     }
 
     public @Override Context context() {
         return context;
-    }
-
-    public @Override WorkingTree workingTree() {
-        return context.workingTree();
-    }
-
-    public @Override StagingArea index() {
-        return context.stagingArea();
-    }
-
-    public @Override Platform platform() {
-        return context.platform();
-    }
-
-    public @Override BlobStore blobStore() {
-        return context().blobStore();
     }
 
     /**
@@ -393,7 +201,7 @@ public class RepositoryImpl implements Repository {
     public static Optional<RepositoryFilter> getFilter(Repository repo)
             throws IllegalStateException {
 
-        BlobStore blobStore = repo.blobStore();
+        BlobStore blobStore = repo.context().blobStore();
         Optional<byte[]> filterBlob = blobStore.getBlob(SPARSE_FILTER_BLOB_KEY);
         IniRepositoryFilter filter = null;
         if (filterBlob.isPresent()) {

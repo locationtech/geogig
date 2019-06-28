@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -30,12 +31,12 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
+import org.locationtech.geogig.plumbing.ResolveTree;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.DiffObjectInfo;
@@ -83,20 +84,19 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
         }
 
         final ObjectId parentTreeId;
-        final Repository repository = repository();
-        final ObjectDatabase db = repository.objectDatabase();
+        final Geogig repository = geogig();
         if (parentCommitId.isNull()) {
             parentTreeId = ObjectId.NULL;
         } else {
-            parentTreeId = repository.getCommit(parentCommitId).getTreeId();
+            parentTreeId = repository.objects().getCommit(parentCommitId).getTreeId();
         }
         // get changes
         DiffTree diffCmd = command(DiffTree.class).setOldTree(parentTreeId)
                 .setNewTree(commit.getTreeId()).setReportTrees(true);
 
-        final RevFeatureTypeCache ftCache = new RevFeatureTypeCache(db);
+        final RevFeatureTypeCache ftCache = new RevFeatureTypeCache(objectDatabase());
         final RevTree workingTree = this.workingTree().getTree();
-        try (AutoCloseableIterator<DiffObjectInfo<RevObject>> diffObjects = db
+        try (AutoCloseableIterator<DiffObjectInfo<RevObject>> diffObjects = objectDatabase()
                 .getDiffObjects(diffCmd.call(), RevObject.class)) {
 
             while (diffObjects.hasNext()) {
@@ -114,7 +114,9 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                         TYPE type = newObject.get().getType();
                         if (TYPE.TREE.equals(type)) {
                             NodeRef headVersion = command(FindTreeChild.class).setChildPath(path)
-                                    .setParent(repository.getOrCreateHeadTree()).call().get();
+                                    .setParent(repository.command(ResolveTree.class)
+                                            .setTreeIsh(Ref.HEAD).call().orElse(RevTree.EMPTY))
+                                    .call().get();
                             if (!headVersion.getMetadataId()
                                     .equals(diff.getNewObject().getMetadataId())) {
                                 consumer.conflicted(new Conflict(path, ObjectId.NULL,
@@ -166,10 +168,11 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                     }
                     final RevFeature oldFeature = (RevFeature) oldObject.get();
                     final RevFeature newFeature = (RevFeature) newObject.get();
-                    final RevFeature headFeature = db.getFeature(headObj.get().getId());
+                    final RevFeature headFeature = objectDatabase()
+                            .getFeature(headObj.get().getId());
 
-                    final NodeRef headFeatureRef = new DepthSearch(db).find(workingTree, path)
-                            .get();
+                    final NodeRef headFeatureRef = new DepthSearch(objectDatabase())
+                            .find(workingTree, path).get();
                     final RevFeatureType headFeatureType = ftCache
                             .get(headFeatureRef.getMetadataId());
                     List<PropertyDescriptor> descriptors = headFeatureType.descriptors();

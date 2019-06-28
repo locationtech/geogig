@@ -32,9 +32,9 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
@@ -95,7 +95,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
      * Executes the squash operation.
      * 
      * @return the new head after modifying the history squashing commits
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override ObjectId _call() {
 
@@ -218,7 +218,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         builder.authorTimestamp(until.getAuthor().getTimestamp());
 
         RevCommit newCommit = builder.build();
-        repository.objectDatabase().put(newCommit);
+        repository.context().objectDatabase().put(newCommit);
 
         newHead = newCommit.getId();
         ObjectId newTreeId = newCommit.getTreeId();

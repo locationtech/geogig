@@ -33,10 +33,10 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindChangedTrees;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.IndexDatabase;
 
 import com.google.common.base.Predicate;
@@ -219,9 +219,10 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
                 branchCommits = Collections.emptyIterator();
             } else {
                 if (refName.startsWith(Ref.TAGS_PREFIX)) {
-                    wantCommit = local.objectDatabase().getTag(wantCommit).getCommitId();
+                    wantCommit = local.context().objectDatabase().getTag(wantCommit).getCommitId();
                     if (!haveCommit.isNull()) {
-                        haveCommit = local.objectDatabase().getTag(haveCommit).getCommitId();
+                        haveCommit = local.context().objectDatabase().getTag(haveCommit)
+                                .getCommitId();
                     }
                 }
 
@@ -257,7 +258,7 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
             return;
         }
 
-        final IndexDatabase indexdb = local.indexDatabase();
+        final IndexDatabase indexdb = local.context().indexDatabase();
         indexInfosByFeatureTreeName = indexdb.getIndexInfos().stream()
                 .collect(Collectors.toMap(i -> i.getTreeName(), i -> i));
         if (indexInfosByFeatureTreeName.isEmpty()) {

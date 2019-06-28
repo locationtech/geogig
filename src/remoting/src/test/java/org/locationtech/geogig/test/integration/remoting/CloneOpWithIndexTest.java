@@ -14,8 +14,8 @@ import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTest
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.remotes.CloneOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.Command.CommandListener;
 import org.locationtech.geogig.repository.Repository;
 
 /**
@@ -35,14 +35,14 @@ public class CloneOpWithIndexTest extends CloneOpTest {
         return cloneOp;
     }
 
-    private CommandListener createSpatialIndexBeforeCloneListener = new CommandListener() {
+    private Command.CommandListener createSpatialIndexBeforeCloneListener = new Command.CommandListener() {
 
-        public @Override void preCall(AbstractGeoGigOp<?> command) {
+        public @Override void preCall(Command<?> command) {
             Repository remote = CloneOpWithIndexTest.this.remoteRepo;
             createIndexes(remote);
         }
 
-        public @Override void postCall(AbstractGeoGigOp<?> command, @Nullable Object result,
+        public @Override void postCall(Command<?> command, @Nullable Object result,
                 @Nullable RuntimeException exception) {
 
             Repository remote = CloneOpWithIndexTest.this.remoteRepo;

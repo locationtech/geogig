@@ -34,7 +34,7 @@ import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.plumbing.merge.DiffMergeFeaturesOp.DiffMergeFeatureResult;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Geometry;

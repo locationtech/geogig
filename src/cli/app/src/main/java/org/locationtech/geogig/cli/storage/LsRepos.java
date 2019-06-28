@@ -233,7 +233,7 @@ public class LsRepos extends AbstractCommand implements CLICommand {
                 uniqueCommits.add(c.getId());
                 ObjectId treeId = c.getTreeId();
                 RevTree root = RevTree.EMPTY_TREE_ID.equals(treeId) ? RevTree.EMPTY
-                        : repo.objectDatabase().getTree(treeId);
+                        : repo.context().objectDatabase().getTree(treeId);
                 totalFeatures.addAndGet(root.size());
                 if (!root.isEmpty()) {
                     repo.command(FindFeatureTypeTrees.class).setRootTreeRef(root.getId().toString())

@@ -24,8 +24,8 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
 import org.locationtech.geogig.remotes.SendPack.TransferableRef;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Predicate;
@@ -97,7 +97,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
      * Executes the push operation.
      * 
      * @return {@code null}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override TransferSummary _call() throws SynchronizationException {
         final String remoteName = this.remoteName == null ? "origin" : this.remoteName;

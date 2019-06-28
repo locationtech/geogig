@@ -166,7 +166,7 @@ class HttpUtils {
                 RevObjectSerializer reader = DataStreamRevObjectSerializerV1.INSTANCE;
                 RevObject revObject = reader.read(objectId, is);
                 if (localRepository != null) {
-                    localRepository.objectDatabase().put(revObject);
+                    localRepository.context().objectDatabase().put(revObject);
                 }
                 object = Optional.of(revObject);
             } finally {

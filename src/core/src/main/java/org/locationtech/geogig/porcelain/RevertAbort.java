@@ -17,7 +17,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

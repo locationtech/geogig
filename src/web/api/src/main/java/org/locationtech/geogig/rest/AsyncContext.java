@@ -23,10 +23,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -125,7 +126,7 @@ public class AsyncContext {
 
     }
 
-    public <T> AsyncCommand<T> run(AbstractGeoGigOp<T> command, String description) {
+    public <T> AsyncCommand<T> run(Command<T> command, String description) {
 
         CommandCall<T> callable = new CommandCall<T>(command);
         Future<T> future = commandExecutor.submit(callable);
@@ -249,7 +250,7 @@ public class AsyncContext {
 
     private static class CommandCall<T> implements Callable<T> {
 
-        private final AbstractGeoGigOp<T> command;
+        private final Command<T> command;
 
         private final Class<?> commandClass;
 
@@ -257,7 +258,7 @@ public class AsyncContext {
 
         private final DefaultProgressListener progress = new DefaultProgressListener();
 
-        public CommandCall(AbstractGeoGigOp<T> command) {
+        public CommandCall(Command<T> command) {
             this.command = command;
             this.commandClass = command.getClass();
             this.status = Status.WAITING;

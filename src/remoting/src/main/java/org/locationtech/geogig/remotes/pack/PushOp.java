@@ -44,10 +44,10 @@ import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.SynchronizationException.StatusCode;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;

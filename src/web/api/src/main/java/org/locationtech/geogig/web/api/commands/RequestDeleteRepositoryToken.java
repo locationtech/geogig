@@ -69,7 +69,7 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
         final long now = geogig.platform().currentTimeMillis();
         byte[] nowBytes = ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(now).array();
 
-        final BlobStore blobStore = geogig.repository().blobStore();
+        final BlobStore blobStore = geogig.repository().context().blobStore();
         blobStore.putBlob(deleteKey, nowBytes);
         deleteTokenExecutor.schedule(new Runnable() {
 
@@ -78,7 +78,7 @@ public class RequestDeleteRepositoryToken extends AbstractWebAPICommand {
             @Override
             public void run() {
                 if (repo.isOpen()) {
-                    BlobStore blobs = repo.blobStore();
+                    BlobStore blobs = repo.context().blobStore();
                     blobs.removeBlob(deleteKey);
                 }
 

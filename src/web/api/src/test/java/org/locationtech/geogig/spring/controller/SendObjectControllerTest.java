@@ -145,7 +145,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         builder.message(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
         RevCommit sendObjectCommit = builder.build();
         // ensure the new commit doesn't yet exist in the repo
-        RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+        RevCommit preCheck = repo.context().objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNull("Modified commit should not be in the repository yet.", preCheck);
         // get the Object serializer
@@ -163,7 +163,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
         // now verify the commit is present in the repo
-        RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+        RevCommit postCheck = repo.context().objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNotNull("Modified commit should be in the repository.", postCheck);
         repo.close();
@@ -185,7 +185,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
         builder.message(headCommit.getMessage() + " MODIFIED FOR SEND OBJECT");
         RevCommit sendObjectCommit = builder.build();
         // ensure the new commit doesn't yet exist in the repo
-        RevCommit preCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+        RevCommit preCheck = repo.context().objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNull("Modified commit should not be in the repository yet.", preCheck);
         // get the Object serializer
@@ -208,7 +208,7 @@ public class SendObjectControllerTest extends AbstractControllerTest {
                 .andExpect(content().contentType(MediaType.TEXT_PLAIN))
                 .andExpect(content().string(""));
         // now verify the commit is present in the repo
-        RevCommit postCheck = repo.objectDatabase().getIfPresent(sendObjectCommit.getId(),
+        RevCommit postCheck = repo.context().objectDatabase().getIfPresent(sendObjectCommit.getId(),
                 RevCommit.class);
         assertNotNull("Modified commit should be in the repository.", postCheck);
         repo.close();

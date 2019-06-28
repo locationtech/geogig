@@ -13,7 +13,7 @@ import java.net.URI;
 import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 public class ConflictsCheckOp extends AbstractGeoGigOp<Boolean> {
     protected @Override Boolean _call() {

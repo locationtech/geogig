@@ -27,6 +27,8 @@ import com.google.common.annotations.Beta;
  */
 public interface Context extends CommandFactory {
 
+    public Hints hints();
+
     /**
      * @return the {@link Platform} for this context
      */

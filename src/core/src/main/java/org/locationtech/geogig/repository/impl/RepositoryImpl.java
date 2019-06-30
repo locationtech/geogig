@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -41,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
+import lombok.NonNull;
 import lombok.experimental.Accessors;
 
 /**
@@ -66,8 +65,7 @@ public class RepositoryImpl implements Repository {
 
     private volatile boolean open;
 
-    @Inject
-    public RepositoryImpl(Context context) {
+    public RepositoryImpl(@NonNull Context context) {
         this.context = context;
     }
 

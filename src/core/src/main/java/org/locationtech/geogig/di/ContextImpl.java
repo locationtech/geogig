@@ -9,15 +9,19 @@
  */
 package org.locationtech.geogig.di;
 
-import javax.inject.Inject;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.RepositoryImpl;
+import org.locationtech.geogig.repository.impl.StagingAreaImpl;
+import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -27,7 +31,7 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.inject.Provider;
+import com.google.common.base.Suppliers;
 
 import lombok.NonNull;
 
@@ -37,18 +41,46 @@ import lombok.NonNull;
  * @see Context
  * @see AbstractGeoGigOp
  */
-public class GuiceContext implements Context {
+public class ContextImpl implements Context {
 
-    private com.google.inject.Injector guiceInjector;
+    private final DecoratorProvider decoratorProvider = new DecoratorProvider();
 
-    /**
-     * Constructs a new {@code GuiceCommandLocator} with the given {@link Context}.
-     * 
-     * @param injector the injector which has commands bound to it
-     */
-    @Inject
-    public GuiceContext(com.google.inject.Injector injector) {
-        this.guiceInjector = injector;
+    private @NonNull Platform platform;
+
+    private @NonNull Hints hints;
+
+    private final PluginsModule plugins;
+
+    private final Supplier<StagingAreaImpl> stagingArea;
+
+    private final Supplier<WorkingTreeImpl> workingTree;
+
+    private final Supplier<ConfigDatabase> configDatabase;
+
+    private final Supplier<ConflictsDatabase> conflictsDatabase;
+
+    private final Supplier<IndexDatabase> indexDatabase;
+
+    private final Supplier<ObjectDatabase> objectsDatabase;
+
+    private final Supplier<RefDatabase> refsDatabase;
+
+    private final Supplier<Repository> repository;
+
+    public ContextImpl(@NonNull Platform platform, @NonNull Hints hints) {
+        this.platform = platform;
+        this.hints = hints;
+        plugins = new PluginsModule(this);
+        workingTree = Suppliers.memoize(() -> new WorkingTreeImpl(this));
+        stagingArea = Suppliers.memoize(() -> new StagingAreaImpl(this));
+
+        configDatabase = Suppliers.memoize(() -> plugins.getConfigDatabase().get());
+        conflictsDatabase = Suppliers.memoize(() -> plugins.getConflictsDatabase().get());
+        indexDatabase = Suppliers.memoize(() -> plugins.getIndexDatabase().get());
+        objectsDatabase = Suppliers.memoize(() -> plugins.getObjectsDatabase().get());
+        refsDatabase = Suppliers.memoize(() -> plugins.getRefsDatabase().get());
+
+        repository = Suppliers.memoize(() -> new RepositoryImpl(this));
     }
 
     /**
@@ -65,9 +97,11 @@ public class GuiceContext implements Context {
     }
 
     private <T> T getInstance(final @NonNull Class<T> type) {
-        Provider<T> provider = guiceInjector.getProvider(type);
-        T instance = provider.get();
-        return instance;
+        try {
+            return type.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private <T> T getDecoratedInstance(final Class<T> type) {
@@ -77,42 +111,44 @@ public class GuiceContext implements Context {
     }
 
     private <T> T getDecoratedInstance(@NonNull T undecorated) {
-        final @NonNull DecoratorProvider decoratorProvider = guiceInjector
-                .getInstance(DecoratorProvider.class);
         T decoratedInstance = decoratorProvider.get(undecorated);
         return decoratedInstance;
     }
 
-    public @Override WorkingTree workingTree() {
-        return getDecoratedInstance(WorkingTree.class);
-    }
-
-    public @Override StagingArea stagingArea() {
-        return getDecoratedInstance(StagingArea.class);
-    }
-
-    public @Override RefDatabase refDatabase() {
-        return getDecoratedInstance(RefDatabase.class);
+    public @Override Hints hints() {
+        return getDecoratedInstance(hints);
     }
 
     public @Override Platform platform() {
-        return getDecoratedInstance(Platform.class);
+        return getDecoratedInstance(platform);
+    }
+
+    public @Override WorkingTree workingTree() {
+        return getDecoratedInstance(workingTree.get());
+    }
+
+    public @Override StagingArea stagingArea() {
+        return getDecoratedInstance(stagingArea.get());
+    }
+
+    public @Override RefDatabase refDatabase() {
+        return getDecoratedInstance(refsDatabase.get());
     }
 
     public @Override ObjectDatabase objectDatabase() {
-        return getDecoratedInstance(ObjectDatabase.class);
+        return getDecoratedInstance(objectsDatabase.get());
     }
 
     public @Override IndexDatabase indexDatabase() {
-        return getDecoratedInstance(IndexDatabase.class);
+        return getDecoratedInstance(indexDatabase.get());
     }
 
     public @Override ConflictsDatabase conflictsDatabase() {
-        return getDecoratedInstance(ConflictsDatabase.class);
+        return getDecoratedInstance(conflictsDatabase.get());
     }
 
     public @Override ConfigDatabase configDatabase() {
-        return getDecoratedInstance(ConfigDatabase.class);
+        return getDecoratedInstance(configDatabase.get());
     }
 
     public @Override GraphDatabase graphDatabase() {
@@ -120,7 +156,7 @@ public class GuiceContext implements Context {
     }
 
     public @Override Repository repository() {
-        return getDecoratedInstance(Repository.class);
+        return getDecoratedInstance(repository.get());
     }
 
     public @Override BlobStore blobStore() {

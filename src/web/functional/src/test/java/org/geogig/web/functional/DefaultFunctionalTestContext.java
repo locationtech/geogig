@@ -23,6 +23,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.jetty.server.ServerConnector;
+import org.locationtech.geogig.cli.test.functional.CLITestContextBuilder;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -85,7 +86,7 @@ public class DefaultFunctionalTestContext extends FunctionalTestContext {
         URI rootURI = TestRepoURIBuilderProvider.getURIBuilder().buildRootURI(platform);
         repoProvider = new MultiRepositoryProvider(rootURI);
 
-        GlobalContextBuilder.builder(new FunctionalRepoContextBuilder(platform));
+        GlobalContextBuilder.builder(new CLITestContextBuilder(platform));
 
         setVariable("@systemTempPath", rootFolder.getCanonicalPath().replace("\\", "/"));
         setupSpringContext();

@@ -65,12 +65,6 @@
       <artifactId>org.eclipse.jdt.annotation</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <classifier>no_aop</classifier>
-    </dependency>
-    
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

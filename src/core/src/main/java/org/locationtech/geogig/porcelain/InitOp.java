@@ -21,8 +21,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
-import javax.inject.Inject;
+import java.util.TreeMap;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
@@ -72,24 +71,9 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
     private @Setter(value = AccessLevel.PACKAGE) @VisibleForTesting RepositoryFinder repositoryFinder = RepositoryFinder.INSTANCE;
 
-    private Map<String, String> config;
+    private Map<String, String> config = new TreeMap<>();
 
     private String filterFile;
-
-    private Hints hints;
-
-    /**
-     * Constructs a new {@code InitOp} with the specified parameters.
-     * 
-     * @param platform where to get the current directory from
-     * @param hints may contain where to get the repository from (using the
-     *        {@link Hints#REPOSITORY_URL} argument)
-     */
-    @Inject
-    public InitOp(Hints hints) {
-        this.config = Maps.newTreeMap();
-        this.hints = hints;
-    }
 
     public InitOp setConfig(Map<String, String> suppliedConfiguration) {
         this.config = ImmutableMap.copyOf(suppliedConfiguration);
@@ -110,6 +94,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      *         {@link ResolveGeogigURI}
      */
     protected @Override Repository _call() {
+        final Hints hints = context().hints();
         final Platform platform = platform();
         Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
         if (!resolvedURI.isPresent()) {

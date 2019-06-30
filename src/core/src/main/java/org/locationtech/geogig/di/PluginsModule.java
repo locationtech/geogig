@@ -12,8 +12,7 @@ package org.locationtech.geogig.di;
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-
-import javax.inject.Inject;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
@@ -28,40 +27,28 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Provider;
-import com.google.inject.Scopes;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
-public class PluginsModule extends AbstractModule {
+public @RequiredArgsConstructor class PluginsModule {
 
-    protected @Override void configure() {
+    private @NonNull Context context;
 
-        bind(ConfigDatabase.class).toProvider(PluginConfigDatabaseProvider.class)
-                .in(Scopes.SINGLETON);
-        bind(ObjectDatabase.class).toProvider(PluginObjectDatabaseProvider.class)
-                .in(Scopes.SINGLETON);
-        bind(IndexDatabase.class).toProvider(PluginIndexDatabaseProvider.class)
-                .in(Scopes.SINGLETON);
-        bind(RefDatabase.class).toProvider(PluginRefDatabaseProvider.class).in(Scopes.SINGLETON);
-        bind(ConflictsDatabase.class).toProvider(PluginConflictsDatabaseProvider.class)
-                .in(Scopes.SINGLETON);
-    }
+    private @Getter Supplier<ConfigDatabase> configDatabase = new PluginConfigDatabaseProvider();
 
-    private static class PluginConfigDatabaseProvider implements Provider<ConfigDatabase> {
+    private @Getter Supplier<ConflictsDatabase> conflictsDatabase = new PluginConflictsDatabaseProvider();
 
-        private Context context;
+    private @Getter Supplier<ObjectDatabase> objectsDatabase = new PluginObjectDatabaseProvider();
 
-        private Hints hints;
+    private @Getter Supplier<IndexDatabase> indexDatabase = new PluginIndexDatabaseProvider();
 
-        @Inject
-        PluginConfigDatabaseProvider(Context context, Hints hints) {
-            this.context = context;
-            this.hints = hints;
-        }
+    private @Getter Supplier<RefDatabase> refsDatabase = new PluginRefDatabaseProvider();
 
+    private class PluginConfigDatabaseProvider implements Supplier<ConfigDatabase> {
         public @Override ConfigDatabase get() {
             Platform platform = context.platform();
-
+            Hints hints = context.hints();
             Optional<URI> uri = new ResolveGeogigURI(platform, hints).call();
             ConfigDatabase config = null;
             if (uri.isPresent()) {
@@ -74,13 +61,11 @@ public class PluginsModule extends AbstractModule {
         }
     }
 
-    private static class PluginObjectDatabaseProvider implements Provider<ObjectDatabase> {
-
-        private @Inject Platform platform;
-
-        private @Inject Hints hints;
+    private class PluginObjectDatabaseProvider implements Supplier<ObjectDatabase> {
 
         public @Override ObjectDatabase get() {
+            Platform platform = context.platform();
+            Hints hints = context.hints();
             URI repoURI = new ResolveGeogigURI(platform, hints).call()
                     .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
@@ -90,13 +75,11 @@ public class PluginsModule extends AbstractModule {
 
     }
 
-    private static class PluginIndexDatabaseProvider implements Provider<IndexDatabase> {
-
-        private @Inject Platform platform;
-
-        private @Inject Hints hints;
+    private class PluginIndexDatabaseProvider implements Supplier<IndexDatabase> {
 
         public @Override IndexDatabase get() {
+            Platform platform = context.platform();
+            Hints hints = context.hints();
             URI repoURI = new ResolveGeogigURI(platform, hints).call()
                     .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
@@ -106,13 +89,10 @@ public class PluginsModule extends AbstractModule {
 
     }
 
-    private static class PluginRefDatabaseProvider implements Provider<RefDatabase> {
-
-        private @Inject Platform platform;
-
-        private @Inject Hints hints;
-
+    private class PluginRefDatabaseProvider implements Supplier<RefDatabase> {
         public @Override RefDatabase get() {
+            Platform platform = context.platform();
+            Hints hints = context.hints();
             URI repoURI = new ResolveGeogigURI(platform, hints).call()
                     .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 
@@ -121,12 +101,10 @@ public class PluginsModule extends AbstractModule {
         }
     }
 
-    private static class PluginConflictsDatabaseProvider implements Provider<ConflictsDatabase> {
-        private @Inject Platform platform;
-
-        private @Inject Hints hints;
-
+    private class PluginConflictsDatabaseProvider implements Supplier<ConflictsDatabase> {
         public @Override ConflictsDatabase get() {
+            Platform platform = context.platform();
+            Hints hints = context.hints();
             URI repoURI = new ResolveGeogigURI(platform, hints).call()
                     .orElseThrow(() -> new NoSuchElementException("Repository URI unresolved"));
 

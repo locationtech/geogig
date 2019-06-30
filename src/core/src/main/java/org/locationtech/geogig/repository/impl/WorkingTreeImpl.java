@@ -24,8 +24,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import javax.inject.Inject;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
@@ -98,10 +96,9 @@ public class WorkingTreeImpl implements WorkingTree {
 
     private Context context;
 
-    @Inject
-    public WorkingTreeImpl(final Context injector) {
-        this.indexDatabase = injector.objectDatabase();
-        this.context = injector;
+    public WorkingTreeImpl(final @NonNull Context context) {
+        this.indexDatabase = context.objectDatabase();
+        this.context = context;
     }
 
     /**

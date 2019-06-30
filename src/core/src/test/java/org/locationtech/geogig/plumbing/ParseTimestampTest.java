@@ -28,7 +28,8 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.TestRepository;
 
@@ -69,7 +70,7 @@ public class ParseTimestampTest extends Assert {
         };
 
         Hints hints = Hints.repository(uri).platform(testPlatform);
-        Context context = new PluginsContextBuilder().build(hints);
+        Context context = GlobalContextBuilder.builder().build(hints);
         repo = new GeoGIG(context).getOrCreateRepository();
         command = repo.command(ParseTimestamp.class);
     }

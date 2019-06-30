@@ -13,7 +13,7 @@ import org.locationtech.geogig.repository.ContextBuilder;
 
 public class GlobalContextBuilder {
 
-    private static ContextBuilder builder = new PluginsContextBuilder();
+    private static ContextBuilder builder = new ContextBuilderImpl();
 
     public static ContextBuilder builder() {
         return builder;

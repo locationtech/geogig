@@ -120,7 +120,8 @@ public class InitOpTest {
         workingDir = tempFolder.getRoot();
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, workingDir.getAbsoluteFile().toURI());
-        init = new InitOp(hints);
+        when(context.hints()).thenReturn(hints);
+        init = new InitOp();
         init.setContext(context);
         mockResolver = mock(RepositoryResolver.class);
         RepositoryFinder mockFinder = spy(new RepositoryFinder());

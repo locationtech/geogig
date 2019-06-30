@@ -38,7 +38,8 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -70,7 +71,7 @@ public class DiffTreeTest extends Assert {
         URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
                 testName.getMethodName()));
 
-        Context injector = new PluginsContextBuilder().build(Hints.repository(uri));
+        Context injector = GlobalContextBuilder.builder().build(Hints.repository(uri));
 
         repository = new GeoGIG(injector).getOrCreateRepository();
         assertNotNull(repository);

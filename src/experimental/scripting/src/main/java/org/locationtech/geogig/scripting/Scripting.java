@@ -43,7 +43,7 @@ import com.google.common.io.Files;
  * Utilities to execute scripts representing hooks for GeoGig operations
  * 
  */
-class Scripting {
+public class Scripting {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Scripting.class);
 

@@ -193,8 +193,8 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         assertEquals(expectedFeatures.size(), source.getCount(Query.ALL));
         NodeRef typeRef = source.delegate.getTypeRef();
         ObjectId canonicalTreeId = typeRef.getObjectId();
-        Optional<ObjectId> resolveIndexedTree = repo.indexDatabase().resolveIndexedTree(indexInfo,
-                canonicalTreeId);
+        Optional<ObjectId> resolveIndexedTree = repo.context().indexDatabase()
+                .resolveIndexedTree(indexInfo, canonicalTreeId);
         assertTrue(resolveIndexedTree.isPresent());
         ObjectId indexTreeId = resolveIndexedTree.get();
 
@@ -351,10 +351,10 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
             throw new RuntimeException(e);
         }
         RevTree tree = IndexTestSupport.createWorldPointsTree(repository);
-        WorkingTree workingTree = repository.workingTree();
+        WorkingTree workingTree = repository.context().workingTree();
         NodeRef typeTreeRef = workingTree.createTypeTree(type.getTypeName(), GT.adapt(type));
 
-        ObjectStore store = repository.objectDatabase();
+        ObjectStore store = repository.context().objectDatabase();
         CanonicalTreeBuilder newRootBuilder = CanonicalTreeBuilder.create(store,
                 workingTree.getTree());
 
@@ -371,7 +371,7 @@ public class GeoGigFeatureStoreIndexedTest extends GeoGigFeatureStoreTest {
         double x = 1.000000001;
         double y = 2.000000002;
 
-        ObjectStore store = repository.objectDatabase();
+        ObjectStore store = repository.context().objectDatabase();
         CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(store);
         for (int i = 0; i < numFeatues; i++) {
             String fid = String.valueOf(i);

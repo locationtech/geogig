@@ -40,8 +40,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
     public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
-        repo.configDatabase().put("user.name", "groldan");
-        repo.configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        repo.context().configDatabase().put("user.name", "groldan");
+        repo.context().configDatabase().put("user.email", "groldan@boundlessgeo.com");
     }
 
     @Test

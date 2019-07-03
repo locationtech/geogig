@@ -23,7 +23,7 @@ import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.plumbing.diff.Patch;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Suppliers;

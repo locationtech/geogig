@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Resolves the current repository

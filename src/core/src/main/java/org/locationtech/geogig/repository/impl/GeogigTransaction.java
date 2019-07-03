@@ -14,22 +14,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.di.DelegatingContext;
 import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.porcelain.ConflictsException;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
-import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.BlobStore;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
-import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.IndexDatabase;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.impl.TransactionBlobStoreImpl;
@@ -45,11 +39,9 @@ import com.google.common.base.Preconditions;
  * @see org.locationtech.geogig.plumbing.TransactionBegin
  * @see org.locationtech.geogig.plumbing.TransactionEnd
  */
-public class GeogigTransaction implements Context {
+public class GeogigTransaction extends DelegatingContext implements Context {
 
     private UUID transactionId;
-
-    private Context context;
 
     private final StagingArea transactionIndex;
 
@@ -70,6 +62,7 @@ public class GeogigTransaction implements Context {
      * @param transactionId the id of the transaction
      */
     public GeogigTransaction(Context context, UUID transactionId) {
+        super(context);
         Preconditions.checkArgument(!(context instanceof GeogigTransaction));
         this.context = context;
         this.transactionId = transactionId;
@@ -122,18 +115,6 @@ public class GeogigTransaction implements Context {
         return transactionRefDatabase;
     }
 
-    /**
-     * Finds and returns an instance of a command of the specified class.
-     * 
-     * @param commandClass the kind of command to locate and instantiate
-     * @return a new instance of the requested command class, with its dependencies resolved
-     */
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
-        T instance = context.command(commandClass);
-        instance.setContext(this);
-        return instance;
-    }
-
     public @Override String toString() {
         return new StringBuilder(getClass().getSimpleName()).append('[').append(transactionId)
                 .append(']').toString();
@@ -163,18 +144,6 @@ public class GeogigTransaction implements Context {
         context.command(TransactionEnd.class).setTransaction(this).setCancel(true).call();
     }
 
-    public @Override Platform platform() {
-        return context.platform();
-    }
-
-    public @Override ObjectDatabase objectDatabase() {
-        return context.objectDatabase();
-    }
-
-    public @Override IndexDatabase indexDatabase() {
-        return context.indexDatabase();
-    }
-
     public @Override ConflictsDatabase conflictsDatabase() {
         return transactionIndex != null ? transactionIndex.conflictsDatabase()
                 : context.conflictsDatabase();
@@ -182,18 +151,6 @@ public class GeogigTransaction implements Context {
 
     public @Override BlobStore blobStore() {
         return transactionBlobStore;
-    }
-
-    public @Override ConfigDatabase configDatabase() {
-        return context.configDatabase();
-    }
-
-    public @Override GraphDatabase graphDatabase() {
-        return context.graphDatabase();
-    }
-
-    public @Override Repository repository() {
-        return context.repository();
     }
 
     public List<ChangedRef> changedRefs() {

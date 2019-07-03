@@ -121,7 +121,8 @@ public class MergeOpTest extends RepositoryTestCase {
         MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .setMessage("My merge message.").call();
 
-        RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
+        RevTree mergedTree = repo.context().objectDatabase()
+                .getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
@@ -431,7 +432,8 @@ public class MergeOpTest extends RepositoryTestCase {
         final MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .addCommit(branch2.getObjectId()).setMessage("My merge message.").call();
 
-        RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
+        RevTree mergedTree = repo.context().objectDatabase()
+                .getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
@@ -530,7 +532,8 @@ public class MergeOpTest extends RepositoryTestCase {
         final MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .call();
 
-        RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
+        RevTree mergedTree = repo.context().objectDatabase()
+                .getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points2.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
@@ -651,7 +654,8 @@ public class MergeOpTest extends RepositoryTestCase {
         final MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .call();
 
-        RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
+        RevTree mergedTree = repo.context().objectDatabase()
+                .getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()
@@ -707,7 +711,8 @@ public class MergeOpTest extends RepositoryTestCase {
         final MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
                 .call();
 
-        RevTree mergedTree = repo.getTree(mergeReport.getMergeCommit().getTreeId());
+        RevTree mergedTree = repo.context().objectDatabase()
+                .getTree(mergeReport.getMergeCommit().getTreeId());
 
         String path = appendChild(pointsName, points1.getId());
         assertTrue(repo.command(FindTreeChild.class).setParent(mergedTree).setChildPath(path).call()

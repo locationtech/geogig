@@ -23,7 +23,7 @@ import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.RebaseOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
 import org.slf4j.Logger;

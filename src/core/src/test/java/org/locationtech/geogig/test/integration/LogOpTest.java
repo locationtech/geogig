@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -403,7 +404,7 @@ public class LogOpTest extends RepositoryTestCase {
             logOp.setSince(null).setUntil(oid2_2).call();
             fail("Expected ISE as until is not a commit");
         } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains("until"));
+            assertThat(e.getMessage(), StringContains.containsString("until"));
         }
 
         List<RevCommit> logs;

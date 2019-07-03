@@ -17,7 +17,7 @@ import java.util.Optional;
 import org.geotools.data.DataStore;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 /**

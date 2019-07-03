@@ -168,6 +168,14 @@ public class GeogigCLI {
         return geogig;
     }
 
+    public @NonNull Repository repository() {
+        return getGeogig().getRepository();
+    }
+
+    public @NonNull org.locationtech.geogig.dsl.Geogig geogig() {
+        return org.locationtech.geogig.dsl.Geogig.of(repository().context());
+    }
+
     @VisibleForTesting
     public synchronized GeoGIG getGeogig(Hints hints) {
         close();

@@ -226,8 +226,8 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         assertSummary(summary, remote.getPushURL(), oldRef, newRef);
 
         for (RevCommit commit : commitsToPush) {
-            assertTrue(remoteRepo.objectDatabase().exists(commit.getId()));
-            assertTrue(remoteRepo.objectDatabase().exists(commit.getTreeId()));
+            assertTrue(remoteRepo.context().objectDatabase().exists(commit.getId()));
+            assertTrue(remoteRepo.context().objectDatabase().exists(commit.getTreeId()));
         }
 
         // Make sure the local repository got all of the commits

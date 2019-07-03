@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rest;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 
 /**

@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import org.locationtech.geogig.hooks.Hookable;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.GeogigTransaction;
 
 import com.google.common.base.Preconditions;

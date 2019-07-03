@@ -45,9 +45,9 @@ public class ListIndexes extends AbstractCommand implements CLICommand {
 
         List<IndexInfo> indexInfos;
         if (treeName != null) {
-            indexInfos = repo.indexDatabase().getIndexInfos(treeName);
+            indexInfos = repo.context().indexDatabase().getIndexInfos(treeName);
         } else {
-            indexInfos = repo.indexDatabase().getIndexInfos();
+            indexInfos = repo.context().indexDatabase().getIndexInfos();
         }
 
         Function<IndexInfo, CharSequence> printFunctor = new Function<IndexInfo, CharSequence>() {

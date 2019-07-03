@@ -73,7 +73,7 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
                         Optional<ObjectId> treeId = repository.command(ResolveTreeish.class)
                                 .setTreeish(mappedCommit).call();
                         if (treeId.isPresent()) {
-                            rootTree = repository.getTree(treeId.get());
+                            rootTree = repository.context().objectDatabase().getTree(treeId.get());
                         }
                     }
 
@@ -88,7 +88,7 @@ public class LegacyApplyChangesService extends AbstractRepositoryService {
                     builder.treeId(newTreeId);
 
                     RevCommit mapped = builder.build();
-                    repository.objectDatabase().put(mapped);
+                    repository.context().objectDatabase().put(mapped);
                     return mapped;
                 }
 

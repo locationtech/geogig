@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Retrieves GeoGig version information.
@@ -27,7 +27,7 @@ public class VersionOp extends AbstractGeoGigOp<VersionInfo> {
      * Executes the Version operation.
      * 
      * @return the version info of the current build
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected VersionInfo _call() {
         return get();

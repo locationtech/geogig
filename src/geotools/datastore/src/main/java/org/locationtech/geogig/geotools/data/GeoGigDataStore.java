@@ -486,7 +486,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         }
         // we have work to do
         // see if an index is already present for the specified layer name and attribute(s)
-        final IndexDatabase indexDatabase = repository.indexDatabase();
+        final IndexDatabase indexDatabase = repository.context().indexDatabase();
         final List<IndexInfo> indexInfos = indexDatabase.getIndexInfos(featureTreePath);
 
         Context context = repository.context();

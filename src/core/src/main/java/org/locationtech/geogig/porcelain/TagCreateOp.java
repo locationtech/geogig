@@ -21,8 +21,8 @@ import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 

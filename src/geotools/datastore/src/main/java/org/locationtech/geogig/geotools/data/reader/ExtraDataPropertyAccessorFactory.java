@@ -52,6 +52,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
             return object instanceof Bounded;
         }
 
+        @SuppressWarnings("unchecked")
         public @Override <T> T get(Object object, String xpath, @Nullable Class<T> target)
                 throws IllegalArgumentException {
 
@@ -80,7 +81,7 @@ public class ExtraDataPropertyAccessorFactory implements PropertyAccessorFactory
                     value = Converters.convert(value, target);
                 }
             }
-            return target.cast(value);
+            return (T) value;
         }
 
         public @Override <T> void set(Object object, String xpath, T value, Class<T> target)

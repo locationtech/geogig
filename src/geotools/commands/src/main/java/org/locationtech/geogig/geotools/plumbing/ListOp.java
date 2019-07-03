@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException.StatusCode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Internal operation for listing tables from a GeoTools {@link DataStore}.

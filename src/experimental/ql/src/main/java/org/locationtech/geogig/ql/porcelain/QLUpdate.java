@@ -23,8 +23,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Supplier;

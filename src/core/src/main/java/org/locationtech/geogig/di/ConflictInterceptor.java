@@ -11,7 +11,8 @@ package org.locationtech.geogig.di;
 
 import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import lombok.NonNull;
 
@@ -23,7 +24,7 @@ import lombok.NonNull;
 class ConflictInterceptor implements Decorator {
 
     public @Override boolean canDecorate(Object subject) {
-        if (!(subject instanceof AbstractGeoGigOp)) {
+        if (!(subject instanceof Command)) {
             return false;
         }
         // TODO: this is not a very clean way of doing this...
@@ -33,7 +34,7 @@ class ConflictInterceptor implements Decorator {
     }
 
     @SuppressWarnings("unchecked")
-    public @Override AbstractGeoGigOp<?> decorate(@NonNull Object subject) {
+    public @Override Command<?> decorate(@NonNull Object subject) {
         AbstractGeoGigOp<?> operation = (AbstractGeoGigOp<?>) subject;
 
         Boolean conflicts = operation.command(ConflictsCheckOp.class).call();
@@ -41,7 +42,7 @@ class ConflictInterceptor implements Decorator {
             throw new ConflictsException(
                     "Cannot run operation while merge or rebase conflicts exist.");
         }
-        return (AbstractGeoGigOp<?>) subject;
+        return (Command<?>) subject;
     }
 
 }

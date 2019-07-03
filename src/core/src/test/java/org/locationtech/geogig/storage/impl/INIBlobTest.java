@@ -33,7 +33,7 @@ public class INIBlobTest extends RepositoryTestCase {
 
         final String filterFile = filterFileBuilder.toString();
 
-        repo.blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY, filterFile.getBytes());
+        repo.context().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY, filterFile.getBytes());
 
         INIBlob test = new INIBlob() {
 

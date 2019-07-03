@@ -193,7 +193,7 @@ class GeogigFeatureVisitorHandler {
             diff.call(consumer);
         } else {
             final int attributeIndex = findAttributeIndex(propertyName, nativeType);
-            ObjectStore store = source.getRepository().objectDatabase();
+            ObjectStore store = source.getRepository().context().objectDatabase();
             try (AutoCloseableIterator<NodeRef> refs = FeatureReaderBuilder
                     .toFeatureRefs(diff.call(), ChangeType.ADDED)) {
                 try (AutoCloseableIterator<ObjectInfo<RevFeature>> features = new BulkFeatureRetriever(

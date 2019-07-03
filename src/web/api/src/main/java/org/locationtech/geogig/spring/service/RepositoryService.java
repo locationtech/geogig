@@ -92,7 +92,7 @@ public class RepositoryService extends AbstractRepositoryService {
     public RevObject getRevObject(RepositoryProvider provider, String repoName, ObjectId oid) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
-            return repository.objectDatabase().get(oid);
+            return repository.context().objectDatabase().get(oid);
         }
         return null;
     }
@@ -102,7 +102,7 @@ public class RepositoryService extends AbstractRepositoryService {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
             if (commitId != null) {
-                depth = Optional.of(repository.graphDatabase().getDepth(commitId));
+                depth = Optional.of(repository.context().graphDatabase().getDepth(commitId));
             } else {
                 depth = repository.getDepth();
             }
@@ -114,7 +114,7 @@ public class RepositoryService extends AbstractRepositoryService {
             String repoName, ObjectId commitId) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
-            final RevCommit revCommit = repository.getCommit(commitId);
+            final RevCommit revCommit = repository.context().objectDatabase().getCommit(commitId);
             if (revCommit.getParentIds() != null && revCommit.getParentIds().size() > 0) {
                 ObjectId parentId = revCommit.getParentIds().get(0);
                 return repository.command(DiffOp.class).setOldVersion(parentId)
@@ -239,7 +239,7 @@ public class RepositoryService extends AbstractRepositoryService {
             SimpleFeature feature = featureBuilder
                     .buildFeature(NodeRef.nodeFromPath(request.getPath()));
             RevFeature revFeature = RevFeature.builder().build(GT.adapt(feature));
-            repository.objectDatabase().put(revFeature);
+            repository.context().objectDatabase().put(revFeature);
             return revFeature;
         }
         return null;
@@ -248,7 +248,7 @@ public class RepositoryService extends AbstractRepositoryService {
     public Exists blobExists(RepositoryProvider provider, String repoName, ObjectId oid) {
         Repository repository = getRepository(provider, repoName);
         if (repository != null) {
-            return new Exists().setExists(repository.blobExists(oid));
+            return new Exists().setExists(repository.context().objectDatabase().exists(oid));
         }
         return new Exists().setExists(false);
     }
@@ -257,7 +257,7 @@ public class RepositoryService extends AbstractRepositoryService {
         Repository repository = getRepository(provider, repoName);
         Parents parents = new Parents();
         if (repository != null && oid != null) {
-            parents.setParents(repository.graphDatabase().getParents(oid));
+            parents.setParents(repository.context().graphDatabase().getParents(oid));
         }
         return parents;
     }

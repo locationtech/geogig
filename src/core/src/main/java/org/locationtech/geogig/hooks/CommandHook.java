@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import lombok.NonNull;
 
@@ -42,7 +43,7 @@ public interface CommandHook extends Comparable<CommandHook> {
         return 0;
     }
 
-    public default @NonNull List<CommandHook> unwrap(@NonNull AbstractGeoGigOp<?> command) {
+    public default @NonNull List<CommandHook> unwrap(@NonNull Command<?> command) {
         return Collections.singletonList(this);
     }
 
@@ -54,9 +55,9 @@ public interface CommandHook extends Comparable<CommandHook> {
     /**
      * @throws CannotRunGeogigOperationException
      */
-    public <C extends AbstractGeoGigOp<?>> C pre(C command);
+    public <C extends Command<?>> C pre(C command);
 
-    public <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+    public <T> T post(Command<T> command, @Nullable Object retVal,
             @Nullable RuntimeException exception) throws Exception;
 
     public boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz);

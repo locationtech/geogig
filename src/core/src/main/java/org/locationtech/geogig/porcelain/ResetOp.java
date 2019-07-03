@@ -24,8 +24,8 @@ import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
@@ -128,12 +128,12 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
         Preconditions.checkArgument(!ObjectId.NULL.equals(commit), "Commit could not be resolved.");
 
         Repository repository = repository();
-        RevCommit oldCommit = repository.getCommit(commit);
+        RevCommit oldCommit = repository.context().objectDatabase().getCommit(commit);
 
         if (patterns.size() > 0) {
             for (String pattern : patterns) {
                 DiffTree diffOp = command(DiffTree.class)
-                        .setOldTree(repository.index().getTree().getId())
+                        .setOldTree(repository.context().stagingArea().getTree().getId())
                         .setNewTree(oldCommit.getTreeId()).setPathFilter(pattern);
 
                 try (AutoCloseableIterator<DiffEntry> diff = diffOp.call()) {
@@ -144,8 +144,8 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
                         // and calling stage() will not do it, so we do it here
                         conflictsDatabase().removeConflict(null, pattern);
                     } else {
-                        repository.index().stage(subProgress((1.f / patterns.size()) * 100.f), diff,
-                                numChanges);
+                        repository.context().stagingArea().stage(
+                                subProgress((1.f / patterns.size()) * 100.f), diff, numChanges);
                     }
                 }
             }

@@ -113,7 +113,7 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
                     .setLeftId(targetBranch.getObjectId())//
                     .setLeftSource(graphDatabase())//
                     .setRightId(issuerBranch.getObjectId())//
-                    .setRightSource(issuerRepo.graphDatabase())//
+                    .setRightSource(issuerRepo.context().graphDatabase())//
                     .call().orElse(null);
         } finally {
             issuerRepo.close();

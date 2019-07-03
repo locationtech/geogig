@@ -65,7 +65,7 @@ public class InitOpTest {
 
     private Platform platform;
 
-    private Context injector;
+    private Context context;
 
     private InitOp init;
 
@@ -91,7 +91,7 @@ public class InitOpTest {
 
     @Before
     public void setUp() throws IOException, RepositoryConnectionException {
-        injector = mock(Context.class);
+        context = mock(Context.class);
 
         mockRefParse = mock(RefParse.class);
         when(mockRefParse.setName(anyString())).thenReturn(mockRefParse);
@@ -110,18 +110,19 @@ public class InitOpTest {
         when(mockUpdateSymRef.setOldValue(anyString())).thenReturn(mockUpdateSymRef);
         when(mockUpdateSymRef.setReason(anyString())).thenReturn(mockUpdateSymRef);
 
-        when(injector.command(eq(RefParse.class))).thenReturn(mockRefParse);
-        when(injector.command(eq(UpdateRef.class))).thenReturn(mockUpdateRef);
-        when(injector.command(eq(UpdateSymRef.class))).thenReturn(mockUpdateSymRef);
+        when(context.command(eq(RefParse.class))).thenReturn(mockRefParse);
+        when(context.command(eq(UpdateRef.class))).thenReturn(mockUpdateRef);
+        when(context.command(eq(UpdateSymRef.class))).thenReturn(mockUpdateSymRef);
 
         platform = mock(Platform.class);
-        when(injector.platform()).thenReturn(platform);
+        when(context.platform()).thenReturn(platform);
 
         workingDir = tempFolder.getRoot();
         Hints hints = new Hints();
         hints.set(Hints.REPOSITORY_URL, workingDir.getAbsoluteFile().toURI());
-        init = new InitOp(hints);
-        init.setContext(injector);
+        when(context.hints()).thenReturn(hints);
+        init = new InitOp();
+        init.setContext(context);
         mockResolver = mock(RepositoryResolver.class);
         RepositoryFinder mockFinder = spy(new RepositoryFinder());
         init.setRepositoryFinder(mockFinder);
@@ -129,7 +130,8 @@ public class InitOpTest {
 
         mockRepo = mock(Repository.class);
         objectDatabase = new HeapObjectDatabase();
-        when(mockRepo.objectDatabase()).thenReturn(objectDatabase);
+        when(mockRepo.context()).thenReturn(context);
+        when(context.objectDatabase()).thenReturn(objectDatabase);
 
         Mockito.doAnswer(new Answer<Void>() {
             public @Override Void answer(InvocationOnMock invocation) throws Throwable {
@@ -152,7 +154,7 @@ public class InitOpTest {
 
     @Test
     public void testCreateNewRepo() throws Exception {
-        when(injector.repository()).thenReturn(mockRepo);
+        when(context.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
         when(mockResolver.repoExists(any())).thenReturn(false);
@@ -162,7 +164,7 @@ public class InitOpTest {
 
         assertSame(mockRepo, created);
         verify(mockResolver, times(1)).initialize(eq(expectedURI), any());
-        verify(injector, times(1)).repository();
+        verify(context, times(1)).repository();
 
         verify(mockUpdateRef, times(1)).setName(eq(Ref.MASTER));
         verify(mockUpdateRef, times(1)).setName(eq(Ref.WORK_HEAD));
@@ -182,7 +184,7 @@ public class InitOpTest {
     @Test
     @Ignore
     public void testReinitializeExistingRepo() throws Exception {
-        when(injector.repository()).thenReturn(mockRepo);
+        when(context.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();
         when(mockRefParse.call()).thenReturn(absent);
         when(mockResolver.repoExists(any())).thenReturn(true);

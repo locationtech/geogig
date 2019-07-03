@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -22,7 +23,7 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
  */
 class LocalFilteredDiffIterator extends FilteredDiffIterator {
 
-    private Repository destinationRepo;
+    private Geogig destinationRepo;
 
     /**
      * Constructs a new {@code LocalFilteredDiffIterator}.
@@ -35,7 +36,7 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
     public LocalFilteredDiffIterator(AutoCloseableIterator<DiffEntry> source, Repository sourceRepo,
             Repository destinationRepo, RepositoryFilter repoFilter) {
         super(source, sourceRepo, repoFilter);
-        this.destinationRepo = destinationRepo;
+        this.destinationRepo = Geogig.of(destinationRepo.context());
     }
 
     /**
@@ -46,7 +47,7 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
      *         matches the filter
      */
     protected @Override boolean trackingObject(ObjectId objectId) {
-        return destinationRepo.blobExists(objectId);
+        return destinationRepo.objects().exists(objectId);
     }
 
     /**
@@ -55,8 +56,8 @@ class LocalFilteredDiffIterator extends FilteredDiffIterator {
      * @param object the object to process
      */
     protected @Override void processObject(RevObject object) {
-        if (object != null && !destinationRepo.blobExists(object.getId())) {
-            destinationRepo.objectDatabase().put(object);
+        if (object != null && !destinationRepo.objects().exists(object.getId())) {
+            destinationRepo.objects().put(object);
         }
     }
 

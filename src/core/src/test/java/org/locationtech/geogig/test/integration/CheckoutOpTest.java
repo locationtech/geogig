@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.locationtech.geogig.model.NodeRef.appendChild;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -17,6 +19,8 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.dsl.Geogig;
+import org.locationtech.geogig.dsl.TreeWorker;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -78,39 +82,37 @@ public class CheckoutOpTest extends RepositoryTestCase {
         ObjectId oID4 = insertAndAdd(lines3);
         repo.command(CommitOp.class).setMessage("commit for modified points1").call();
 
-        List<String> paths = Arrays.asList(NodeRef.appendChild(pointsName, points1.getId()),
-                NodeRef.appendChild(linesName, lines1.getId()));
+        List<String> paths = Arrays.asList(appendChild(pointsName, points1.getId()),
+                appendChild(linesName, lines1.getId()));
 
-        RevTree root = repo.workingTree().getTree();
-
-        Optional<Node> featureBlob1 = repo.getTreeChild(root, paths.get(0));
+        Geogig gig = Geogig.of(repo.context());
+        TreeWorker workHead = gig.workHead();
+        Optional<Node> featureBlob1 = workHead.child(paths.get(0));
         assertEquals(oID1Modified, featureBlob1.get().getObjectId());
 
-        Optional<Node> featureBlob2 = repo.getTreeChild(root, paths.get(1));
+        Optional<Node> featureBlob2 = workHead.child(paths.get(1));
         assertEquals(oID2, featureBlob2.get().getObjectId());
 
-        Optional<Node> featureBlob3 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines2.getId()));
+        Optional<Node> featureBlob3 = workHead.child(appendChild(linesName, lines2.getId()));
         assertEquals(oID3, featureBlob3.get().getObjectId());
 
-        Optional<Node> featureBlob4 = repo.getTreeChild(root,
-                NodeRef.appendChild(linesName, lines3.getId()));
+        Optional<Node> featureBlob4 = workHead.child(appendChild(linesName, lines3.getId()));
         assertEquals(oID4, featureBlob4.get().getObjectId());
 
         repo.command(CheckoutOp.class).setSource("master").addPaths(paths).call();
 
-        root = repo.workingTree().getTree();
+        workHead = gig.workHead();
 
-        featureBlob1 = repo.getTreeChild(root, paths.get(0));
+        featureBlob1 = workHead.child(paths.get(0));
         assertEquals(oID1, featureBlob1.get().getObjectId());
 
-        featureBlob2 = repo.getTreeChild(root, paths.get(1));
+        featureBlob2 = workHead.child(paths.get(1));
         assertEquals(oID2, featureBlob2.get().getObjectId());
 
-        featureBlob3 = repo.getTreeChild(root, NodeRef.appendChild(linesName, lines2.getId()));
+        featureBlob3 = workHead.child(appendChild(linesName, lines2.getId()));
         assertEquals(oID3, featureBlob3.get().getObjectId());
 
-        featureBlob4 = repo.getTreeChild(root, NodeRef.appendChild(linesName, lines3.getId()));
+        featureBlob4 = workHead.child(appendChild(linesName, lines3.getId()));
         assertEquals(oID4, featureBlob4.get().getObjectId());
 
     }
@@ -356,7 +358,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutPathDuringConflict() throws Exception {
         createConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
         try {
             repo.command(CheckoutOp.class).addPath(path).call();
         } catch (CheckoutException e) {
@@ -387,8 +389,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutForceDuringConflict() throws Exception {
         createConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
-        String path2 = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
+        String path2 = appendChild(pointsName, idP1);
         repo.command(CheckoutOp.class).addPath(path).addPath(path2).setForce(true).call();
     }
 
@@ -406,9 +408,9 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutOurs() throws Exception {
         createConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
         repo.command(CheckoutOp.class).addPath(path).setOurs(true).call();
-        Optional<Node> node = repo.workingTree().findUnstaged(path);
+        Optional<Node> node = repo.context().workingTree().findUnstaged(path);
         String headPath = Ref.HEAD + ":" + path;
         Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(headPath).call();
         assertEquals(id.get(), node.get().getObjectId());
@@ -417,9 +419,9 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutOursDeleted() throws Exception {
         createDeleteOursConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
         repo.command(CheckoutOp.class).addPath(path).setOurs(true).call();
-        Optional<Node> node = repo.index().findStaged(path);
+        Optional<Node> node = repo.context().stagingArea().findStaged(path);
         assertFalse(node.isPresent());
         String headPath = Ref.HEAD + ":" + path;
         Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(headPath).call();
@@ -429,9 +431,9 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutTheirs() throws Exception {
         createConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
         repo.command(CheckoutOp.class).addPath(path).setTheirs(true).call();
-        Optional<Node> node = repo.workingTree().findUnstaged(path);
+        Optional<Node> node = repo.context().workingTree().findUnstaged(path);
         String headPath = Ref.MERGE_HEAD + ":" + path;
         Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(headPath).call();
         assertEquals(id.get(), node.get().getObjectId());
@@ -440,9 +442,9 @@ public class CheckoutOpTest extends RepositoryTestCase {
     @Test
     public void testCheckoutTheirsDeleted() throws Exception {
         createDeleteTheirsConflictedState();
-        String path = NodeRef.appendChild(pointsName, idP1);
+        String path = appendChild(pointsName, idP1);
         repo.command(CheckoutOp.class).addPath(path).setTheirs(true).call();
-        Optional<Node> node = repo.index().findStaged(path);
+        Optional<Node> node = repo.context().stagingArea().findStaged(path);
         assertFalse(node.isPresent());
         String headPath = Ref.MERGE_HEAD + ":" + path;
         Optional<ObjectId> id = repo.command(RevParse.class).setRefSpec(headPath).call();
@@ -493,7 +495,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        repo.command(RemoveOp.class).addPathToRemove(NodeRef.appendChild(pointsName, idP1)).call();
+        repo.command(RemoveOp.class).addPathToRemove(appendChild(pointsName, idP1)).call();
         insertAndAdd(points2);
         repo.command(CommitOp.class).call();
 
@@ -519,7 +521,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        repo.command(RemoveOp.class).addPathToRemove(NodeRef.appendChild(pointsName, idP1)).call();
+        repo.command(RemoveOp.class).addPathToRemove(appendChild(pointsName, idP1)).call();
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
         insertAndAdd(points1ModifiedB);

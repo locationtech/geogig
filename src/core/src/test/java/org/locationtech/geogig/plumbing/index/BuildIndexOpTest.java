@@ -49,11 +49,12 @@ public class BuildIndexOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
-        indexdb = repository.indexDatabase();
+        indexdb = repository.context().indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");
-        this.worldPointsTree = repository.getTree(worldPointsLayer.getObjectId());
+        this.worldPointsTree = repository.context().objectDatabase()
+                .getTree(worldPointsLayer.getObjectId());
         assertNotEquals(RevTree.EMPTY_TREE_ID, worldPointsLayer.getObjectId());
     }
 
@@ -159,7 +160,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
                 RevFeature.builder().build(duplicateFeature));
         commit("points, two features pointing to the same RevFeature");
 
-        List<NodeRef> featureTypeTrees = repo.workingTree().getFeatureTypeTrees();
+        List<NodeRef> featureTypeTrees = repo.context().workingTree().getFeatureTypeTrees();
         NodeRef typeTree = null;
         for (NodeRef nr : featureTypeTrees) {
             if (pointsName.equals(nr.path())) {
@@ -172,7 +173,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         ObjectId featureTypeId = typeTree.getMetadataId();
         ObjectId treeId = typeTree.getObjectId();
 
-        RevTree canonicalTree = repo.getTree(treeId);
+        RevTree canonicalTree = repo.context().objectDatabase().getTree(treeId);
         assertEquals(4, canonicalTree.size());
 
         IndexInfo indexInfo = createIndexForLayer(pointsName, extraAttributes);
@@ -228,7 +229,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         super.commit("deleted 0, 0");
         NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch1:" + worldPointsLayer.getName());
-        branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
+        branchTrees.add(repository.context().objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch2").call();
         String fid2 = IndexTestSupport.getPointFid(0, 5);
         repository.command(RemoveOp.class)
@@ -237,7 +238,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         super.commit("deleted 0, 5");
         featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch2:" + worldPointsLayer.getName());
-        branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
+        branchTrees.add(repository.context().objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch3").call();
         String fid3 = IndexTestSupport.getPointFid(0, 10);
         repository.command(RemoveOp.class)
@@ -246,7 +247,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         super.commit("deleted 0, 10");
         featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch3:" + worldPointsLayer.getName());
-        branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
+        branchTrees.add(repository.context().objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("branch4").call();
         String fid4 = IndexTestSupport.getPointFid(0, 15);
         repository.command(RemoveOp.class)
@@ -255,7 +256,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         super.commit("deleted 0, 15");
         featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 "branch4:" + worldPointsLayer.getName());
-        branchTrees.add(repository.objectDatabase().getTree(featureTree.getObjectId()));
+        branchTrees.add(repository.context().objectDatabase().getTree(featureTree.getObjectId()));
         repository.command(CheckoutOp.class).setSource("master").call();
 
         indexInfo = createIndex();
@@ -300,7 +301,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         // old nodes with x < 0 are moved to -x, y
         final Set<Node> changedNodes = new HashSet<>();
         {
-            ObjectStore objectStore = getRepository().objectDatabase();
+            ObjectStore objectStore = getRepository().context().objectDatabase();
             Set<Node> oldNodes = getTreeNodes(oldCanonicalTree, objectStore);
             CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(objectStore,
                     oldCanonicalTree);

@@ -75,7 +75,7 @@ public class LegacyConsoleService extends AbstractRepositoryService {
         try {
             // pass it a BufferedOutputStream 'cause it doesn't buffer the internal FileOutputStream
             Console console = new Console(in, new BufferedOutputStream(out)).disableAnsi();
-            Platform platform = repo.platform();
+            Platform platform = repo.context().platform();
 
             GeoGIG geogig = new GeoGIG(repo);
             GeogigCLI geogigCLI = new GeogigCLI(geogig, console);

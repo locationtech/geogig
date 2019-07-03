@@ -9,8 +9,9 @@
  */
 package org.locationtech.geogig.di;
 
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.StagingArea;
@@ -33,7 +34,7 @@ public class DelegatingContext implements Context {
         this.context = context;
     }
 
-    public @Override <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public @Override <T extends Command<?>> T command(Class<T> commandClass) {
         T command = context.command(commandClass);
         command.setContext(this);
         return command;
@@ -57,6 +58,10 @@ public class DelegatingContext implements Context {
 
     public @Override Platform platform() {
         return context.platform();
+    }
+
+    public @Override Hints hints() {
+        return context.hints();
     }
 
     public @Override ObjectDatabase objectDatabase() {

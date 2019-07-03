@@ -67,7 +67,7 @@ public class RemotesIndexTestSupport {
             Map<String, IndexInfo> typeIndexes = getIndexes(repo, treeRef.path());
             if (typeIndexes.containsKey(treeRef.path())) {
                 IndexInfo indexInfo = typeIndexes.get(treeRef.path());
-                IndexDatabase indexdb = repo.indexDatabase();
+                IndexDatabase indexdb = repo.context().indexDatabase();
                 Optional<ObjectId> indexedTree = indexdb.resolveIndexedTree(indexInfo,
                         treeRef.getObjectId());
                 if (indexedTree.isPresent()) {
@@ -117,9 +117,9 @@ public class RemotesIndexTestSupport {
         assertEquals(remoteByCanonical, localByCanonical);
         localByCanonical.forEach((canonicalId, indexId) -> {
             Set<RevTree> allRemoteIndexContents = RevObjectTestSupport
-                    .getAllTrees(remote.indexDatabase(), indexId);
+                    .getAllTrees(remote.context().indexDatabase(), indexId);
             Set<RevTree> allLocalIndexContents = RevObjectTestSupport
-                    .getAllTrees(local.indexDatabase(), indexId);
+                    .getAllTrees(local.context().indexDatabase(), indexId);
 
             assertEquals(allRemoteIndexContents.size(), allLocalIndexContents.size());
             if (!allRemoteIndexContents.equals(allLocalIndexContents)) {
@@ -134,7 +134,7 @@ public class RemotesIndexTestSupport {
             Optional<String> ref) {
 
         if (!ref.isPresent()) {
-            return Sets.newHashSet(repo.indexDatabase().resolveIndexedTrees(indexInfo));
+            return Sets.newHashSet(repo.context().indexDatabase().resolveIndexedTrees(indexInfo));
         }
 
         Set<IndexTreeMapping> mappings = new HashSet<>();
@@ -146,8 +146,8 @@ public class RemotesIndexTestSupport {
                 String treeRef = String.format("%s:%s", c.getId(), indexInfo.getTreeName());
                 ObjectId canonicalTreeId = repo.command(RevParse.class).setRefSpec(treeRef).call()
                         .get();
-                Optional<ObjectId> indexedTree = repo.indexDatabase().resolveIndexedTree(indexInfo,
-                        canonicalTreeId);
+                Optional<ObjectId> indexedTree = repo.context().indexDatabase()
+                        .resolveIndexedTree(indexInfo, canonicalTreeId);
                 String msg = String.format("Expected index at %s:%s", branch.getName(),
                         indexInfo.getTreeName());
                 assertTrue(msg, indexedTree.isPresent());
@@ -202,7 +202,7 @@ public class RemotesIndexTestSupport {
 
     public static Map<String, IndexInfo> getIndexes(Repository repo, String featureTreePath) {
         List<IndexInfo> indexInfos;
-        indexInfos = repo.indexDatabase().getIndexInfos(featureTreePath);
+        indexInfos = repo.context().indexDatabase().getIndexInfos(featureTreePath);
 
         Map<String, IndexInfo> typeIndexes = indexInfos.stream()
                 .collect(Collectors.toMap(i -> i.getTreeName(), i -> i));

@@ -113,7 +113,7 @@ public class IndexTestSupport {
 
     public static RevTree createWorldPointsTree(Repository repository) {
 
-        ObjectStore store = repository.objectDatabase();
+        ObjectStore store = repository.context().objectDatabase();
         CanonicalTreeBuilder builder = CanonicalTreeBuilder.create(store);
         for (int x = -180; x <= 180; x += 5) {
             for (int y = -90; y <= 90; y += 5) {
@@ -159,11 +159,11 @@ public class IndexTestSupport {
                     "y:Double", "xystr:String");
         }
         RevTree tree = createWorldPointsTree(repository);
-        WorkingTree workingTree = repository.workingTree();
+        WorkingTree workingTree = repository.context().workingTree();
         NodeRef typeTreeRef = workingTree.createTypeTree(featureType.getName().getLocalPart(),
                 featureType);
 
-        ObjectStore store = repository.objectDatabase();
+        ObjectStore store = repository.context().objectDatabase();
         CanonicalTreeBuilder newRootBuilder = CanonicalTreeBuilder.create(store,
                 workingTree.getTree());
 

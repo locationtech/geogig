@@ -34,9 +34,9 @@ import org.locationtech.geogig.plumbing.diff.FeatureTypeDiff;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
 

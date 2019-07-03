@@ -106,7 +106,7 @@ public class LegacyFilteredChangesService extends AbstractRepositoryService {
 
             final Repository repository = getRepository(provider, repoName);
 
-            RevCommit commit = repository.getCommit(commitId);
+            RevCommit commit = repository.context().objectDatabase().getCommit(commitId);
 
             ObjectId parent = ObjectId.NULL;
             if (commit.getParentIds().size() > 0) {

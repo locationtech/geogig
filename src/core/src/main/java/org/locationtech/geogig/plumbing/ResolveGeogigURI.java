@@ -16,12 +16,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import javax.inject.Inject;
-
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -46,7 +44,6 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
 
     }
 
-    @Inject
     public ResolveGeogigURI(@NonNull Platform platform, @Nullable Hints hints) {
         this.platform = platform;
         this.hints = hints;
@@ -67,9 +64,20 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
     /**
      * @return the location of the {@code .geogig} repository environment directory or {@code null}
      *         if not inside a working directory
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override Optional<URI> _call() {
+        Platform platform = this.platform;
+        Hints hints = this.hints;
+        if (null != context()) {
+            if (platform == null) {
+                platform = context().platform();
+            }
+            if (hints == null) {
+                hints = context().hints();
+            }
+        }
+
         final Optional<URI> repoLocation;
 
         Optional<Serializable> repoUrl = Optional.empty();

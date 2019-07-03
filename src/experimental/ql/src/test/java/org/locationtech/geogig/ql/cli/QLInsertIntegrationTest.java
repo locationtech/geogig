@@ -193,7 +193,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
     @Test
     public void insertSelectAllOntoEmptyTree() throws Exception {
         SimpleFeatureType newType = DataUtilities.createType("Points2", pointsTypeSpec);
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.createTypeTree("Points2", GT.adapt(newType));
 
         String sql = "insert into Points2 (ip, sp) select * from Points";

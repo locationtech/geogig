@@ -9,18 +9,11 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
-import org.locationtech.geogig.di.PluginsModule;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.util.Modules;
 
 /**
  * Repository {@link ContextBuilderImpl} used by functional tests to enforce the repository's
@@ -39,31 +32,8 @@ public class CLITestContextBuilder extends ContextBuilderImpl {
     }
 
     public @Override Context build(Hints hints) {
-        FunctionalTestModule functionalTestModule = new FunctionalTestModule(platform.clone());
-
-        Context context = Guice
-                .createInjector(Modules.override(new GeogigModule(), new HintsModule(hints))
-                        .with(new PluginsModule(), functionalTestModule))
-                .getInstance(Context.class);
-        return context;
-    }
-
-    private static class FunctionalTestModule extends AbstractModule {
-
-        private Platform testPlatform;
-
-        /**
-         * @param testPlatform
-         */
-        public FunctionalTestModule(Platform testPlatform) {
-            this.testPlatform = testPlatform;
-        }
-
-        protected @Override void configure() {
-            if (testPlatform != null) {
-                bind(Platform.class).toInstance(testPlatform);
-            }
-        }
-
+        TestPlatform contextPlatform = platform.clone();
+        Hints contextHints = new Hints(hints).platform(contextPlatform);
+        return super.build(contextHints);
     }
 }

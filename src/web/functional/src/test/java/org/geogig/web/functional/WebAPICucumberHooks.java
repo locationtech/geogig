@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonException;
@@ -64,7 +65,6 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.locationtech.geogig.cli.test.functional.FileRepoUriBuilder;
-import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.geopkg.GeopkgAuditExport;
@@ -114,7 +114,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
-import javax.inject.Inject;
 
 import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
@@ -359,15 +358,15 @@ public class WebAPICucumberHooks {
             return Optional.empty();
         }
         String treeName = typeTreeRef.path();
-        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
-                attributeName);
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.context().indexDatabase(),
+                treeName, attributeName);
         if (indexInfos.isEmpty()) {
             return Optional.empty();
         }
         Preconditions.checkState(indexInfos.size() == 1,
                 "Multiple indexes found for given tree ref.");
-        Optional<ObjectId> indexTreeId = repo.indexDatabase().resolveIndexedTree(indexInfos.get(0),
-                typeTreeRef.getObjectId());
+        Optional<ObjectId> indexTreeId = repo.context().indexDatabase()
+                .resolveIndexedTree(indexInfos.get(0), typeTreeRef.getObjectId());
         return indexTreeId;
     }
 
@@ -401,9 +400,9 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repositoryName);
         Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, null);
         assertTrue(indexTreeId.isPresent());
-        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        RevTree indexTree = repo.context().indexDatabase().getTree(indexTreeId.get());
         Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
-                repo.indexDatabase());
+                repo.context().indexDatabase());
         for (org.locationtech.geogig.model.Node n : nodes) {
             Map<String, Object> extraData = n.getExtraData();
             assertTrue(extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
@@ -422,9 +421,9 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repositoryName);
         Optional<ObjectId> indexTreeId = resolveIndexTreeId(repositoryName, headRef, null);
         assertTrue(indexTreeId.isPresent());
-        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        RevTree indexTree = repo.context().indexDatabase().getTree(indexTreeId.get());
         Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
-                repo.indexDatabase());
+                repo.context().indexDatabase());
         for (org.locationtech.geogig.model.Node n : nodes) {
             Map<String, Object> extraData = n.getExtraData();
             if (extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA)) {
@@ -443,8 +442,8 @@ public class WebAPICucumberHooks {
         Repository repo = context.getRepo(repositoryName);
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
         String treeName = typeTreeRef.path();
-        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
-                null);
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.context().indexDatabase(),
+                treeName, null);
         assertEquals(1, indexInfos.size());
         Map<String, Object> metadata = indexInfos.get(0).getMetadata();
         assertTrue(metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
@@ -632,7 +631,7 @@ public class WebAPICucumberHooks {
     @Given("^The graph database on the \"([^\"]*)\" repo has been truncated$")
     public void Truncate_graph_database(String repoName) throws Throwable {
         Repository repo = context.getRepo(repoName);
-        repo.graphDatabase().truncate();
+        repo.context().graphDatabase().truncate();
         // add the repo to the set so it can be closed
         openedRepos.add(repoName);
     }

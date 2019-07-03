@@ -27,8 +27,6 @@ import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.inject.Inject;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -69,7 +67,6 @@ public class StagingAreaImpl implements StagingArea {
 
     private Context context;
 
-    @Inject
     public StagingAreaImpl(final @NonNull Context context) {
         this.context = context;
     }

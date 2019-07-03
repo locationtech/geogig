@@ -185,7 +185,7 @@ public class DefaultStepDefinitions {
     @Given("^the repository has a truncated graph database$")
     public void the_repository_has_a_truncated_graph_database() throws Throwable {
         Repository repository = localRepo.geogigCLI.getGeogig().getRepository();
-        repository.graphDatabase().truncate();
+        repository.context().graphDatabase().truncate();
     }
 
     @Given("^I am in an empty directory$")
@@ -561,7 +561,7 @@ public class DefaultStepDefinitions {
     public void I_have_unstaged_an_empty_feature_type() throws Throwable {
         localRepo.insert(points1);
         GeoGIG geogig = localRepo.geogigCLI.newGeoGIG();
-        final WorkingTree workTree = geogig.getRepository().workingTree();
+        final WorkingTree workTree = geogig.getRepository().context().workingTree();
         workTree.delete(pointsName, idP1);
         geogig.close();
     }
@@ -705,10 +705,10 @@ public class DefaultStepDefinitions {
 
         ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree)
                 .call().get();
-        Optional<IndexInfo> indexInfo = gig.getRepository().indexDatabase().getIndexInfo(tree,
-                "pp");
+        Optional<IndexInfo> indexInfo = gig.getRepository().context().indexDatabase()
+                .getIndexInfo(tree, "pp");
 
-        Optional<ObjectId> indexedTree = gig.getRepository().indexDatabase()
+        Optional<ObjectId> indexedTree = gig.getRepository().context().indexDatabase()
                 .resolveIndexedTree(indexInfo.get(), canonicalTreeId);
 
         if (!indexedTree.isPresent()) {
@@ -724,7 +724,7 @@ public class DefaultStepDefinitions {
     public void the_response_contains_indexInfoID(String tree) throws Throwable {
         Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
 
-        Optional<IndexInfo> indexInfo = repo.indexDatabase().getIndexInfo(tree, "pp");
+        Optional<IndexInfo> indexInfo = repo.context().indexDatabase().getIndexInfo(tree, "pp");
         ObjectId oid = null;
         if (indexInfo.isPresent()) {
             oid = indexInfo.get().getId();
@@ -809,15 +809,15 @@ public class DefaultStepDefinitions {
             return Optional.empty();
         }
         String treeName = typeTreeRef.path();
-        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
-                attributeName);
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.context().indexDatabase(),
+                treeName, attributeName);
         if (indexInfos.isEmpty()) {
             return Optional.empty();
         }
         Preconditions.checkState(indexInfos.size() == 1,
                 "Multiple indexes found for given tree ref.");
-        Optional<ObjectId> indexTreeId = repo.indexDatabase().resolveIndexedTree(indexInfos.get(0),
-                typeTreeRef.getObjectId());
+        Optional<ObjectId> indexTreeId = repo.context().indexDatabase()
+                .resolveIndexedTree(indexInfos.get(0), typeTreeRef.getObjectId());
         return indexTreeId;
     }
 
@@ -846,8 +846,8 @@ public class DefaultStepDefinitions {
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(repo.context(), headRef);
         assertNotNull(typeTreeRef);
         String treeName = typeTreeRef.path();
-        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.indexDatabase(), treeName,
-                null);
+        List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(repo.context().indexDatabase(),
+                treeName, null);
         assertEquals(1, indexInfos.size());
         Map<String, Object> metadata = indexInfos.get(0).getMetadata();
         assertTrue(metadata.containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
@@ -866,9 +866,9 @@ public class DefaultStepDefinitions {
         Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
         Optional<ObjectId> indexTreeId = resolveIndexTreeId(headRef, null);
         assertTrue(indexTreeId.isPresent());
-        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        RevTree indexTree = repo.context().indexDatabase().getTree(indexTreeId.get());
         Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
-                repo.indexDatabase());
+                repo.context().indexDatabase());
         for (org.locationtech.geogig.model.Node n : nodes) {
             Map<String, Object> extraData = n.getExtraData();
             assertTrue(extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
@@ -885,9 +885,9 @@ public class DefaultStepDefinitions {
         Repository repo = localRepo.geogigCLI.getGeogig().getRepository();
         Optional<ObjectId> indexTreeId = resolveIndexTreeId(headRef, null);
         assertTrue(indexTreeId.isPresent());
-        RevTree indexTree = repo.indexDatabase().getTree(indexTreeId.get());
+        RevTree indexTree = repo.context().indexDatabase().getTree(indexTreeId.get());
         Set<org.locationtech.geogig.model.Node> nodes = RevObjectTestSupport.getTreeNodes(indexTree,
-                repo.indexDatabase());
+                repo.context().indexDatabase());
         for (org.locationtech.geogig.model.Node n : nodes) {
             Map<String, Object> extraData = n.getExtraData();
             if (extraData.containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA)) {

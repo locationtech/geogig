@@ -253,7 +253,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 new Object[] { gf.createPoint(new Coordinate(0, 0)), "feature0" }, "feature");
 
         FeatureInfo fi = featureInfo("dest", GT.adapt(feature));
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.insert(fi);
         ImportOp importOp = repo.command(ImportOp.class);
         importOp.setDataStore(

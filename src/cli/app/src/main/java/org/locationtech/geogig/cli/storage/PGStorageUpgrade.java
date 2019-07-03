@@ -21,7 +21,7 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.storage.postgresql.commands.PGDatabaseUpgrade;
 
 import com.google.common.base.Stopwatch;
@@ -47,7 +47,6 @@ public class PGStorageUpgrade extends AbstractCommand implements CLICommand {
 
     public static void main(String... args) {
         Stopwatch sw = Stopwatch.createStarted();
-        GlobalContextBuilder.builder(new PluginsContextBuilder());
         URI base = URI.create("postgresql://localhost:5432/test?user=postgres&password=geo123");
         ProgressListener listener = new GeogigCLI(new Console()).getProgressListener();
         new PGDatabaseUpgrade().setBaseURI(base).setProgressListener(listener).call();

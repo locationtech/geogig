@@ -9,31 +9,30 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import org.locationtech.geogig.di.GeogigModule;
-import org.locationtech.geogig.di.HintsModule;
+import org.locationtech.geogig.di.ContextImpl;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ContextBuilder;
+import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.repository.Platform;
 
-import com.google.inject.Guice;
+import lombok.NonNull;
 
 public class ContextBuilderImpl implements ContextBuilder {
+
+    public @Override int getPriority() {
+        return 0;
+    }
 
     public @Override final Context build() {
         return build(new Hints());
     }
 
-    /**
-     * @param hints a set of hints to pass over to the injector to be injected into components that
-     *        can make use of it
-     */
-    public @Override Context build(Hints hints) {
-        return Guice.createInjector(new GeogigModule(), new HintsModule(hints))
-                .getInstance(org.locationtech.geogig.repository.Context.class);
-    }
+    public @Override Context build(@NonNull Hints hints) {
+        Platform platform = hints.get(Hints.PLATFORM).filter(Platform.class::isInstance)
+                .map(Platform.class::cast).orElseGet(() -> new DefaultPlatform());
 
-    public @Override int getPriority() {
-        return 0;
+        return new ContextImpl(platform, hints);
     }
 
 }

@@ -57,7 +57,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
-        indexdb = repository.indexDatabase();
+        indexdb = repository.context().indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");

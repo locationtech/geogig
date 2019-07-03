@@ -86,7 +86,7 @@ public class RebuildGraphTest extends AbstractWebOpTest {
                 .setMessage("merge branch branch2").addCommit(commit3.getId()).call();
         RevCommit commit5 = report.getMergeCommit();
 
-        geogig.graphDatabase().truncate();
+        geogig.context().graphDatabase().truncate();
 
         ParameterSet options = TestParams.of();
         buildCommand(options).run(testContext.get());
@@ -136,7 +136,7 @@ public class RebuildGraphTest extends AbstractWebOpTest {
         geogig.command(MergeOp.class).setNoFastForward(true).setMessage("merge branch branch2")
                 .addCommit(commit3.getId()).call();
 
-        geogig.graphDatabase().truncate();
+        geogig.context().graphDatabase().truncate();
 
         ParameterSet options = TestParams.of("quiet", "true");
         buildCommand(options).run(testContext.get());

@@ -65,9 +65,9 @@ public class DepthSearchTest {
         URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
                 testName.getMethodName()));
         Hints hints = Hints.repository(uri);
-        Context context = new PluginsContextBuilder().build(hints);
+        Context context = GlobalContextBuilder.builder().build(hints);
         repository = new GeoGIG(context).getOrCreateRepository();
-        odb = repository.objectDatabase();
+        odb = repository.context().objectDatabase();
         search = new DepthSearch(odb);
 
         RevTree root = RevTree.EMPTY;

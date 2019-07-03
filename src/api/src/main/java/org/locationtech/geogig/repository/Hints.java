@@ -15,8 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.common.collect.Maps;
-
 import lombok.NonNull;
 
 /**
@@ -56,7 +54,16 @@ public class Hints implements Serializable {
      */
     public static final String PLATFORM = "PLATFORM";
 
-    private Map<String, Serializable> hintsMap = Maps.newHashMap();
+    private Map<String, Serializable> hintsMap = new HashMap<>();
+
+    public Hints() {
+        // default constructor
+    }
+
+    // copy constructor
+    public Hints(@NonNull Hints orig) {
+        hintsMap.putAll(orig.hintsMap);
+    }
 
     /**
      * Sets a hint with the given key and value.

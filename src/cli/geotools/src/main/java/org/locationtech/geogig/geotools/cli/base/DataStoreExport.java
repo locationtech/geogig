@@ -222,7 +222,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
 
         }
 
-        final RevTree rootTree = repository.getTree(rootTreeId.get());
+        final RevTree rootTree = repository.context().objectDatabase().getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = repository.command(FindTreeChild.class)
                 .setChildPath(featureTreePath).setParent(rootTree).call();
 

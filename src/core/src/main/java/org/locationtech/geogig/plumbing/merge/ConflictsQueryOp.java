@@ -13,8 +13,8 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Supplier;
 

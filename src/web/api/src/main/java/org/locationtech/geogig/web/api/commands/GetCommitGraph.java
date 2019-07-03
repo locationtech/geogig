@@ -102,7 +102,7 @@ public class GetCommitGraph extends AbstractWebAPICommand {
             throw new CommandSpecException("Invalid commitId was given.");
         }
         final Repository geogig = context.getRepository();
-        RevCommit commit = geogig.getCommit(ObjectId.valueOf(commitId));
+        RevCommit commit = geogig.context().objectDatabase().getCommit(ObjectId.valueOf(commitId));
         final List<RevCommit> history = Lists.newLinkedList();
 
         List<CommitNode> nodes = Lists.newLinkedList();
@@ -116,7 +116,8 @@ public class GetCommitGraph extends AbstractWebAPICommand {
             }
             if (this.depth == 0 || node.depth < this.depth) {
                 for (ObjectId id : node.commit.getParentIds()) {
-                    nodes.add(new CommitNode(geogig.getCommit(id), node.depth + 1));
+                    nodes.add(
+                            new CommitNode(geogig.context().objectDatabase().getCommit(id), node.depth + 1));
                 }
             }
         }

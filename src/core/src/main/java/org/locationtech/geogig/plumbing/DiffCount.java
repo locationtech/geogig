@@ -20,8 +20,8 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.DiffCountConsumer;
 import org.locationtech.geogig.plumbing.diff.PathFilteringDiffConsumer;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.Lists;

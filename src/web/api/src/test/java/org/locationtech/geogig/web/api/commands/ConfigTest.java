@@ -61,7 +61,7 @@ public class ConfigTest extends AbstractWebOpTest {
     @Test
     public void testConfigList() throws Exception {
 
-        ConfigDatabase configDb = testContext.get().getRepository().configDatabase();
+        ConfigDatabase configDb = testContext.get().getRepository().context().configDatabase();
 
         configDb.put("config.key1", "value1");
         configDb.put("config.key2", "value2");
@@ -97,7 +97,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
     @Test
     public void testConfigGet() throws Exception {
-        ConfigDatabase configDb = testContext.get().getRepository().configDatabase();
+        ConfigDatabase configDb = testContext.get().getRepository().context().configDatabase();
 
         configDb.put("config.key1", "value1");
 
@@ -111,7 +111,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
     @Test
     public void testConfigGetNonexistent() throws Exception {
-        ConfigDatabase configDb = testContext.get().getRepository().configDatabase();
+        ConfigDatabase configDb = testContext.get().getRepository().context().configDatabase();
 
         configDb.put("config.key1", "value1");
 
@@ -125,7 +125,7 @@ public class ConfigTest extends AbstractWebOpTest {
 
     @Test
     public void testConfigSet() throws Exception {
-        ConfigDatabase configDb = testContext.get().getRepository().configDatabase();
+        ConfigDatabase configDb = testContext.get().getRepository().context().configDatabase();
 
         assertFalse(configDb.get("config.key1").isPresent());
 

@@ -53,7 +53,7 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
-        indexdb = repository.indexDatabase();
+        indexdb = repository.context().indexDatabase();
         worldPointsLayer = IndexTestSupport.createWorldPointsLayer(repository).getNode();
         super.add();
         super.commit("created world points layer");
@@ -76,7 +76,8 @@ public class CreateIndexOpTest extends RepositoryTestCase {
         super.commit("deleted -10, 65");
         repository.command(CheckoutOp.class).setSource("master").call();
 
-        this.worldPointsTree = repository.getTree(worldPointsLayer.getObjectId());
+        this.worldPointsTree = repository.context().objectDatabase()
+                .getTree(worldPointsLayer.getObjectId());
 
         assertNotEquals(RevTree.EMPTY_TREE_ID, worldPointsLayer.getObjectId());
     }

@@ -213,7 +213,7 @@ public class RevertFeature extends AbstractWebAPICommand {
 
         RevCommit mapped = builder.build();
         Repository repository = context.getRepository();
-        repository.objectDatabase().put(mapped);
+        repository.context().objectDatabase().put(mapped);
 
         // merge commit into current branch
         final Optional<Ref> currHead = geogig.command(RefParse.class).setName(Ref.HEAD).call();
@@ -241,8 +241,9 @@ public class RevertFeature extends AbstractWebAPICommand {
                 }
             });
         } catch (Exception e) {
-            final RevCommit ours = repository.getCommit(currHead.get().getObjectId());
-            final RevCommit theirs = repository.getCommit(mapped.getId());
+            final RevCommit ours = repository.context().objectDatabase()
+                    .getCommit(currHead.get().getObjectId());
+            final RevCommit theirs = repository.context().objectDatabase().getCommit(mapped.getId());
             final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

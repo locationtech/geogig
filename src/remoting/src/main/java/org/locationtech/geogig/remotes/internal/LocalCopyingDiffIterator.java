@@ -11,11 +11,11 @@ package org.locationtech.geogig.remotes.internal;
 
 import java.util.NoSuchElementException;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
@@ -26,9 +26,9 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
 
     private AutoCloseableIterator<DiffEntry> source;
 
-    private Repository sourceRepo;
+    private Geogig sourceRepo;
 
-    private Repository destinationRepo;
+    private Geogig destinationRepo;
 
     private DiffEntry next;
 
@@ -42,8 +42,8 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
     public LocalCopyingDiffIterator(AutoCloseableIterator<DiffEntry> source, Repository sourceRepo,
             Repository destinationRepo) {
         this.source = source;
-        this.sourceRepo = sourceRepo;
-        this.destinationRepo = destinationRepo;
+        this.sourceRepo = Geogig.of(sourceRepo.context());
+        this.destinationRepo = Geogig.of(destinationRepo.context());
     }
 
     public @Override boolean hasNext() {
@@ -74,20 +74,18 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
             DiffEntry next = source.next();
             if (next.getNewObject() != null) {
                 NodeRef newObject = next.getNewObject();
-                RevObject object = sourceRepo.command(RevObjectParse.class)
-                        .setObjectId(newObject.getNode().getObjectId()).call().get();
+                RevObject object = sourceRepo.objects().get(newObject.getNode().getObjectId());
 
                 RevObject metadata = null;
                 if (newObject.getMetadataId() != ObjectId.NULL) {
-                    metadata = sourceRepo.command(RevObjectParse.class)
-                            .setObjectId(newObject.getMetadataId()).call().get();
+                    metadata = sourceRepo.objects().get(newObject.getMetadataId());
                 }
 
-                if (!destinationRepo.blobExists(object.getId())) {
-                    destinationRepo.objectDatabase().put(object);
+                if (!destinationRepo.objects().exists(object.getId())) {
+                    destinationRepo.objects().put(object);
                 }
-                if (metadata != null && !destinationRepo.blobExists(metadata.getId())) {
-                    destinationRepo.objectDatabase().put(metadata);
+                if (metadata != null && !destinationRepo.objects().exists(metadata.getId())) {
+                    destinationRepo.objects().put(metadata);
                 }
             }
             return next;

@@ -38,7 +38,8 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
+import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
+import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -70,7 +71,7 @@ public class DiffTreeTest extends Assert {
         URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
                 testName.getMethodName()));
 
-        Context injector = new PluginsContextBuilder().build(Hints.repository(uri));
+        Context injector = GlobalContextBuilder.builder().build(Hints.repository(uri));
 
         repository = new GeoGIG(injector).getOrCreateRepository();
         assertNotNull(repository);
@@ -80,7 +81,7 @@ public class DiffTreeTest extends Assert {
                 "pp:Point:srid=3857");
         revtype = RevFeatureType.builder().type(ft).build();
         metadataId = revtype.getId();
-        repository.objectDatabase().put(revtype);
+        repository.context().objectDatabase().put(revtype);
     }
 
     public @After void after() {
@@ -128,7 +129,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testTreePathFiltering() {
-        ObjectDatabase db = repository.objectDatabase();
+        ObjectDatabase db = repository.context().objectDatabase();
         RevTree tree1 = tree(100, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -152,7 +153,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testBoundsFiltering() {
-        ObjectDatabase db = repository.objectDatabase();
+        ObjectDatabase db = repository.context().objectDatabase();
         RevTree tree1 = tree(1000, db);
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
@@ -167,7 +168,7 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testChangeTypeFilter() {
-        ObjectDatabase db = repository.objectDatabase();
+        ObjectDatabase db = repository.context().objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;
@@ -209,7 +210,7 @@ public class DiffTreeTest extends Assert {
      */
     @Test
     public void testMixedFilters() {
-        ObjectDatabase db = repository.objectDatabase();
+        ObjectDatabase db = repository.context().objectDatabase();
         final RevTree tree1 = tree(1000, db);
         final RevTree tree2 = tree(50, db);
         final RevTree tree2Changed;

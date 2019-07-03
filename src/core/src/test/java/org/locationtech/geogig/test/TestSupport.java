@@ -119,7 +119,7 @@ public class TestSupport {
         if (tip.isNull()) {
             return;
         }
-        ObjectDatabase store = repo.objectDatabase();
+        ObjectDatabase store = repo.context().objectDatabase();
         RevObject obj = store.getIfPresent(tip);
         pathToObject.push(tip.toString());
         if (obj == null) {
@@ -134,7 +134,7 @@ public class TestSupport {
             break;
         case COMMIT:
             assertTrue("no graph entry found for commit " + obj,
-                    repo.graphDatabase().exists(obj.getId()));
+                    repo.context().graphDatabase().exists(obj.getId()));
             verifyAllReachableContents(repo, ((RevCommit) obj).getTreeId(), pathToObject, allIds);
             break;
         case TREE:
@@ -153,7 +153,7 @@ public class TestSupport {
     public static void verifyAllReachableContents(Repository repo, RevTree tree,
             Stack<String> pathToObject, Set<ObjectId> allIds) {
 
-        ObjectStore store = repo.objectDatabase();
+        ObjectStore store = repo.context().objectDatabase();
         Set<Node> nodes = RevObjectTestSupport.getTreeNodes(tree, store);
         for (Node node : nodes) {
             pathToObject.push(node.getName());

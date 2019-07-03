@@ -188,7 +188,8 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
         checkParameter(rootTreeId.isPresent(),
                 "Couldn't resolve '" + ref + "' to a treeish object");
 
-        RevTree rootTree = geogig.getRepository().getTree(rootTreeId.get());
+        RevTree rootTree = geogig.getRepository().context().objectDatabase()
+                .getTree(rootTreeId.get());
         Optional<NodeRef> featureTypeTree = geogig.command(FindTreeChild.class).setChildPath(path)
                 .setParent(rootTree).call();
 

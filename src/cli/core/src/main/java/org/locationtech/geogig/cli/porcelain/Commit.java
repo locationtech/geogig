@@ -118,7 +118,8 @@ public class Commit extends AbstractCommand implements CLICommand {
                         .call();
                 checkParameter(TYPE.COMMIT.equals(type),
                         "Provided reference does not resolve to a commit");
-                commitOp.setCommit(geogig.getRepository().getCommit(commitId.get()));
+                commitOp.setCommit(geogig.getRepository().context().objectDatabase()
+                        .getCommit(commitId.get()));
             }
             commit = commitOp.setPathFilters(paths).setProgressListener(progress).call();
         } catch (NothingToCommitException | IllegalStateException notificationError) {

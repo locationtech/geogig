@@ -18,8 +18,8 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.remotes.RefDiff;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.CommandFactory;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Prepares a {@link Pack} of {@link RevObject}s for a {@link PackRequest} by means of

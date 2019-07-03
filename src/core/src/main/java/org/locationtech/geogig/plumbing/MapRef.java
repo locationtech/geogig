@@ -17,8 +17,8 @@ import java.util.Optional;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;

@@ -122,7 +122,7 @@ public class Reset extends AbstractCommand implements CLICommand {
             throw new CommandFailedException(ise.getMessage(), ise);
         }
 
-        if (!geogig.getRepository().workingTree().isClean()) {
+        if (!geogig.getRepository().context().workingTree().isClean()) {
             try {
                 try (AutoCloseableIterator<DiffEntry> unstaged = geogig.command(DiffWorkTree.class)
                         .setFilter(null).call()) {

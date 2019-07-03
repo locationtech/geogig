@@ -12,7 +12,7 @@ package org.locationtech.geogig.plumbing;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

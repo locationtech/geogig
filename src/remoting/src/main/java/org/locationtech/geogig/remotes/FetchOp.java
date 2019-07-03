@@ -31,9 +31,9 @@ import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Predicate;
@@ -245,7 +245,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * Executes the fetch operation.
      * 
      * @return {@code null}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override TransferSummary _call() {
         final Repository repository = repository();
@@ -358,7 +358,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
                 if (isShallow && !args.fullDepth) {
                     // Update the repository depth if it is deeper than before.
-                    int newDepth = repository.graphDatabase().getDepth(newRef.getObjectId());
+                    int newDepth = repository.context().graphDatabase()
+                            .getDepth(newRef.getObjectId());
 
                     if (newDepth > repoDepth.get()) {
                         command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET)
@@ -453,7 +454,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         } else {
             ObjectId effectiveId = remoteRef.getObjectId();
 
-            if (remote.getMapped() && !repository().commitExists(remoteRef.getObjectId())) {
+            if (remote.getMapped() && !geogig().objects().commitExists(remoteRef.getObjectId())) {
                 effectiveId = graphDatabase().getMapping(effectiveId);
             }
             updatedRef = command(UpdateRef.class).setName(refName).setNewValue(effectiveId).call()

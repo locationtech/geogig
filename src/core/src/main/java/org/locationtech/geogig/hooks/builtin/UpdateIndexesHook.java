@@ -11,9 +11,10 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.index.Index;
 import org.locationtech.geogig.porcelain.index.UpdateIndexesOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ProgressListener;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,13 +30,13 @@ public class UpdateIndexesHook implements CommandHook {
         return UpdateRef.class.equals(clazz);
     }
 
-    public @Override <C extends AbstractGeoGigOp<?>> C pre(C command)
+    public @Override <C extends Command<?>> C pre(C command)
             throws CannotRunGeogigOperationException {
         return command;
     }
 
     @SuppressWarnings("unchecked")
-    public @Override <T> T post(AbstractGeoGigOp<T> command, @Nullable Object retVal,
+    public @Override <T> T post(Command<T> command, @Nullable Object retVal,
             @Nullable RuntimeException exception) throws Exception {
 
         final UpdateRef op = (UpdateRef) command;

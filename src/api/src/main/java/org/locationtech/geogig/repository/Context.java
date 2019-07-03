@@ -27,6 +27,21 @@ import com.google.common.annotations.Beta;
  */
 public interface Context extends CommandFactory {
 
+    public Hints hints();
+
+    /**
+     * @return the {@link Platform} for this context
+     */
+    public Platform platform();
+
+    /**
+     * @return the {@link ConfigDatabase} for this context
+     */
+    public ConfigDatabase configDatabase();
+
+    @Beta
+    public Context snapshot();
+
     /**
      * @return the {@link WorkingTree} for this context
      */
@@ -41,11 +56,6 @@ public interface Context extends CommandFactory {
      * @return the {@link RefDatabase} for this context
      */
     public RefDatabase refDatabase();
-
-    /**
-     * @return the {@link Platform} for this context
-     */
-    public Platform platform();
 
     /**
      * @return the {@link ObjectDatabase} for this context
@@ -63,11 +73,6 @@ public interface Context extends CommandFactory {
     public ConflictsDatabase conflictsDatabase();
 
     /**
-     * @return the {@link ConfigDatabase} for this context
-     */
-    public ConfigDatabase configDatabase();
-
-    /**
      * @return the {@link GraphDatabase} for this context, this is a shortcut for
      *         {@link ObjectDatabase#getGraphDatabase() objectDatabase().getGraphDatabase()}
      */
@@ -82,7 +87,4 @@ public interface Context extends CommandFactory {
      * @return the {@link BlobStore} for this context
      */
     public BlobStore blobStore();
-
-    @Beta
-    public Context snapshot();
 }

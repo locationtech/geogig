@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -76,7 +77,7 @@ final @Slf4j class CommandHookChain {
     }
 
     final Object runPostHooks(@Nullable Object retVal, @Nullable RuntimeException exception) {
-        AbstractGeoGigOp<?> command = target;
+        Command<?> command = target;
 
         for (CommandHook hook : hooks) {
             try {
@@ -124,7 +125,7 @@ final @Slf4j class CommandHookChain {
         }
     }
 
-    static List<CommandHook> findHooksFor(AbstractGeoGigOp<?> command) {
+    static List<CommandHook> findHooksFor(Command<?> command) {
 
         @SuppressWarnings("unchecked")
         final Class<? extends AbstractGeoGigOp<?>> clazz = (Class<? extends AbstractGeoGigOp<?>>) command

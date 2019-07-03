@@ -39,8 +39,8 @@ import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.FindFeatureTypeTrees;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.DiffSummaryOp.LayerDiffSummary;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 

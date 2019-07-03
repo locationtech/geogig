@@ -10,8 +10,8 @@
 package org.locationtech.geogig.hooks;
 
 import org.locationtech.geogig.di.Decorator;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * An interceptor for the call() method in GeoGig operations that allow hooks
@@ -21,7 +21,7 @@ public class CommandHooksDecorator implements Decorator {
 
     @SuppressWarnings("unchecked")
     public @Override boolean canDecorate(Object instance) {
-        boolean canDecorate = instance instanceof AbstractGeoGigOp;
+        boolean canDecorate = instance instanceof Command;
         if (canDecorate) {
             canDecorate &= instance.getClass().isAnnotationPresent(Hookable.class);
             if (!canDecorate) {
@@ -42,7 +42,7 @@ public class CommandHooksDecorator implements Decorator {
         return subject;
     }
 
-    private static class HooksListener implements CommandListener {
+    private static class HooksListener implements Command.CommandListener {
 
         private CommandHookChain callChain;
 
@@ -50,11 +50,11 @@ public class CommandHooksDecorator implements Decorator {
             this.callChain = callChain;
         }
 
-        public @Override void preCall(AbstractGeoGigOp<?> command) {
+        public @Override void preCall(Command<?> command) {
             callChain.runPreHooks();
         }
 
-        public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
+        public @Override void postCall(Command<?> command, Object result,
                 RuntimeException exception) {
             callChain.runPostHooks(result, exception);
         }

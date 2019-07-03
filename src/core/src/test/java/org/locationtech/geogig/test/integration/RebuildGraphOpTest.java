@@ -34,7 +34,7 @@ public class RebuildGraphOpTest extends RepositoryTestCase {
                 .setValue("groldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("groldan@boundlessgeo.com").call();
-        database = repo.graphDatabase();
+        database = repo.context().graphDatabase();
     }
 
     @Test

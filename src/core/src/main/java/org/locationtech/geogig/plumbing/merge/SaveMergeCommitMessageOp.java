@@ -10,7 +10,7 @@
 package org.locationtech.geogig.plumbing.merge;
 
 import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
 
 import com.google.common.base.Charsets;

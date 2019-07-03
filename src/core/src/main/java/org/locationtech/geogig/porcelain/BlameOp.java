@@ -30,7 +30,7 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.porcelain.BlameException.StatusCode;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Suppliers;

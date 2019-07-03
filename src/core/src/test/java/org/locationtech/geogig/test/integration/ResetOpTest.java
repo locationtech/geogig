@@ -54,33 +54,35 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         repo.command(ResetOp.class).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP2)).isPresent());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().workingTree()
+                .findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
     }
 
@@ -89,39 +91,42 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
         ObjectId oId4 = insertAndAdd(lines1);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
-        assertEquals(oId4,
-                repo.index().findStaged(appendChild(linesName, idL1)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
+        assertEquals(oId4, repo.context().stagingArea().findStaged(appendChild(linesName, idL1))
+                .get().getObjectId());
 
         repo.command(ResetOp.class).addPattern(pointsName).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
-        assertTrue(repo.index().findStaged(appendChild(linesName, idL1)).isPresent());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP2)).isPresent());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP3)).isPresent());
+        assertTrue(
+                repo.context().stagingArea().findStaged(appendChild(linesName, idL1)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
-        assertEquals(oId4,
-                repo.workingTree().findUnstaged(appendChild(linesName, idL1)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().workingTree()
+                .findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
+        assertEquals(oId4, repo.context().workingTree().findUnstaged(appendChild(linesName, idL1))
+                .get().getObjectId());
 
     }
 
@@ -130,33 +135,35 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         repo.command(ResetOp.class).addPattern(appendChild(pointsName, idP2)).call();
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
-        assertTrue(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP2)).isPresent());
+        assertTrue(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().workingTree()
+                .findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
     }
 
     @Test
@@ -164,31 +171,35 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         repo.command(ResetOp.class).setMode(ResetMode.HARD).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(repo.index().findStaged(appendChild(pointsName, idP3)).isPresent());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP2)).isPresent());
+        assertFalse(
+                repo.context().stagingArea().findStaged(appendChild(pointsName, idP3)).isPresent());
 
-        assertEquals(oId1,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertFalse(repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).isPresent());
-        assertFalse(repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).isPresent());
+        assertEquals(oId1, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
+        assertFalse(repo.context().workingTree().findUnstaged(appendChild(pointsName, idP2))
+                .isPresent());
+        assertFalse(repo.context().workingTree().findUnstaged(appendChild(pointsName, idP3))
+                .isPresent());
 
     }
 
@@ -197,38 +208,38 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         final Optional<Ref> currHead = repo.command(RefParse.class).setName(Ref.HEAD).call();
 
         repo.command(ResetOp.class).setCommit(Suppliers.ofInstance(currHead.get().getObjectId()))
                 .setMode(ResetMode.SOFT).call();
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
-        assertEquals(oId1_modified,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.workingTree().findUnstaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().workingTree()
+                .findUnstaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().workingTree().findUnstaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
     }
 
@@ -237,19 +248,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         exception.expect(IllegalArgumentException.class);
         repo.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT).call();
@@ -260,19 +271,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         exception.expect(UnsupportedOperationException.class);
         repo.command(ResetOp.class).setMode(ResetMode.MERGE).call();
@@ -284,19 +295,19 @@ public class ResetOpTest extends RepositoryTestCase {
         ObjectId oId1 = insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertEquals(oId1,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId1, repo.context().stagingArea().findStaged(appendChild(pointsName, idP1))
+                .get().getObjectId());
 
         ObjectId oId1_modified = insertAndAdd(points1_modified);
         ObjectId oId2 = insertAndAdd(points2);
         ObjectId oId3 = insertAndAdd(points3);
 
-        assertEquals(oId1_modified,
-                repo.index().findStaged(appendChild(pointsName, idP1)).get().getObjectId());
-        assertEquals(oId2,
-                repo.index().findStaged(appendChild(pointsName, idP2)).get().getObjectId());
-        assertEquals(oId3,
-                repo.index().findStaged(appendChild(pointsName, idP3)).get().getObjectId());
+        assertEquals(oId1_modified, repo.context().stagingArea()
+                .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
+        assertEquals(oId2, repo.context().stagingArea().findStaged(appendChild(pointsName, idP2))
+                .get().getObjectId());
+        assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
+                .get().getObjectId());
 
         exception.expect(UnsupportedOperationException.class);
         repo.command(ResetOp.class).setCommit((ObjectId) null).setMode(ResetMode.KEEP).call();
@@ -344,12 +355,12 @@ public class ResetOpTest extends RepositoryTestCase {
         repo.command(ResetOp.class).setMode(ResetMode.HARD)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
         Repository repository = repo;
-        assertEquals(0, repository.conflictsDatabase().getCountByPrefix(null, null));
+        assertEquals(0, repository.context().conflictsDatabase().getCountByPrefix(null, null));
         Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
         assertFalse(ref.isPresent());
         ref = repo.command(RefParse.class).setName(Ref.ORIG_HEAD).call();
         assertFalse(ref.isPresent());
-        Optional<byte[]> mergemsg = repository.blobStore().getBlob(MergeOp.MERGE_MSG);
+        Optional<byte[]> mergemsg = repository.context().blobStore().getBlob(MergeOp.MERGE_MSG);
         assertFalse(mergemsg.isPresent());
     }
 
@@ -381,7 +392,7 @@ public class ResetOpTest extends RepositoryTestCase {
         repo.command(ResetOp.class).addPattern(pointsName + "/" + idP1)
                 .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
         Repository repository = repo;
-        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        ConflictsDatabase conflicts = repository.context().conflictsDatabase();
         assertEquals(0, conflicts.getCountByPrefix(null, null));
     }
 
@@ -412,7 +423,7 @@ public class ResetOpTest extends RepositoryTestCase {
 
         repo.command(ResetOp.class).addPattern(pointsName + "/" + idP1).call();
         Repository repository = repo;
-        ConflictsDatabase conflicts = repository.conflictsDatabase();
+        ConflictsDatabase conflicts = repository.context().conflictsDatabase();
         assertEquals(0, conflicts.getCountByPrefix(null, null));
     }
 }

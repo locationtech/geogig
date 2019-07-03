@@ -21,8 +21,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-
-import javax.inject.Inject;
+import java.util.TreeMap;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
@@ -32,13 +31,13 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -72,24 +71,9 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
     private @Setter(value = AccessLevel.PACKAGE) @VisibleForTesting RepositoryFinder repositoryFinder = RepositoryFinder.INSTANCE;
 
-    private Map<String, String> config;
+    private Map<String, String> config = new TreeMap<>();
 
     private String filterFile;
-
-    private Hints hints;
-
-    /**
-     * Constructs a new {@code InitOp} with the specified parameters.
-     * 
-     * @param platform where to get the current directory from
-     * @param hints may contain where to get the repository from (using the
-     *        {@link Hints#REPOSITORY_URL} argument)
-     */
-    @Inject
-    public InitOp(Hints hints) {
-        this.config = Maps.newTreeMap();
-        this.hints = hints;
-    }
 
     public InitOp setConfig(Map<String, String> suppliedConfiguration) {
         this.config = ImmutableMap.copyOf(suppliedConfiguration);
@@ -110,6 +94,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
      *         {@link ResolveGeogigURI}
      */
     protected @Override Repository _call() {
+        final Hints hints = context().hints();
         final Platform platform = platform();
         Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
         if (!resolvedURI.isPresent()) {
@@ -137,7 +122,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
                     throw new FileNotFoundException("No filter file found at " + filterFile + ".");
                 }
 
-                repository().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
+                repository().context().blobStore().putBlob(Blobs.SPARSE_FILTER_BLOB_KEY,
                         Files.toByteArray(oldFilterFile));
             } catch (Exception e) {
                 throw new IllegalStateException("Unable to copy filter file at path " + filterFile
@@ -174,7 +159,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             try {
                 repository.open();
                 // make sure the repo has the empty tree
-                ObjectStore objectDatabase = repository.objectDatabase();
+                ObjectStore objectDatabase = repository.context().objectDatabase();
                 objectDatabase.put(RevTree.EMPTY);
             } catch (RepositoryConnectionException e) {
                 throw new IllegalStateException(

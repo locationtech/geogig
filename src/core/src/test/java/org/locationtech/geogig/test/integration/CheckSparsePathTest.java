@@ -73,7 +73,8 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
         RevCommit commit5 = repo.command(CommitOp.class).setMessage("commit5").call();
-        repo.graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        repo.context().graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG,
+                "true");
         repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
         RevCommit commit6 = repo.command(CommitOp.class).setMessage("commit6").call();
@@ -134,7 +135,8 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insertAndAdd(points2);
         RevCommit commit2 = repo.command(CommitOp.class).setMessage("commit2").call();
-        repo.graphDatabase().setProperty(commit2.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        repo.context().graphDatabase().setProperty(commit2.getId(), GraphDatabase.SPARSE_FLAG,
+                "true");
         insertAndAdd(points3);
         RevCommit commit3 = repo.command(CommitOp.class).setMessage("commit3").call();
         repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch2").call();
@@ -143,7 +145,8 @@ public class CheckSparsePathTest extends RepositoryTestCase {
         repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch3").call();
         insertAndAdd(poly1);
         RevCommit commit5 = repo.command(CommitOp.class).setMessage("commit5").call();
-        repo.graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG, "true");
+        repo.context().graphDatabase().setProperty(commit5.getId(), GraphDatabase.SPARSE_FLAG,
+                "true");
         repo.command(CheckoutOp.class).setSource("branch2").call();
         insertAndAdd(poly2);
         RevCommit commit6 = repo.command(CommitOp.class).setMessage("commit6").call();

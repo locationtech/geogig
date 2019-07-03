@@ -25,9 +25,9 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.porcelain.RebaseOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.LocalRemoteRefSpec;
 import org.locationtech.geogig.repository.Remote;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -206,7 +206,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
      * ref-specs} and merges them onto the current branch.
      * 
      * @return {@code null}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override PullResult _call() {
         if (remote == null) {

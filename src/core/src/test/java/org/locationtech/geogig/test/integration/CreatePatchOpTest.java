@@ -111,7 +111,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
 
     @Test
     public void testCreatePatchAddNewEmptyFeatureTypeToEmptyRepo() throws Exception {
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.createTypeTree(linesName, linesType);
         DiffOp op = repo.command(DiffOp.class).setReportTrees(true);
         try (AutoCloseableIterator<DiffEntry> diffs = op.call()) {
@@ -126,7 +126,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
 
     @Test
     public void testCreatePatchRemoveEmptyFeatureType() throws Exception {
-        WorkingTree workingTree = repo.workingTree();
+        WorkingTree workingTree = repo.context().workingTree();
         workingTree.createTypeTree(linesName, linesType);
         repo.command(AddOp.class).setUpdateOnly(false).call();
         workingTree.delete(linesName);
@@ -146,7 +146,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
         DiffOp op = repo.command(DiffOp.class).setReportTrees(true);
 
         insertAndAdd(points1, points2);
-        repo.workingTree().updateTypeTree(pointsName, modifiedPointsType);
+        repo.context().workingTree().updateTypeTree(pointsName, modifiedPointsType);
 
         try (AutoCloseableIterator<DiffEntry> diffs = op.call()) {
             Patch patch = repo.command(CreatePatchOp.class).setDiffs(diffs).call();

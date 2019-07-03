@@ -21,6 +21,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.plumbing.ParseTimestamp;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
@@ -90,7 +90,7 @@ public class RevList extends AbstractCommand implements CLICommand {
     @Option(names = "--changed", description = "Show paths affected by each commit")
     public boolean changed;
 
-    private GeoGIG geogig;
+    private Geogig geogig;
 
     private Console console;
 
@@ -100,7 +100,7 @@ public class RevList extends AbstractCommand implements CLICommand {
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!this.commits.isEmpty(), "No starting commit provided");
 
-        geogig = cli.getGeogig();
+        geogig = cli.geogig();
 
         LogOp op = geogig.command(LogOp.class).setTopoOrder(this.topo)
                 .setFirstParentOnly(this.firstParent);
@@ -139,7 +139,7 @@ public class RevList extends AbstractCommand implements CLICommand {
                 Optional<ObjectId> commitId = geogig.command(RevParse.class).setRefSpec(commit)
                         .call();
                 checkParameter(commitId.isPresent(), "Object not found '%s'", commit);
-                checkParameter(geogig.getRepository().commitExists(commitId.get()),
+                checkParameter(geogig.objects().commitExists(commitId.get()),
                         "%s does not resolve to a commit", commit);
                 op.addCommit(commitId.get());
             }

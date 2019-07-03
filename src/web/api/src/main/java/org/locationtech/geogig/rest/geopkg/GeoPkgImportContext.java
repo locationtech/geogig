@@ -31,8 +31,8 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportMergeScenarioOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.rest.AsyncCommandRepresentation;
 import org.locationtech.geogig.rest.AsyncContext.AsyncCommand;
 import org.locationtech.geogig.rest.CommandRepresentationFactory;
@@ -177,8 +177,8 @@ public class GeoPkgImportContext implements DataStoreImportContextService {
             if (cause instanceof GeopkgMergeConflictsException) {
                 Context context = cmd.getContext();
                 GeopkgMergeConflictsException m = (GeopkgMergeConflictsException) cause;
-                final RevCommit ours = context.repository().getCommit(m.getOurs());
-                final RevCommit theirs = context.repository().getCommit(m.getTheirs());
+                final RevCommit ours = context.objectDatabase().getCommit(m.getOurs());
+                final RevCommit theirs = context.objectDatabase().getCommit(m.getTheirs());
                 final Optional<ObjectId> ancestor = context.command(FindCommonAncestor.class)
                         .setLeft(ours).setRight(theirs).call();
                 PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

@@ -12,7 +12,7 @@ package org.locationtech.geogig.plumbing;
 import java.util.Iterator;
 
 import org.locationtech.geogig.model.ObjectId;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;

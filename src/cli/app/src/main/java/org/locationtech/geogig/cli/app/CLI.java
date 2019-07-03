@@ -30,7 +30,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.repository.impl.PluginsContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.collect.Lists;
@@ -60,8 +59,6 @@ public class CLI {
             }
             cliArgs = arglist.toArray(new String[arglist.size()]);
         }
-
-        GlobalContextBuilder.builder(new PluginsContextBuilder());
         Logging.tryConfigureLogging(platform, repoURI);
 
         {// resolve the ansi.enabled global config without opening a full repo, but just the global

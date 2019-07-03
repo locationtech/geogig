@@ -34,7 +34,7 @@ import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -243,7 +243,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
      * 
      * @return the commit just applied, or {@code null} if
      *         {@code getProgressListener().isCanceled()}
-     * @see org.locationtech.geogig.repository.AbstractGeoGigOp#call()
+     * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      * @throws NothingToCommitException if there are no staged changes by comparing the index
      *         staging tree and the repository HEAD tree.
      */

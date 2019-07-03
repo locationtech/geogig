@@ -100,7 +100,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         assertEquals("importedTable", feature1.getParentPath());
         assertEquals("importedTable", feature2.getParentPath());
 
-        ObjectDatabase odb = cli.getGeogig().getRepository().objectDatabase();
+        ObjectDatabase odb = cli.getGeogig().getRepository().context().objectDatabase();
 
         RevFeature feature1Obj = odb.getFeature(feature1id);
         RevFeature feature2Obj = odb.getFeature(feature2id);

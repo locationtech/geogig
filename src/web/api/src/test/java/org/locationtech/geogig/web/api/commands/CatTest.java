@@ -125,7 +125,7 @@ public class CatTest extends AbstractWebOpTest {
         testData.init();
         testData.loadDefaultData();
 
-        RevTree tree = geogig.index().getTree();
+        RevTree tree = geogig.context().stagingArea().getTree();
         ParameterSet options = TestParams.of("objectid", tree.getId().toString());
         buildCommand(options).run(testContext.get());
         JsonObject response = getJSONResponse().getJsonObject("response");

@@ -33,12 +33,8 @@
   {"name" : "org.locationtech.geogig.repository.impl.RepositoryImpl", "allDeclaredConstructors" : true},
   
   {"name" : "org.locationtech.geogig.di.DecoratorProvider", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.GuiceContext", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.PluginsModule$PluginConfigDatabaseProvider", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.PluginsModule$PluginRefDatabaseProvider", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.PluginsModule$PluginObjectDatabaseProvider", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.PluginsModule$PluginConflictsDatabaseProvider", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.PluginsModule$PluginIndexDatabaseProvider", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.di.ContextImpl", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.repository.impl.ContextBuilderImpl", "allDeclaredConstructors" : true},
 
   {"name" : "org.locationtech.geogig.cli.plumbing.Cat", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.cli.plumbing.DiffTree", "allDeclaredConstructors" : true},
@@ -150,7 +146,6 @@
   {"name" : "org.locationtech.geogig.plumbing.TransactionBegin", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.plumbing.ResolveCommit", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.di.DelegatingContext", "allDeclaredConstructors" : true},
-  {"name" : "org.locationtech.geogig.di.GuiceContext", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.repository.impl.GeoGIG", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.repository.impl.RepositoryImpl", "allDeclaredConstructors" : true},
   {"name" : "org.locationtech.geogig.repository.impl.GeogigTransaction", "allDeclaredConstructors" : true},

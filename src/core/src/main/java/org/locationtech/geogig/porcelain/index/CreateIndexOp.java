@@ -21,9 +21,9 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.index.BuildFullHistoryIndexOp;
 import org.locationtech.geogig.plumbing.index.BuildIndexOp;
 import org.locationtech.geogig.plumbing.index.CreateIndexInfoOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Throwables;
 

@@ -151,8 +151,10 @@ public class Pull extends AbstractWebAPICommand {
 
             Optional<Ref> destRef = geogig.command(RefParse.class).setName(destinationref).call();
             Repository repository = context.getRepository();
-            final RevCommit theirs = repository.getCommit(sourceRef.get().getObjectId());
-            final RevCommit ours = repository.getCommit(destRef.get().getObjectId());
+            final RevCommit theirs = repository.context().objectDatabase()
+                    .getCommit(sourceRef.get().getObjectId());
+            final RevCommit ours = repository.context().objectDatabase()
+                    .getCommit(destRef.get().getObjectId());
             final Optional<ObjectId> ancestor = geogig.command(FindCommonAncestor.class)
                     .setLeft(ours).setRight(theirs).call();
             final PagedMergeScenarioConsumer consumer = new PagedMergeScenarioConsumer(0);

@@ -18,7 +18,7 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.SendPack;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.pack.ReceivePackOp;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
@@ -121,7 +121,7 @@ public interface IRemoteRepo extends Closeable, CommandFactory {
      */
     public Optional<Integer> getDepth();
 
-    public default <T extends AbstractGeoGigOp<?>> T command(Class<T> commandClass) {
+    public default <T extends Command<?>> T command(Class<T> commandClass) {
         throw new UnsupportedOperationException(commandClass + " is not supported for RPC");
     }
 }

@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.repository;
+package org.locationtech.geogig.repository.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -18,13 +18,16 @@ import static org.mockito.Mockito.verify;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
-import org.locationtech.geogig.repository.AbstractGeoGigOp.CommandListener;
+import org.locationtech.geogig.repository.Command;
+import org.locationtech.geogig.repository.Context;
+import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.ProgressListener;
 
 public class AbstractGeoGigOpTest {
 
     @Test
     public void testCall() {
-        AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
+        Command<String> testOp = new AbstractGeoGigOp<String>() {
             protected @Override String _call() {
                 return "myValue";
             }
@@ -39,31 +42,31 @@ public class AbstractGeoGigOpTest {
         AtomicBoolean postCalled1 = new AtomicBoolean(false);
         AtomicBoolean preCalled2 = new AtomicBoolean(false);
         AtomicBoolean postCalled2 = new AtomicBoolean(false);
-        CommandListener listener1 = new CommandListener() {
+        Command.CommandListener listener1 = new Command.CommandListener() {
 
-            public @Override void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(Command<?> command) {
                 preCalled1.set(true);
             }
 
-            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(Command<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals(result, "myValue");
                 postCalled1.set(true);
             }
         };
-        CommandListener listener2 = new CommandListener() {
+        Command.CommandListener listener2 = new Command.CommandListener() {
 
-            public @Override void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(Command<?> command) {
                 preCalled2.set(true);
             }
 
-            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(Command<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals("myValue", result);
                 postCalled2.set(true);
             }
         };
-        AbstractGeoGigOp<String> testOp = new AbstractGeoGigOp<String>() {
+        Command<String> testOp = new AbstractGeoGigOp<String>() {
             protected @Override String _call() {
                 return "myValue";
             }
@@ -79,13 +82,13 @@ public class AbstractGeoGigOpTest {
         RuntimeException commandException = new RuntimeException("command exception");
         AtomicBoolean preCalled3 = new AtomicBoolean(false);
         AtomicBoolean postCalled3 = new AtomicBoolean(false);
-        CommandListener listener3 = new CommandListener() {
+        Command.CommandListener listener3 = new Command.CommandListener() {
 
-            public @Override void preCall(AbstractGeoGigOp<?> command) {
+            public @Override void preCall(Command<?> command) {
                 preCalled3.set(true);
             }
 
-            public @Override void postCall(AbstractGeoGigOp<?> command, Object result,
+            public @Override void postCall(Command<?> command, Object result,
                     RuntimeException exception) {
                 assertEquals(null, result);
                 assertEquals(commandException, exception);
@@ -93,7 +96,7 @@ public class AbstractGeoGigOpTest {
             }
         };
 
-        AbstractGeoGigOp<String> testOp2 = new AbstractGeoGigOp<String>() {
+        Command<String> testOp2 = new AbstractGeoGigOp<String>() {
             protected @Override String _call() {
                 throw commandException;
             }

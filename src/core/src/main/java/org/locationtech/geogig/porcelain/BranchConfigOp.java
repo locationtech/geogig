@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
-import org.locationtech.geogig.repository.AbstractGeoGigOp;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.base.Strings;

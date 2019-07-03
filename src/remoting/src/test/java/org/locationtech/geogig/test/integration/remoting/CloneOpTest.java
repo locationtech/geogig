@@ -274,7 +274,8 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
             for (int i = 0; i < features.size(); i += 2) {
                 featurePaths.add(parent + features.get(i).getId());
             }
-            remoteRepo.workingTree().delete(featurePaths.iterator(), new DefaultProgressListener());
+            remoteRepo.context().workingTree().delete(featurePaths.iterator(),
+                    new DefaultProgressListener());
             add(remoteRepo);
             remoteRepo.command(CommitOp.class).setMessage("several deletes")
                     .setProgressListener(SIMPLE_PROGRESS).call();

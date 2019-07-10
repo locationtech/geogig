@@ -4,35 +4,45 @@ cache:
 language: java
 jdk:
   - openjdk8
-before_install: 
-  - cd src
-install: ./mvnw --no-transfer-progress -B -U install -DskipTests=true
+
+#sudo: true
 
 services: postgresql
 
 addons:
-  postgresql: "9.6"
+  postgresql: '10'
+  apt:
+    packages:
+      - postgresql-10-postgis-2.4
+      - postgresql-10-postgis-2.4-scripts
+      - postgresql-client-10
 
-sudo: true
-
-before_script:
-  - sudo apt-get install postgresql-9.6-postgis-2.3 postgis -y -q
+before_install: 
+  - cd src
   - psql -c 'create database geogig_tests;' -U postgres
   - psql -c "create extension postgis" -U postgres -d geogig_tests
   - psql -f geotools/src/test/resources/features/online/geogig_pg_test.sql -U postgres -d geogig_tests
+
+install: 
+  - ./mvnw --no-transfer-progress -DskipTests=true install
+
+before_script:
   - echo '[postgres]' > ~/.geogig-pg-backend-tests.properties
   - echo 'enabled = true' >> ~/.geogig-pg-backend-tests.properties
   - echo 'server = localhost' >> ~/.geogig-pg-backend-tests.properties
+  - echo 'port = 5432' >> ~/.geogig-pg-backend-tests.properties
   - echo 'database = geogig_tests' >> ~/.geogig-pg-backend-tests.properties
   - echo 'user = postgres' >> ~/.geogig-pg-backend-tests.properties
   - echo 'password = ' >> ~/.geogig-pg-backend-tests.properties
   - echo '[database]' > ~/.geogig-pg-tests.properties
   - echo 'server = localhost' >> ~/.geogig-pg-tests.properties
+  - echo 'port = 5432' >> ~/.geogig-pg-tests.properties
   - echo 'database = geogig_tests' >> ~/.geogig-pg-tests.properties
   - echo 'user = postgres' >> ~/.geogig-pg-tests.properties
   - echo 'password = ' >> ~/.geogig-pg-tests.properties
 
 script:
-  - ./mvnw --no-transfer-progress -B test
+  - ./mvnw --no-transfer-progress verify
+
 notifications:
   email: false

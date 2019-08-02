@@ -1,0 +1,20 @@
+[
+  {"name" : "org.locationtech.geogig.remotes.LsRemoteOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.UpdateRemoteRefOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.SendPackOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.DiffRemoteRefsOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.FetchOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.PreparePackOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.PushOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.pack.ReceivePackOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.CloneOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.internal.LocalRemoteRepo", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.internal.IRemoteRepo", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.RemoteListOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.OpenRemote", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.FetchOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.SendPack", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.PushOp", "allDeclaredConstructors" : true},
+  {"name" : "org.locationtech.geogig.remotes.PullOp", "allDeclaredConstructors" : true}
+  
+]

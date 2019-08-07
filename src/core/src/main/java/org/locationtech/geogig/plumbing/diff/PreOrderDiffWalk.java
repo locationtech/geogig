@@ -57,6 +57,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -102,14 +103,16 @@ public class PreOrderDiffWalk {
 
     private static final ForkJoinPool SHARED_FORK_JOIN_POOL;
 
+    private static final int DEFAULT_PARALLELISM = Math.max(2,
+            Runtime.getRuntime().availableProcessors());
+
     static {
-        final int parallelism = Math.max(2,
-                Math.min(16, Runtime.getRuntime().availableProcessors()));
-        // establishes local first-in-first-out scheduling mode for forked
+        // if true, establishes local first-in-first-out scheduling mode for forked
         // more appropriate than default locally stack-based mode when
         // worker threads only process event-style asynchronous tasks
         final boolean asyncMode = true;
-        SHARED_FORK_JOIN_POOL = new ForkJoinPool(parallelism, threadFactoryShared, null, asyncMode);
+        SHARED_FORK_JOIN_POOL = new ForkJoinPool(DEFAULT_PARALLELISM, threadFactoryShared, null,
+                asyncMode);
     }
 
     public NodeOrdering ORDER = CanonicalNodeOrder.INSTANCE;
@@ -253,27 +256,33 @@ public class PreOrderDiffWalk {
 
     private boolean reportFeatures = true;
 
-    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
-            ObjectStore rightSource) {
-        this(left, right, leftSource, rightSource, false);
-    }
-
-    public PreOrderDiffWalk(RevTree left, RevTree right, ObjectStore leftSource,
-            ObjectStore rightSource, boolean preserveIterationOrder) {
-
-        checkNotNull(left, "left");
-        checkNotNull(right, "right");
-        checkNotNull(leftSource, "leftSource");
-        checkNotNull(rightSource, "rightSource");
-
+    public PreOrderDiffWalk(@NonNull RevTree left, @NonNull RevTree right,
+            @NonNull ObjectStore leftSource, @NonNull ObjectStore rightSource) {
         this.left = left;
         this.right = right;
         this.leftSource = leftSource;
         this.rightSource = rightSource;
-        if (preserveIterationOrder) {
-            forkJoinPool = new ForkJoinPool(1, threadFactoryPrivate, null, false);
+        this.forkJoinPool = SHARED_FORK_JOIN_POOL;
+    }
+
+    public PreOrderDiffWalk(@NonNull RevTree left, @NonNull RevTree right,
+            @NonNull ObjectStore leftSource, @NonNull ObjectStore rightSource,
+            boolean preserveIterationOrder) {
+
+        this(left, right, leftSource, rightSource,
+                preserveIterationOrder ? 1 : DEFAULT_PARALLELISM);
+    }
+
+    public @VisibleForTesting PreOrderDiffWalk(@NonNull RevTree left, @NonNull RevTree right,
+            @NonNull ObjectStore leftSource, @NonNull ObjectStore rightSource, int parallelism) {
+        this.left = left;
+        this.right = right;
+        this.leftSource = leftSource;
+        this.rightSource = rightSource;
+        if (DEFAULT_PARALLELISM == parallelism) {
+            this.forkJoinPool = SHARED_FORK_JOIN_POOL;
         } else {
-            forkJoinPool = SHARED_FORK_JOIN_POOL;
+            this.forkJoinPool = new ForkJoinPool(parallelism, threadFactoryPrivate, null, true);
         }
     }
 

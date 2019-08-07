@@ -42,19 +42,31 @@ public @UtilityClass class RevObjects {
 
     private static RevObjectFactory DEFAULT_FACTORY_INSTANCE;
 
+    private static String DEFAULT_FACTORY_INSTANCE_CLASS_NAME = null;
+
     /**
      * Implements the {@code RevObjectFactory} lookup mechanism described in
      * {@link RevObjectFactory}'s javadocs
      */
     static RevObjectFactory lookupDefaultFactory() {
         if (DEFAULT_FACTORY_INSTANCE == null) {
-            RevObjectFactory defaultInstance = new ServiceFinder()
-                    .systemProperty(DEFAULT_INSTANCE_ENV_ARG)
-                    .environmentVariable(DEFAULT_INSTANCE_ENV_ARG)
-                    .lookupDefaultService(RevObjectFactory.class);
-            DEFAULT_FACTORY_INSTANCE = defaultInstance;
+            setDefaultInstance();
+        } else {
+            String param = System.getProperty(DEFAULT_INSTANCE_ENV_ARG);
+            if (param != null && !DEFAULT_FACTORY_INSTANCE_CLASS_NAME.contentEquals(param)) {
+                setDefaultInstance();
+            }
         }
         return DEFAULT_FACTORY_INSTANCE;
+    }
+
+    private static void setDefaultInstance() {
+        RevObjectFactory defaultInstance = new ServiceFinder()
+                .systemProperty(DEFAULT_INSTANCE_ENV_ARG)
+                .environmentVariable(DEFAULT_INSTANCE_ENV_ARG)
+                .lookupDefaultService(RevObjectFactory.class);
+        DEFAULT_FACTORY_INSTANCE_CLASS_NAME = defaultInstance.getClass().getName();
+        DEFAULT_FACTORY_INSTANCE = defaultInstance;
     }
 
     public static Envelope boundsOf(@NonNull RevTree tree) {

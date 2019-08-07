@@ -34,7 +34,6 @@ import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.BulkOpListener;
-import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
@@ -135,7 +134,7 @@ public class RevObjectTestSupport {
         return tree;
     }
 
-    public RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectDatabase source,
+    public RevTreeBuilder createLargeFeaturesTreeBuilder(ObjectStore source,
             final String namePrefix, final int numEntries, final int startIndex,
             boolean randomIds) {
 
@@ -153,7 +152,7 @@ public class RevObjectTestSupport {
         return builder;
     }
 
-    public RevTree createLargeFeaturesTree(ObjectDatabase source, final String namePrefix,
+    public RevTree createLargeFeaturesTree(ObjectStore source, final String namePrefix,
             final int numEntries, final int startIndex, boolean randomIds) {
 
         RevTreeBuilder builder = createLargeFeaturesTreeBuilder(source, namePrefix, numEntries,

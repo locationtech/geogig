@@ -263,9 +263,9 @@
       </dependency>
 
       <dependency>
-          <groupId>info.picocli</groupId>
-          <artifactId>picocli</artifactId>
-          <version>${picocli.version}</version>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>${picocli.version}</version>
       </dependency>
       <dependency>
         <!-- http://jcommander.org/ -->
@@ -492,6 +492,12 @@
             <skip>${skip.it}</skip>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.6.0</version>
+        </plugin>
+
       </plugins>
     </pluginManagement>
 
@@ -653,6 +659,7 @@
     <module>pullrequests</module>
     <module>geotools</module>
     <module>cli</module>
+    <module>benchmarks</module>
   </modules>
 
   <profiles>

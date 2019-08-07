@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.locationtech.geogig</groupId>
+    <artifactId>geogig</artifactId>
+    <version>2.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>geogig-benchmarks</artifactId>
+  <packaging>pom</packaging>
+  <name>Benchmarks</name>
+
+  <properties>
+    <project.relativePath>benchmarks</project.relativePath>
+    <jmh.version>1.21</jmh.version>
+    <jmh.report.format>csv</jmh.report.format> <!-- `org.openjdk.jmh.Main -rf`'s param, one of text, csv, scsv, json, latex -->
+    <jmh.report.name>target/jmh-report-${git.commit.id.abbrev}.${jmh.report.format}</jmh.report.name>
+    <git.commitid.skip>false</git.commitid.skip>
+  </properties>
+
+  <modules>
+    <module>core</module>
+  </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-core</artifactId>
+      <version>${jmh.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.openjdk.jmh</groupId>
+      <artifactId>jmh-generator-annprocess</artifactId>
+      <version>${jmh.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.2</version>
+          <inherited>true</inherited>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>shade</goal>
+              </goals>
+              <configuration>
+                <finalName>${uberjar.name}</finalName>
+                <transformers>
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                    <mainClass>org.openjdk.jmh.Main</mainClass>
+                  </transformer>
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                  <transformer
+                    implementation="org.apache.maven.plugins.shade.resource.IncludeResourceTransformer">
+                    <resource>META-INF/**</resource>
+                  </transformer>
+                </transformers>
+                <finalName>benchmarks</finalName>
+                <filters>
+                  <filter>
+                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                    <artifact>*:*</artifact>
+                    <excludes>
+                      <exclude>META-INF/*.SF</exclude>
+                      <exclude>META-INF/*.DSA</exclude>
+                      <exclude>META-INF/*.RSA</exclude>
+                    </excludes>
+                  </filter>
+                </filters>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <inherited>true</inherited>
+          <executions>
+            <execution>
+              <id>run-benchmarks</id>
+              <phase>integration-test</phase>
+              <goals>
+                <goal>exec</goal>
+              </goals>
+              <configuration>
+                <classpathScope>test</classpathScope>
+                <executable>java</executable>
+                <arguments><!-- run `java -jar target/benchmarks.jar -h` for a list of options -->
+                  <argument>-classpath</argument>
+                  <classpath />
+                  <argument>org.openjdk.jmh.Main</argument>
+                  <!-- Write report in given format -->
+                  <argument>-rf</argument>
+                  <argument>${jmh.report.format}</argument>
+                  <!-- Write report to file -->
+                  <argument>-rff</argument>
+                  <argument>${jmh.report.name}</argument>
+                  <!-- synchronize iterations. lower the noise in multithreaded tests, by making sure the measured part happens 
+                    only when all workers are running -->
+                  <argument>-si</argument>
+                  <argument>true</argument>
+                  <!-- <argument>-prof</argument> <argument>gc</argument> -->
+                  <!-- argument>RevTreeBuilderBenchmark</argument -->
+                  <argument>.*</argument>
+                  <!-- NOTE: `sudo apt install linux-tools-common linux-tools-generic` if want to run `java-jar target/benchmarks.jar 
+                    -prof perf` -->
+                </arguments>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
+</project>

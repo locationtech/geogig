@@ -69,19 +69,8 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return res;
     }
 
-    private DAG createTree(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = new DAG(treeId, originalTreeId);
-        DAG existing = trees.putIfAbsent(treeId, dag);
-        Preconditions.checkState(existing == null, "DAG %s[%s] already exists: %s", treeId,
-                originalTreeId, existing);
-        return dag;
-    }
-
-    public @Override DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId) {
-        DAG dag = trees.get(treeId);
-        if (dag == null) {
-            dag = createTree(treeId, originalTreeId);
-        }
+    public @Override DAG getOrCreateTree(final TreeId treeId, final ObjectId originalTreeId) {
+        DAG dag = trees.computeIfAbsent(treeId, id -> new DAG(treeId, originalTreeId));
         return dag;// .clone();
     }
 

@@ -34,6 +34,8 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
+import lombok.NonNull;
+
 class RocksdbNodeStore {
 
     private Supplier<RocksDB> _dbSupplier;
@@ -88,6 +90,30 @@ class RocksdbNodeStore {
         return _db;
     }
 
+    public @NonNull DAGNode get(NodeId id) {
+        lock.readLock().lock();
+        try {
+            return getInternal(id);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    private @NonNull DAGNode getInternal(NodeId id) throws RocksDBException {
+        byte[] key = toKey(id);
+        byte[] val;
+        if (_db == null) {
+            val = batch.getFromBatch(batchOptions, key);
+        } else {
+            val = batch.getFromBatchAndDB(db(), readOptions, key);
+        }
+        Preconditions.checkState(val != null);
+        DAGNode node = decode(val);
+        return node;
+    }
+
     public Map<NodeId, DAGNode> getAll(Set<NodeId> nodeIds) {
         if (nodeIds.isEmpty()) {
             return Collections.emptyMap();
@@ -96,16 +122,7 @@ class RocksdbNodeStore {
         lock.readLock().lock();
         try {
             for (NodeId id : nodeIds) {
-                byte[] key = toKey(id);
-                byte[] val;
-                if (_db == null) {
-                    val = batch.getFromBatch(batchOptions, key);
-                } else {
-                    val = batch.getFromBatchAndDB(db(), readOptions, key);
-                }
-                Preconditions.checkState(val != null);
-                DAGNode node = decode(val);
-                res.put(id, node);
+                res.put(id, getInternal(id));
             }
         } catch (RocksDBException e) {
             throw new RuntimeException(e);

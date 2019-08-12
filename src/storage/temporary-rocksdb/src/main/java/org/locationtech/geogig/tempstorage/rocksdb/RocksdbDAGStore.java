@@ -13,9 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
@@ -154,7 +152,20 @@ class RocksdbDAGStore {
         return dag;
     }
 
-    public List<DAG> getTrees(final Set<TreeId> ids) throws NoSuchElementException {
+    public DAG getTree(final TreeId id) throws NoSuchElementException {
+        lock.readLock().lock();
+        try {
+            DAG dag = getInternal(id, toKey(id));
+            if (dag == null) {
+                throw new NoSuchElementException(id.toString());
+            }
+            return dag;
+        } finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    public List<DAG> getTrees(final List<TreeId> ids) throws NoSuchElementException {
         List<DAG> dags = new ArrayList<>(ids.size());
         lock.readLock().lock();
         try {
@@ -169,12 +180,12 @@ class RocksdbDAGStore {
         return dags;
     }
 
-    public void save(Map<TreeId, DAG> dags) {
+    public void save(List<DAG> dags) {
         lock.writeLock().lock();
         try {
             ByteArrayOutputStream buff = new ByteArrayOutputStream();
             ByteArrayDataOutput out = ByteStreams.newDataOutput(buff);
-            for (DAG d : dags.values()) {
+            for (DAG d : dags) {
                 buff.reset();
                 byte[] key = toKey(d.getId());
                 byte[] value = encode(d, out);

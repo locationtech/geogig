@@ -12,7 +12,6 @@ package org.locationtech.geogig.model.internal;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -130,14 +129,16 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         return dagCache.getOrCreate(treeId, originalTreeId);
     }
 
-    public List<DAG> getDagTrees(Set<TreeId> ids) {
+    public DAG getDagTree(TreeId id) {
+        return dagCache.getDAG(id);
+    }
+
+    public List<DAG> getDagTrees(List<TreeId> ids) {
         return dagCache.getAll(ids);
     }
 
-    @VisibleForTesting
-    Node getNode(NodeId nodeId) {
-        SortedMap<NodeId, Node> nodes = getNodes(Collections.singleton(nodeId));
-        return nodes.get(nodeId);
+    public @NonNull Node getNode(NodeId nodeId) {
+        return storageProvider.getNode(nodeId);
     }
 
     /**
@@ -315,7 +316,8 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 shrinkIfUnderflow(dag);
             } catch (IllegalStateException e) {
                 if (remove) {
-                    log.error(String.format("!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s",
+                    log.error(String.format(
+                            "!!! Error removing %s\t from %s. pre: %,d, post: %,d, delta: %d, thread: %s",
                             nodeId.name(), dag.getId(), pre, post, deltaSize,
                             Thread.currentThread().getName()));
                 }
@@ -400,13 +402,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             final boolean originalIsLeaf = 0 == original.bucketsSize();
 
             if (originalIsLeaf) {
-                final Map<NodeId, DAGNode> origNodes = lazyNodes(original);
-                if (!origNodes.isEmpty()) {
-                    // TODO: avoid saving nodes already in RevTrees
-                    storageProvider.saveNodes(origNodes);
-                    origNodes.keySet().forEach((id) -> root.addChild(id));
-                }
-
+                mirrorLeaf(original, root);
             } else {
                 if (root.getState() == STATE.INITIALIZED) {
                     // make DAG a bucket tree
@@ -424,7 +420,31 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             }
             root.setMirrored();
         }
+    }
 
+    private void mirrorLeaf(RevTree tree, @NonNull DAG mirror) {
+        if (tree.isEmpty()) {
+            return;
+        }
+
+        final ObjectId cacheTreeId = tree.getId();
+
+        final int treesSize = tree.treesSize();
+        for (int i = 0; i < treesSize; i++) {
+            NodeId nodeId = computeId(tree.getTree(i));
+            DAGNode dagNode = DAGNode.treeNode(cacheTreeId, i);
+            storageProvider.saveNode(nodeId, dagNode);
+            mirror.addChild(nodeId);
+        }
+
+        final int featuresSize = tree.featuresSize();
+        for (int i = 0; i < featuresSize; i++) {
+            Node featureNode = tree.getFeature(i);
+            NodeId nodeId = computeId(featureNode);
+            DAGNode dagNode = DAGNode.featureNode(cacheTreeId, i);
+            storageProvider.saveNode(nodeId, dagNode);
+            mirror.addChild(nodeId);
+        }
     }
 
     protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
@@ -470,38 +490,12 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         throw new UnsupportedOperationException();
     }
 
-    private Map<NodeId, DAGNode> lazyNodes(final RevTree tree) {
-        if (tree.isEmpty()) {
-            return Collections.emptyMap();
-        }
-
-        final ObjectId cacheTreeId = tree.getId();
-        Map<NodeId, DAGNode> dagNodes = new HashMap<>();
-
-        final int treesSize = tree.treesSize();
-        for (int i = 0; i < treesSize; i++) {
-            NodeId nodeId = computeId(tree.getTree(i));
-            DAGNode dagNode = DAGNode.treeNode(cacheTreeId, i);
-            dagNodes.put(nodeId, dagNode);
-        }
-
-        final int featuresSize = tree.featuresSize();
-        for (int i = 0; i < featuresSize; i++) {
-            Node featureNode = tree.getFeature(i);
-            NodeId nodeId = computeId(featureNode);
-            DAGNode dagNode = DAGNode.featureNode(cacheTreeId, i);
-            dagNodes.put(nodeId, dagNode);
-        }
-
-        return dagNodes;
-    }
-
     @VisibleForTesting
     class DAGCache {
         private DAGStorageProvider store;
 
         @VisibleForTesting
-        final Map<TreeId, DAG> treeBuff = new ConcurrentHashMap<>();
+        final Map<TreeId, DAG> treeBuff = new HashMap<>();
 
         private Set<TreeId> dirty = new HashSet<>();
 
@@ -513,41 +507,36 @@ public abstract class ClusteringStrategy extends NodeOrdering {
             treeBuff.clear();
         }
 
+        public @NonNull DAG getDAG(TreeId id) {
+            DAG dag;
+            if (ROOT_ID.equals(id)) {
+                dag = ClusteringStrategy.this.root;
+            } else {
+                dag = treeBuff.get(id);
+                if (dag == null) {
+                    dag = store.getTree(id);
+                }
+            }
+            return dag;
+        }
+
         /**
          * Returns all the DAG's for the argument ids, which must already exist
          */
-        public List<DAG> getAll(Set<TreeId> ids) {
-            List<DAG> all = new ArrayList<>();
-            Set<TreeId> missing = new HashSet<>();
-            for (TreeId id : ids) {
-                DAG dag;
-                if (ROOT_ID.equals(id)) {
-                    dag = ClusteringStrategy.this.root;
-                } else {
-                    dag = treeBuff.get(id);
-                }
-                if (dag == null) {
-                    missing.add(id);
-                } else {
-                    all.add(dag);
-                }
+        public List<DAG> getAll(List<TreeId> ids) {
+            List<DAG> all = new ArrayList<>(ids.size());
+            for (int i = 0; i < ids.size(); i++) {
+                all.add(getDAG(ids.get(i)));
             }
-            List<DAG> uncached = store.getTrees(missing);
-            all.addAll(uncached);
             return all;
         }
 
         public DAG getOrCreate(TreeId treeId, ObjectId originalTreeId) {
-            DAG dag = treeBuff.get(treeId);
-            if (dag == null) {
-                dag = store.getOrCreateTree(treeId, originalTreeId);
+            return treeBuff.computeIfAbsent(treeId, tid -> {
+                DAG dag = store.getOrCreateTree(treeId, originalTreeId);
                 dag.changeListener = this::changed;
-                DAG existing = treeBuff.putIfAbsent(treeId, dag);
-                if (existing != null) {
-                    dag = existing;
-                }
-            }
-            return dag;
+                return dag;
+            });
         }
 
         /**
@@ -568,13 +557,11 @@ public abstract class ClusteringStrategy extends NodeOrdering {
                 return;
             }
 
-            Map<TreeId, DAG> toSave = new HashMap<>();
             for (TreeId id : dirty) {
                 final @NonNull DAG saveme = treeBuff.remove(id);
-                toSave.put(id, saveme);
+                store.save(saveme);
             }
             dirty.clear();
-            store.save(toSave);
         }
 
         @VisibleForTesting

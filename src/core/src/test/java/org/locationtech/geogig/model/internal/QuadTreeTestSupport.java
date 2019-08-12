@@ -110,7 +110,7 @@ public class QuadTreeTestSupport extends ExternalResource {
     public QuadTreeClusteringStrategy clone(QuadTreeClusteringStrategy strategy) {
         QuadTreeClusteringStrategy clone = newStrategy();
         clone.root.init(strategy.root);
-        List<DAG> dagTrees = strategy.getDagTrees(new HashSet<>(strategy.root.bucketList()));
+        List<DAG> dagTrees = strategy.getDagTrees(strategy.root.bucketList());
         for (DAG d : dagTrees) {
             clone(strategy, clone, d);
         }
@@ -128,8 +128,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         Map<NodeId, DAGNode> dagnodes = Maps.transformValues(nodes, (n) -> DAGNode.of(n));
         target.storageProvider.saveNodes(dagnodes);
 
-        Set<TreeId> buckets = new HashSet<>(dag.bucketList());
-        List<DAG> dagTrees = source.getDagTrees(buckets);
+        List<DAG> dagTrees = source.getDagTrees(dag.bucketList());
         for (DAG d : dagTrees) {
             clone(source, target, d);
         }
@@ -363,7 +362,7 @@ public class QuadTreeTestSupport extends ExternalResource {
     public @Nullable DAG getDAG(QuadTreeClusteringStrategy quadStrategy, TreeId id) {
         List<DAG> dags;
         try {
-            dags = quadStrategy.getDagTrees(Collections.singleton(id));
+            dags = quadStrategy.getDagTrees(Collections.singletonList(id));
         } catch (NoSuchElementException e) {
             return null;
         }

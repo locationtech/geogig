@@ -9,15 +9,12 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -28,16 +25,16 @@ import com.google.common.base.Preconditions;
 
 class HeapDAGStorageProvider implements DAGStorageProvider {
 
-    Map<NodeId, DAGNode> nodes;
+    private Map<String, Object> nodes;
 
-    SortedMap<TreeId, DAG> trees;
+    private Map<TreeId, DAG> trees;
 
     private ObjectStore source;
 
     public HeapDAGStorageProvider(ObjectStore source) {
         this.source = source;
-        this.nodes = new ConcurrentHashMap<>();
-        this.trees = new TreeMap<>();
+        this.nodes = new HashMap<>();
+        this.trees = new HashMap<>();
     }
 
     public void close() {
@@ -57,16 +54,16 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return source.getTree(treeId);
     }
 
-    public @Override List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
-        List<DAG> res = new ArrayList<>(ids.size());
-        ids.forEach((id) -> {
-            DAG dag = trees.get(id);
-            if (dag == null) {
-                throw new NoSuchElementException(id.toString());
-            }
-            res.add(dag);
-        });
-        return res;
+    public DAG getTree(TreeId id) throws NoSuchElementException {
+        DAG dag = trees.get(id);
+        if (dag == null) {
+            throw new NoSuchElementException(id.toString());
+        }
+        return dag;
+    }
+
+    public @Override List<DAG> getTrees(List<TreeId> ids) throws NoSuchElementException {
+        return ids.stream().map(this::getTree).collect(Collectors.toList());
     }
 
     public @Override DAG getOrCreateTree(final TreeId treeId, final ObjectId originalTreeId) {
@@ -74,29 +71,39 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
         return dag;// .clone();
     }
 
-    public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
+    public @Override Node getNode(NodeId nodeId) {
+        Object n = nodes.get(nodeId.name());
+        Preconditions.checkState(n != null);
+        Node dagNode = n instanceof DAGNode ? ((DAGNode) n).resolve(source) : (Node) n;
+        return dagNode;
+    }
 
+    public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
         Map<NodeId, Node> res = new HashMap<>();
-        nodeIds.forEach((nid) -> {
-            DAGNode dagNode = nodes.get(nid);
-            Preconditions.checkState(dagNode != null);
-            Node node = dagNode.resolve(source);
-            res.put(nid, node);
-        });
+        nodeIds.forEach((nid) -> res.put(nid, getNode(nid)));
         return res;
     }
 
+    public @Override void saveNode(NodeId nodeId, DAGNode node) {
+        nodes.put(nodeId.name(), node);
+    }
+
     public @Override void saveNode(NodeId nodeId, Node node) {
-        nodes.put(nodeId, DAGNode.of(node));
+        nodes.put(nodeId.name(), DAGNode.of(node));
     }
 
     public @Override void saveNodes(Map<NodeId, DAGNode> nodeMappings) {
-        nodes.putAll(nodeMappings);
+        nodeMappings.forEach(this::saveNode);
     }
 
-    public @Override void save(Map<TreeId, DAG> dags) {
-        // trees.putAll(Maps.transformValues(dags, (d) -> d.clone()));
-        trees.putAll(dags);
+    public @Override void save(DAG dag) {
+        // nothing to do, DAG was created and held by this class
+        trees.put(dag.getId(), dag);
+    }
+
+    public @Override void save(List<DAG> dags) {
+        // nothing to do, DAGs were created and held by this class
+        dags.forEach(this::save);
     }
 
     public long nodeCount() {

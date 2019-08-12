@@ -11,6 +11,7 @@ package org.locationtech.geogig.tempstorage.rocksdb;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.locationtech.geogig.model.internal.TreeId;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.rocksdb.RocksDB;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 class RocksdbDAGStorageProvider implements DAGStorageProvider {
@@ -98,7 +100,11 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         }
     }
 
-    public @Override List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException {
+    public @Override DAG getTree(TreeId id) throws NoSuchElementException {
+        return dagStore.getTree(id);
+    }
+
+    public @Override List<DAG> getTrees(List<TreeId> ids) throws NoSuchElementException {
         return dagStore.getTrees(ids);
     }
 
@@ -106,8 +112,18 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         return dagStore.getOrCreateTree(treeId, originalTreeId);
     }
 
-    public @Override void save(Map<TreeId, DAG> dags) {
+    public @Override void save(DAG dag) {
+        save(Collections.singletonList(dag));
+    }
+
+    public @Override void save(List<DAG> dags) {
         dagStore.save(dags);
+    }
+
+    public @Override Node getNode(NodeId nodeId) {
+        DAGNode dagNode = nodeStore.get(nodeId);
+        Preconditions.checkState(dagNode != null);
+        return dagNode.resolve(objectStore);
     }
 
     public @Override Map<NodeId, Node> getNodes(final Set<NodeId> nodeIds) {
@@ -115,6 +131,10 @@ class RocksdbDAGStorageProvider implements DAGStorageProvider {
         Map<NodeId, Node> res = new HashMap<>();
         dagNodes.forEach((id, node) -> res.put(id, node.resolve(objectStore)));
         return res;
+    }
+
+    public @Override void saveNode(NodeId nodeId, DAGNode node) {
+        nodeStore.put(nodeId, node);
     }
 
     public @Override void saveNode(NodeId nodeId, Node node) {

@@ -40,7 +40,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Fork(value = 1, jvmArgs = { "-Xms2G", "-Xmx12G" })
 @Warmup(iterations = 1)
-@Measurement(iterations = 1)
+@Measurement(iterations = 2)
 public class RevTreeBuilderBenchmark {
 
     public @Benchmark void putNodes(Blackhole bh, RevTreeBuilderBenchmarkState state) {
@@ -62,7 +62,7 @@ public class RevTreeBuilderBenchmark {
                 .measurementIterations(5)//
                 .forks(0)//
                 .param("factory", "default")//
-                // .param("size", "1000000")//
+                .param("size", "10000000")//
                 .param("storeType", "heap")//
                 .build();
 

@@ -21,7 +21,6 @@ import org.locationtech.geogig.rocksdb.RocksdbObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Envelope;
-import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
@@ -37,7 +36,7 @@ public class RevTreeBuilderBenchmarkState {
     @Param(value = { "512", "100000", "1000000", "5000000", "10000000" })
     public int size;
 
-    @Param(value = { "default" })
+    @Param(value = { "default", "flatbuffers" })
     public String factory;
 
     RevObjectFactory revObjectFactory;

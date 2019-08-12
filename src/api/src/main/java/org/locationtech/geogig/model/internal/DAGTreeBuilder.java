@@ -14,13 +14,11 @@ import static com.google.common.base.Preconditions.checkState;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -32,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -253,26 +250,13 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
         private RevTree buildBucketsTree(final DAG root)
                 throws InterruptedException, ExecutionException {
 
-            final List<DAG> mutableBuckets;
-            {
-                final @NonNull Set<TreeId> dagBuckets = new HashSet<>();
-                root.forEachBucket(dagBuckets::add);
-                mutableBuckets = this.state.clusteringStrategy.getDagTrees(dagBuckets);
-                checkState(dagBuckets.size() == mutableBuckets.size());
-            }
-            if (state.isCancelled()) {
-                return null;
-            }
-            Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
-
-            for (DAG bucketDAG : mutableBuckets) {
-                final TreeId dagBucketId = bucketDAG.getId();
-
-                final Integer bucketIndex = dagBucketId.bucketIndex(depth);
+            final Map<Integer, ForkJoinTask<RevTree>> subtasks = new HashMap<>();
+            root.forEachBucket(dagBucketId -> {
+                DAG bucketDAG = this.state.clusteringStrategy.getDagTree(dagBucketId);
+                Integer bucketIndex = dagBucketId.bucketIndex(depth);
                 TreeBuildTask subtask = new TreeBuildTask(state, bucketDAG, this.depth + 1);
                 subtasks.put(bucketIndex, subtask);
-            }
-
+            });
             if (state.isCancelled()) {
                 return null;
             }
@@ -320,21 +304,27 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                 return null;
             }
             checkState(root.numBuckets() == 0);
-
-            final List<Node> children;
+            List<Node> treesList = Collections.emptyList();
+            List<Node> featuresList = Collections.emptyList();
             {
-                Set<NodeId> childrenIds = new HashSet<>();
-                root.forEachChild(childrenIds::add);
-                children = toNodes(childrenIds);
+                Comparator<NodeId> nodeOrdering = state.clusteringStrategy.getNodeOrdering();
+                List<NodeId> nodeIds = root.childrenList();
+                Collections.sort(nodeIds, nodeOrdering);
+                for (int i = 0; i < nodeIds.size(); i++) {
+                    Node node = state.clusteringStrategy.getNode(nodeIds.get(i));
+                    if (TYPE.FEATURE == node.getType()) {
+                        if (featuresList.isEmpty()) {
+                            featuresList = new ArrayList<>(nodeIds.size());
+                        }
+                        featuresList.add(node);
+                    } else {
+                        if (treesList.isEmpty()) {
+                            treesList = new ArrayList<>(nodeIds.size());
+                        }
+                        treesList.add(node);
+                    }
+                }
             }
-
-            List<Node> treesList = children.stream()
-                    .filter(n -> n.getType().equals(TYPE.TREE) && !n.getObjectId().isNull())
-                    .collect(Collectors.toList());
-
-            List<Node> featuresList = children.stream()
-                    .filter(n -> n.getType().equals(TYPE.FEATURE) && !n.getObjectId().isNull())
-                    .collect(Collectors.toList());
 
             final long size = sumTreeSizes(treesList) + featuresList.size();
 
@@ -346,15 +336,6 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
                 return null;
             }
             return RevTreeBuilder.build(size, childTreeCount, treesList, featuresList, buckets);
-        }
-
-        private List<Node> toNodes(Set<NodeId> nodeIds) {
-            if (null == nodeIds) {
-                return Collections.emptyList();
-            }
-
-            SortedMap<NodeId, Node> nodes = state.clusteringStrategy.getNodes(nodeIds);
-            return new ArrayList<>(nodes.values());
         }
 
         private long sumTreeSizes(Iterable<Node> trees) {

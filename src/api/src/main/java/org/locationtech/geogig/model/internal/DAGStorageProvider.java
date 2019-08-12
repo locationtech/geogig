@@ -21,17 +21,25 @@ import org.locationtech.geogig.model.RevTree;
 
 public interface DAGStorageProvider {
 
-    public List<DAG> getTrees(Set<TreeId> ids) throws NoSuchElementException;
+    public DAG getTree(TreeId id) throws NoSuchElementException;
+
+    public @Deprecated List<DAG> getTrees(List<TreeId> ids) throws NoSuchElementException;
 
     public DAG getOrCreateTree(TreeId treeId, ObjectId originalTreeId);
 
-    public void save(Map<TreeId, DAG> dags);
+    public void save(DAG dag);
+
+    public @Deprecated void save(List<DAG> dags);
+
+    public Node getNode(NodeId nodeId);
 
     public Map<NodeId, Node> getNodes(Set<NodeId> nodeIds);
 
     public void saveNode(NodeId nodeId, Node node);
 
-    public void saveNodes(Map<NodeId, DAGNode> nodeMappings);
+    public void saveNode(NodeId nodeId, DAGNode node);
+
+    public @Deprecated void saveNodes(Map<NodeId, DAGNode> nodeMappings);
 
     public void dispose();
 

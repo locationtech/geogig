@@ -87,8 +87,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return PGStorage.listRepos(builder.build());
     }
 
-    public @Override void initialize(URI repoURI, Context repoContext)
-            throws IllegalArgumentException {
+    public @Override void initialize(URI repoURI) throws IllegalArgumentException {
         Environment config = parseConfig(repoURI);
         PGStorage.createNewRepo(config);
     }

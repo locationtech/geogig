@@ -28,7 +28,6 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
@@ -163,7 +162,7 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
     }
 
     private Set<Ref> getRemoteLocalRefs() {
-        final ImmutableSet<Ref> localRemoteRefs;
+        final Set<Ref> localRemoteRefs;
         localRemoteRefs = command(LsRemoteOp.class)//
                 .retrieveHead(true)//
                 .retrieveLocalRefs(true)//

@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.storage.impl;
+package org.locationtech.geogig.transaction;
 
 import java.util.Iterator;
 import java.util.List;
@@ -19,13 +19,10 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
@@ -40,7 +37,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
  * @see TransactionBegin
  * @see TransactionEnd
  */
-public class TransactionStagingArea implements StagingArea {
+class TransactionStagingArea implements StagingArea {
 
     private StagingArea index;
 
@@ -69,6 +66,10 @@ public class TransactionStagingArea implements StagingArea {
      */
     public @Override void updateStageHead(ObjectId newTree) {
         index.updateStageHead(newTree);
+    }
+
+    public @Override void updateStageHead(ObjectId newTree, String reason) {
+        index.updateStageHead(newTree, reason);
     }
 
     /**

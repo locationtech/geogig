@@ -16,7 +16,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import lombok.NonNull;
 

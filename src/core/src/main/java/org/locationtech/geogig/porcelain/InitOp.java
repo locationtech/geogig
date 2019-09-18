@@ -13,23 +13,28 @@ import static org.locationtech.geogig.model.Ref.HEAD;
 import static org.locationtech.geogig.model.Ref.MASTER;
 import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
 import static org.locationtech.geogig.model.Ref.WORK_HEAD;
+import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.UpdateSymRef;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -41,6 +46,7 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ObjectStore;
+import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -50,6 +56,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 import lombok.AccessLevel;
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -96,17 +103,13 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
     protected @Override Repository _call() {
         final Hints hints = context().hints();
         final Platform platform = platform();
-        Optional<URI> resolvedURI = new ResolveGeogigURI(platform, hints).call();
-        if (!resolvedURI.isPresent()) {
-            resolvedURI = Optional.of(platform.pwd().getAbsoluteFile().toURI());
-        }
-
-        URI repoURI = resolvedURI.get();
+        final URI repoURI = new ResolveGeogigURI(platform, hints).call()
+                .orElseGet(() -> platform.pwd().getAbsoluteFile().toURI());
 
         final RepositoryResolver repoInitializer = repositoryFinder.lookup(repoURI);
         final boolean repoExisted = repoInitializer.repoExists(repoURI);
 
-        repoInitializer.initialize(repoURI, context());
+        repoInitializer.initialize(repoURI);
 
         Map<String, String> effectiveConfigBuilder = Maps.newTreeMap();
         Optional<Serializable> repoName = hints.get(Hints.REPOSITORY_NAME);
@@ -172,40 +175,32 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
             throw new IllegalStateException("Can't access repository at '" + repoURI + "'", e);
         }
 
-        createDefaultRefs();
+        createDefaultRefs(repository);
         return repository;
     }
 
-    private void createDefaultRefs() {
-        Optional<Ref> master = getRef(MASTER);
-        Optional<Ref> head = getRef(HEAD);
-        Optional<Ref> workhead = command(RefParse.class).setName(WORK_HEAD).call();
-        Optional<Ref> stagehead = command(RefParse.class).setName(STAGE_HEAD).call();
+    private void createDefaultRefs(@NonNull Repository repository) {
+        RefDatabase refDatabase = repository.context().refDatabase();
+        Map<String, Ref> initialRefs = refDatabase
+                .getAllPresent(Arrays.asList(HEAD, MASTER, WORK_HEAD, STAGE_HEAD)).stream()
+                .collect(Collectors.toMap(Ref::getName, ref -> ref));
 
-        if (!master.isPresent())
-            setRef(MASTER, ObjectId.NULL);
+        UpdateRefs updateRefs = repository.context().command(UpdateRefs.class)
+                .setReason(initialRefs.isEmpty() ? "init: repository initialization"
+                        : "init: repository re-initialization");
 
-        if (!head.isPresent())
-            setSymRef(HEAD, MASTER);
+        final Ref master = initialRefs.computeIfAbsent(MASTER,
+                name -> new Ref(name, ObjectId.NULL));
 
-        if (!workhead.isPresent())
-            setRef(WORK_HEAD, RevTree.EMPTY_TREE_ID);
+        ObjectId defaultWorkHead = master.getObjectId().isNull() ? EMPTY_TREE_ID
+                : master.getObjectId();
+        ObjectId defaultStageHead = defaultWorkHead;
 
-        if (!stagehead.isPresent())
-            setRef(STAGE_HEAD, RevTree.EMPTY_TREE_ID);
-    }
+        initialRefs.putIfAbsent(HEAD, new SymRef(HEAD, master));
+        initialRefs.putIfAbsent(WORK_HEAD, new Ref(WORK_HEAD, defaultWorkHead));
+        initialRefs.putIfAbsent(STAGE_HEAD, new Ref(STAGE_HEAD, defaultStageHead));
 
-    private void setRef(String name, ObjectId value) {
-        command(UpdateRef.class).setName(name).setNewValue(value)
-                .setReason("Repository initialization").call();
-    }
-
-    private void setSymRef(String name, String target) {
-        command(UpdateSymRef.class).setName(name).setNewValue(target)
-                .setReason("Repository initialization").call();
-    }
-
-    private Optional<Ref> getRef(String name) {
-        return command(RefParse.class).setName(name).call();
+        initialRefs.values().forEach(updateRefs::add);
+        updateRefs.call();
     }
 }

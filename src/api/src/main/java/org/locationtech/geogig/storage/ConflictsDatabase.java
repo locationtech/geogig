@@ -103,7 +103,7 @@ public interface ConflictsDatabase extends Store {
     /**
      * Finds and returns the set of conflict paths that exist and match any of the provided paths.
      */
-    public Set<String> findConflicts(@Nullable String namespace, Set<String> paths);
+    public Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths);
 
     /**
      * Removes all conflicts that match the specified namespace/prefix filter, if given, or all that

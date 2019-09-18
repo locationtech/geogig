@@ -14,28 +14,32 @@ import java.util.Optional;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.RefChange;
 
 import com.google.common.base.Preconditions;
+
+import lombok.Getter;
 
 /**
  * Update the object name stored in a {@link Ref} safely.
  * <p>
  * 
+ * @implNote delegates to {@link UpdateRefs}
  */
 @Hookable(name = "update-sym-ref")
 public class UpdateSymRef extends AbstractGeoGigOp<Optional<Ref>> {
 
-    private String name;
+    private @Getter String name;
 
-    private String newValue;
+    private @Getter String newValue;
 
-    private String oldValue;
+    private @Getter String oldValue;
 
-    private boolean delete;
+    private @Getter boolean delete;
 
-    @SuppressWarnings("unused")
-    private String reason;
+    private @Getter String reason;
 
     /**
      * @param name the name of the ref to update
@@ -80,9 +84,8 @@ public class UpdateSymRef extends AbstractGeoGigOp<Optional<Ref>> {
      * @param reason if provided, the ref log will be updated with this reason message
      * @return {@code this}
      */
-    // TODO: reflog not yet implemented
-    public UpdateSymRef setReason(String reason) {
-        this.reason = reason;
+    public UpdateSymRef setReason(String reason, Object... formatArgs) {
+        this.reason = String.format(reason, formatArgs);
         return this;
     }
 
@@ -94,28 +97,21 @@ public class UpdateSymRef extends AbstractGeoGigOp<Optional<Ref>> {
         Preconditions.checkState(delete || newValue != null, "value has not been set");
 
         if (oldValue != null) {
-            String storedValue;
-            try {
-                storedValue = refDatabase().getSymRef(name);
-            } catch (IllegalArgumentException e) {
-                // may be updating what used to be a direct ref to be a symbolic ref
-                storedValue = refDatabase().getRef(name);
-            }
-            Preconditions.checkState(oldValue.equals(storedValue), "Old value (" + storedValue
-                    + ") doesn't match expected value '" + oldValue + "'");
+            Optional<Ref> curr = refDatabase().get(name).map(Ref::peel);
+            String storedTarget = curr.map(Ref::getName).orElse(null);
+            String storedId = curr.map(Ref::getObjectId).map(ObjectId::toString).orElse(null);
+            Preconditions.checkState(oldValue.equals(storedTarget) || oldValue.equals(storedId),
+                    "Old value (%s) doesn't match expected value '%s'", storedTarget, oldValue);
         }
 
+        UpdateRefs updateCmd = command(UpdateRefs.class).setReason(reason);
         if (delete) {
-            Optional<Ref> oldRef = command(RefParse.class).setName(name).call();
-            if (oldRef.isPresent()) {
-                refDatabase().remove(name);
-            }
-            return oldRef;
+            updateCmd.remove(name);
+        } else {
+            updateCmd.add(new SymRef(name, new Ref(newValue, ObjectId.NULL)));
         }
-
-        refDatabase().putSymRef(name, newValue);
-        Optional<Ref> ref = command(RefParse.class).setName(name).call();
-        return ref;
+        RefChange change = updateCmd.call().get(0);
+        return delete ? change.oldValue() : change.newValue();
     }
 
 }

@@ -15,10 +15,11 @@ import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import lombok.NonNull;
@@ -101,31 +102,22 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
 
         ObjectStore source = this.source == null ? objectDatabase() : this.source;
-
-        final TYPE objectType = command(ResolveObjectType.class).setSource(source)
-                .setObjectId(objectId).call();
+        final RevObject object = source.get(objectId);
+        final TYPE objectType = object.getType();
 
         switch (objectType) {
         case TREE:
             // ok
             break;
         case COMMIT: {
-            Optional<RevCommit> commit = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(objectId).call(RevCommit.class);
-            if (commit.isPresent()) {
-                objectId = commit.get().getTreeId();
-            } else {
-                objectId = null;
-            }
+            RevCommit commit = source.getCommit(objectId);
+            objectId = commit.getTreeId();
             break;
         }
         case TAG: {
-            Optional<RevTag> tag = command(RevObjectParse.class).setSource(source)
-                    .setObjectId(objectId).call(RevTag.class);
-            if (tag.isPresent()) {
-                ObjectId commitId = tag.get().getCommitId();
-                return call(Optional.of(commitId));
-            }
+            RevTag tag = source.getTag(objectId);
+            objectId = source.getCommit(tag.getCommitId()).getTreeId();
+            break;
         }
         default:
             throw new IllegalArgumentException(String.format(
@@ -133,6 +125,6 @@ public class ResolveTreeish extends AbstractGeoGigOp<Optional<ObjectId>> {
                     treeishRefSpec, String.valueOf(objectType)));
         }
 
-        return Optional.ofNullable(objectId);
+        return Optional.of(objectId);
     }
 }

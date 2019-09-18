@@ -7,47 +7,58 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.repository.impl;
+package org.locationtech.geogig.transaction;
 
+import static org.locationtech.geogig.model.Ref.TRANSACTIONS_PREFIX;
+import static org.locationtech.geogig.model.Ref.append;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.DelegatingContext;
-import org.locationtech.geogig.plumbing.TransactionEnd;
+import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
+import org.locationtech.geogig.repository.impl.StagingAreaImpl;
+import org.locationtech.geogig.repository.impl.WorkingTreeImpl;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
-import org.locationtech.geogig.storage.impl.TransactionBlobStoreImpl;
-import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
-import org.locationtech.geogig.storage.impl.TransactionRefDatabase.ChangedRef;
-import org.locationtech.geogig.storage.impl.TransactionStagingArea;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+
+import lombok.NonNull;
 
 /**
  * Provides a method of performing concurrent operations on a single Geogig repository.
  * 
- * @see org.locationtech.geogig.plumbing.TransactionBegin
- * @see org.locationtech.geogig.plumbing.TransactionEnd
+ * @see org.locationtech.geogig.transaction.TransactionBegin
+ * @see org.locationtech.geogig.transaction.TransactionEnd
  */
 public class GeogigTransaction extends DelegatingContext implements Context {
 
     private UUID transactionId;
 
-    private final StagingArea transactionIndex;
+    private final NamespaceRefDatabase transactionRefDatabase;
+
+    private final NamespaceRefDatabase initialStateRefDatabase;
+
+    private final StagingArea transactionStagingArea;
 
     private final WorkingTree transactionWorkTree;
-
-    private final TransactionRefDatabase transactionRefDatabase;
 
     private TransactionBlobStore transactionBlobStore;
 
@@ -56,32 +67,55 @@ public class GeogigTransaction extends DelegatingContext implements Context {
     private Optional<String> authorEmail = Optional.empty();
 
     /**
-     * Constructs the transaction with the given ID and Injector.
+     * Constructs the transaction with the given ID and Context.
      * 
      * @param context the non transactional command locator
      * @param transactionId the id of the transaction
      */
-    public GeogigTransaction(Context context, UUID transactionId) {
+    GeogigTransaction(Context context, UUID transactionId) {
         super(context);
         Preconditions.checkArgument(!(context instanceof GeogigTransaction));
         this.context = context;
         this.transactionId = transactionId;
 
-        transactionIndex = new TransactionStagingArea(new StagingAreaImpl(this), transactionId);
+        transactionStagingArea = new TransactionStagingArea(new StagingAreaImpl(this),
+                transactionId);
         transactionWorkTree = new WorkingTreeImpl(this);
-        transactionRefDatabase = new TransactionRefDatabase(context.refDatabase(), transactionId);
         transactionBlobStore = new TransactionBlobStoreImpl(
                 (TransactionBlobStore) context.blobStore(), transactionId);
+
+        final String txNs = GeogigTransaction.buildTransactionNamespace(transactionId);
+        final String origNs = Ref.append(txNs, "orig");
+        final String changedNs = Ref.append(txNs, "changed");
+
+        RefDatabase refDatabase = context.refDatabase();
+        initialStateRefDatabase = new NamespaceRefDatabase(refDatabase, origNs);
+        transactionRefDatabase = new NamespaceRefDatabase(refDatabase, changedNs);
+    }
+
+    public static String buildTransactionNamespace(final UUID transactionId) {
+        return append(TRANSACTIONS_PREFIX, transactionId.toString());
     }
 
     public void create() {
-        transactionRefDatabase.open();
+        RefDatabase refDatabase = context.refDatabase();
+        List<Ref> allRefs = refDatabase.getAll();
+        List<@NonNull Ref> origRefs = allRefs.stream().map(initialStateRefDatabase::toInternal)
+                .collect(Collectors.toList());
+        List<@NonNull Ref> txRefs = allRefs.stream().map(transactionRefDatabase::toInternal)
+                .collect(Collectors.toList());
+
+        UpdateRefs createTxRefs = context.command(UpdateRefs.class).setReason("transaction begin");
+        origRefs.forEach(createTxRefs::add);
+        txRefs.forEach(createTxRefs::add);
+        createTxRefs.call();
     }
 
     public void close() {
+        transactionStagingArea.conflictsDatabase().removeConflicts(null);
         transactionBlobStore.removeBlobs(transactionId.toString());
         transactionRefDatabase.close();
-        transactionIndex.conflictsDatabase().removeConflicts(null);
+        initialStateRefDatabase.close();
     }
 
     /**
@@ -108,7 +142,7 @@ public class GeogigTransaction extends DelegatingContext implements Context {
     }
 
     public @Override StagingArea stagingArea() {
-        return transactionIndex;
+        return transactionStagingArea;
     }
 
     public @Override RefDatabase refDatabase() {
@@ -145,7 +179,7 @@ public class GeogigTransaction extends DelegatingContext implements Context {
     }
 
     public @Override ConflictsDatabase conflictsDatabase() {
-        return transactionIndex != null ? transactionIndex.conflictsDatabase()
+        return transactionStagingArea != null ? transactionStagingArea.conflictsDatabase()
                 : context.conflictsDatabase();
     }
 
@@ -153,8 +187,27 @@ public class GeogigTransaction extends DelegatingContext implements Context {
         return transactionBlobStore;
     }
 
-    public List<ChangedRef> changedRefs() {
-        return transactionRefDatabase.changedRefs();
+    public List<RefChange> changedRefs() {
+        Map<String, Ref> originals = initialStateRefDatabase.getAll().stream()
+                .collect(Collectors.toMap(Ref::getName, r -> r));
+        Map<String, Ref> changed = transactionRefDatabase.getAll().stream()
+                .collect(Collectors.toMap(Ref::getName, r -> r));
+
+        MapDifference<String, Ref> difference = Maps.difference(originals, changed);
+
+        List<RefChange> changes = new ArrayList<>();
+        // include all new refs
+        difference.entriesOnlyOnRight()
+                .forEach((k, v) -> changes.add(RefChange.of(v.getName(), null, v)));
+
+        // include all changed refs, with the new values
+        difference.entriesDiffering().values().forEach(d -> changes
+                .add(RefChange.of(d.leftValue().getName(), d.leftValue(), d.rightValue())));
+
+        // deleted refs
+        difference.entriesOnlyOnLeft()
+                .forEach((k, v) -> changes.add(RefChange.of(v.getName(), v, null)));
+        return changes;
     }
 
     public @Override Context snapshot() {

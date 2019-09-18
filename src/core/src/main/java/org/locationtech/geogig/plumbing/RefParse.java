@@ -9,19 +9,18 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -69,94 +68,53 @@ public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
         }
 
         // is it a top level ref?
-        if (!refSpec.startsWith("refs/")) {
+        if (-1 == refSpec.indexOf('/')) {
             Optional<Ref> ref = getRef(refSpec);
             if (ref.isPresent()) {
                 return ref;
             }
         }
 
-        Map<String, String> allRefs = refDatabase().getAll();
-
-        class PrePostfixPredicate implements Predicate<String> {
-
-            private String prefix;
-
-            private String suffix;
-
-            public PrePostfixPredicate(String prefix, String suffix) {
-                this.prefix = prefix;
-                this.suffix = suffix;
-            }
-
-            public @Override boolean apply(String refName) {
-                boolean applies = refName.startsWith(prefix) && refName.endsWith(suffix);
-                return applies;
-            }
-
+        // may it be a single name like "master", resolution order is refs/heads, refs/tags, and
+        // refs/remotes
+        Optional<Ref> found = find(Ref.HEADS_PREFIX, refSpec);
+        if (!found.isPresent()) {
+            found = find(Ref.TAGS_PREFIX, refSpec);
         }
-        Collection<String> heads = Collections2.filter(allRefs.keySet(),
-                new PrePostfixPredicate("refs/heads", "/" + refSpec));
-        Collection<String> tags = Collections2.filter(allRefs.keySet(),
-                new PrePostfixPredicate("refs/tags", "/" + refSpec));
-        Collection<String> remotes = Collections2.filter(allRefs.keySet(),
-                new PrePostfixPredicate("refs/remotes", "/" + refSpec));
-
-        String refName;
-        refName = resolveSingle(heads);
-        if (refName == null) {
-            refName = resolveSingle(tags);
+        if (!found.isPresent()) {
+            found = find(Ref.REMOTES_PREFIX, refSpec);
         }
-        if (refName == null) {
-            refName = resolveSingle(remotes);
-        }
-        if (refName == null) {
-            return Optional.empty();
-        }
-        return getRef(refName);
+        return found;
     }
 
-    private String resolveSingle(Collection<String> refNames) {
-        if (refNames.isEmpty()) {
-            return null;
+    private Optional<Ref> find(final String prefix, final String refSpec) {
+        final String suffix = (refSpec.startsWith("/") ? "" : "/") + refSpec;
+
+        List<Ref> matches = refDatabase().getAll(prefix).stream()
+                .filter(r -> r.getName().endsWith(suffix)).collect(Collectors.toList());
+        if (matches.isEmpty()) {
+            return Optional.empty();
         }
-        if (refNames.size() == 1) {
-            return refNames.iterator().next();
+        if (matches.size() > 1) {
+            throw new IllegalArgumentException(refSpec + " resolves to more than one ref: "
+                    + matches.stream().map(Ref::getName).collect(Collectors.joining(", ")));
         }
-        throw new IllegalArgumentException(refSpec + " resolves to more than one ref: " + refNames);
+        return Optional.of(matches.get(0));
     }
 
     private Optional<Ref> getRef(final String name) {
-        String storedValue;
-        boolean sym = false;
-        try {
-            storedValue = refDatabase().getRef(name);
-        } catch (IllegalArgumentException notARef) {
-            storedValue = refDatabase().getSymRef(name);
-            if (null == storedValue) {
-                return Optional.empty();
-            }
-            sym = true;
-        }
-        if (null == storedValue) {
-            storedValue = refDatabase().getSymRef(name);
-            if (null == storedValue) {
-                return Optional.empty();
-            }
-            sym = true;
-        }
-
-        if (sym) {
-            Optional<Ref> target = getRef(storedValue);
+        RefDatabase refDatabase = refDatabase();
+        Optional<Ref> storedValue = refDatabase.get(name);
+        if (storedValue.isPresent() && storedValue.get() instanceof SymRef) {
+            Optional<Ref> target = getRef(((SymRef) storedValue.get()).getTarget());
             if (!target.isPresent()) {
-                throw new RuntimeException("target '" + storedValue
-                        + "' was not present for symref " + name + " -> '" + storedValue + "'");
+                String message = String.format(
+                        "Symref '%s' points to non existing target: %s. Context: %s", name,
+                        storedValue.get(), context().getClass().getSimpleName());
+                throw new RuntimeException(message);
             }
-            Ref resolved = new SymRef(name, target.get());
-            return Optional.of(resolved);
         }
-        ObjectId objectId = ObjectId.valueOf(storedValue);
-        return Optional.of(new Ref(name, objectId));
+        return storedValue;
     }
 
 }

@@ -298,7 +298,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         }
     }
 
-    public @Override Set<String> findConflicts(@Nullable String txId, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String txId, Iterable<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
             return ImmutableSet.of();

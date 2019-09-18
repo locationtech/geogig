@@ -18,6 +18,7 @@ import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -40,7 +41,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -324,8 +324,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         try (IRemoteRepo remoteRepo = openRemote(remote)) {
             final Repository repository = repository();
-            final ImmutableSet<Ref> remoteRemoteRefs = getRemoteRefs(remoteRepo, args, remote);
-            final ImmutableSet<Ref> localRemoteRefs = getRemoteLocalRefs(remote);
+            final Set<Ref> remoteRemoteRefs = getRemoteRefs(remoteRepo, args, remote);
+            final Set<Ref> localRemoteRefs = getRemoteLocalRefs(remote);
 
             // If we have specified a depth to pull, we may have more history to pull from
             // existing refs.
@@ -385,8 +385,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return needUpdate;
     }
 
-    private void prune(final ImmutableSet<Ref> remoteRemoteRefs,
-            final ImmutableSet<Ref> localRemoteRefs, List<RefDiff> needUpdate) {
+    private void prune(final Set<Ref> remoteRemoteRefs, final Set<Ref> localRemoteRefs,
+            List<RefDiff> needUpdate) {
         // Delete local refs that aren't in the remote
         List<Ref> locals = new ArrayList<Ref>();
         // only branches, not tags, appear in the remoteRemoteRefs list so we will not catch
@@ -408,8 +408,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         }
     }
 
-    private ImmutableSet<Ref> getRemoteLocalRefs(Remote remote) {
-        final ImmutableSet<Ref> localRemoteRefs;
+    private Set<Ref> getRemoteLocalRefs(Remote remote) {
+        final Set<Ref> localRemoteRefs;
         localRemoteRefs = command(LsRemoteOp.class)//
                 .retrieveLocalRefs(true)//
                 .setRemote(Suppliers.ofInstance(Optional.of(remote)))//
@@ -417,14 +417,14 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return localRemoteRefs;
     }
 
-    private ImmutableSet<Ref> getRemoteRefs(final IRemoteRepo remoteRepo, final FetchArgs args,
+    private Set<Ref> getRemoteRefs(final IRemoteRepo remoteRepo, final FetchArgs args,
             Remote remote) {
 
         final Optional<Integer> repoDepth = repository().getDepth();
         final boolean getTags = args.fetchTags && !remote.getMapped()
                 && (!repoDepth.isPresent() || args.fullDepth);
 
-        ImmutableSet<Ref> remoteRemoteRefs;
+        Set<Ref> remoteRemoteRefs;
         remoteRemoteRefs = command(LsRemoteOp.class)//
                 .setRemote(remoteRepo)//
                 .retrieveLocalRefs(false)//
@@ -438,7 +438,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         return command(OpenRemote.class).setRemote(remote).readOnly().call();
     }
 
-    private Ref updateLocalRef(Ref remoteRef, Remote remote, ImmutableSet<Ref> localRemoteRefs) {
+    private Ref updateLocalRef(Ref remoteRef, Remote remote, Set<Ref> localRemoteRefs) {
         final String refName;
         if (remoteRef.getName().startsWith(Ref.TAGS_PREFIX)) {
             refName = remoteRef.getName();
@@ -449,16 +449,16 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         if (remoteRef instanceof SymRef) {
             String targetBranch = Ref.localName(((SymRef) remoteRef).getTarget());
             String newTarget = Ref.REMOTES_PREFIX + remote.getName() + "/" + targetBranch;
-            updatedRef = command(UpdateSymRef.class).setName(refName).setNewValue(newTarget).call()
-                    .get();
+            updatedRef = command(UpdateSymRef.class).setName(refName).setNewValue(newTarget)
+                    .setReason("fetch").call().get();
         } else {
             ObjectId effectiveId = remoteRef.getObjectId();
 
             if (remote.getMapped() && !geogig().objects().commitExists(remoteRef.getObjectId())) {
                 effectiveId = graphDatabase().getMapping(effectiveId);
             }
-            updatedRef = command(UpdateRef.class).setName(refName).setNewValue(effectiveId).call()
-                    .get();
+            updatedRef = command(UpdateRef.class).setName(refName).setNewValue(effectiveId)
+                    .setReason("fetch").call().get();
         }
         return updatedRef;
     }
@@ -467,8 +467,8 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * Filters the remote references for the given remote that are not present or outdated in the
      * local repository
      */
-    private List<RefDiff> findOutdatedRefs(Remote remote, ImmutableSet<Ref> remoteRefs,
-            ImmutableSet<Ref> localRemoteRefs, Optional<Integer> depth) {
+    private List<RefDiff> findOutdatedRefs(Remote remote, Set<Ref> remoteRefs,
+            Set<Ref> localRemoteRefs, Optional<Integer> depth) {
 
         List<RefDiff> changedRefs = Lists.newLinkedList();
 
@@ -507,7 +507,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
      * @param localRemoteRefs the list of locally known references of the given remote in the
      *        {@code refs/remotes/<remote name>/} namespace
      */
-    private Optional<Ref> findLocal(Ref remoteRef, ImmutableSet<Ref> localRemoteRefs) {
+    private Optional<Ref> findLocal(Ref remoteRef, Set<Ref> localRemoteRefs) {
         if (remoteRef.getName().startsWith(Ref.TAGS_PREFIX)) {
             return command(RefParse.class).setName(remoteRef.getName()).call();
         } else {

@@ -11,6 +11,7 @@ package org.locationtech.geogig.remotes.internal;
 
 import java.io.Closeable;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Ref;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
-
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Provides an interface for interacting with remote repositories.
@@ -59,7 +58,7 @@ public interface IRemoteRepo extends Closeable, CommandFactory {
      * @param getTags whether to return refs in the {@code refs/tags} namespace
      * @return an immutable set of refs from the remote
      */
-    public ImmutableSet<Ref> listRefs(Repository local, boolean getHeads, boolean getTags);
+    public Set<Ref> listRefs(Repository local, boolean getHeads, boolean getTags);
 
     /**
      * @return the remote's {@link Ref#HEAD HEAD} ref, or {@link Optional#empty() absent} if the

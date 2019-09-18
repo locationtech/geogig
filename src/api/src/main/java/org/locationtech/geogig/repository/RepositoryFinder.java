@@ -54,7 +54,7 @@ public class RepositoryFinder {
         RepositoryResolver resolver = lookup(uri);
         ContextBuilder contextBuilder = new ServiceFinder().lookupService(ContextBuilder.class);
         Context context = contextBuilder.build(hints);
-        resolver.initialize(uri, context);
+        resolver.initialize(uri);
         Repository repository = context.repository();
         repository.open();
         return repository;

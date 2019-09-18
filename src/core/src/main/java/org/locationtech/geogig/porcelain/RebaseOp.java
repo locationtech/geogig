@@ -9,51 +9,43 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.dsl.Blobs;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevCommitBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.plumbing.CatObject;
-import org.locationtech.geogig.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.WriteTree2;
-import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
+import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BlobStore;
-import org.locationtech.geogig.storage.impl.Blobs;
-import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterators;
+
+import lombok.Cleanup;
 
 /**
  * 
@@ -87,9 +79,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
     public static final String REBASE_BRANCH_BLOB = REBASE_BLOB_PREFIX + "branch";
 
-    public static final String REBASE_SQUASH_BLOB = REBASE_BLOB_PREFIX + "squash";
-
-    private final static int BUFFER_SIZE = 1000;
+    public static final String REBASE_SQUASH_COMMIT_ID_BLOB = REBASE_BLOB_PREFIX + "squash";
 
     private Supplier<ObjectId> upstream;
 
@@ -99,13 +89,14 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
     private boolean continueRebase;
 
-    private String currentBranch;
-
-    private ObjectId rebaseHead;
-
     private boolean abort;
 
     private String squashMessage;
+
+    /// non parameter state
+    private String currentBranch;
+
+    private ObjectId rebaseHead;
 
     /**
      * Sets the commit to replay commits onto.
@@ -180,162 +171,92 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
      * @return always {@code true}
      */
     protected @Override Boolean _call() {
+        final Geogig geogig = geogig();
 
-        final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(), "Repository has no HEAD, can't rebase.");
+        final Ref currHead = geogig.refs().head().orElseThrow(
+                () -> new IllegalStateException("Repository has no HEAD, can't rebase."));
 
+        final boolean continueRebase = this.continueRebase;
+        final boolean skip = this.skip;
+        final boolean abort = this.abort;
+        final Supplier<ObjectId> upstream = this.upstream;
+
+        final ObjectId targetCommitId = upstream == null ? ObjectId.NULL : upstream.get();
         if (!(continueRebase || skip || abort)) {
-            Preconditions.checkState(currHead.get() instanceof SymRef,
-                    "Can't rebase from detached HEAD %s", currHead.get());
-            Preconditions.checkState(upstream != null, "No upstream target has been specified.");
-            Preconditions.checkState(!ObjectId.NULL.equals(upstream.get()),
-                    "Upstream did not resolve to a commit.");
+            checkState(currHead instanceof SymRef, "Can't rebase from detached HEAD %s", currHead);
+            checkState(upstream != null, "No upstream target has been specified.");
+            checkState(!targetCommitId.isNull(), "Upstream did not resolve to a commit.");
         }
 
-        // Rebase can only be run in a conflicted situation if the skip or abort option is used
-        final boolean hasConflicts = conflictsDatabase().hasConflicts(null);
-        Preconditions.checkState(!hasConflicts || skip || abort,
-                "Cannot run operation while merge conflicts exist.");
-
-        Optional<Ref> origHead = command(RefParse.class).setName(Ref.ORIG_HEAD).call();
-        final Optional<byte[]> branch = Blobs.getBlob(context().blobStore(), REBASE_BRANCH_BLOB);
-        RevCommit squashCommit = readSquashCommit();
         if (abort) {
-            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
-                    "Cannot abort. You are not in the middle of a rebase process.");
-            command(ResetOp.class).setMode(ResetMode.HARD)
-                    .setCommit(Suppliers.ofInstance(origHead.get().getObjectId())).call();
-            command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-            return true;
-        } else if (continueRebase) {
-            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
-                    "Cannot continue. You are not in the middle of a rebase process.");
-            try {
-                List<String> branchLines = Blobs.readLines(branch);
-                currentBranch = branchLines.get(0);
-            } catch (Exception e) {
-                throw new IllegalStateException("Cannot read current branch info", e);
-            }
-            rebaseHead = currHead.get().getObjectId();
-            if (squashCommit == null) {
-                // Commit the manually-merged changes with the info of the commit that caused the
-                // conflict
-                applyNextCommit(false);
-                // Commit files should already be prepared, so we do nothing else
-            } else {
-                applyCommit(squashCommit, false);
-            }
+            return abortRebase();
+        }
+        if (continueRebase) {
+            continueRebase(currHead);
         } else if (skip) {
-            Preconditions.checkState(origHead.isPresent() && branch.isPresent(),
-                    "Cannot skip. You are not in the middle of a rebase process.");
-            try {
-                List<String> branchLines = Blobs.readLines(branch);
-                currentBranch = branchLines.get(0);
-            } catch (Exception e) {
-                throw new IllegalStateException("Cannot read current branch info");
-            }
-            rebaseHead = currHead.get().getObjectId();
-            command(ResetOp.class).setCommit(Suppliers.ofInstance(rebaseHead))
-                    .setMode(ResetMode.HARD).setClean(false).call();
-            if (squashCommit == null) {
-                skipCurrentCommit();
-                applyNextCommit(true);
-            } else {
-                return true;
-            }
+            skip(currHead);
         } else {
-            Preconditions.checkState(!origHead.isPresent(),
+            checkState(!geogig.conflicts().hasConflicts(),
+                    "Cannot run operation while merge conflicts exist.");
+            checkState(!geogig.refs().get(Ref.ORIG_HEAD).isPresent(),
                     "You are currently in the middle of a merge or rebase project <ORIG_HEAD is present>.");
 
             getProgressListener().started();
+            final ObjectId headCommitId = currHead.getObjectId();
+            currentBranch = currHead.peel().getName();
+            geogig.refs().set(Ref.ORIG_HEAD, headCommitId, "rebase: savepoint");
 
-            command(UpdateRef.class).setName(Ref.ORIG_HEAD)
-                    .setNewValue(currHead.get().getObjectId()).call();
-
-            // Here we prepare the files with the info about the commits to apply or, if that's not
+            // prepare the files with the info about the commits to apply or, if that's not
             // needed, do a fast-forward
+            final ObjectId ancestorCommitId = headCommitId.isNull() ? headCommitId : //
+                    geogig.commands().commonAncestor(headCommitId, targetCommitId).orElseThrow(
+                            () -> new IllegalStateException("No ancestor commit could be found."));
 
-            final SymRef headRef = (SymRef) currHead.get();
-            currentBranch = headRef.getTarget();
-
-            if (ObjectId.NULL.equals(headRef.getObjectId())) {
+            if (ancestorCommitId.isNull() || ancestorCommitId.equals(headCommitId)) {
                 // Fast-forward
-                command(UpdateRef.class).setName(currentBranch).setNewValue(upstream.get()).call();
-                command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-                workingTree().updateWorkHead(upstream.get());
-                stagingArea().updateStageHead(upstream.get());
-                getProgressListener().complete();
-                return true;
-            }
-
-            Repository repository = repository();
-            final RevCommit headCommit = repository.context().objectDatabase()
-                    .getCommit(headRef.getObjectId());
-            final RevCommit targetCommit = repository.context().objectDatabase()
-                    .getCommit(upstream.get());
-
-            command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId());
-
-            Optional<ObjectId> ancestorCommit = command(FindCommonAncestor.class)
-                    .setLeft(headCommit).setRight(targetCommit)
-                    .setProgressListener(subProgress(10.f)).call();
-
-            Preconditions.checkState(ancestorCommit.isPresent(),
-                    "No ancestor commit could be found.");
-
-            if (ancestorCommit.get().equals(headCommit.getId())) {
-                // Fast-forward
-                command(UpdateRef.class).setName(currentBranch).setNewValue(upstream.get()).call();
-                command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-                workingTree().updateWorkHead(upstream.get());
-                stagingArea().updateStageHead(upstream.get());
+                String reason = String.format("rebase: fast forward to %s", targetCommitId);
+                Ref updatedBranch = new Ref(currentBranch, targetCommitId);
+                command(UpdateRefs.class).setReason(reason)//
+                        .add(updatedBranch)//
+                        .add(new SymRef(Ref.HEAD, updatedBranch))//
+                        .add(Ref.WORK_HEAD, targetCommitId)//
+                        .add(Ref.STAGE_HEAD, targetCommitId)//
+                        .call();
                 getProgressListener().complete();
                 return true;
             }
 
             // Get all commits between the head commit and the ancestor.
-            Iterator<RevCommit> commitIterator = command(LogOp.class).call();
+            Iterator<RevCommit> commitIterator = geogig.commands().log();
 
             List<RevCommit> commitsToRebase = new ArrayList<RevCommit>();
-
             RevCommit commit = commitIterator.next();
-            while (!commit.getId().equals(ancestorCommit.get())) {
+            while (!commit.getId().equals(ancestorCommitId)) {
                 commitsToRebase.add(commit);
                 commit = commitIterator.next();
             }
 
             // rewind the HEAD
-            if (onto == null) {
-                onto = Suppliers.ofInstance(upstream.get());
-            }
-            rebaseHead = onto.get();
-            command(ResetOp.class).setCommit(Suppliers.ofInstance(rebaseHead))
-                    .setMode(ResetMode.HARD).setClean(false).call();
+            rebaseHead = onto == null ? targetCommitId : onto.get();
+            geogig.commands().reset(rebaseHead, ResetMode.HARD, false);
 
-            if (squashMessage != null) {
+            if (squashMessage == null) {
+                createRebaseCommitsInfo(commitsToRebase);
+            } else {
                 RevCommitBuilder builder = RevCommit.builder().init(commitsToRebase.get(0));
-                builder.parentIds(Arrays.asList(ancestorCommit.get()));
+                builder.parentIds(Arrays.asList(ancestorCommitId));
                 builder.message(squashMessage);
-                squashCommit = builder.build();
+                RevCommit squashCommit = builder.build();
+                objectDatabase().put(squashCommit);
                 // save the commit, since it does not exist in the database, and might be needed if
                 // there is a conflict
-                CharSequence commitString = command(CatObject.class)
-                        .setObject(Suppliers.ofInstance(squashCommit)).call();
-                try {
-                    Blobs.putBlob(context().blobStore(), REBASE_SQUASH_BLOB, commitString);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Cannot create squash commit info blob", e);
-                }
-                applyCommit(squashCommit, true);
+                geogig.blobs().put(REBASE_SQUASH_COMMIT_ID_BLOB, squashCommit.getId().toString());
+                applyCommit(squashCommit);
                 return true;
-            } else {
-                createRebaseCommitsInfo(commitsToRebase);
             }
-
-            // ProgressListener subProgress = subProgress(90.f);
         }
 
+        RevCommit squashCommit = readSquashCommit();
         if (squashCommit == null) {
             boolean ret;
             do {
@@ -344,11 +265,9 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         }
 
         // clean up
-        context().blobStore().removeBlob(REBASE_SQUASH_BLOB);
-        command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        context().blobStore().removeBlob(REBASE_BRANCH_BLOB);
-
-        // subProgress.complete();
+        geogig.blobs().remove(REBASE_SQUASH_COMMIT_ID_BLOB);
+        geogig.blobs().remove(REBASE_BRANCH_BLOB);
+        geogig.refs().remove(Ref.ORIG_HEAD, "rebase: cleanup");
 
         getProgressListener().complete();
 
@@ -356,14 +275,68 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
     }
 
+    private void skip(final Ref currHead) {
+        final Geogig geogig = geogig();
+        geogig.refs().get(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
+                "Cannot skip. You are not in the middle of a rebase process."));
+
+        currentBranch = geogig.blobs().asString(REBASE_BRANCH_BLOB)
+                .orElseThrow(() -> new IllegalStateException("Cannot read current branch info"));
+
+        rebaseHead = currHead.getObjectId();
+        geogig.commands().reset(rebaseHead, ResetMode.HARD, false);
+        RevCommit squashCommit = readSquashCommit();
+        if (squashCommit == null) {
+            skipCurrentCommit();
+        }
+    }
+
+    private void continueRebase(final Ref currHead) {
+        final Geogig geogig = geogig();
+        checkState(!geogig.conflicts().hasConflicts(),
+                "Cannot run operation while merge conflicts exist.");
+
+        final String branch = geogig.blobs().asString(REBASE_BRANCH_BLOB)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Cannot continue. You are not in the middle of a rebase process (no rebase branch saved)."));
+
+        geogig.refs().get(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
+                "Cannot continue. You are not in the middle of a rebase process (ref ORIG_HEAD not found)."));
+
+        currentBranch = branch;
+        rebaseHead = currHead.getObjectId();
+        RevCommit squashCommit = readSquashCommit();
+        if (squashCommit == null) {
+            // Commit the manually-merged changes with the info of the commit that caused the
+            // conflict
+            applyNextCommit(false);
+            // Commit files should already be prepared, so we do nothing else
+        } else {
+            commitWithInfoFrom(squashCommit);
+        }
+    }
+
+    private Boolean abortRebase() {
+        final Geogig geogig = geogig();
+        final String msg = "Cannot abort. You are not in the middle of a rebase process.";
+        checkState(geogig.blobs().exists(REBASE_BRANCH_BLOB), msg);
+
+        final Ref origHead = geogig.refs().get(Ref.ORIG_HEAD)
+                .orElseThrow(() -> new IllegalStateException(msg));
+
+        geogig.commands().reset(origHead.getObjectId(), ResetMode.HARD, true);
+        geogig.refs().remove(Ref.ORIG_HEAD, "rebase: cleanup");
+        return true;
+    }
+
     private void skipCurrentCommit() {
-        List<String> nextFile = Blobs.readLines(context().blobStore(), REBASE_NEXT_BLOB);
+        Blobs blobs = geogig().blobs();
         try {
-            String idx = nextFile.get(0);
+            int idx = Integer.parseInt(blobs.asString(REBASE_NEXT_BLOB).get());
             String blobName = REBASE_BLOB_PREFIX + idx;
-            context().blobStore().removeBlob(blobName);
-            int newIdx = Integer.parseInt(idx) + 1;
-            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, String.valueOf(newIdx));
+            blobs.remove(blobName);
+            int newIdx = idx + 1;
+            blobs.put(REBASE_NEXT_BLOB, String.valueOf(newIdx));
         } catch (Exception e) {
             throw new IllegalStateException("Cannot read/write rebase commits index", e);
         }
@@ -371,18 +344,14 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private void createRebaseCommitsInfo(List<RevCommit> commitsToRebase) {
-
-        for (int i = commitsToRebase.size() - 1, idx = 1; i >= 0; i--, idx++) {
-            String blobName = REBASE_BLOB_PREFIX + Integer.toString(idx);
-            try {
-                String contents = commitsToRebase.get(i).getId().toString();
-                Blobs.putBlob(context().blobStore(), blobName, contents);
-            } catch (Exception e) {
-                throw new IllegalStateException("Cannot create rebase commits info");
-            }
-        }
+        org.locationtech.geogig.dsl.Blobs blobs = geogig().blobs();
         try {
-            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, "1");
+            for (int i = commitsToRebase.size() - 1, idx = 1; i >= 0; i--, idx++) {
+                String blobName = REBASE_BLOB_PREFIX + idx;
+                String contents = commitsToRebase.get(i).getId().toString();
+                blobs.put(blobName, contents);
+            }
+            blobs.put(REBASE_NEXT_BLOB, "1");
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create next rebase commit info");
         }
@@ -390,23 +359,25 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     }
 
     private boolean applyNextCommit(boolean useCommitChanges) {
-        List<String> nextFile = Blobs.readLines(context().blobStore(), REBASE_NEXT_BLOB);
-        if (nextFile.isEmpty()) {
+        org.locationtech.geogig.dsl.Blobs blobs = geogig().blobs();
+        Integer idx = blobs.asString(REBASE_NEXT_BLOB).map(Integer::parseInt).orElse(null);
+        if (idx == null) {
             return false;
         }
-        String idx = nextFile.get(0);
         String blobName = REBASE_BLOB_PREFIX + idx;
-        List<String> commitFile = Blobs.readLines(context().blobStore(), blobName);
-        if (commitFile.isEmpty()) {
+        Optional<RevCommit> commit = blobs.asString(blobName).map(ObjectId::valueOf)
+                .map(objectDatabase()::getCommit);
+        if (!commit.isPresent()) {
             return false;
         }
-        String commitId = commitFile.get(0);
-        RevCommit commit = objectDatabase().getCommit(ObjectId.valueOf(commitId));
-        applyCommit(commit, useCommitChanges);
-        context().blobStore().removeBlob(blobName);
-        int newIdx = Integer.parseInt(idx) + 1;
+        if (useCommitChanges) {
+            applyCommit(commit.get());
+        } else {
+            commitWithInfoFrom(commit.get());
+        }
+        blobs.remove(blobName);
         try {
-            Blobs.putBlob(context().blobStore(), REBASE_NEXT_BLOB, String.valueOf(newIdx));
+            blobs.put(REBASE_NEXT_BLOB, String.valueOf(idx + 1));
         } catch (Exception e) {
             throw new IllegalStateException("Cannot read/write rebase commits index", e);
         }
@@ -414,143 +385,88 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
     }
 
     /**
-     * Applies the passed command.
+     * Applies the changed of the passed commit.
      * 
      * @param commitToApply the commit to apply
-     * @param useCommitChanges if true, applies the command completely, staging its changes before
-     *        committing. If false, it commits the currently staged changes, ignoring the changes in
-     *        the commit and using just its author and message
      */
-    private void applyCommit(RevCommit commitToApply, boolean useCommitChanges) {
+    private void applyCommit(RevCommit commitToApply) {
+        Geogig geogig = geogig();
 
-        Repository repository = repository();
-        Platform platform = platform();
-        if (useCommitChanges) {
-            // In case there are conflicts
-            StringBuilder conflictMsg = new StringBuilder();
-            conflictMsg.append("error: could not apply ");
-            conflictMsg.append(commitToApply.getId().toString().substring(0, 8));
-            conflictMsg.append(" " + commitToApply.getMessage() + "\n");
-            final int maxReportedConflicts = 25;
-            final AtomicInteger reportedConflicts = new AtomicInteger(0);
+        final @Cleanup PersistedIterable<Conflict> conflicts = ConflictsUtils
+                .newTemporaryConflictStream();
+        final @Cleanup PersistedIterable<DiffEntry> unconflicted = ConflictsUtils
+                .newTemporaryDiffEntryStream();
+        final @Cleanup PersistedIterable<FeatureInfo> merged = ConflictsUtils
+                .newTemporaryFeatureInfoStream();
 
-            final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
-            final List<DiffEntry> diffEntryBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+        // see if there are conflicts
+        final MergeScenarioReport report = command(ReportCommitConflictsOp.class)
+                .setCommit(commitToApply)//
+                .setOnConflict(conflicts::add)//
+                .setOnFeatureMerged(merged::add)//
+                .setOnUnconflictedChange(unconflicted::add)//
+                .call();
 
-            // see if there are conflicts
-            MergeScenarioReport report = command(ReportCommitConflictsOp.class)
-                    .setCommit(commitToApply).setConsumer(new MergeScenarioConsumer() {
-
-                        public @Override void conflicted(Conflict conflict) {
-                            conflictsBuffer.add(conflict);
-                            if (conflictsBuffer.size() == BUFFER_SIZE) {
-                                // Write the conflicts
-                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
-                                        .call();
-                                conflictsBuffer.clear();
-                            }
-                            if (reportedConflicts.get() < maxReportedConflicts) {
-                                conflictMsg.append(
-                                        "CONFLICT: conflict in " + conflict.getPath() + "\n");
-                                reportedConflicts.incrementAndGet();
-                            }
-                        }
-
-                        public @Override void unconflicted(DiffEntry diff) {
-                            diffEntryBuffer.add(diff);
-                            if (diffEntryBuffer.size() == BUFFER_SIZE) {
-                                // Stage it
-                                stagingArea().stage(getProgressListener(),
-                                        diffEntryBuffer.iterator(), 0);
-                                diffEntryBuffer.clear();
-                            }
-
-                        }
-
-                        public @Override void merged(FeatureInfo featureInfo) {
-                            // Stage it
-                            workingTree().insert(featureInfo);
-                            try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
-                                    .getUnstaged(null)) {
-                                stagingArea().stage(getProgressListener(), unstaged, 0);
-                            }
-                        }
-
-                        public @Override void finished() {
-                            if (conflictsBuffer.size() > 0) {
-                                // Write the conflicts
-                                command(ConflictsWriteOp.class).setConflicts(conflictsBuffer)
-                                        .call();
-                                conflictsBuffer.clear();
-                            }
-                            if (diffEntryBuffer.size() > 0) {
-                                // Stage it
-                                stagingArea().stage(getProgressListener(),
-                                        diffEntryBuffer.iterator(), 0);
-                                diffEntryBuffer.clear();
-                            }
-                        }
-
-                    }).call();
-            if (report.getConflicts() == 0) {
-                // write new tree
-                ObjectId newTreeId = command(WriteTree2.class).call();
-
-                long timestamp = platform.currentTimeMillis();
-                // Create new commit
-                RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
-                builder.parentIds(Arrays.asList(rebaseHead));
-                builder.treeId(newTreeId);
-                builder.committerTimestamp(timestamp);
-                builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
-
-                RevCommit newCommit = builder.build();
-                repository.context().objectDatabase().put(newCommit);
-
-                rebaseHead = newCommit.getId();
-
-                command(UpdateRef.class).setName(currentBranch).setNewValue(rebaseHead).call();
-                command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-                workingTree().updateWorkHead(newTreeId);
-                stagingArea().updateStageHead(newTreeId);
-
-            } else {
-
-                workingTree().updateWorkHead(stagingArea().getTree().getId());
-
-                try {
-                    Blobs.putBlob(context().blobStore(), REBASE_BRANCH_BLOB, currentBranch);
-                } catch (Exception e) {
-                    throw new IllegalStateException("Cannot create current branch info", e);
-                }
-
-                throw new RebaseConflictsException(conflictMsg.toString());
-
-            }
-        } else {
-            // write new tree
-            ObjectId newTreeId = command(WriteTree2.class).call();
-
-            long timestamp = platform.currentTimeMillis();
-            // Create new commit
-            RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
-            builder.parentIds(Arrays.asList(rebaseHead));
-            builder.treeId(newTreeId);
-            builder.committerTimestamp(timestamp);
-            builder.committerTimeZoneOffset(platform.timeZoneOffset(timestamp));
-
-            RevCommit newCommit = builder.build();
-            repository.context().objectDatabase().put(newCommit);
-
-            rebaseHead = newCommit.getId();
-
-            command(UpdateRef.class).setName(currentBranch).setNewValue(rebaseHead).call();
-            command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-            workingTree().updateWorkHead(newTreeId);
-            stagingArea().updateStageHead(newTreeId);
+        if (conflicts.size() > 0) {
+            geogig.conflicts().save(conflicts);
         }
+        if (unconflicted.size() > 0) {
+            stagingArea().stage(getProgressListener(), unconflicted.iterator(),
+                    unconflicted.size());
+        }
+        if (merged.size() > 0) {
+            workingTree().insert(merged.iterator(), getProgressListener());
+            try (AutoCloseableIterator<DiffEntry> unstaged = workingTree().getUnstaged(null)) {
+                stagingArea().stage(getProgressListener(), unstaged, 0);
+            }
+        }
+
+        if (report.getConflicts() == 0) {
+            commitWithInfoFrom(commitToApply);
+        } else {
+            workingTree().updateWorkHead(stagingArea().getTree().getId(),
+                    "rebase: match STAGE_HEAD");
+            geogig.blobs().put(REBASE_BRANCH_BLOB, currentBranch);
+
+            StringBuilder conflictMsg = new StringBuilder();
+            conflictMsg.append("error: could not apply ")
+                    .append(RevObjects.toShortString(commitToApply.getId())).append(" ")
+                    .append(commitToApply.getMessage()).append('\n');
+            final int maxReportedConflicts = 25;
+            Iterators.limit(conflicts.iterator(), maxReportedConflicts).forEachRemaining(c -> {
+                conflictMsg.append("CONFLICT: conflict in ").append(c.getPath()).append('\n');
+            });
+
+            throw new RebaseConflictsException(conflictMsg.toString());
+        }
+    }
+
+    private void commitWithInfoFrom(RevCommit commitToApply) {
+        // write new tree
+        ObjectId newTreeId = command(WriteTree2.class).call();
+
+        long timestamp = platform().currentTimeMillis();
+        // Create new commit
+        RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
+        builder.parentIds(Arrays.asList(rebaseHead));
+        builder.treeId(newTreeId);
+        builder.committerTimestamp(timestamp);
+        builder.committerTimeZoneOffset(platform().timeZoneOffset(timestamp));
+
+        RevCommit newCommit = builder.build();
+        objectDatabase().put(newCommit);
+
+        rebaseHead = newCommit.getId();
+        final Ref updatedBranch = new Ref(currentBranch, rebaseHead);
+        final String reason = String.format("rebase: commit reusing %s '%s'",
+                RevObjects.toShortString(commitToApply.getId()),
+                RevObjects.messageTitle(commitToApply.getMessage()));
+        command(UpdateRefs.class).setReason(reason)//
+                .add(updatedBranch)//
+                .add(new SymRef(Ref.HEAD, updatedBranch))//
+                .add(Ref.WORK_HEAD, newTreeId)//
+                .add(Ref.STAGE_HEAD, newTreeId)//
+                .call();
 
     }
 
@@ -563,20 +479,12 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
      */
     @Nullable
     private RevCommit readSquashCommit() {
-        List<String> lines = Blobs.readLines(context().blobStore(), REBASE_SQUASH_BLOB);
-        if (lines.isEmpty()) {
+        Optional<ObjectId> commitId = geogig().blobs().asString(REBASE_SQUASH_COMMIT_ID_BLOB)
+                .map(ObjectId::valueOf);
+        if (!commitId.isPresent()) {
             return null;
         }
-        ObjectId id = ObjectId.valueOf(lines.get(0).split("\t")[1].trim());
-        String commitString = Joiner.on("\n").join(lines.subList(1, lines.size()));
-        ByteArrayInputStream stream = new ByteArrayInputStream(
-                commitString.getBytes(Charsets.UTF_8));
-        RevCommit revCommit;
-        try {
-            revCommit = (RevCommit) TextRevObjectSerializer.INSTANCE.read(id, stream);
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to parse commit " + commitString, e);
-        }
+        RevCommit revCommit = objectDatabase().getCommit(commitId.get());
         return revCommit;
     }
 }

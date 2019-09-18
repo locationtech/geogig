@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -202,7 +203,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         return this;
     }
 
-    public DiffTree setPathFilter(@Nullable List<String> pathFitlers) {
+    public DiffTree setPathFilter(@Nullable Collection<String> pathFitlers) {
         this.pathFilters.clear();
         if (pathFitlers != null) {
             this.pathFilters.addAll(pathFitlers);

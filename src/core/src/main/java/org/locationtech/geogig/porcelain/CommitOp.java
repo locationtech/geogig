@@ -23,6 +23,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevCommitBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
@@ -30,12 +31,10 @@ import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
@@ -362,29 +361,29 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         if (getProgressListener().isCanceled()) {
             return null;
         }
-        final ObjectStore objectDb = objectDatabase();
-        objectDb.put(commit);
-        final Optional<Ref> branchHead = command(UpdateRef.class).setName(currentBranch)
-                .setNewValue(commit.getId()).setProgressListener(subProgress(1f)).call();
+        objectDatabase().put(commit);
 
-        checkState(commit.getId().equals(branchHead.get().getObjectId()));
+        Ref newBranchHead = new Ref(currentBranch, commit.getId());
+        String reason = buildReason(commit);
+        command(UpdateRefs.class)//
+                .setReason(reason)//
+                .add(newBranchHead)//
+                .add(new SymRef(Ref.HEAD, newBranchHead))//
+                .setProgressListener(getProgressListener())//
+                .call();
 
-        final Optional<Ref> newHead = command(UpdateSymRef.class).setName(Ref.HEAD)
-                .setNewValue(currentBranch).call();
-
-        checkState(currentBranch.equals(((SymRef) newHead.get()).getTarget()));
-
-        Optional<ObjectId> treeId = command(ResolveTreeish.class)
-                .setTreeish(branchHead.get().getObjectId()).call();
-        checkState(treeId.isPresent());
-        checkState(newTreeId.equals(treeId.get()));
-
-        getProgressListener().setProgress(100f);
         getProgressListener().complete();
 
-        command(CleanRefsOp.class).call();
+        command(CleanRefsOp.class).reason("Clean up after " + reason).call();
 
         return commit;
+    }
+
+    private String buildReason(@NonNull RevCommit commit) {
+        String id = RevObjects.toShortString(commit.getId());
+        String am = amend ? " (amend)" : "";
+        CharSequence title = RevObjects.messageTitle(commit.getMessage());
+        return String.format("commit %s%s: %s", id, am, title);
     }
 
     private Supplier<RevTree> resolveOldRoot() {

@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -16,10 +17,8 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.porcelain.MergeOp;
-
-import com.google.common.collect.ImmutableList;
 
 public class CleanRefsOpTest extends RepositoryTestCase {
 
@@ -29,14 +28,15 @@ public class CleanRefsOpTest extends RepositoryTestCase {
     @Test
     public void testClean() throws Exception {
         // Set up some refs to clean up
-        repo.command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(ObjectId.NULL).call();
-        repo.command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(ObjectId.NULL).call();
-        repo.command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(ObjectId.NULL)
+        repo.command(UpdateRefs.class).setReason("test initialization")//
+                .add(Ref.MERGE_HEAD, ObjectId.NULL)//
+                .add(Ref.ORIG_HEAD, ObjectId.NULL)//
+                .add(Ref.CHERRY_PICK_HEAD, ObjectId.NULL)//
                 .call();
 
         repo.context().blobStore().putBlob(MergeOp.MERGE_MSG, "Merge message".getBytes());
 
-        ImmutableList<String> cleanedUp = repo.command(CleanRefsOp.class).call();
+        List<String> cleanedUp = repo.command(CleanRefsOp.class).call();
         assertEquals(4, cleanedUp.size());
         assertTrue(cleanedUp.contains(Ref.MERGE_HEAD));
         assertTrue(cleanedUp.contains(Ref.ORIG_HEAD));

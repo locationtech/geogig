@@ -16,12 +16,12 @@ import javax.sql.DataSource;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
-import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
 import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
+import org.locationtech.geogig.transaction.TransactionBlobStoreTest;
 
 public class PGBlobStoreTest extends TransactionBlobStoreTest {
 

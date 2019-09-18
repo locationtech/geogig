@@ -7,14 +7,12 @@
  * Contributors:
  * Johnathan Garrett (Prominent Edge) - initial implementation
  */
-package org.locationtech.geogig.plumbing;
+package org.locationtech.geogig.transaction;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
-import org.locationtech.geogig.storage.impl.TransactionRefDatabase;
 
 import com.google.common.base.Preconditions;
 
@@ -46,7 +44,7 @@ public class TransactionResolve extends AbstractGeoGigOp<Optional<GeogigTransact
                 "Cannot resolve a transaction within a transaction!");
         Preconditions.checkArgument(id != null, "No id was specified to resolve!");
 
-        final String transactionNamespace = TransactionRefDatabase.buildTransactionNamespace(id);
+        final String transactionNamespace = GeogigTransaction.buildTransactionNamespace(id);
 
         GeogigTransaction transaction = null;
         if (!context.refDatabase().getAll(transactionNamespace).isEmpty()) {

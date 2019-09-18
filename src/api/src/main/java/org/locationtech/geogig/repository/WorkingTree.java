@@ -49,6 +49,8 @@ public interface WorkingTree {
      */
     ObjectId updateWorkHead(ObjectId newTree);
 
+    ObjectId updateWorkHead(ObjectId newTree, String reason);
+
     /**
      * @return the tree represented by WORK_HEAD. If there is no tree set at WORK_HEAD, it will
      *         return the HEAD tree (no unstaged changes).

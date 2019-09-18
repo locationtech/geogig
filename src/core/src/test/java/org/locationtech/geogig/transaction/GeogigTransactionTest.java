@@ -7,14 +7,14 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.test.integration;
+package org.locationtech.geogig.transaction;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,9 +22,6 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.plumbing.TransactionEnd;
-import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.merge.ConflictsCountOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -33,7 +30,9 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.test.integration.RepositoryTestCase;
+
+import com.google.common.collect.Lists;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
     @Rule
@@ -64,35 +63,23 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         expectedTransaction.addFirst(commit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        List<RevCommit> logged = Lists.newArrayList(repo.command(LogOp.class).call());
         assertEquals(expectedMain, logged);
 
         // Verify that the transaction has the commit
-        logs = t.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        logged = Lists.newArrayList(t.command(LogOp.class).call());
         assertEquals(expectedTransaction, logged);
 
         // Commit the transaction
         repo.command(TransactionEnd.class).setTransaction(t).setRebase(true).call();
 
         // Verify that the base repository has the changes from the transaction
-        logs = repo.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
+        logged = Lists.newArrayList(repo.command(LogOp.class).call());
 
-        assertEquals(expectedTransaction, logged);
-
+        assertEquals(expectedTransaction.size(), logged.size());
+        assertEquals(
+                expectedTransaction.stream().map(RevCommit::getId).collect(Collectors.toList()),
+                logged.stream().map(RevCommit::getId).collect(Collectors.toList()));
     }
 
     @Test
@@ -138,36 +125,26 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         expectedMain.addFirst(repoCommit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        List<RevCommit> logged = Lists.newArrayList(repo.command(LogOp.class).call());
         assertEquals(expectedMain, logged);
 
         // Verify that the transaction has the commit
-        logs = t.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        logged = Lists.newArrayList(t.command(LogOp.class).call());
         assertEquals(expectedTransaction, logged);
 
         // Commit the transaction
         repo.command(TransactionEnd.class).setTransaction(t).call();
 
         // Verify that a merge commit was created
-        logs = repo.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(repoCommit));
         assertTrue(lastCommit.getMessage().contains("Merge commit"));
-        assertEquals(lastCommit.getParentIds().get(0), transactionCommit.getId());
-        assertEquals(lastCommit.getParentIds().get(1), repoCommit.getId());
-        assertEquals(logs.next(), repoCommit);
-        assertEquals(logs.next(), transactionCommit);
-        assertEquals(logs.next(), firstCommit);
+        assertEquals(transactionCommit.getId(), lastCommit.getParentIds().get(0));
+        assertEquals(repoCommit.getId(), lastCommit.getParentIds().get(1));
+        assertEquals(repoCommit, logs.next());
+        assertEquals(transactionCommit, logs.next());
+        assertEquals(firstCommit, logs.next());
         assertFalse(logs.hasNext());
 
     }
@@ -199,38 +176,28 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         expectedMain.addFirst(repoCommit);
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        List<RevCommit> logged = Lists.newArrayList(repo.command(LogOp.class).call());
         assertEquals(expectedMain, logged);
 
         // Verify that the transaction has the commit
-        logs = t.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        logged = Lists.newArrayList(t.command(LogOp.class).call());
         assertEquals(expectedTransaction, logged);
 
         // Commit the transaction
         t.commitSyncTransaction();
 
         // Verify that a merge commit was created
-        logs = repo.command(LogOp.class).call();
+        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(repoCommit));
         assertTrue(lastCommit.getMessage().contains("Merge commit"));
-        assertEquals(lastCommit.getParentIds().get(0), transactionCommit.getId());
-        assertEquals(lastCommit.getParentIds().get(1), repoCommit.getId());
+        assertEquals(transactionCommit.getId(), lastCommit.getParentIds().get(0));
+        assertEquals(repoCommit.getId(), lastCommit.getParentIds().get(1));
         assertEquals("Transaction Author", lastCommit.getAuthor().getName().get());
         assertEquals("transaction@author.com", lastCommit.getAuthor().getEmail().get());
-        assertEquals(logs.next(), repoCommit);
-        assertEquals(logs.next(), transactionCommit);
-        assertEquals(logs.next(), firstCommit);
+        assertEquals(repoCommit, logs.next());
+        assertEquals(transactionCommit, logs.next());
+        assertEquals(firstCommit, logs.next());
         assertFalse(logs.hasNext());
 
     }
@@ -296,14 +263,14 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(transaction2Commit));
-        assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
-        assertEquals(lastCommit.getAuthor(), transaction2Commit.getAuthor());
-        assertEquals(lastCommit.getCommitter().getName(),
-                transaction2Commit.getCommitter().getName());
-        assertFalse(lastCommit.getCommitter().getTimestamp() == transaction2Commit.getCommitter()
-                .getTimestamp());
-        assertEquals(logs.next(), transaction1Commit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transaction2Commit.getMessage(), lastCommit.getMessage());
+        assertEquals(transaction2Commit.getAuthor(), lastCommit.getAuthor());
+        assertEquals(transaction2Commit.getCommitter().getName(),
+                lastCommit.getCommitter().getName());
+        assertNotEquals(transaction2Commit.getCommitter().getTimestamp(),
+                lastCommit.getCommitter().getTimestamp());
+        assertEquals(transaction1Commit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
     }
@@ -352,13 +319,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // Verify that the base repository is unchanged
         Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Verify that the transaction has the commit
         logs = transaction1.command(LogOp.class).call();
-        assertEquals(logs.next(), transaction1Commit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transaction1Commit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // start the second transaction
@@ -374,13 +341,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // Verify that the base repository is unchanged
         logs = repo.command(LogOp.class).call();
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Verify that the transaction has the commit
         logs = transaction2.command(LogOp.class).call();
-        assertEquals(logs.next(), transaction2Commit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transaction2Commit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Commit the first transaction
@@ -388,13 +355,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // Verify that the base repository has the changes from the transaction
         logs = repo.command(LogOp.class).call();
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         repo.command(CheckoutOp.class).setSource("branch1").call();
         logs = repo.command(LogOp.class).call();
-        assertEquals(logs.next(), transaction1Commit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transaction1Commit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Now try to commit the second transaction
@@ -404,14 +371,14 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
         assertFalse(lastCommit.equals(transaction2Commit));
-        assertEquals(lastCommit.getMessage(), transaction2Commit.getMessage());
-        assertEquals(lastCommit.getAuthor(), transaction2Commit.getAuthor());
-        assertEquals(lastCommit.getCommitter().getName(),
-                transaction2Commit.getCommitter().getName());
-        assertFalse(lastCommit.getCommitter().getTimestamp() == transaction2Commit.getCommitter()
-                .getTimestamp());
-        assertEquals(logs.next(), transaction1Commit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transaction2Commit.getMessage(), lastCommit.getMessage());
+        assertEquals(transaction2Commit.getAuthor(), lastCommit.getAuthor());
+        assertEquals(transaction2Commit.getCommitter().getName(),
+                lastCommit.getCommitter().getName());
+        assertNotEquals(transaction2Commit.getCommitter().getTimestamp(),
+                lastCommit.getCommitter().getTimestamp());
+        assertEquals(transaction1Commit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
     }
@@ -433,13 +400,13 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
         // Verify that the base repository is unchanged
         Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // Verify that the transaction has the commit
         logs = transaction.command(LogOp.class).call();
-        assertEquals(logs.next(), transactionCommit);
-        assertEquals(logs.next(), mainCommit);
+        assertEquals(transactionCommit, logs.next());
+        assertEquals(mainCommit, logs.next());
         assertFalse(logs.hasNext());
 
         // remove the feature in the base repository
@@ -474,16 +441,10 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         // Verify that the base repository has the changes from the transaction
         logs = repo.command(LogOp.class).call();
         RevCommit lastCommit = logs.next();
-        assertTrue(lastCommit.equals(resolvedCommit));
-        assertEquals(lastCommit.getMessage(), resolvedCommit.getMessage());
-        assertEquals(lastCommit.getAuthor(), resolvedCommit.getAuthor());
-        assertEquals(lastCommit.getCommitter().getName(), resolvedCommit.getCommitter().getName());
-        assertTrue(lastCommit.getCommitter().getTimestamp() == resolvedCommit.getCommitter()
-                .getTimestamp());
+        assertEquals(resolvedCommit, lastCommit);
         assertEquals(mainCommit2, logs.next());
         assertEquals(transactionCommit, logs.next());
         assertEquals(mainCommit, logs.next());
-
     }
 
     @Test
@@ -503,26 +464,15 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         commit = t.command(CommitOp.class).call();
 
         // Verify that the base repository is unchanged
-        Iterator<RevCommit> logs = repo.command(LogOp.class).call();
-        List<RevCommit> logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        List<RevCommit> logged = Lists.newArrayList(repo.command(LogOp.class).call());
         assertEquals(expectedMain, logged);
 
         // Cancel the transaction
         repo.command(TransactionEnd.class).setCancel(true).setTransaction(t).call();
 
         // Verify that the base repository is unchanged
-        logs = repo.command(LogOp.class).call();
-        logged = new ArrayList<RevCommit>();
-        for (; logs.hasNext();) {
-            logged.add(logs.next());
-        }
-
+        logged = Lists.newArrayList(repo.command(LogOp.class).call());
         assertEquals(expectedMain, logged);
-
     }
 
     @Test
@@ -575,11 +525,11 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         final String unchangedRemoteRef = "refs/remotes/upstream/testbranch";
 
         Ref remoteHead = repo.command(UpdateRef.class).setName(remoteRef)
-                .setNewValue(headCommit.getId()).call().get();
+                .setNewValue(headCommit.getId()).setReason("test init").call().get();
         assertEquals(headCommit.getId(), remoteHead.getObjectId());
 
         repo.command(UpdateRef.class).setName(unchangedRemoteRef).setNewValue(headCommit.getId())
-                .call().get();
+                .setReason("test init").call().get();
 
         // start a transaction
         GeogigTransaction tx = repo.command(TransactionBegin.class).call();
@@ -589,7 +539,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         RevCommit newcommit = tx.command(CommitOp.class).call();
         // upadte remote
         Ref txRemoteHead = tx.command(UpdateRef.class).setName(remoteRef)
-                .setNewValue(newcommit.getId()).call().get();
+                .setNewValue(newcommit.getId()).setReason("test init").call().get();
         assertEquals(newcommit.getId(), txRemoteHead.getObjectId());
 
         // commit transaction
@@ -615,7 +565,6 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         assertTrue(txNew.isPresent());
 
         TransactionEnd endTransaction = repo.command(TransactionEnd.class);
-        boolean closed = endTransaction.setCancel(false).setTransaction(txNew.get()).call();
-        assertTrue(closed);
+        endTransaction.setCancel(false).setTransaction(txNew.get()).call();
     }
 }

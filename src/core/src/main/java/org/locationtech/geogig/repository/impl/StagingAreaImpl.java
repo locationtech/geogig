@@ -80,8 +80,13 @@ public class StagingAreaImpl implements StagingArea {
      * 
      * @param newTree the tree to set as the new STAGE_HEAD
      */
-    public @Override void updateStageHead(ObjectId newTree) {
-        context.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(newTree).call();
+    public @Override void updateStageHead(@NonNull ObjectId newTree) {
+        updateStageHead(newTree, null);
+    }
+
+    public @Override void updateStageHead(@NonNull ObjectId newTree, String reason) {
+        context.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(newTree)
+                .setReason(reason).call();
     }
 
     /**
@@ -105,7 +110,7 @@ public class StagingAreaImpl implements StagingArea {
 
             if (headTreeId.isPresent() && !headTreeId.get().equals(EMPTY_TREE_ID)) {
                 stageTree = context.objectDatabase().getTree(headTreeId.get());
-                updateStageHead(stageTree.getId());
+                updateStageHead(stageTree.getId(), "staging-area: initialize to HEAD");
             }
         }
         return stageTree;
@@ -294,7 +299,7 @@ public class StagingAreaImpl implements StagingArea {
                 state.updateTree.setChild(newTreeRef);
             }
             RevTree newRootTree = state.updateTree.call();
-            updateStageHead(newRootTree.getId());
+            updateStageHead(newRootTree.getId(), "staging-area: stage");
 
             // remove conflicts once the STAGE_HEAD was updated
             if (state.hasConflicts) {
@@ -330,7 +335,7 @@ public class StagingAreaImpl implements StagingArea {
         if (null == parentPath) {
             // it is the root tree that's been changed, update head and ignore anything else
             ObjectId newRoot = diff.newObjectId();
-            updateStageHead(newRoot);
+            updateStageHead(newRoot, "staging-area: stage");
             state.progress.complete();
             return false;
         }

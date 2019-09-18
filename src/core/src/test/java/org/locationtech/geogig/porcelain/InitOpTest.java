@@ -13,14 +13,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.model.Ref.HEAD;
+import static org.locationtech.geogig.model.Ref.MASTER;
+import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
+import static org.locationtech.geogig.model.Ref.WORK_HEAD;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -29,10 +31,10 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,11 +42,11 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -54,6 +56,7 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
+import org.locationtech.geogig.storage.memory.HeapRefDatabase;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -69,6 +72,8 @@ public class InitOpTest {
 
     private InitOp init;
 
+    private HeapRefDatabase refdb;
+
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -78,9 +83,7 @@ public class InitOpTest {
 
     private RefParse mockRefParse;
 
-    private UpdateRef mockUpdateRef;
-
-    private UpdateSymRef mockUpdateSymRef;
+    private UpdateRefs mockUpdateRefs;
 
     private ObjectDatabase objectDatabase;
 
@@ -92,27 +95,16 @@ public class InitOpTest {
     @Before
     public void setUp() throws IOException, RepositoryConnectionException {
         context = mock(Context.class);
+        refdb = new HeapRefDatabase();
+        refdb.open();
+        when(context.refDatabase()).thenReturn(refdb);
 
         mockRefParse = mock(RefParse.class);
         when(mockRefParse.setName(anyString())).thenReturn(mockRefParse);
 
-        mockUpdateRef = mock(UpdateRef.class);
-        when(mockUpdateRef.setName(anyString())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setDelete(anyBoolean())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setNewValue((ObjectId) any())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setOldValue((ObjectId) any())).thenReturn(mockUpdateRef);
-        when(mockUpdateRef.setReason(anyString())).thenReturn(mockUpdateRef);
-
-        mockUpdateSymRef = mock(UpdateSymRef.class);
-        when(mockUpdateSymRef.setName(anyString())).thenReturn(mockUpdateSymRef);
-        when(mockUpdateSymRef.setDelete(anyBoolean())).thenReturn(mockUpdateSymRef);
-        when(mockUpdateSymRef.setNewValue(anyString())).thenReturn(mockUpdateSymRef);
-        when(mockUpdateSymRef.setOldValue(anyString())).thenReturn(mockUpdateSymRef);
-        when(mockUpdateSymRef.setReason(anyString())).thenReturn(mockUpdateSymRef);
-
-        when(context.command(eq(RefParse.class))).thenReturn(mockRefParse);
-        when(context.command(eq(UpdateRef.class))).thenReturn(mockUpdateRef);
-        when(context.command(eq(UpdateSymRef.class))).thenReturn(mockUpdateSymRef);
+        mockUpdateRefs = new UpdateRefs();
+        mockUpdateRefs.setContext(context);
+        when(context.command(eq(UpdateRefs.class))).thenReturn(mockUpdateRefs);
 
         platform = mock(Platform.class);
         when(context.platform()).thenReturn(platform);
@@ -163,26 +155,20 @@ public class InitOpTest {
         Repository created = init.call();
 
         assertSame(mockRepo, created);
-        verify(mockResolver, times(1)).initialize(eq(expectedURI), any());
+        verify(mockResolver, times(1)).initialize(eq(expectedURI));
         verify(context, times(1)).repository();
 
-        verify(mockUpdateRef, times(1)).setName(eq(Ref.MASTER));
-        verify(mockUpdateRef, times(1)).setName(eq(Ref.WORK_HEAD));
-        verify(mockUpdateRef, times(1)).setName(eq(Ref.STAGE_HEAD));
-        verify(mockUpdateRef, times(1)).setNewValue(eq(ObjectId.NULL));
-        verify(mockUpdateRef, times(2)).setNewValue(eq(RevTree.EMPTY_TREE_ID));
-        verify(mockUpdateRef, times(3)).setReason(anyString());
-        verify(mockUpdateRef, times(3)).call();
-
-        verify(mockUpdateSymRef, times(1)).setName(eq(Ref.HEAD));
-        verify(mockUpdateSymRef, times(1)).setNewValue(eq(Ref.MASTER));
-        verify(mockUpdateSymRef, times(1)).call();
-
+        assertEquals("init: repository initialization", mockUpdateRefs.getReason().orElse(null));
+        assertEquals(new Ref(WORK_HEAD, RevTree.EMPTY_TREE_ID), refdb.get(WORK_HEAD).orElse(null));
+        assertEquals(new Ref(STAGE_HEAD, RevTree.EMPTY_TREE_ID),
+                refdb.get(STAGE_HEAD).orElse(null));
+        Ref master = new Ref(MASTER, ObjectId.NULL);
+        assertEquals(master, refdb.get(MASTER).orElse(null));
+        assertEquals(new SymRef(HEAD, master), refdb.get(HEAD).orElse(null));
         assertEquals(RevTree.EMPTY, objectDatabase.get(RevTree.EMPTY_TREE_ID));
     }
 
     @Test
-    @Ignore
     public void testReinitializeExistingRepo() throws Exception {
         when(context.repository()).thenReturn(mockRepo);
         Optional<Ref> absent = Optional.empty();
@@ -193,25 +179,20 @@ public class InitOpTest {
 
         Repository created = init.call();
         assertSame(mockRepo, created);
-        verify(mockResolver, times(1)).initialize(eq(expectedURI), any());
-        verify(mockUpdateRef, times(0)).call();
-        verify(mockUpdateSymRef, times(0)).call();
+        verify(mockResolver, times(1)).initialize(eq(expectedURI));
 
-        Ref master = new Ref(Ref.MASTER, RevObjectTestSupport.hashString("hash me"));
+        Ref master = new Ref(MASTER, RevObjectTestSupport.hashString("hash me"));
+        refdb.put(master);
 
-        when(mockRefParse.call()).thenReturn(Optional.of(master));
-
-        Context injector = mock(Context.class);
-        when(injector.command(eq(RefParse.class))).thenReturn(mockRefParse);
-        when(injector.platform()).thenReturn(platform);
-        when(injector.repository()).thenReturn(mockRepo);
-        init.setContext(injector);
-
+        refdb.delete(Arrays.asList(HEAD, WORK_HEAD, STAGE_HEAD));
+        objectDatabase.delete(RevTree.EMPTY_TREE_ID);
         assertNotNull(init.call());
 
-        verify(injector, never()).command(eq(UpdateRef.class));
-        verify(injector, never()).command(eq(UpdateSymRef.class));
-
+        assertEquals("init: repository re-initialization", mockUpdateRefs.getReason().orElse(null));
+        assertEquals(master, refdb.get(MASTER).orElse(null));
+        assertEquals(new SymRef(HEAD, master), refdb.get(HEAD).orElse(null));
+        assertEquals(new Ref(WORK_HEAD, master.getObjectId()), refdb.get(WORK_HEAD).orElse(null));
+        assertEquals(new Ref(STAGE_HEAD, master.getObjectId()), refdb.get(STAGE_HEAD).orElse(null));
         assertEquals(RevTree.EMPTY, objectDatabase.get(RevTree.EMPTY_TREE_ID));
     }
 

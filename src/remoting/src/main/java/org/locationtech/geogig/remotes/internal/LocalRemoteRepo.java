@@ -56,7 +56,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
@@ -119,7 +118,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
         return currHead;
     }
 
-    public @Override ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+    public @Override Set<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
         Predicate<Ref> filter = new Predicate<Ref>() {
             public @Override boolean apply(Ref input) {
@@ -197,7 +196,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
      */
     public @Override Optional<Ref> deleteRef(String refspec) {
         Optional<Ref> deletedRef = remoteRepository.command(UpdateRef.class).setName(refspec)
-                .setDelete(true).call();
+                .setReason("remote ref deleted").setDelete(true).call();
         return deletedRef;
     }
 

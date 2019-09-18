@@ -11,18 +11,15 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
@@ -88,19 +85,17 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
         // short cut for the case where the index is empty and we're staging all changes in the
         // working tree, so it's just a matter of updating the index ref to working tree RevTree id
         final StagingArea index = stagingArea();
-        try (AutoCloseableIterator<DiffEntry> staged = index.getStaged(null)) {
-            if (null == pathFilter && !staged.hasNext() && !updateOnly
-                    && index.countConflicted(null) == 0) {
-                progress.started();
-                Optional<ObjectId> workHead = command(RevParse.class).setRefSpec(Ref.WORK_HEAD)
-                        .call();
-                if (workHead.isPresent()) {
-                    command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(workHead.get())
-                            .call();
+        if (null == pathFilter && !updateOnly && index.countConflicted(null) == 0) {
+            try (AutoCloseableIterator<DiffEntry> staged = index.getStaged(null)) {
+                if (!staged.hasNext()) {
+                    progress.started();
+                    command(RevParse.class).setRefSpec(Ref.WORK_HEAD).call().ifPresent(workHead -> {
+                        stagingArea().updateStageHead(workHead, "Clean stage of work head");
+                    });
+                    progress.setProgress(100f);
+                    progress.complete();
+                    return;
                 }
-                progress.setProgress(100f);
-                progress.complete();
-                return;
             }
         }
 

@@ -7,14 +7,15 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.plumbing;
+package org.locationtech.geogig.transaction;
 
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
 import org.locationtech.geogig.hooks.Hookable;
+import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
 
@@ -36,22 +37,22 @@ public class TransactionBegin extends AbstractGeoGigOp<GeogigTransaction> {
         Preconditions.checkState(!(context instanceof GeogigTransaction),
                 "Cannot start a new transaction within a transaction!");
 
-        GeogigTransaction t = new GeogigTransaction(context, UUID.randomUUID());
+        final Context nonTransactionContext = context();
+        final RefDatabase nonTxRefdb = nonTransactionContext.refDatabase();
 
+        final UUID transactionId = UUID.randomUUID();
+        final GeogigTransaction transactionContext = new GeogigTransaction(context, transactionId);
         // Lock the repository
         try {
-            refDatabase().lock();
+            nonTxRefdb.lock();
+            transactionContext.create();
         } catch (TimeoutException e) {
             throw new RuntimeException(e);
-        }
-        try {
-            // Copy original refs
-            t.create();
         } finally {
             // Unlock the repository
-            refDatabase().unlock();
+            nonTxRefdb.unlock();
         }
         // Return the transaction
-        return t;
+        return transactionContext;
     }
 }

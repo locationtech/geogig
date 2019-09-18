@@ -369,6 +369,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                     .setName(updateRefName)//
                     .setOldValue(oldRef == null ? null : oldRef.getObjectId())//
                     .setNewValue(updateValue)//
+                    .setReason("push")//
                     .call();
 
             Preconditions.checkArgument(remoteRef.isPresent());
@@ -379,6 +380,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             local.command(UpdateRef.class)//
                     .setName(localRemoteRef.getName())//
                     .setNewValue(localRemoteRef.getObjectId())//
+                    .setReason("push")//
                     .call();
 
             RefDiff updateRemoteRef = new RefDiff(oldRef, remoteRef.get());

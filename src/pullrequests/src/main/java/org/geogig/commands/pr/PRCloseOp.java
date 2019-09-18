@@ -9,11 +9,10 @@
  */
 package org.geogig.commands.pr;
 
-import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.base.Preconditions;
 
@@ -42,15 +41,11 @@ public class PRCloseOp extends PRCommand<PRStatus> {
         Ref headRef = pr.resolveHeadRef(tx);
         Ref origRef = pr.resolveOriginRef(tx);
         tx.abort();
-        setRef(liveContext, headRef);
-        setRef(liveContext, origRef);
+        liveContext.command(UpdateRefs.class)//
+                .setReason(String.format("pr-close: close pull request %d wihtout merging it", id))//
+                .add(headRef)//
+                .add(origRef)//
+                .call();
         return command(PRHealthCheckOp.class).setRequest(pr).call();
     }
-
-    private void setRef(Context liveContext, Ref ref) {
-        String name = ref.getName();
-        ObjectId objectId = ref.getObjectId();
-        liveContext.command(UpdateRef.class).setName(name).setNewValue(objectId).call();
-    }
-
 }

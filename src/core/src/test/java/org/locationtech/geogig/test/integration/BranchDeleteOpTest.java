@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -24,7 +23,8 @@ import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
+import org.locationtech.geogig.transaction.TransactionBegin;
 
 public class BranchDeleteOpTest extends RepositoryTestCase {
 
@@ -92,7 +92,7 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
         Ref testBranch = repo.command(BranchCreateOp.class).setName("TestBranch").call();
 
         testBranch = repo.command(UpdateRef.class).setName("TestBranch")
-                .setNewValue(testBranch.getObjectId()).call().get();
+                .setNewValue(testBranch.getObjectId()).setReason("test init").call().get();
 
         exception.expect(IllegalArgumentException.class);
         repo.command(BranchDeleteOp.class).setName("TestBranch").call();

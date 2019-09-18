@@ -11,8 +11,8 @@ package org.locationtech.geogig.storage.memory;
 
 import java.io.File;
 
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
-import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
+import org.locationtech.geogig.transaction.TransactionBlobStoreTest;
 
 public class HeapBlobStoreTest extends TransactionBlobStoreTest {
 

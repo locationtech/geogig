@@ -24,6 +24,8 @@ import com.google.common.base.Preconditions;
  * Returns {@link Optional#empty() empty} if no such object is found. Throws
  * {@code IllegalArgumentException} if the ref-spec resolves to an object from which a
  * {@link RevTree} cannot be derived.
+ * 
+ * @see ResolveTreeish
  */
 public class ResolveTree extends AbstractGeoGigOp<java.util.Optional<RevTree>> {
 

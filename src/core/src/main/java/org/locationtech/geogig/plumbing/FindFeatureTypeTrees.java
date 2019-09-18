@@ -113,9 +113,8 @@ public class FindFeatureTypeTrees extends AbstractGeoGigOp<List<NodeRef>> {
     private RevTree resolveRootTree() {
         RevTree root = this.rootTree;
         if (root == null) {
-            Optional<ObjectId> treeish = command(ResolveTreeish.class).setSource(source)
-                    .setTreeish(refSpec).call();
-            return treeish.isPresent() ? source.getTree(treeish.get()) : RevTree.EMPTY;
+            root = command(ResolveTree.class).setSource(source).setTreeIsh(refSpec).call()
+                    .orElse(RevTree.EMPTY);
         }
         return root;
     }

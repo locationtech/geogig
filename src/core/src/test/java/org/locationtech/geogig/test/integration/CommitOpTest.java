@@ -65,9 +65,9 @@ public class CommitOpTest extends RepositoryTestCase {
 
     @Test
     public void testNothingToCommit() throws Exception {
-        repo.command(AddOp.class).addPattern(".").call();
+        repo.commands().add(".");
         exception.expect(NothingToCommitException.class);
-        repo.command(CommitOp.class).call();
+        repo.commands().command(CommitOp.class).call();
     }
 
     @Test
@@ -76,8 +76,8 @@ public class CommitOpTest extends RepositoryTestCase {
 
         ObjectId oid2 = insertAndAdd(points2);
 
-        repo.command(AddOp.class).addPattern(".").call();
-        RevCommit commit = repo.command(CommitOp.class).call();
+        repo.commands().add(".");
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());
         assertEquals(0, commit.getParentIds().size());
@@ -110,7 +110,8 @@ public class CommitOpTest extends RepositoryTestCase {
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid2, featureBlobId.get().getObjectId());
 
-        ObjectId commitId = repo.command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+        ObjectId commitId = repo.commands().command(RevParse.class).setRefSpec(Ref.HEAD).call()
+                .get();
         assertEquals(commit.getId(), commitId);
     }
 
@@ -118,8 +119,8 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testCommitAddsFeatureTypeToObjectDatabase() throws Exception {
         insertAndAdd(points1);
         ObjectId id = RevFeatureType.builder().type(pointsType).build().getId();
-        repo.command(AddOp.class).addPattern(".").call();
-        RevCommit commit = repo.command(CommitOp.class).call();
+        repo.commands().command(AddOp.class).addPattern(".").call();
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
         assertNotNull(commit);
         RevFeatureType type = repo.objects().getFeatureType(id);
         assertEquals(id, type.getId());
@@ -131,8 +132,8 @@ public class CommitOpTest extends RepositoryTestCase {
         // insert and commit points1
         final ObjectId oId1_1 = insertAndAdd(points1);
 
-        repo.command(AddOp.class).call();
-        final RevCommit commit1 = repo.command(CommitOp.class).call();
+        repo.commands().command(AddOp.class).call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).call();
         {
             assertCommit(commit1, null, null, null);
             // check points1 is there
@@ -146,8 +147,8 @@ public class CommitOpTest extends RepositoryTestCase {
         final ObjectId oId1_3 = insertAndAdd(points3);
         final ObjectId oId2_1 = insertAndAdd(lines1);
 
-        repo.command(AddOp.class).call();
-        final RevCommit commit2 = repo.command(CommitOp.class).setMessage("msg").call();
+        repo.commands().command(AddOp.class).call();
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).setMessage("msg").call();
         {
             assertCommit(commit2, commit1.getId(), "groldan", "msg");
 
@@ -177,8 +178,8 @@ public class CommitOpTest extends RepositoryTestCase {
         // and insert feature2_2
         final ObjectId oId2_2 = insertAndAdd(lines2);
 
-        repo.command(AddOp.class).call();
-        final RevCommit commit3 = repo.command(CommitOp.class).call();
+        repo.commands().command(AddOp.class).call();
+        final RevCommit commit3 = repo.commands().command(CommitOp.class).call();
         {
             assertCommit(commit3, commit2.getId(), "groldan", null);
 
@@ -207,8 +208,8 @@ public class CommitOpTest extends RepositoryTestCase {
 
         ObjectId oid2 = insertAndAdd(points2);
 
-        repo.command(AddOp.class).addPattern(".").call();
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        repo.commands().command(AddOp.class).addPattern(".").call();
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         commitCommand.setAuthor("John Doe", "John@Doe.com");
         commitCommand.setCommitter("Jane Doe", "Jane@Doe.com");
         RevCommit commit = commitCommand.call();
@@ -245,14 +246,15 @@ public class CommitOpTest extends RepositoryTestCase {
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid2, featureBlobId.get().getObjectId());
 
-        ObjectId commitId = repo.command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+        ObjectId commitId = repo.commands().command(RevParse.class).setRefSpec(Ref.HEAD).call()
+                .get();
         assertEquals(commit.getId(), commitId);
     }
 
     @Test
     public void testCommitWithExplicitNullAuthorEmail() throws Exception {
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         commitCommand.setAuthor("John Doe", null);
         commitCommand.setAllowEmpty(true);
         RevCommit commit = commitCommand.call();
@@ -266,7 +268,7 @@ public class CommitOpTest extends RepositoryTestCase {
     @Test
     public void testExplicitTimeStamp() throws Exception {
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         commitCommand.setAuthorTimestamp(1000L);
         commitCommand.setAuthorTimeZoneOffset(-3);
         commitCommand.setCommitterTimestamp(2000L);
@@ -285,12 +287,12 @@ public class CommitOpTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
 
-        repo.command(AddOp.class).addPattern(".").call();
-        RevCommit commit = repo.command(CommitOp.class).call();
+        repo.commands().command(AddOp.class).addPattern(".").call();
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
 
         ObjectId oid = insertAndAdd(points1_modified);
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         commit = commitCommand.setAll(true).call();
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());
@@ -315,7 +317,8 @@ public class CommitOpTest extends RepositoryTestCase {
         assertTrue(featureBlobId.isPresent());
         assertEquals(oid, featureBlobId.get().getObjectId());
 
-        ObjectId commitId = repo.command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+        ObjectId commitId = repo.commands().command(RevParse.class).setRefSpec(Ref.HEAD).call()
+                .get();
         assertEquals(commit.getId(), commitId);
     }
 
@@ -324,14 +327,14 @@ public class CommitOpTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
 
-        repo.command(AddOp.class).addPattern(".").call();
-        RevCommit commit = repo.command(CommitOp.class).call();
+        repo.commands().command(AddOp.class).addPattern(".").call();
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
 
         ObjectId oid = insertAndAdd(points1_modified);
         insert(points2);
         insert(lines1);
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         commit = commitCommand.setPathFilters(ImmutableList.of(pointsName)).setAll(true).call();
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());
@@ -363,14 +366,15 @@ public class CommitOpTest extends RepositoryTestCase {
         featureBlobId = repo.objects().tree(root).child(NodeRef.appendChild(pointsName, featureId));
         assertFalse(featureBlobId.isPresent());
 
-        ObjectId commitId = repo.command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+        ObjectId commitId = repo.commands().command(RevParse.class).setRefSpec(Ref.HEAD).call()
+                .get();
         assertEquals(commit.getId(), commitId);
     }
 
     @Test
     public void testEmptyCommit() throws Exception {
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         RevCommit commit = commitCommand.setAllowEmpty(true).call();
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());
@@ -378,7 +382,8 @@ public class CommitOpTest extends RepositoryTestCase {
         assertFalse(commit.parentN(0).isPresent());
         assertNotNull(commit.getId());
 
-        ObjectId commitId = repo.command(RevParse.class).setRefSpec(Ref.HEAD).call().get();
+        ObjectId commitId = repo.commands().command(RevParse.class).setRefSpec(Ref.HEAD).call()
+                .get();
         assertEquals(commit.getId(), commitId);
     }
 
@@ -387,7 +392,7 @@ public class CommitOpTest extends RepositoryTestCase {
 
         repo.config().remove("user.name");
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         exception.expect(IllegalStateException.class);
         commitCommand.setAllowEmpty(true).call();
     }
@@ -395,7 +400,7 @@ public class CommitOpTest extends RepositoryTestCase {
     @Test
     public void testNoCommitterEmail() throws Exception {
         repo.config().remove("user.email");
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         exception.expect(IllegalStateException.class);
         commitCommand.setAllowEmpty(true).call();
     }
@@ -411,15 +416,15 @@ public class CommitOpTest extends RepositoryTestCase {
         ProgressListener listener3 = mock(ProgressListener.class);
         when(listener3.isCanceled()).thenReturn(false, false, true);
 
-        CommitOp commitCommand1 = repo.command(CommitOp.class);
+        CommitOp commitCommand1 = repo.commands().command(CommitOp.class);
         commitCommand1.setProgressListener(listener1);
         assertNull(commitCommand1.setAllowEmpty(true).call());
 
-        CommitOp commitCommand2 = repo.command(CommitOp.class);
+        CommitOp commitCommand2 = repo.commands().command(CommitOp.class);
         commitCommand2.setProgressListener(listener2);
         assertNull(commitCommand2.setAllowEmpty(true).call());
 
-        CommitOp commitCommand3 = repo.command(CommitOp.class);
+        CommitOp commitCommand3 = repo.commands().command(CommitOp.class);
         commitCommand3.setProgressListener(listener3);
         assertNull(commitCommand3.setAllowEmpty(true).call());
 
@@ -434,23 +439,23 @@ public class CommitOpTest extends RepositoryTestCase {
         final String emptyTreeName = "emptyTree";
 
         workingTree.createTypeTree(emptyTreeName, pointsType);
-        repo.command(AddOp.class).addPattern(emptyTreeName).call();
+        repo.commands().command(AddOp.class).addPattern(emptyTreeName).call();
 
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         RevCommit commit = commitCommand.call();
         assertNotNull(commit);
 
-        RevTree head = repo.command(RevObjectParse.class).setObjectId(commit.getTreeId())
+        RevTree head = repo.commands().command(RevObjectParse.class).setObjectId(commit.getTreeId())
                 .call(RevTree.class).get();
-        Optional<NodeRef> ref = repo.command(FindTreeChild.class).setChildPath(emptyTreeName)
-                .setParent(head).call();
+        Optional<NodeRef> ref = repo.commands().command(FindTreeChild.class)
+                .setChildPath(emptyTreeName).setParent(head).call();
         assertTrue(ref.isPresent());
     }
 
     @Test
     public void testCommitEmptyTreeOnNonEmptyRepo() throws Exception {
         insertAndAdd(points1, points2);
-        repo.command(CommitOp.class).call();
+        repo.commands().command(CommitOp.class).call();
 
         // insertAndAdd(lines1, lines2);
 
@@ -464,7 +469,7 @@ public class CommitOpTest extends RepositoryTestCase {
             // assertEquals(NodeRef.ROOT, unstaged.get(0).newName());
             assertEquals(emptyTreeName, unstaged.get(0).newName());
         }
-        repo.command(AddOp.class).call();
+        repo.commands().command(AddOp.class).call();
         {
             StagingArea index = repo.getContext().stagingArea();
             List<DiffEntry> staged = toList(index.getStaged(null));
@@ -472,24 +477,24 @@ public class CommitOpTest extends RepositoryTestCase {
             // assertEquals(NodeRef.ROOT, staged.get(0).newName());
             assertEquals(emptyTreeName, staged.get(0).newName());
         }
-        CommitOp commitCommand = repo.command(CommitOp.class);
+        CommitOp commitCommand = repo.commands().command(CommitOp.class);
         RevCommit commit = commitCommand.call();
         assertNotNull(commit);
 
-        RevTree head = repo.command(RevObjectParse.class).setObjectId(commit.getTreeId())
+        RevTree head = repo.commands().command(RevObjectParse.class).setObjectId(commit.getTreeId())
                 .call(RevTree.class).get();
-        Optional<NodeRef> ref = repo.command(FindTreeChild.class).setChildPath(emptyTreeName)
-                .setParent(head).call();
+        Optional<NodeRef> ref = repo.commands().command(FindTreeChild.class)
+                .setChildPath(emptyTreeName).setParent(head).call();
         assertTrue(ref.isPresent());
     }
 
     @Test
     public void testCommitUsingCommit() throws Exception {
         insertAndAdd(points1);
-        final RevCommit commit = repo.command(CommitOp.class)
+        final RevCommit commit = repo.commands().command(CommitOp.class)
                 .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
         insertAndAdd(points2);
-        RevCommit commit2 = repo.command(CommitOp.class).setCommit(commit).call();
+        RevCommit commit2 = repo.commands().command(CommitOp.class).setCommit(commit).call();
         assertEquals(commit.getMessage(), commit2.getMessage());
         assertEquals(commit.getAuthor(), commit2.getAuthor());
         assertNotSame(commit.getCommitter(), commit2.getCommitter());
@@ -499,11 +504,11 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testCommitUsingCommitAndMessage() throws Exception {
         String message = "A message";
         insertAndAdd(points1);
-        final RevCommit commit = repo.command(CommitOp.class)
+        final RevCommit commit = repo.commands().command(CommitOp.class)
                 .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
         insertAndAdd(points2);
-        RevCommit commit2 = repo.command(CommitOp.class).setCommit(commit).setMessage(message)
-                .call();
+        RevCommit commit2 = repo.commands().command(CommitOp.class).setCommit(commit)
+                .setMessage(message).call();
         assertNotSame(commit.getMessage(), commit2.getMessage());
         assertEquals(commit.getAuthor(), commit2.getAuthor());
         assertNotSame(commit.getCommitter(), commit2.getCommitter());
@@ -514,20 +519,20 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testCommitWithDeletedTree() throws Exception {
         insertAndAdd(points1, points2);
         insertAndAdd(lines1, lines2);
-        final RevCommit commit1 = repo.command(CommitOp.class).call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).call();
 
-        final RevTree tree1 = repo.command(RevObjectParse.class).setObjectId(commit1.getTreeId())
-                .call(RevTree.class).get();
+        final RevTree tree1 = repo.commands().command(RevObjectParse.class)
+                .setObjectId(commit1.getTreeId()).call(RevTree.class).get();
         assertEquals(2, tree1.trees().size());
 
         WorkingTree workingTree = repo.getContext().workingTree();
         workingTree.delete(pointsName);
-        repo.command(AddOp.class).call();
+        repo.commands().command(AddOp.class).call();
 
-        final RevCommit commit2 = repo.command(CommitOp.class).call();
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).call();
 
-        RevTree tree2 = repo.command(RevObjectParse.class).setObjectId(commit2.getTreeId())
-                .call(RevTree.class).get();
+        RevTree tree2 = repo.commands().command(RevObjectParse.class)
+                .setObjectId(commit2.getTreeId()).call(RevTree.class).get();
 
         assertEquals(1, tree2.trees().size());
     }
@@ -536,7 +541,8 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testAmend() throws Exception {
 
         final ObjectId id = insertAndAdd(points1);
-        final RevCommit commit1 = repo.command(CommitOp.class).setMessage("Message").call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).setMessage("Message")
+                .call();
         {
             assertCommit(commit1, null, null, null);
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
@@ -544,19 +550,19 @@ public class CommitOpTest extends RepositoryTestCase {
         }
 
         final ObjectId id2 = insertAndAdd(points2);
-        final RevCommit commit2 = repo.command(CommitOp.class).setAmend(true).call();
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).setAmend(true).call();
         {
             assertCommit(commit2, null, "groldan", "Message");
-            Optional<RevFeature> p2 = repo.command(RevObjectParse.class)
+            Optional<RevFeature> p2 = repo.commands().command(RevObjectParse.class)
                     .setRefSpec("HEAD:" + appendChild(pointsName, idP2)).call(RevFeature.class);
             assertTrue(p2.isPresent());
             assertEquals(id2, p2.get().getId());
-            Optional<RevFeature> p1 = repo.command(RevObjectParse.class)
+            Optional<RevFeature> p1 = repo.commands().command(RevObjectParse.class)
                     .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
             assertTrue(p1.isPresent());
             assertEquals(id, p1.get().getId());
         }
-        Iterator<RevCommit> log = repo.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.commands().command(LogOp.class).call();
         assertTrue(log.hasNext());
         log.next();
         assertFalse(log.hasNext());
@@ -567,18 +573,19 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testAmendCommitMessage() throws Exception {
 
         final ObjectId id = insertAndAdd(points1);
-        final RevCommit commit1 = repo.command(CommitOp.class).setMessage("Message").call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).setMessage("Message")
+                .call();
         {
             assertCommit(commit1, null, null, null);
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
             assertNotNull(repo.objects().get(id));
         }
 
-        final RevCommit commit2 = repo.command(CommitOp.class).setAmend(true)
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).setAmend(true)
                 .setMessage("Updated Message").call();
         {
             assertCommit(commit2, null, "groldan", "Updated Message");
-            Optional<RevFeature> p1 = repo.command(RevObjectParse.class)
+            Optional<RevFeature> p1 = repo.commands().command(RevObjectParse.class)
                     .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
             assertTrue(p1.isPresent());
             assertEquals(id, p1.get().getId());
@@ -589,7 +596,7 @@ public class CommitOpTest extends RepositoryTestCase {
             assertEquals(commit1.getParentIds(), commit2.getParentIds());
             assertEquals(commit1.getTreeId(), commit2.getTreeId());
         }
-        Iterator<RevCommit> log = repo.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.commands().command(LogOp.class).call();
         assertTrue(log.hasNext());
         log.next();
         assertFalse(log.hasNext());
@@ -600,7 +607,8 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testAmendTimestamp() throws Exception {
 
         final ObjectId id = insertAndAdd(points1);
-        final RevCommit commit1 = repo.command(CommitOp.class).setMessage("Message").call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).setMessage("Message")
+                .call();
         {
             assertCommit(commit1, null, null, null);
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
@@ -609,11 +617,11 @@ public class CommitOpTest extends RepositoryTestCase {
 
         final Long newTimestamp = 5L;
 
-        final RevCommit commit2 = repo.command(CommitOp.class).setAmend(true)
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).setAmend(true)
                 .setCommitterTimestamp(newTimestamp).call();
         {
             assertCommit(commit2, null, "groldan", "Message");
-            Optional<RevFeature> p1 = repo.command(RevObjectParse.class)
+            Optional<RevFeature> p1 = repo.commands().command(RevObjectParse.class)
                     .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
             assertTrue(p1.isPresent());
             assertEquals(id, p1.get().getId());
@@ -626,7 +634,7 @@ public class CommitOpTest extends RepositoryTestCase {
             assertEquals(commit1.getParentIds(), commit2.getParentIds());
             assertEquals(commit1.getTreeId(), commit2.getTreeId());
         }
-        Iterator<RevCommit> log = repo.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.commands().command(LogOp.class).call();
         assertTrue(log.hasNext());
         log.next();
         assertFalse(log.hasNext());
@@ -637,18 +645,19 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testAmendReUseCommit() throws Exception {
 
         final ObjectId id = insertAndAdd(points1);
-        final RevCommit commit1 = repo.command(CommitOp.class).setMessage("Message").call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).setMessage("Message")
+                .call();
         {
             assertCommit(commit1, null, null, null);
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
             assertNotNull(repo.objects().get(id));
         }
 
-        final RevCommit commit2 = repo.command(CommitOp.class).setAmend(true).setCommit(commit1)
-                .call();
+        final RevCommit commit2 = repo.commands().command(CommitOp.class).setAmend(true)
+                .setCommit(commit1).call();
         {
             assertCommit(commit2, null, "groldan", "Message");
-            Optional<RevFeature> p1 = repo.command(RevObjectParse.class)
+            Optional<RevFeature> p1 = repo.commands().command(RevObjectParse.class)
                     .setRefSpec("HEAD:" + appendChild(pointsName, idP1)).call(RevFeature.class);
             assertTrue(p1.isPresent());
             assertEquals(id, p1.get().getId());
@@ -659,7 +668,7 @@ public class CommitOpTest extends RepositoryTestCase {
             assertEquals(commit1.getParentIds(), commit2.getParentIds());
             assertEquals(commit1.getTreeId(), commit2.getTreeId());
         }
-        Iterator<RevCommit> log = repo.command(LogOp.class).call();
+        Iterator<RevCommit> log = repo.commands().command(LogOp.class).call();
         assertTrue(log.hasNext());
         log.next();
         assertFalse(log.hasNext());
@@ -669,7 +678,8 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testAmendNoChanges() throws Exception {
 
         final ObjectId id = insertAndAdd(points1);
-        final RevCommit commit1 = repo.command(CommitOp.class).setMessage("Message").call();
+        final RevCommit commit1 = repo.commands().command(CommitOp.class).setMessage("Message")
+                .call();
         {
             assertCommit(commit1, null, null, null);
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
@@ -678,7 +688,7 @@ public class CommitOpTest extends RepositoryTestCase {
         exception.expect(IllegalArgumentException.class);
         exception.expectMessage(
                 "You must specify a new commit message, timestamp, or commit to reuse when amending a commit with no changes.");
-        repo.command(CommitOp.class).setAmend(true).call();
+        repo.commands().command(CommitOp.class).setAmend(true).call();
 
     }
 
@@ -687,7 +697,7 @@ public class CommitOpTest extends RepositoryTestCase {
 
         insertAndAdd(points1);
         try {
-            repo.command(CommitOp.class).setAmend(true).call();
+            repo.commands().command(CommitOp.class).setAmend(true).call();
             fail("expected IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -720,7 +730,7 @@ public class CommitOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         insertAndAdd(points2);
 
-        RevCommit commit = repo.command(CommitOp.class).call();
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
 
         insertAndAdd(points3);
 
@@ -729,7 +739,7 @@ public class CommitOpTest extends RepositoryTestCase {
         insertAndAdd(lines3);
 
         List<String> filters = Arrays.asList("Points/Points.3", "Lines/Lines.1", "Lines/Lines.3");
-        commit = repo.command(CommitOp.class).setPathFilters(filters).call();
+        commit = repo.commands().command(CommitOp.class).setPathFilters(filters).call();
 
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());
@@ -783,7 +793,7 @@ public class CommitOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         insertAndAdd(points2);
 
-        RevCommit commit = repo.command(CommitOp.class).call();
+        RevCommit commit = repo.commands().command(CommitOp.class).call();
 
         insertAndAdd(lines1);
         insertAndAdd(lines3);
@@ -791,7 +801,7 @@ public class CommitOpTest extends RepositoryTestCase {
         insert(points3);
 
         List<String> filters = Arrays.asList(pointsName, linesName);
-        commit = repo.command(CommitOp.class).setPathFilters(filters).call();
+        commit = repo.commands().command(CommitOp.class).setPathFilters(filters).call();
 
         assertNotNull(commit);
         assertNotNull(commit.getParentIds());

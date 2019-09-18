@@ -11,8 +11,10 @@ package org.locationtech.geogig.dsl;
 
 import java.util.Optional;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
+import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.Context;
 
 import lombok.NonNull;
@@ -27,5 +29,18 @@ public @RequiredArgsConstructor class Refs {
 
     public Optional<Ref> get(@NonNull String name) {
         return context.command(RefParse.class).setName(name).call();
+    }
+
+    public @NonNull Ref set(@NonNull String name, @NonNull ObjectId value, @NonNull String reason,
+            Object... reasonArgs) {
+        return context.command(UpdateRef.class).setName(name).setNewValue(value)
+                .setReason(reason, reasonArgs).call().get();
+    }
+
+    public Optional<Ref> remove(@NonNull String name, @NonNull String reason,
+            Object... reasonArgs) {
+        return context.command(UpdateRef.class).setDelete(true).setName(name)
+                .setReason(reason, reasonArgs).call();
+
     }
 }

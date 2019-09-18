@@ -82,7 +82,8 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
         getRepository().context().objectDatabase().put(mergeCommit);
 
         repo.command(UpdateRef.class).setName("refs/heads/master")
-                .setOldValue(masterCommit3.getId()).setNewValue(mergeCommit.getId()).call();
+                .setOldValue(masterCommit3.getId()).setNewValue(mergeCommit.getId())
+                .setReason("test init").call();
         // end faking up merge op
 
         masterCommit4 = commitAllowEmpty("masterCommit4");

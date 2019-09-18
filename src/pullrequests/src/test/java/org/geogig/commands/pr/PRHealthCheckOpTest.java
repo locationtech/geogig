@@ -34,8 +34,8 @@ import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -148,7 +148,7 @@ public class PRHealthCheckOpTest {
             origin.exitFromTransaction();
 
             txContext.command(UpdateRef.class).setName(pr.getHeadRef())
-                    .setNewValue(remoteBranch.getObjectId()).call();
+                    .setNewValue(remoteBranch.getObjectId()).setReason("test setup").call();
             targetBranch = pr.resolveTargetBranch(liveContext);
             assertEquals(targetBranch.getObjectId(), remoteBranch.getObjectId());
 
@@ -242,7 +242,7 @@ public class PRHealthCheckOpTest {
                 .getMergeCommit();
 
         tx.command(UpdateRef.class).setName(request.getMergeRef()).setNewValue(merge.getId())
-                .call();
+                .setReason("test setup").call();
 
         origin.checkout("master").insert(TestData.line2).add().commit("ahead commit");
 

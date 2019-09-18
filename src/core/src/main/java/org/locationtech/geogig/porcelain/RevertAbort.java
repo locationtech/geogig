@@ -50,7 +50,8 @@ public class RevertAbort extends AbstractGeoGigOp<Void> {
 
         final ObjectId commitId = origHead.get().getObjectId();
         command(ResetOp.class).setMode(ResetMode.HARD).setCommit(commitId).call();
-        command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
+        command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).setReason("Abort revert op")
+                .call();
 
         getProgressListener().complete();
         return null;

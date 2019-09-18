@@ -51,8 +51,7 @@ public interface RepositoryResolver {
     @NonNull
     String getName(@NonNull URI repoURI);
 
-    void initialize(@NonNull URI repoURI, @NonNull Context repoContext)
-            throws IllegalArgumentException;
+    void initialize(@NonNull URI repoURI) throws IllegalArgumentException;
 
     @NonNull
     Repository open(@NonNull URI repositoryLocation) throws RepositoryConnectionException;

@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
@@ -24,6 +24,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 import lombok.NonNull;
 
@@ -153,25 +154,13 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
     }
 
     public @Override Set<String> findConflicts(@Nullable String namespace,
-            @NonNull Set<String> paths) {
+            @NonNull Iterable<String> paths) {
         Map<String, Conflict> nsmap = get(namespace);
-        Set<String> matches = new HashSet<>();
-        if (!nsmap.isEmpty()) {
-            Set<String> keys = nsmap.keySet();
-            for (String path : paths) {
-                if (keys.contains(path)) {
-                    matches.add(path);
-                }
-            }
-        }
-        return matches;
+        return Streams.stream(paths).filter(nsmap::containsKey).collect(Collectors.toSet());
     }
 
     public @Override void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix) {
-        Iterator<Conflict> matches = getByPrefix(namespace, pathPrefix);
         ConcurrentHashMap<String, Conflict> map = get(namespace);
-        while (matches.hasNext()) {
-            map.remove(matches.next().getPath());
-        }
+        getByPrefix(namespace, pathPrefix).forEachRemaining(c -> map.remove(c.getPath()));
     }
 }

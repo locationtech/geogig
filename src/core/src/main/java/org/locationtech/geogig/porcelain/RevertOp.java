@@ -32,13 +32,13 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevCommitBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.ResolveTree;
 import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.WriteTree2;
 import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
@@ -192,7 +192,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             getProgressListener().started();
 
             command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(currHead.getObjectId())
-                    .call();
+                    .setReason("revert: origin").call();
 
             // Here we prepare the files with the info about the commits to apply in reverse
             Repository repository = repository();
@@ -207,7 +207,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             ret = applyNextCommit(true);
         } while (ret);
 
-        command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
+        command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).setReason("revert: cleanup")
+                .call();
 
         getProgressListener().complete();
 
@@ -255,7 +256,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
             if (createCommit && 0L == numConflicts) {
                 createCommit(commit);
             } else {
-                workingTree().updateWorkHead(repository.context().stagingArea().getTree().getId());
+                workingTree().updateWorkHead(repository.context().stagingArea().getTree().getId(),
+                        "revert: reset to stage head");
                 if (numConflicts > 0L) {
                     // mark conflicted elements
                     command(ConflictsWriteOp.class).setConflicts(conflicts).call();
@@ -292,9 +294,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         final ObjectId parentCommitId = commit.getParentIds().isEmpty() ? ObjectId.NULL
                 : commit.getParentIds().get(0);
 
-        final RevTree parentTree = parentCommitId.isNull() ? RevTree.EMPTY : //
-                repository.command(ResolveTree.class).setTreeIsh(parentCommitId).call()
-                        .orElse(RevTree.EMPTY);
+        final RevTree parentTree = repository.commands().resolveTree(parentCommitId)
+                .orElse(RevTree.EMPTY);
         // get changes (in reverse)
         final DiffTree reverseDiffCommand = command(DiffTree.class)//
                 .setNewTree(parentTree)//
@@ -451,7 +452,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         };
     }
 
-    private void createCommit(RevCommit commit) {
+    private void createCommit(RevCommit revertedCommit) {
 
         // write new tree
         ObjectId newTreeId = command(WriteTree2.class).call();
@@ -463,8 +464,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         builder.parentIds(Arrays.asList(revertHead));
         builder.treeId(newTreeId);
         builder.committerTimestamp(timestamp);
-        builder.message(
-                "Revert '" + commit.getMessage() + "'\nThis reverts " + commit.getId().toString());
+        builder.message("Revert '" + revertedCommit.getMessage() + "'\nThis reverts "
+                + revertedCommit.getId().toString());
         builder.committer(committerName);
         builder.committerEmail(committerEmail);
         builder.author(committerName);
@@ -475,12 +476,15 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
 
         revertHead = newCommit.getId();
 
-        command(UpdateRef.class).setName(currentBranch).setNewValue(revertHead).call();
-        command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-        workingTree().updateWorkHead(newTreeId);
-        stagingArea().updateStageHead(newTreeId);
-
+        String reason = String.format("revert: Revert %s '%s'", revertedCommit.getId(),
+                RevObjects.messageTitle(revertedCommit.getMessage()));
+        Ref newHead = new Ref(currentBranch, revertHead);
+        command(UpdateRefs.class).setReason(reason)//
+                .add(newHead)//
+                .add(new SymRef(Ref.HEAD, newHead))//
+                .add(Ref.WORK_HEAD, newTreeId)//
+                .add(Ref.STAGE_HEAD, newTreeId)//
+                .call();
     }
 
     private String resolveCommitter() {

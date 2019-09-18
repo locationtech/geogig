@@ -102,7 +102,7 @@ public class RevList extends AbstractCommand implements CLICommand {
 
         geogig = cli.geogig();
 
-        LogOp op = geogig.command(LogOp.class).setTopoOrder(this.topo)
+        LogOp op = geogig.commands().command(LogOp.class).setTopoOrder(this.topo)
                 .setFirstParentOnly(this.firstParent);
 
         for (String commit : this.commits) {
@@ -125,19 +125,21 @@ public class RevList extends AbstractCommand implements CLICommand {
                 }
                 if (sinceRefSpec != null) {
                     Optional<ObjectId> since;
-                    since = geogig.command(RevParse.class).setRefSpec(sinceRefSpec).call();
+                    since = geogig.commands().command(RevParse.class).setRefSpec(sinceRefSpec)
+                            .call();
                     checkParameter(since.isPresent(), "Object not found '%s'", sinceRefSpec);
                     op.setSince(since.get());
                 }
                 if (untilRefSpec != null) {
                     Optional<ObjectId> until;
-                    until = geogig.command(RevParse.class).setRefSpec(untilRefSpec).call();
+                    until = geogig.commands().command(RevParse.class).setRefSpec(untilRefSpec)
+                            .call();
                     checkParameter(until.isPresent(), "Object not found '%s'", sinceRefSpec);
                     op.setUntil(until.get());
                 }
             } else {
-                Optional<ObjectId> commitId = geogig.command(RevParse.class).setRefSpec(commit)
-                        .call();
+                Optional<ObjectId> commitId = geogig.commands().command(RevParse.class)
+                        .setRefSpec(commit).call();
                 checkParameter(commitId.isPresent(), "Object not found '%s'", commit);
                 checkParameter(geogig.objects().commitExists(commitId.get()),
                         "%s does not resolve to a commit", commit);
@@ -160,10 +162,12 @@ public class RevList extends AbstractCommand implements CLICommand {
             Date since = new Date(0);
             Date until = new Date();
             if (this.since != null) {
-                since = new Date(geogig.command(ParseTimestamp.class).setString(this.since).call());
+                since = new Date(geogig.commands().command(ParseTimestamp.class)
+                        .setString(this.since).call());
             }
             if (this.until != null) {
-                until = new Date(geogig.command(ParseTimestamp.class).setString(this.until).call());
+                until = new Date(geogig.commands().command(ParseTimestamp.class)
+                        .setString(this.until).call());
             }
             op.setTimeRange(Range.closed(since, until));
         }
@@ -209,7 +213,7 @@ public class RevList extends AbstractCommand implements CLICommand {
                 sb.append('\n');
             }
             if (showChanges) {
-                try (AutoCloseableIterator<DiffEntry> diff = geogig.command(DiffOp.class)
+                try (AutoCloseableIterator<DiffEntry> diff = geogig.commands().command(DiffOp.class)
                         .setOldVersion(commit.parentN(0).orElse(ObjectId.NULL))
                         .setNewVersion(commit.getId()).call()) {
                     DiffEntry diffEntry;

@@ -45,7 +45,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      */
     public UpdateIndexesOp setRef(final @NonNull Ref branchRef) {
         checkArgument(!(branchRef instanceof SymRef),
-                "Update indexes does not support symbolic references");
+                "Update indexes does not support symbolic references: " + branchRef);
         checkArgument(branchRef.getName().startsWith(Ref.REFS_PREFIX),
                 branchRef.getName() + " is not a branch ref");
         this.rootRefSpec = branchRef;

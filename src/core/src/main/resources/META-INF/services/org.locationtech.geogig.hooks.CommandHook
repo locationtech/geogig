@@ -1,2 +1,3 @@
 #Built in command hooks
 org.locationtech.geogig.hooks.builtin.UpdateIndexesHook
+org.locationtech.geogig.hooks.builtin.RefLogCommandHook

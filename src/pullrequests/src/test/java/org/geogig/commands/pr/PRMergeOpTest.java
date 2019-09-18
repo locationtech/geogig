@@ -33,8 +33,8 @@ import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;

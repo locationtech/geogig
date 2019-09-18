@@ -691,16 +691,16 @@ public class MergeOpTest extends RepositoryTestCase {
         // . o - branch1 - Points 1 added
 
         // create branch1 and checkout
-        repo.command(UpdateRef.class).setName(Ref.HEADS_PREFIX + "branch1")
+        repo.command(UpdateRef.class).setName(Ref.HEADS_PREFIX + "branch1").setReason("test init")
                 .setNewValue(ObjectId.NULL).call();
         repo.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(Ref.HEADS_PREFIX + "branch1")
-                .call();
+                .setReason("forced for testing").call();
         insertAndAdd(points1);
         final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         // checkout master
         repo.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(Ref.HEADS_PREFIX + "master")
-                .call();
+                .setReason("forced for testing").call();
 
         // Merge branch1 into master to create the following revision graph
         // o

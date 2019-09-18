@@ -20,7 +20,6 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.DiffIndex;
-import org.locationtech.geogig.plumbing.TransactionBegin;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
@@ -28,8 +27,9 @@ import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.transaction.GeogigTransaction;
+import org.locationtech.geogig.transaction.TransactionBegin;
 
 import com.google.common.base.Preconditions;
 

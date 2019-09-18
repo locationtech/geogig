@@ -65,7 +65,7 @@ public class TagCreateOp extends AbstractGeoGigOp<RevTag> {
 
         objectDatabase().put(tag);
         Optional<Ref> branchRef = command(UpdateRef.class).setName(tagRefPath)
-                .setNewValue(tag.getId()).call();
+                .setNewValue(tag.getId()).setReason("tag: create").call();
         checkState(branchRef.isPresent());
 
         return tag;

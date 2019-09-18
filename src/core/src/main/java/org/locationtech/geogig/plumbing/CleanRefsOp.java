@@ -9,16 +9,19 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
+import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.impl.Blobs;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 
 /**
  * Cleans refs and blobs left by conflict-generating operations.
@@ -35,29 +38,31 @@ import com.google.common.collect.ImmutableList.Builder;
  * <li>MERGE_MSG
  * </ul>
  */
-public class CleanRefsOp extends AbstractGeoGigOp<ImmutableList<String>> {
+@Accessors(fluent = true)
+public class CleanRefsOp extends AbstractGeoGigOp<List<String>> {
 
-    protected @Override ImmutableList<String> _call() {
-        Builder<String> cleaned = new ImmutableList.Builder<String>();
-        Optional<Ref> ref = command(UpdateRef.class).setDelete(true).setName(Ref.MERGE_HEAD).call();
-        if (ref.isPresent()) {
-            cleaned.add(Ref.MERGE_HEAD);
-        }
-        ref = command(UpdateRef.class).setDelete(true).setName(Ref.ORIG_HEAD).call();
-        if (ref.isPresent()) {
-            cleaned.add(Ref.ORIG_HEAD);
-        }
-        ref = command(UpdateRef.class).setDelete(true).setName(Ref.CHERRY_PICK_HEAD).call();
-        if (ref.isPresent()) {
-            cleaned.add(Ref.CHERRY_PICK_HEAD);
-        }
+    private @Setter String reason;
+
+    protected @Override List<String> _call() {
+        UpdateRefs cmd = command(UpdateRefs.class).setReason(reason == null ? "" : reason);
+        cmd.remove(Ref.MERGE_HEAD);
+        cmd.remove(Ref.ORIG_HEAD);
+        cmd.remove(Ref.CHERRY_PICK_HEAD);
+
+        List<String> cleaned = cmd.call().stream()//
+                .map(RefChange::oldValue)//
+                .filter(Optional::isPresent)//
+                .map(Optional::get)//
+                .map(Ref::getName)//
+                .collect(Collectors.toList());
+
         BlobStore blobStore = context.blobStore();
         Optional<byte[]> blob = Blobs.getBlob(blobStore, MergeOp.MERGE_MSG);
         if (blob.isPresent()) {
             cleaned.add(MergeOp.MERGE_MSG);
             blobStore.removeBlob(MergeOp.MERGE_MSG);
         }
-        return cleaned.build();
+        return cleaned;
     }
 
 }

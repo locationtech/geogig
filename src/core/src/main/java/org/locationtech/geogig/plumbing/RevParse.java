@@ -22,9 +22,9 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -206,10 +206,6 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
         }
 
         RevCommit commit = resolveCommit(objectId);
-        if (parentN > commit.getParentIds().size()) {
-            return Optional.empty();
-        }
-
         return commit.parentN(parentN - 1);
     }
 
@@ -232,7 +228,8 @@ public class RevParse extends AbstractGeoGigOp<Optional<ObjectId>> {
             break;
         default:
             throw new IllegalArgumentException(String.format(
-                    "%s did not resolve to a commit or tag: %s", objectId, revObject.getType()));
+                    "refSpec %s resolves to object %s which does not resolve to a commit or tag: %s",
+                    refSpec, objectId, revObject.getType()));
         }
         return commit;
     }

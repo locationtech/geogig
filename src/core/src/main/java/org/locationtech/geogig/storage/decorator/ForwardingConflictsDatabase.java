@@ -84,7 +84,7 @@ public @RequiredArgsConstructor class ForwardingConflictsDatabase implements Con
         actual.removeConflicts(namespace, paths);
     }
 
-    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths) {
         return actual.findConflicts(namespace, paths);
     }
 

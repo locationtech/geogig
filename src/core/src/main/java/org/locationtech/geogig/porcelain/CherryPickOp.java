@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import java.util.List;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -19,22 +19,22 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.ResolveCommit;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.WriteTree2;
-import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
-import org.locationtech.geogig.plumbing.merge.MergeScenarioConsumer;
+import org.locationtech.geogig.plumbing.merge.ConflictsUtils;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.ReportCommitConflictsOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
-import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
+import org.locationtech.geogig.storage.impl.PersistedIterable;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterators;
 
+import lombok.Cleanup;
 import lombok.NonNull;
 
 /**
@@ -44,8 +44,6 @@ import lombok.NonNull;
  * 
  */
 public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
-
-    private final static int BUFFER_SIZE = 1000;
 
     private ObjectId commit;
 
@@ -66,94 +64,61 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
      * @return RevCommit the new commit with the changes from the cherry-picked commit
      */
     protected @Override RevCommit _call() {
-        final Repository repository = repository();
         final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
-        Preconditions.checkState(currHead.isPresent(),
-                "Repository has no HEAD, can't cherry pick.");
-        Preconditions.checkState(currHead.get() instanceof SymRef,
-                "Can't cherry pick from detached HEAD");
+        checkState(currHead.isPresent(), "Repository has no HEAD, can't cherry pick.");
+        checkState(currHead.get() instanceof SymRef, "Can't cherry pick from detached HEAD");
         final SymRef headRef = (SymRef) currHead.get();
 
-        Preconditions.checkState(stagingArea().isClean() && workingTree().isClean(),
+        checkState(stagingArea().isClean() && workingTree().isClean(),
                 "You must have a clean working tree and index to perform a cherry pick.");
 
         getProgressListener().started();
 
-        Preconditions.checkArgument(geogig().objects().commitExists(commit),
-                "Commit could not be resolved: %s.", commit);
-        RevCommit commitToApply = repository.context().objectDatabase().getCommit(commit);
+        final RevCommit commitToApply = command(ResolveCommit.class).setCommitIsh(commit).call()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Commit could not be resolved: " + commit));
 
         ObjectId headId = headRef.getObjectId();
 
-        // In case there are conflicts
-        StringBuilder conflictMsg = new StringBuilder();
-        final int maxReportedConflicts = 25;
-        final AtomicInteger reportedConflicts = new AtomicInteger(0);
-
-        final List<Conflict> conflictsBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
-        final List<DiffEntry> diffEntryBuffer = Lists.newArrayListWithCapacity(BUFFER_SIZE);
+        final @Cleanup PersistedIterable<Conflict> conflicts = ConflictsUtils
+                .newTemporaryConflictStream();
+        final @Cleanup PersistedIterable<DiffEntry> unconflicted = ConflictsUtils
+                .newTemporaryDiffEntryStream();
+        final @Cleanup PersistedIterable<FeatureInfo> merged = ConflictsUtils
+                .newTemporaryFeatureInfoStream();
 
         // see if there are conflicts
-        MergeScenarioReport report = command(ReportCommitConflictsOp.class).setCommit(commitToApply)
-                .setConsumer(new MergeScenarioConsumer() {
-
-                    public @Override void conflicted(Conflict conflict) {
-                        conflictsBuffer.add(conflict);
-                        if (conflictsBuffer.size() == BUFFER_SIZE) {
-                            // Write the conflicts
-                            command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-                            conflictsBuffer.clear();
-                        }
-                        if (reportedConflicts.get() < maxReportedConflicts) {
-                            conflictMsg
-                                    .append("CONFLICT: conflict in " + conflict.getPath() + "\n");
-                            reportedConflicts.incrementAndGet();
-                        }
-                    }
-
-                    public @Override void unconflicted(DiffEntry diff) {
-                        diffEntryBuffer.add(diff);
-                        if (diffEntryBuffer.size() == BUFFER_SIZE) {
-                            // Stage it
-                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(),
-                                    0);
-                            diffEntryBuffer.clear();
-                        }
-
-                    }
-
-                    public @Override void merged(FeatureInfo featureInfo) {
-                        // Stage it
-                        workingTree().insert(featureInfo);
-                        try (AutoCloseableIterator<DiffEntry> unstaged = workingTree()
-                                .getUnstaged(null)) {
-                            stagingArea().stage(getProgressListener(), unstaged, 0);
-                        }
-                    }
-
-                    public @Override void finished() {
-                        if (conflictsBuffer.size() > 0) {
-                            // Write the conflicts
-                            command(ConflictsWriteOp.class).setConflicts(conflictsBuffer).call();
-                            conflictsBuffer.clear();
-                        }
-                        if (diffEntryBuffer.size() > 0) {
-                            // Stage it
-                            stagingArea().stage(getProgressListener(), diffEntryBuffer.iterator(),
-                                    0);
-                            diffEntryBuffer.clear();
-                        }
-                    }
-
-                }).call();
-
+        MergeScenarioReport report = command(ReportCommitConflictsOp.class)//
+                .setCommit(commitToApply)//
+                .setOnConflict(conflicts::add)//
+                .setOnFeatureMerged(merged::add)//
+                .setOnUnconflictedChange(unconflicted::add)//
+                .call();
+        if (conflicts.size() > 0) {
+            geogig().conflicts().save(conflicts);
+        }
+        if (unconflicted.size() > 0) {
+            stagingArea().stage(getProgressListener(), unconflicted.iterator(),
+                    unconflicted.size());
+        }
+        if (merged.size() > 0) {
+            workingTree().insert(merged.iterator(), getProgressListener());
+            try (AutoCloseableIterator<DiffEntry> unstaged = workingTree().getUnstaged(null)) {
+                stagingArea().stage(getProgressListener(), unstaged, 0);
+            }
+        }
         if (report.getConflicts() == 0) {
             // write new tree
             ObjectId newTreeId = command(WriteTree2.class).call();
             RevCommit newCommit = command(CommitOp.class).setCommit(commitToApply).call();
-
-            repository.context().workingTree().updateWorkHead(newTreeId);
-            repository.context().stagingArea().updateStageHead(newTreeId);
+            UpdateRefs cleanup = command(UpdateRefs.class).setReason("cherry-pick: no conflicts");
+            if (!newTreeId.equals(workingTree().getTree().getId())) {
+                cleanup.add(Ref.WORK_HEAD, newTreeId);
+            }
+            if (!newTreeId.equals(stagingArea().getTree().getId())) {
+                cleanup.add(Ref.STAGE_HEAD, newTreeId);
+            }
+            cleanup.call();
 
             getProgressListener().complete();
 
@@ -161,17 +126,24 @@ public class CherryPickOp extends AbstractGeoGigOp<RevCommit> {
         }
 
         // stage changes
-        workingTree().updateWorkHead(stagingArea().getTree().getId());
+        UpdateRefs updateRefs = command(UpdateRefs.class)
+                .setReason("cherry-pick: set up conflicts");
+        updateRefs.add(Ref.WORK_HEAD, stagingArea().getTree().getId());
+        updateRefs.add(Ref.CHERRY_PICK_HEAD, commit);
+        updateRefs.add(Ref.ORIG_HEAD, headId);
+        updateRefs.call();
 
-        command(UpdateRef.class).setName(Ref.CHERRY_PICK_HEAD).setNewValue(commit).call();
-        command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headId).call();
-        if (report.getConflicts() > reportedConflicts.get()) {
-            conflictMsg
-                    .append("And " + Long.toString(report.getConflicts() - reportedConflicts.get())
-                            + " additional conflicts..\n");
+        final int maxReportedConflicts = 25;
+        StringBuilder conflictMsg = new StringBuilder();
+        Iterators.limit(conflicts.iterator(), maxReportedConflicts).forEachRemaining(c -> {
+            conflictMsg.append("CONFLICT: conflict in ").append(c.getPath()).append('\n');
+        });
+        if (report.getConflicts() > maxReportedConflicts) {
+            conflictMsg.append("And " + Long.toString(report.getConflicts() - maxReportedConflicts)
+                    + " additional conflicts..\n");
         }
-        conflictMsg.append("Fix conflicts and then commit the result using 'geogig commit -c "
-                + commitToApply.getId().toString().substring(0, 8) + "\n");
+        conflictMsg.append("Fix conflicts and then commit the result using 'commit -c "
+                + commitToApply.getId().toString().substring(0, 8) + "'\n");
         throw new ConflictsException(conflictMsg.toString());
 
     }

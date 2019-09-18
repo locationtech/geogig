@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.dsl;
 
-import org.locationtech.geogig.repository.Command;
-import org.locationtech.geogig.repository.CommandFactory;
 import org.locationtech.geogig.repository.Context;
 
 import lombok.Getter;
@@ -18,7 +16,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class Geogig implements CommandFactory {
+public class Geogig {
 
     private final @NonNull @Getter Context context;
 
@@ -26,12 +24,8 @@ public class Geogig implements CommandFactory {
         return new Geogig(repo);
     }
 
-    // public static Geogig of(@NonNull Repository repo) {
-    // return new Geogig(repo.context());
-    // }
-
-    public @Override <T extends Command<?>> T command(@NonNull Class<T> commandClass) {
-        return context.command(commandClass);
+    public Commands commands() {
+        return new Commands(context);
     }
 
     public Refs refs() {
@@ -64,5 +58,13 @@ public class Geogig implements CommandFactory {
 
     public TreeWorker stageHead() {
         return objects().stageHead();
+    }
+
+    public Conflicts conflicts() {
+        return new Conflicts(context);
+    }
+
+    public Blobs blobs() {
+        return new Blobs(context);
     }
 }

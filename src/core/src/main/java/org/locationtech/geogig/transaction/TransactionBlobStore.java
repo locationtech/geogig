@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.impl;
+package org.locationtech.geogig.transaction;
 
 import java.io.InputStream;
 import java.util.Optional;

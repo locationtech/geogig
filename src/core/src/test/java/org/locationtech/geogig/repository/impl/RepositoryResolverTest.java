@@ -62,7 +62,7 @@ public class RepositoryResolverTest {
             return "test";
         }
 
-        public @Override void initialize(URI repoURI, Context repoContext) {
+        public @Override void initialize(URI repoURI) {
             throw new UnsupportedOperationException();
         }
 

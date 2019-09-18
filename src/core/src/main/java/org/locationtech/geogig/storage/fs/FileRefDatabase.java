@@ -9,26 +9,41 @@
  */
 package org.locationtech.geogig.storage.fs;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static org.locationtech.geogig.model.Ref.append;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.SYNC;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static org.locationtech.geogig.model.Ref.CHERRY_PICK_HEAD;
+import static org.locationtech.geogig.model.Ref.HEAD;
+import static org.locationtech.geogig.model.Ref.MERGE_HEAD;
+import static org.locationtech.geogig.model.Ref.ORIG_HEAD;
+import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
+import static org.locationtech.geogig.model.Ref.WORK_HEAD;
 
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.storage.impl.AbstractRefDatabase;
+import org.locationtech.geogig.model.SymRef;
+import org.locationtech.geogig.storage.RefChange;
+import org.locationtech.geogig.storage.impl.SimpleLockingRefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Maps;
-import com.google.common.io.Files;
+import com.google.common.collect.Streams;
 
 import lombok.NonNull;
 
@@ -36,11 +51,12 @@ import lombok.NonNull;
  * Provides an implementation of a GeoGig ref database that utilizes the file system for the storage
  * of refs.
  */
-public class FileRefDatabase extends AbstractRefDatabase {
+public class FileRefDatabase extends SimpleLockingRefDatabase {
 
-    private static final Charset CHARSET = Charset.forName("UTF-8");
+    private static final List<String> NO_NS_NAMES = Arrays.asList(CHERRY_PICK_HEAD, ORIG_HEAD, HEAD,
+            WORK_HEAD, STAGE_HEAD, MERGE_HEAD);
 
-    private final File refsDirectory;
+    private final Path refsDirectory;
 
     /**
      * Constructs a new {@code FileRefDatabase} with the given base directory (e.g.
@@ -52,7 +68,7 @@ public class FileRefDatabase extends AbstractRefDatabase {
 
     public FileRefDatabase(@NonNull File refsDirectory, boolean readOnly) {
         super(readOnly);
-        this.refsDirectory = refsDirectory;
+        this.refsDirectory = refsDirectory.toPath();
     }
 
     /**
@@ -62,277 +78,184 @@ public class FileRefDatabase extends AbstractRefDatabase {
         if (isOpen()) {
             return;
         }
-        File refs = this.refsDirectory;
-        if (!refs.isDirectory()) {
+        Path refs = this.refsDirectory;
+        if (!Files.isDirectory(refs)) {
             Preconditions.checkState(!isReadOnly(),
                     "Database does not exist and readOnly access requested");
-            if (!refs.mkdir()) {
+            try {
+                Files.createDirectory(refs);
+            } catch (IOException e) {
                 throw new IllegalStateException(
-                        "Cannot create refs directory '" + refs.getAbsolutePath() + "'");
+                        "Cannot create refs directory '" + refs.toString() + "'", e);
             }
         }
         super.open();
     }
 
-    /**
-     * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
-     * @return the ref, or {@code null} if it doesn't exist
-     */
-    public @Override String getRef(@NonNull String name) {
-        String value = getInternal(name);
-        if (value == null) {
-            return null;
-        }
+    public @Override Optional<Ref> get(@NonNull String name) {
+        checkOpen();
+        return Optional.ofNullable(getInternal(name));
+    }
+
+    public @Override @NonNull RefChange put(@NonNull Ref ref) {
+        checkWritable();
+        Ref current;
         try {
-            ObjectId.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            throw e;
+            current = getInternal(ref.getName());
+        } catch (IllegalStateException symRefTargetNotFound) {
+            current = null;
         }
-        return value;
+        String value;
+        if (ref instanceof SymRef) {
+            value = "ref: " + ref.peel().getName();
+        } else {
+            value = ref.getObjectId().toString();
+        }
+        store(ref.getName(), value);
+        return RefChange.of(ref.getName(), current, ref);
     }
 
-    /**
-     * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
-     * @return the ref, or {@code null} if it doesn't exist
-     */
-    public @Override String getSymRef(@NonNull String name) {
-        String value = getInternal(name);
-        if (value == null) {
-            return null;
-        }
-        if (!value.startsWith("ref: ")) {
-            throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
-        }
-        value = value.substring("ref: ".length());
-        return value;
+    public @Override @NonNull List<RefChange> putAll(@NonNull Iterable<Ref> refs) {
+        checkWritable();
+        return Streams.stream(refs).map(this::put).collect(Collectors.toList());
     }
 
-    private String getInternal(String name) {
-        File refFile = toFile(name);
-        if (!refFile.exists() || refFile.isDirectory()) {
+    public @Override @NonNull RefChange putRef(@NonNull String name, @NonNull ObjectId id) {
+        return put(new Ref(name, id));
+    }
+
+    public @Override @NonNull RefChange putSymRef(@NonNull String name, @NonNull String target) {
+        Ref targetRef = get(target).orElseThrow(
+                () -> new IllegalArgumentException("Target ref does not exist: " + target));
+        return put(new SymRef(name, targetRef));
+    }
+
+    public @Override @NonNull RefChange delete(@NonNull String refName) {
+        checkWritable();
+        Optional<Ref> oldRef;
+        try {
+            oldRef = get(refName);
+        } catch (IllegalStateException symRefPointsToNonExistingRef) {
+            oldRef = Optional.empty();
+        }
+        Path refFile = toFile(refName);
+        try {
+            if (!Files.deleteIfExists(refFile)) {
+                throw new RuntimeException(
+                        "Unable to delete ref file '" + refFile.toAbsolutePath() + "'");
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return RefChange.of(refName, oldRef, Optional.empty());
+    }
+
+    public @Override @NonNull RefChange delete(@NonNull Ref ref) {
+        return delete(ref.getName());
+    }
+
+    public @Override List<Ref> deleteAll(@NonNull String namespace) {
+        List<Ref> matches = getAll(namespace);
+        matches.forEach(this::delete);
+        return matches;
+    }
+
+    private Path toFile(String refPath) {
+        return this.refsDirectory.resolve(refPath);
+    }
+
+    private String readRef(final Path refFile) {
+        try {
+            return Files.readAllLines(refFile, StandardCharsets.UTF_8).get(0);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private Ref getInternal(String name) {
+        Path refFile = toFile(name);
+        if (!Files.isRegularFile(refFile)) {
             return null;
         }
         String value = readRef(refFile);
-        return value;
-    }
+        if (value.startsWith("ref: ")) {
+            String targetName = value.substring("ref: ".length());
+            Ref target = get(targetName).orElseThrow(() -> new IllegalStateException(String
+                    .format("SymRef %s points to a non exsisting ref: %s", name, targetName)));
+            return new SymRef(name, target);
 
-    /**
-     * @param refName the name of the ref
-     * @param refValue the value of the ref, must be the hex encoding of an {@link ObjectId}
-     * @return {@code null} if the ref didn't exist already, its old value otherwise
-     */
-    public @Override void putRef(@NonNull String refName, @NonNull String refValue) {
-        checkWritable();
-        try {
-            ObjectId.valueOf(refValue);
-        } catch (IllegalArgumentException e) {
-            throw e;
         }
-        store(refName, refValue);
+        return new Ref(name, ObjectId.valueOf(value));
     }
 
-    /**
-     * @param name the name of the symbolic ref
-     * @param val the value of the symbolic ref
-     * @return {@code null} if the ref didn't exist already, its old value otherwise
-     */
-    public @Override void putSymRef(@NonNull String name, @NonNull String val) {
-        checkArgument(!name.equals(val), "Trying to store cyclic symbolic ref: %s", name);
-        checkArgument(!name.startsWith("ref: "),
-                "Wrong value, should not contain 'ref: ': %s -> '%s'", name, val);
-        checkWritable();
-        val = "ref: " + val;
-        store(name, val);
-    }
-
-    /**
-     * @param refName the name of the ref to remove (e.g. {@code "HEAD"},
-     *        {@code "refs/remotes/origin"}, etc).
-     * @return the value of the ref before removing it, or {@code null} if it didn't exist
-     */
-    public @Override String remove(@NonNull String refName) {
-        checkWritable();
-        File refFile = toFile(refName);
-        String oldRef;
-        if (refFile.exists()) {
-            oldRef = readRef(refFile);
-            if (oldRef.startsWith("ref: ")) {
-                oldRef = oldRef.substring("ref: ".length());
-            }
-            if (!refFile.delete()) {
-                throw new RuntimeException(
-                        "Unable to delete ref file '" + refFile.getAbsolutePath() + "'");
-            }
-        } else {
-            oldRef = null;
-        }
-        return oldRef;
-    }
-
-    /**
-     * @param refPath
-     * @return
-     */
-    private File toFile(String refPath) {
-        String[] path = refPath.split("/");
-
-        File file = this.refsDirectory;
-        for (String subpath : path) {
-            file = new File(file, subpath);
-        }
-        return file;
-    }
-
-    private String readRef(final File refFile) {
-        // make sure no other thread changes the ref as we read it
-        try {
-            synchronized (refFile.getCanonicalPath().intern()) {
-                return Files.asCharSource(refFile, CHARSET).readFirstLine();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * @param refName the full name of the ref (e.g.
-     *        {@code refs/heads/master, HEAD, transaction/<tx id>/refs/orig/refs/heads/master, etc.}
-     * @param refValue
-     */
     private void store(String refName, String refValue) {
-        final File refFile = toFile(refName);
+        final Path refFile = toFile(refName);
         try {
-            synchronized (refFile.getCanonicalPath().intern()) {
-                Files.createParentDirs(refFile);
-                checkState(refFile.exists() || refFile.createNewFile(),
-                        "Unable to create file for ref %s", refFile);
-
-                FileOutputStream fout = new FileOutputStream(refFile);
-                try {
-                    FileDescriptor fd = fout.getFD();
-                    fout.write((refValue + "\n").getBytes(CHARSET));
-                    fout.flush();
-                    // force change to be persisted to disk
-                    fd.sync();
-                } finally {
-                    fout.close();
-                }
-            }
+            Files.createDirectories(refFile.getParent());
+            Files.write(refFile, refValue.getBytes(StandardCharsets.UTF_8), //
+                    CREATE, TRUNCATE_EXISTING, WRITE, SYNC);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
-    public @Override Map<String, String> getAll() {
-        Builder<String, String> builder = ImmutableMap.<String, String> builder();
+    public @Override List<Ref> getAll() {
+        checkOpen();
+        List<Ref> all = new ArrayList<>();
 
-        builder.putAll(getAll(Ref.HEADS_PREFIX));
-        builder.putAll(getAll(Ref.TAGS_PREFIX));
-        builder.putAll(getAll(Ref.REMOTES_PREFIX));
+        all.addAll(getAll(Ref.HEADS_PREFIX));
+        all.addAll(getAll(Ref.TAGS_PREFIX));
+        all.addAll(getAll(Ref.REMOTES_PREFIX));
 
-        addIfPresent(builder, Ref.CHERRY_PICK_HEAD);
-        addIfPresent(builder, Ref.ORIG_HEAD);
-        addIfPresent(builder, Ref.HEAD);
-        addIfPresent(builder, Ref.WORK_HEAD);
-        addIfPresent(builder, Ref.STAGE_HEAD);
-        addIfPresent(builder, Ref.MERGE_HEAD);
-
-        ImmutableMap<String, String> all = builder.build();
+        List<Ref> commonNamespacelessRefs = getAllPresent(NO_NS_NAMES);
+        all.addAll(commonNamespacelessRefs);
         return all;
     }
 
-    private void addIfPresent(Builder<String, String> builder, String name) {
-        String value = getInternal(name);
-        if (value != null) {
-            if (value.startsWith("ref: ")) {
-                value = value.substring("ref: ".length());
-            }
-            builder.put(name, value);
+    public @Override List<Ref> getAll(@NonNull String namespace) {
+        checkOpen();
+        if ("".equals(namespace)) {
+            return getAll();
         }
-    }
-
-    /**
-     * @return all references under the specified namespace
-     */
-    public @Override Map<String, String> getAll(String namespace) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
-        File refsRoot = this.refsDirectory;
-        if (namespace.endsWith("/")) {
-            namespace = namespace.substring(0, namespace.length() - 1);
-        }
-        Map<String, String> refs = Maps.newTreeMap();
-        findRefs(refsRoot, namespace, refs);
-        return ImmutableMap.copyOf(refs);
-    }
-
-    private void findRefs(final File refsRoot, final String namespace,
-            final Map<String, String> target) {
-        String[] subdirs = namespace.split("/");
-        File nsDir = refsRoot;
-        for (String subdir : subdirs) {
-            nsDir = new File(nsDir, subdir);
-            if (!nsDir.exists() || !nsDir.isDirectory()) {
-                return;
+        final List<String> names = new ArrayList<>();
+        final Path nsRoot = this.refsDirectory.resolve(namespace);
+        if (Files.isDirectory(nsRoot)) {
+            try {
+                FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException {
+                        String name = refsDirectory.relativize(file).toString().replace('\\', '/');
+                        names.add(name);
+                        return FileVisitResult.CONTINUE;
+                    }
+                };
+                Files.walkFileTree(nsRoot, visitor);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
             }
         }
-        addAll(nsDir, namespace, target);
+        return getAllPresent(names);
     }
 
-    private void addAll(File nsDir, String prefix,
-            Map<String/* name */, String/* value */> target) {
-        File[] children = nsDir.listFiles();
-        for (File f : children) {
-            final String fileName = f.getName();
-            if (f.isDirectory()) {
-                String namespace = append(prefix, fileName);
-                addAll(f, namespace, target);
-            } else if (fileName.length() == 0 || fileName.charAt(0) != '.') {
-                String refName = append(prefix, fileName);
-                String refValue = readRef(f);
-                if (refValue.startsWith("ref: ")) {
-                    refValue = refValue.substring("ref: ".length());
-                }
-
-                target.put(refName, refValue);
-            }
-        }
-    }
-
-    public @Override Map<String, String> removeAll(String namespace) {
-        Preconditions.checkNotNull(namespace, "provided namespace is null");
-        checkWritable();
-        Map<String, String> oldvalues = getAll(namespace);
-        final File file = toFile(namespace);
-        if (file.exists() && file.isDirectory()) {
-            deleteDir(file);
-        }
-        return oldvalues;
-    }
-
-    /**
-     * @param directory
-     */
-    private void deleteDir(final File directory) {
-        if (!directory.exists()) {
-            return;
-        }
-        File[] files = directory.listFiles();
-        if (files == null) {
-            throw new RuntimeException("Unable to list files of " + directory);
-        }
-        for (File f : files) {
-            if (f.isDirectory()) {
-                deleteDir(f);
-            } else if (!f.delete()) {
-                throw new RuntimeException("Unable to delete file " + f.getAbsolutePath());
-            }
-        }
-        if (!directory.delete()) {
-            throw new RuntimeException("Unable to delete directory " + directory.getAbsolutePath());
-        }
+    public @Override List<Ref> getAllPresent(@NonNull Iterable<String> names) {
+        checkOpen();
+        return Streams.stream(names).parallel().map(this::getInternal).filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     public @Override String toString() {
         return String.format("%s[geogig dir: %s]", getClass().getSimpleName(), refsDirectory);
+    }
+
+    public @Override @NonNull List<RefChange> delete(@NonNull Iterable<String> refNames) {
+        checkWritable();
+        return Streams.stream(refNames).map(this::delete).collect(Collectors.toList());
+    }
+
+    public @Override @NonNull List<Ref> deleteAll() {
+        checkWritable();
+        List<Ref> all = getAll();
+        all.forEach(this::delete);
+        return all;
     }
 }

@@ -75,13 +75,14 @@ public class UpdateSymRefTest extends RepositoryTestCase {
 
         assertTrue(((SymRef) branchId.get()).getTarget().equals(Ref.MASTER));
 
-        repo.command(UpdateSymRef.class).setName("refs/heads/branch1").setDelete(true).call();
+        repo.command(UpdateSymRef.class).setReason("test").setName("refs/heads/branch1")
+                .setDelete(true).call();
     }
 
     @Test
     public void testDeleteRefThatDoesNotExist() {
-        Optional<Ref> test = repo.command(UpdateSymRef.class).setName("NoRef").setDelete(true)
-                .call();
+        Optional<Ref> test = repo.command(UpdateSymRef.class).setReason("test").setName("NoRef")
+                .setDelete(true).call();
         assertFalse(test.isPresent());
     }
 }

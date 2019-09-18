@@ -29,7 +29,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.TestRepository;
 

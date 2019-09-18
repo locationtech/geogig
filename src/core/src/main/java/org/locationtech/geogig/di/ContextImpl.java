@@ -30,7 +30,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Suppliers;
 
 import lombok.NonNull;
@@ -102,12 +101,6 @@ public class ContextImpl implements Context {
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalArgumentException(e);
         }
-    }
-
-    private <T> T getDecoratedInstance(final Class<T> type) {
-        T undecorated = getInstance(type);
-        Preconditions.checkNotNull(undecorated, "no instance of type %s found in context", type);
-        return getDecoratedInstance(undecorated);
     }
 
     private <T> T getDecoratedInstance(@NonNull T undecorated) {

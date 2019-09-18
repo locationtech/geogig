@@ -43,7 +43,7 @@ public class TagRemoveOp extends AbstractGeoGigOp<RevTag> {
         Preconditions.checkArgument(revTag.get().getType().equals(RevObject.TYPE.TAG),
                 name + " does not resolve to a tag");
         UpdateRef updateRef = command(UpdateRef.class).setName(fullPath).setDelete(true)
-                .setReason("Delete tag " + name);
+                .setReason("Delete tag %s", name);
         Optional<Ref> tagRef = updateRef.call();
         checkState(tagRef.isPresent());
         return (RevTag) revTag.get();

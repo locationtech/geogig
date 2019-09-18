@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -119,8 +120,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             }
         };
 
-        ImmutableSet<Ref> remoteRefs = remoteRepo.command(ForEachRef.class).setFilter(filter)
-                .call();
+        Set<Ref> remoteRefs = remoteRepo.command(ForEachRef.class).setFilter(filter).call();
 
         // Translate the refs to their mapped values.
         ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();

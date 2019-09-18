@@ -107,7 +107,12 @@ public class WorkingTreeImpl implements WorkingTree {
      * @param newTree the tree to be set as the new WORK_HEAD
      */
     public @Override synchronized ObjectId updateWorkHead(ObjectId newTree) {
-        context.command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(newTree).call();
+        return updateWorkHead(newTree, null);
+    }
+
+    public @Override synchronized ObjectId updateWorkHead(ObjectId newTree, String reason) {
+        context.command(UpdateRef.class).setName(Ref.WORK_HEAD).setNewValue(newTree)
+                .setReason(reason).call();
         return newTree;
     }
 
@@ -173,7 +178,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
                 .setChild(newTypeRef).call();
         if (!workHead.equals(newWorkHead)) {
-            updateWorkHead(newWorkHead.getId());
+            updateWorkHead(newWorkHead.getId(), "working-tree: truncate");
         }
         return newWorkHead.getId();
     }
@@ -222,7 +227,7 @@ public class WorkingTreeImpl implements WorkingTree {
         }
 
         if (!workHead.equals(newWorkTree)) {
-            updateWorkHead(newWorkTree.getId());
+            updateWorkHead(newWorkTree.getId(), "delete " + treePath);
         }
         return newWorkTree.getId();
     }
@@ -263,7 +268,7 @@ public class WorkingTreeImpl implements WorkingTree {
             final RevTree newWorkHead = updateTree.call();
 
             if (!newWorkHead.equals(currewntWorkHead) && !progress.isCanceled()) {
-                updateWorkHead(newWorkHead.getId());
+                updateWorkHead(newWorkHead.getId(), "working-tree: delete");
             }
 
             return newWorkHead.getId();
@@ -298,7 +303,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
                 .setChild(newTreeRef).call();
 
-        updateWorkHead(newWorkHead.getId());
+        updateWorkHead(newWorkHead.getId(), "working-tree: create tree " + treePath);
 
         NodeRef ref = context.command(FindTreeChild.class).setParent(newWorkHead)
                 .setChildPath(treePath).call().orElse(null);
@@ -397,7 +402,7 @@ public class WorkingTreeImpl implements WorkingTree {
         });
 
         final RevTree newWorkHead = updateTree.call();
-        return updateWorkHead(newWorkHead.getId());
+        return updateWorkHead(newWorkHead.getId(), String.format("%,d feature changes", p.get()));
     }
 
     @Nullable
@@ -569,7 +574,7 @@ public class WorkingTreeImpl implements WorkingTree {
         final RevTree newWorkHead = context.command(UpdateTree.class).setRoot(workHead)
                 .setChild(newTreeRef).call();
 
-        updateWorkHead(newWorkHead.getId());
+        updateWorkHead(newWorkHead.getId(), "working-tree: update tree " + treePath);
 
         return context.command(FindTreeChild.class).setParent(getTree()).setChildPath(treePath)
                 .call().get();

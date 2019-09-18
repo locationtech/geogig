@@ -9,10 +9,12 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 
@@ -245,7 +247,7 @@ public class Ref implements Comparable<Ref> {
      * @return a hash code for this ref
      */
     public @Override int hashCode() {
-        return name.hashCode() * objectId.hashCode();
+        return Objects.hash(getName(), getObjectId());
     }
 
     /**
@@ -288,7 +290,11 @@ public class Ref implements Comparable<Ref> {
      * @return the relative name of the ref given by its full name and the namespace to truncate
      */
     public static String child(String namespace, String ref) {
-        Preconditions.checkState(ref.startsWith(namespace));
+        if (!ref.startsWith(namespace)) {
+            throw new UnsupportedOperationException();
+        }
+        Preconditions.checkState(ref.startsWith(namespace), "'%s' does not start with '%s'", ref,
+                namespace);
         String relative = ref.substring(namespace.length());
         if (relative.length() > 0 && relative.charAt(0) == '/') {
             relative = relative.substring(1);
@@ -311,8 +317,8 @@ public class Ref implements Comparable<Ref> {
      * 
      * @param parent the parent ref name
      * @param nodePath the path of the node
-     * @return true if {@code nodePath} is a child of {@code parentPath} at any depth level,
-     *         {@code false} if unrelated, sibling, or same path
+     * @return true if {@code ref} is a child of {@code parent} at any depth level, {@code false} if
+     *         unrelated, sibling, or same path
      */
     public static boolean isChild(@NonNull String parent, @NonNull String ref) {
         int parentSeparatorIndex = parent.endsWith("/") ? parent.length() - 1 : parent.length();

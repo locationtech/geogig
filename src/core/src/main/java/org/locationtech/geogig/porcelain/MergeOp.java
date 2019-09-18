@@ -23,14 +23,14 @@ import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.CleanRefsOp;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveBranchId;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.merge.CheckMergeScenarioOp;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.plumbing.merge.MergeStatusBuilder;
@@ -273,13 +273,15 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 return null;
             }
 
-            workingTree().updateWorkHead(stagingArea().getTree().getId());
+            workingTree().updateWorkHead(stagingArea().getTree().getId(),
+                    "merge: reset staging area");
 
             if (!ours && mergeScenario.getConflicts() > 0) {
                 // In case we use the "ours" strategy, we do nothing. We ignore conflicting
                 // changes and leave the current elements
-                command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(commitId).call();
-                command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId())
+                command(UpdateRefs.class).setReason("merge: savepoint")//
+                        .add(Ref.MERGE_HEAD, commitId)//
+                        .add(Ref.ORIG_HEAD, headCommit.getId())//
                         .call();
 
                 String mergeMsg = mergeStatusBuilder.getMergeMessage();
@@ -345,7 +347,8 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                     stagingArea().stage(progress, diff, -1);
                     mergeStatusBuilder.setChanged(true);
                     mergeStatusBuilder.setFastFoward(false);
-                    workingTree().updateWorkHead(stagingArea().getTree().getId());
+                    workingTree().updateWorkHead(stagingArea().getTree().getId(),
+                            "merge: reset to STAGE_HEAD");
                 }
             }
 
@@ -374,52 +377,59 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
     }
 
     private MergeReport abort() {
-        command(CleanRefsOp.class).call();
+        command(CleanRefsOp.class).reason("merge: abort").call();
         conflictsDatabase().removeConflicts(null);
         return null;
     }
 
-    private Ref doFastForwardMerge(Ref headRef, ObjectId commitId,
+    private Ref doFastForwardMerge(final @NonNull Ref headRef, final @NonNull ObjectId commitId,
             MergeStatusBuilder mergeStatusBuilder) {
-        getProgressListener().setDescription(String.format("Fast forward merging %s onto %s",
-                commitId.toString().substring(0, 8),
-                headRef.getObjectId().toString().substring(0, 8)));
-        if (headRef instanceof SymRef) {
-            final String currentBranch = ((SymRef) headRef).getTarget();
-            command(UpdateRef.class).setName(currentBranch).setNewValue(commitId).call();
-            headRef = (SymRef) command(UpdateSymRef.class).setName(Ref.HEAD)
-                    .setNewValue(currentBranch).call().get();
-        } else {
-            headRef = command(UpdateRef.class).setName(headRef.getName()).setNewValue(commitId)
-                    .call().get();
-        }
+        getProgressListener().setDescription(
+                String.format("Fast forward merging %s onto %s", RevObjects.toShortString(commitId),
+                        RevObjects.toShortString(headRef.getObjectId())));
 
-        workingTree().updateWorkHead(commitId);
-        stagingArea().updateStageHead(commitId);
+        final String reason = String.format("merge: fast forward %s onto %s",
+                RevObjects.toShortString(commitId),
+                RevObjects.toShortString(headRef.getObjectId()));
+
+        final Ref currentBranch = headRef.peel();
+        final Ref newBranchRef = new Ref(currentBranch.getName(), commitId);
+        final Ref updatedHead;
+
+        UpdateRefs updateRefs = command(UpdateRefs.class)//
+                .setReason(reason)//
+                .add(newBranchRef)//
+                .add(Ref.WORK_HEAD, commitId)//
+                .add(Ref.STAGE_HEAD, commitId);
+        if (headRef instanceof SymRef) {
+            updatedHead = new SymRef(Ref.HEAD, newBranchRef);
+            updateRefs.add(updatedHead);
+        } else {
+            updatedHead = currentBranch;
+        }
+        updateRefs.call();
         mergeStatusBuilder.setChanged(true);
-        return headRef;
+        return updatedHead;
     }
 
     private void cancel() {
+        UpdateRefs updateRefs = command(UpdateRefs.class).setReason("merge: cancelled");
         // Restore original refs
         if (origHead != null) {
             if (origHead instanceof SymRef) {
-                command(UpdateRef.class).setName(origCurrentBranch.getName())
-                        .setNewValue(origCurrentBranch.getObjectId()).call();
+                updateRefs.add(origCurrentBranch);
             } else {
-                command(UpdateRef.class).setName(origHead.getName())
-                        .setNewValue(origHead.getObjectId()).call();
+                updateRefs.add(origHead);
             }
         }
         if (origWorkHead != null) {
-            command(UpdateRef.class).setName(origWorkHead.getName())
-                    .setNewValue(origWorkHead.getObjectId()).call();
+            updateRefs.add(origWorkHead);
         }
         if (origStageHead != null) {
-            command(UpdateRef.class).setName(origStageHead.getName())
-                    .setNewValue(origStageHead.getObjectId()).call();
+            updateRefs.add(origStageHead);
         }
 
+        updateRefs.call();
         // Remove any conflicts that were generated.
         conflictsDatabase().removeConflicts(null);
 
@@ -448,9 +458,10 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 final Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
                 SymRef headRef = (SymRef) currHead.get();
                 RevCommit headCommit = geogig.objects().getCommit(headRef.getObjectId());
-                command(UpdateRef.class).setName(Ref.MERGE_HEAD).setNewValue(commits.get(0)).call();
-                // TODO:how to store multiple ids when octopus merge
-                command(UpdateRef.class).setName(Ref.ORIG_HEAD).setNewValue(headCommit.getId())
+                command(UpdateRefs.class).setReason("merge: no commit")//
+                        .add(Ref.MERGE_HEAD, commits.get(0))//
+                        // TODO:how to store multiple ids when octopus merge
+                        .add(Ref.ORIG_HEAD, headCommit.getId())//
                         .call();
                 mergeCommit = headCommit;
                 command(SaveMergeCommitMessageOp.class).setMessage(commitMessage).call();

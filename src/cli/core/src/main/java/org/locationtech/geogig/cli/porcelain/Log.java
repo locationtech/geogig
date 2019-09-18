@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
@@ -47,12 +48,10 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import picocli.CommandLine.Command;
-import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
@@ -164,8 +163,7 @@ public class Log extends AbstractCommand implements CLICommand {
         if (this.decoration) {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
             refs.put(head.get().getObjectId(), Ref.HEAD);
-            ImmutableSet<Ref> set = geogig.command(ForEachRef.class)
-                    .setPrefixFilter(Ref.REFS_PREFIX).call();
+            Set<Ref> set = geogig.command(ForEachRef.class).setPrefixFilter(Ref.REFS_PREFIX).call();
             for (Ref ref : set) {
                 ObjectId id = ref.getObjectId();
                 if (refs.containsKey(id)) {
@@ -176,8 +174,8 @@ public class Log extends AbstractCommand implements CLICommand {
             }
         }
         if (this.all) {
-            ImmutableSet<Ref> refs = geogig.command(ForEachRef.class)
-                    .setPrefixFilter(Ref.REFS_PREFIX).call();
+            Set<Ref> refs = geogig.command(ForEachRef.class).setPrefixFilter(Ref.REFS_PREFIX)
+                    .call();
             List<ObjectId> list = new ArrayList<>();
             for (Ref ref : refs) {
                 list.add(ref.getObjectId());

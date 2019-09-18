@@ -116,7 +116,8 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
         String refName = Ref.REMOTES_PREFIX + remoteName + "/branch1";
-        repo.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).call();
+        repo.command(UpdateRef.class).setName(refName).setNewValue(ObjectId.NULL).setReason("test")
+                .call();
 
         final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 

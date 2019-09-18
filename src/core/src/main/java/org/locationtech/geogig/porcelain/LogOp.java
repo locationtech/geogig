@@ -25,9 +25,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTree;
-import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.FindTreeChild;
-import org.locationtech.geogig.plumbing.ResolveCommit;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
@@ -235,9 +233,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 newestCommitId = geogig.refs().head().get().getObjectId();
             } else {
                 try {
-                    newestCommitId = geogig.command(ResolveCommit.class).setCommitIsh(this.until)
-                            .call().map(RevCommit::getId)
-                            .orElseThrow(() -> new IllegalArgumentException(
+                    newestCommitId = geogig.commands().resolveCommit(this.until)
+                            .map(RevCommit::getId).orElseThrow(() -> new IllegalArgumentException(
                                     "Provided 'until' commit id does not exist: " + until));
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(
@@ -441,8 +438,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                     if (!ObjectId.NULL.equals(oldestCommitId)) {
                         // Add the common ancestor of oldestCommitId and the new tip to the
                         // stopPoints to make sure we only hit relevant commits
-                        Optional<ObjectId> ancestor = repo.command(FindCommonAncestor.class)
-                                .setLeftId(lastCommit.getId()).setRightId(oldestCommitId).call();
+                        Optional<ObjectId> ancestor = repo.commands()
+                                .commonAncestor(lastCommit.getId(), oldestCommitId);
                         if (ancestor.isPresent()) {
                             stopPoints.add(ancestor.get());
                         }
@@ -553,7 +550,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
             this.author = author;
             this.committer = commiter;
             this.paths = paths;
-            findTreeChild = repo.command(FindTreeChild.class);
+            findTreeChild = repo.commands().command(FindTreeChild.class);
         }
 
         /**

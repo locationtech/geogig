@@ -56,21 +56,21 @@ public class Squash extends AbstractCommand implements CLICommand {
 
         final Geogig geogig = cli.geogig();
 
-        Optional<ObjectId> sinceId = geogig.command(RevParse.class).setRefSpec(commits.get(0))
-                .call();
+        Optional<ObjectId> sinceId = geogig.commands().command(RevParse.class)
+                .setRefSpec(commits.get(0)).call();
         checkParameter(sinceId.isPresent(), "'since' reference cannot be found");
         checkParameter(geogig.objects().commitExists(sinceId.get()),
                 "'since' reference does not resolve to a commit");
         RevCommit sinceCommit = geogig.objects().getCommit(sinceId.get());
 
-        Optional<ObjectId> untilId = geogig.command(RevParse.class).setRefSpec(commits.get(1))
-                .call();
+        Optional<ObjectId> untilId = geogig.commands().command(RevParse.class)
+                .setRefSpec(commits.get(1)).call();
         checkParameter(untilId.isPresent(), "'until' reference cannot be found");
         checkParameter(geogig.objects().commitExists(untilId.get()),
                 "'until' reference does not resolve to a commit");
         RevCommit untilCommit = geogig.objects().getCommit(untilId.get());
 
-        geogig.command(SquashOp.class).setSince(sinceCommit).setUntil(untilCommit)
+        geogig.commands().command(SquashOp.class).setSince(sinceCommit).setUntil(untilCommit)
                 .setMessage(message).call();
     }
 

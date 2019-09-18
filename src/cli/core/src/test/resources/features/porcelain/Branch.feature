@@ -30,7 +30,7 @@ Feature: "branch" command
     Given I have a repository
       And I have several commits
       And I run the command "branch newBranch nonexistent"
-     Then the response should contain "nonexistent does not resolve to a repository object"
+     Then the response should contain "nonexistent does not resolve to a commit"
      
   Scenario: Try to create a branch off of master
     Given I have a repository

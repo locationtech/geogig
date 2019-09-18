@@ -20,6 +20,9 @@ import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
+import lombok.NonNull;
 
 /**
  * Provides content information for repository objects
@@ -31,6 +34,10 @@ public class CatObject extends AbstractGeoGigOp<CharSequence> {
     public CatObject setObject(Supplier<? extends RevObject> object) {
         this.object = object;
         return this;
+    }
+
+    public CatObject setObject(@NonNull RevObject object) {
+        return setObject(Suppliers.ofInstance(object));
     }
 
     protected @Override CharSequence _call() {

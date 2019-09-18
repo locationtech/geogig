@@ -26,11 +26,11 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.test.TestData;
+import org.locationtech.geogig.transaction.GeogigTransaction;
+import org.locationtech.geogig.transaction.TransactionResolve;
 
 import com.google.common.collect.Iterators;
 
@@ -169,7 +169,7 @@ public class PRInitOpTest {
         // fake a test-merge
         GeogigTransaction tx = request.getTransaction(origin.getContext());
         tx.command(UpdateRef.class).setName(request.getMergeRef())
-                .setNewValue(origin.getRef("master").getObjectId()).call();
+                .setNewValue(origin.getRef("master").getObjectId()).setReason("test setup").call();
         assertTrue(request.resolveMergeRef(tx).isPresent());
 
         PR modifiedReq = initModify.call();

@@ -10,22 +10,13 @@
 package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.List;
-import java.util.Optional;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
-import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -88,61 +79,56 @@ public class BranchRenameOp extends AbstractGeoGigOp<Ref> {
         checkArgument(!newBranchName.equals(oldBranchName), "Done");
         command(CheckRefFormat.class).setThrowsException(true).setRef(newBranchName)
                 .setAllowOneLevel(true).call();
-        Optional<Ref> oldBranch = Optional.empty();
+
+        final Ref oldBranchRef;
 
         if (oldBranchName == null) {
-            Optional<Ref> headRef = command(RefParse.class).setName(Ref.HEAD).call();
-            checkArgument(headRef.isPresent() && headRef.get() instanceof SymRef,
-                    "Cannot rename detached HEAD.");
-            oldBranch = command(RefParse.class).setName(headRef.get().peel().localName()).call();
+            oldBranchRef = command(RefParse.class).setName(Ref.HEAD).call()//
+                    .filter(SymRef.class::isInstance)//
+                    .map(Ref::peel)//
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Cannot rename detached HEAD."));
         } else {
-            oldBranch = command(RefParse.class).setName(oldBranchName).call();
+            oldBranchRef = command(RefParse.class).setName(oldBranchName).call()//
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "The branch could not be resolved."));
         }
-
-        checkState(oldBranch.isPresent(), "The branch could not be resolved.");
-
-        Optional<Ref> newBranch = command(RefParse.class).setName(newBranchName).call();
-
-        if (!force) {
-            checkArgument(!newBranch.isPresent(), "Cannot rename branch to '" + newBranchName
+        if (!force && command(RefParse.class).setName(newBranchName).call().isPresent()) {
+            throw new IllegalArgumentException("Cannot rename branch to '" + newBranchName
                     + "' because a branch by that name already exists. Use force option to override this.");
         }
 
-        Optional<Ref> renamedBranch = command(UpdateRef.class)
-                .setName(oldBranch.get().namespace() + newBranchName)
-                .setNewValue(oldBranch.get().getObjectId()).call();
+        final String reason = String.format("branch-rename: %s to %s", oldBranchRef.localName(),
+                newBranchName);
+        UpdateRefs updateRefs = command(UpdateRefs.class).setReason(reason);
+
+        final String newRefName = Ref.append(oldBranchRef.namespace(), newBranchName);
+        final Ref newBranchRef = new Ref(newRefName, oldBranchRef.getObjectId());
+        updateRefs.add(newBranchRef);
+        updateRefs.remove(oldBranchRef.getName());
+
+        // update any sym refs that pointed to the old branch
+        refDatabase().getAll().stream()//
+                .filter(SymRef.class::isInstance)//
+                .map(SymRef.class::cast)//
+                .filter(symRef -> symRef.getTarget().equals(oldBranchRef.getName()))//
+                .map(symRef -> new SymRef(symRef.getName(), newBranchRef))//
+                .forEach(updateRefs::add);
 
         final BranchConfig oldConfig = command(BranchConfigOp.class)
-                .setName(oldBranch.get().localName()).delete();
+                .setName(oldBranchRef.localName()).delete();
+
+        updateRefs.call();
+
         final BranchConfig newConfig = command(BranchConfigOp.class)
-                .setName(renamedBranch.get().localName())//
+                .setName(newBranchRef.localName())//
                 .setRemoteName(oldConfig.getRemoteName().orElse(null))//
                 .setRemoteBranch(oldConfig.getRemoteBranch().orElse(null))//
                 .setDescription(oldConfig.getDescription().orElse(null))//
                 .call();
-        // update any sym refs that pointed to the old branch
-        final Predicate<Ref> filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref input) {
-                if (input instanceof SymRef) {
-                    return true;
-                }
-                return false;
-            }
-        };
 
-        List<Ref> symRefs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
-        for (Ref ref : symRefs) {
-            if (((SymRef) ref).getTarget().equals(oldBranch.get().getName())) {
-                command(UpdateSymRef.class).setName(ref.getName())
-                        .setNewValue(renamedBranch.get().getName()).call();
-            }
-        }
-
-        // delete old ref
-        command(UpdateRef.class).setName(oldBranch.get().getName()).setDelete(true).call();
-
-        log.debug("Renamed branch {} -> {} {}", oldBranch.get(), renamedBranch.get(), newConfig);
-        return renamedBranch.get();
+        log.debug("Renamed branch {} -> {} {}", oldBranchRef, newBranchRef, newConfig);
+        return newBranchRef;
 
     }
 }

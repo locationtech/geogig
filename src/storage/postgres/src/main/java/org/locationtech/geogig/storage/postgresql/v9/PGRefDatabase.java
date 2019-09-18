@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
@@ -17,19 +16,21 @@ import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newCon
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 import javax.sql.DataSource;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.AbstractStore;
+import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
@@ -38,6 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -45,13 +48,13 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGRefDatabase.class);
 
+    private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
+
     private Environment config;
 
     private DataSource dataSource;
 
-    private final String refsTableName;
-
-    private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
+    private final PGRefDatabaseWorker worker;
 
     public PGRefDatabase(Hints hints) throws URISyntaxException {
         super(Hints.isRepoReadOnly(hints));
@@ -62,19 +65,13 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         Preconditions.checkState(config.isRepositorySet());
 
         this.config = config;
-        this.refsTableName = config.getTables().refs();
+        this.worker = new PGRefDatabaseWorker(config);
     }
 
-    // public static PGRefDatabase create(ConfigDatabase configDB, Environment config) {
-    // Preconditions.checkNotNull(configDB);
-    // Preconditions.checkNotNull(config);
-    // Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-    // config.getRepositoryName());
-    // Preconditions.checkState(config.isRepositorySet());
-    // this.configDB = configDB;
-    // this.config = config;
-    // this.refsTableName = config.getTables().refs();
-    // }
+    public @Override void checkOpen() {
+        super.checkOpen();
+        Preconditions.checkState(config.isRepositorySet(), "Repository ID is not set");
+    }
 
     public @Override synchronized void open() {
         if (!isOpen()) {
@@ -95,11 +92,13 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     public @Override void lock() throws TimeoutException {
+        checkWritable();
         lockWithTimeout(30);
     }
 
     @VisibleForTesting
     void lockWithTimeout(int timeout) throws TimeoutException {
+        Preconditions.checkState(config.isRepositorySet());
         final int repo = config.getRepositoryId();
         Connection c = LockConnection.get();
         if (c == null) {
@@ -131,13 +130,17 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     public @Override void unlock() {
+        checkWritable();
+
         final int repo = config.getRepositoryId();
+
+        final String repoTable = config.getTables().repositories();
+        final String sql = format(
+                "SELECT pg_advisory_unlock((SELECT repository FROM %s WHERE repository=?));",
+                repoTable);
+
         Connection c = LockConnection.get();
         if (c != null) {
-            final String repoTable = config.getTables().repositories();
-            final String sql = format(
-                    "SELECT pg_advisory_unlock((SELECT repository FROM %s WHERE repository=?));",
-                    repoTable);
             try (PreparedStatement st = c.prepareStatement(log(sql, LOG, repo))) {
                 st.setInt(1, repo);
                 st.executeQuery();
@@ -154,239 +157,112 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
         }
     }
 
-    public @Override String getRef(@NonNull String name) {
-        String value = getInternal(name);
-        if (value == null) {
-            return null;
-        }
-        try {
-            ObjectId.valueOf(value);
-        } catch (IllegalArgumentException e) {
-            throw e;
-        }
-        return value;
+    public @Override @NonNull RefChange put(@NonNull Ref ref) {
+        checkWritable();
+        return runInTransaction(conn -> worker.put(conn, ref));
     }
 
-    public @Override String getSymRef(@NonNull String name) {
-        String value = getInternal(name);
-        if (value == null) {
-            return null;
-        }
-        if (!value.startsWith("ref: ")) {
-            throw new IllegalArgumentException(name + " is not a symbolic ref: '" + value + "'");
-        }
-        value = unmaskSymRef(value);
-        return value;
+    public @Override @NonNull RefChange putRef(@NonNull String name, @NonNull ObjectId value) {
+        checkWritable();
+        return put(new Ref(name, value));
     }
 
-    private String unmaskSymRef(String value) {
-        if (value.startsWith("ref: ")) {
-            value = value.substring("ref: ".length());
-        }
-        return value;
+    public @Override @NonNull RefChange putSymRef(@NonNull String name, @NonNull String target) {
+        checkWritable();
+        Optional<Ref> t = get(target);
+        Preconditions.checkArgument(t.isPresent(), "Target ref %s does not exist for symref %s",
+                target, name);
+        return put(new SymRef(name, t.get()));
     }
 
-    private String getInternal(final String refPath) {
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            return doGet(refPath, cx);
+    public @Override @NonNull List<RefChange> putAll(@NonNull Iterable<Ref> refs) {
+        checkWritable();
+        List<Ref> list = refs instanceof List ? (List<Ref>) refs : Lists.newArrayList(refs);
+        return runInTransaction(c -> worker.putAll(c, list));
+    }
+
+    public @Override Optional<Ref> get(@NonNull String name) {
+        checkOpen();
+        return run(conn -> worker.get(conn, name));
+    }
+
+    public @Override @NonNull RefChange delete(@NonNull Ref ref) {
+        checkWritable();
+        return delete(ref.getName());
+    }
+
+    public @Override @NonNull RefChange delete(@NonNull String refName) {
+        checkWritable();
+        List<RefChange> removed = delete(Collections.singletonList(refName));
+        return removed.get(0);
+    }
+
+    public @Override @NonNull List<RefChange> delete(@NonNull Iterable<String> refNames) {
+        checkWritable();
+        return runInTransaction(conn -> worker.deleteByName(conn, refNames));
+    }
+
+    public @Override @NonNull List<Ref> deleteAll() {
+        checkWritable();
+        return runInTransaction(c -> worker.deleteByPrefix(c, Arrays.asList("")));
+    }
+
+    public @Override List<Ref> deleteAll(@NonNull String namespace) {
+        checkWritable();
+        return runInTransaction(c -> worker.deleteByPrefix(c, Arrays.asList(namespace)));
+    }
+
+    public @Override List<Ref> getAll() {
+        checkOpen();
+        return getAllByPrefix("", Ref.HEADS_PREFIX, Ref.TAGS_PREFIX, Ref.REMOTES_PREFIX);
+    }
+
+    public @Override List<Ref> getAllPresent(@NonNull Iterable<String> names) {
+        return run(c -> worker.getPresent(c, names));
+    }
+
+    public @Override List<Ref> getAll(final @NonNull String prefix) {
+        checkOpen();
+        return getAllByPrefix(prefix);
+    }
+
+    private List<Ref> getAllByPrefix(@NonNull String... prefixes) {
+        return run(conn -> worker.getByPrefix(conn, Arrays.asList(prefixes)));
+    }
+
+    private static @FunctionalInterface interface Command<T> {
+        T run(Connection c) throws SQLException;
+    }
+
+    private <T> T run(Command<T> cmd) {
+        T result;
+        try (Connection conn = dataSource.getConnection()) {
+            result = cmd.run(conn);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return result;
     }
 
-    private String doGet(final String refPath, final Connection cx) throws SQLException {
-        final int repo = config.getRepositoryId();
-        final String path = Ref.parentPath(refPath) + "/";
-        final String localName = Ref.simpleName(refPath);
-        final String refsTable = refsTableName;
-        final String sql = format(
-                "SELECT value FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
-        try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, path, localName))) {
-            st.setInt(1, repo);
-            st.setString(2, path);
-            st.setString(3, localName);
-            try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getString(1);
-                }
-                return null;
-            }
-        }
-    }
-
-    public @Override void putRef(String name, String value) {
-        putInternal(name, value);
-    }
-
-    public @Override void putSymRef(@NonNull String name, @NonNull String value) {
-        checkArgument(!name.equals(value), "Trying to store cyclic symbolic ref: %s", name);
-        checkArgument(!name.startsWith("ref: "),
-                "Wrong value, should not contain 'ref: ': %s -> '%s'", name, value);
-        value = "ref: " + value;
-        putInternal(name, value);
-    }
-
-    private void putInternal(final String name, final String value) {
-        Preconditions.checkState(config.isRepositorySet());
-        final int repo = config.getRepositoryId();
-        final String path = Ref.parentPath(name) + "/";
-        final String localName = Ref.simpleName(name);
-        final String refsTable = refsTableName;
-
-        final String delete = format(
-                "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?", refsTable);
-        final String insert = format(
-                "INSERT INTO %s (repository, path, name, value) VALUES (?, ?, ?, ?)", refsTable);
-
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            cx.setAutoCommit(false);
+    private <T> T runInTransaction(Command<T> cmd) {
+        T result;
+        try (Connection conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
             try {
-                try (PreparedStatement ds = cx
-                        .prepareStatement(log(delete, LOG, repo, path, localName))) {
-                    ds.setInt(1, repo);
-                    ds.setString(2, path);
-                    ds.setString(3, localName);
-                    ds.executeUpdate();
-                }
-                try (PreparedStatement is = cx
-                        .prepareStatement(log(insert, LOG, repo, path, localName, value))) {
-                    is.setInt(1, repo);
-                    is.setString(2, path);
-                    is.setString(3, localName);
-                    is.setString(4, value);
-                    is.executeUpdate();
-                }
-                cx.commit();
-            } catch (SQLException e) {
-                cx.rollback();
-                throw e;
+                result = cmd.run(conn);
+                conn.commit();
+            } catch (Exception e) {
+                conn.rollback();
+                Throwables.throwIfInstanceOf(e, SQLException.class);
+                Throwables.throwIfUnchecked(e);
+                throw new RuntimeException(e);
             } finally {
-                cx.setAutoCommit(true);
+                conn.setAutoCommit(true);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return result;
     }
 
-    public @Override String remove(final String refName) {
-        final int repo = config.getRepositoryId();
-        final String path = Ref.parentPath(refName) + "/";
-        final String localName = Ref.simpleName(refName);
-        final String refsTable = refsTableName;
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            cx.setAutoCommit(false);
-            String oldval;
-            int updateCount = 0;
-            try {
-                oldval = doGet(refName, cx);
-                if (oldval == null) {
-                    cx.rollback();
-                } else {
-                    if (oldval.startsWith("ref: ")) {
-                        oldval = unmaskSymRef(oldval);
-                    }
-                    final String sql = format(
-                            "DELETE FROM %s WHERE repository = ? AND path = ? AND name = ?",
-                            refsTable);
-                    try (PreparedStatement st = cx.prepareStatement(sql)) {
-                        st.setInt(1, repo);
-                        st.setString(2, path);
-                        st.setString(3, localName);
-                        updateCount = st.executeUpdate();
-                    }
-                    cx.commit();
-                }
-            } catch (SQLException e) {
-                cx.rollback();
-                throw e;
-            } finally {
-                cx.setAutoCommit(true);
-            }
-            return updateCount == 0 ? null : oldval;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public @Override Map<String, String> getAll() {
-        return getAll("/", Ref.HEADS_PREFIX, Ref.TAGS_PREFIX, Ref.REMOTES_PREFIX);
-    }
-
-    public @Override Map<String, String> getAll(final String prefix) {
-        Preconditions.checkNotNull(prefix, "namespace can't be null");
-        return getAll(new String[] { prefix });
-    }
-
-    private Map<String, String> getAll(final String... prefixes) {
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            return doGetall(cx, prefixes);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Map<String, String> doGetall(Connection cx, final String... prefixes)
-            throws SQLException {
-        final int repo = config.getRepositoryId();
-        final String refsTable = refsTableName;
-
-        StringBuilder sql = new StringBuilder("SELECT path, name, value FROM ")//
-                .append(refsTable)//
-                .append(" WHERE repository = ").append(repo).append(" AND (");
-        for (int i = 0; i < prefixes.length; i++) {
-            String prefix = prefixes[i];
-            sql.append("path LIKE '").append(prefix).append("%' ");
-            if (i < prefixes.length - 1) {
-                sql.append("OR ");
-            }
-        }
-        sql.append(")");
-
-        Map<String, String> all = new TreeMap<>();
-
-        try (Statement st = cx.createStatement()) {
-            try (ResultSet rs = st.executeQuery(log(sql.toString(), LOG))) {
-                while (rs.next()) {
-                    String path = rs.getString(1);
-                    String name = rs.getString(2);
-                    String val = unmaskSymRef(rs.getString(3));
-                    all.put(Ref.append(path, name), val);
-                }
-            }
-        }
-        return all;
-    }
-
-    public @Override Map<String, String> removeAll(final String namespace) {
-        Preconditions.checkNotNull(namespace, "provided namespace is null");
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            cx.setAutoCommit(false);
-            Map<String, String> oldvalues;
-            try {
-                final String prefix = namespace.endsWith("/") ? namespace : namespace + "/";
-                oldvalues = doGetall(cx, new String[] { prefix });
-                if (oldvalues.isEmpty()) {
-                    cx.rollback();
-                } else {
-                    final int repo = config.getRepositoryId();
-                    final String refsTable = refsTableName;
-                    String sql = "DELETE FROM " + refsTable
-                            + " WHERE repository = ? AND path LIKE '" + prefix + "%'";
-                    try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repo, prefix))) {
-                        st.setInt(1, repo);
-                        st.executeUpdate();
-                    }
-                    cx.commit();
-                }
-            } catch (SQLException e) {
-                cx.rollback();
-                throw e;
-            } finally {
-                cx.setAutoCommit(true);
-            }
-            return oldvalues;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

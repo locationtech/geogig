@@ -23,8 +23,8 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

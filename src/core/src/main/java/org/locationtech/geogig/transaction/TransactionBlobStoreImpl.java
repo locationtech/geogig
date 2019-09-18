@@ -7,15 +7,12 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.impl;
+package org.locationtech.geogig.transaction;
 
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.plumbing.TransactionEnd;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.BlobStore;
 
 /**
@@ -25,7 +22,7 @@ import org.locationtech.geogig.storage.BlobStore;
  * @see TransactionBegin
  * @see TransactionEnd
  */
-public class TransactionBlobStoreImpl implements TransactionBlobStore {
+class TransactionBlobStoreImpl implements TransactionBlobStore {
 
     private final String txNamespace;
 

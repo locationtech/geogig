@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -31,11 +32,11 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.DiffFeature;
 import org.locationtech.geogig.plumbing.DiffTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
-import org.locationtech.geogig.plumbing.ResolveTree;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.repository.Conflict;
+import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -43,6 +44,9 @@ import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;
+
+import lombok.NonNull;
+import lombok.Setter;
 
 /**
  * Used for cherry pick and rebase to see if the changes from a single commit conflict with another
@@ -70,6 +74,55 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
     public ReportCommitConflictsOp setConsumer(MergeScenarioConsumer consumer) {
         this.consumer = consumer;
         return this;
+    }
+
+    public ReportCommitConflictsOp setOnConflict(@NonNull Consumer<Conflict> conflictConsumer) {
+        ensureEventConsumer().setConflicts(conflictConsumer);
+        return this;
+    }
+
+    public ReportCommitConflictsOp setOnUnconflictedChange(
+            @NonNull Consumer<DiffEntry> unconflictedConsumer) {
+        ensureEventConsumer().setUnconflicted(unconflictedConsumer);
+        return this;
+    }
+
+    public ReportCommitConflictsOp setOnFeatureMerged(
+            @NonNull Consumer<FeatureInfo> mergedConsumer) {
+        ensureEventConsumer().setMerged(mergedConsumer);
+        return this;
+    }
+
+    private EventConsumer ensureEventConsumer() {
+        if (consumer == null) {
+            consumer = new EventConsumer();
+        } else if (!(consumer instanceof EventConsumer)) {
+            throw new IllegalStateException("consumer is already set");
+        }
+        return (EventConsumer) consumer;
+    }
+
+    private static class EventConsumer extends MergeScenarioConsumer {
+        private @Setter Consumer<Conflict> conflicts = c -> {
+        };
+
+        private @Setter Consumer<DiffEntry> unconflicted = u -> {
+        };
+
+        private @Setter Consumer<FeatureInfo> merged = m -> {
+        };
+
+        public @Override void conflicted(Conflict conflict) {
+            this.conflicts.accept(conflict);
+        }
+
+        public @Override void unconflicted(DiffEntry diff) {
+            this.unconflicted.accept(diff);
+        }
+
+        public @Override void merged(FeatureInfo featureInfo) {
+            this.merged.accept(featureInfo);
+        }
     }
 
     protected @Override MergeScenarioReport _call() {
@@ -113,9 +166,9 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                     if (headObj.isPresent()) {
                         TYPE type = newObject.get().getType();
                         if (TYPE.TREE.equals(type)) {
-                            NodeRef headVersion = command(FindTreeChild.class).setChildPath(path)
-                                    .setParent(repository.command(ResolveTree.class)
-                                            .setTreeIsh(Ref.HEAD).call().orElse(RevTree.EMPTY))
+                            NodeRef headVersion = command(FindTreeChild.class)
+                                    .setChildPath(path).setParent(repository.commands()
+                                            .resolveTree(Ref.HEAD).orElse(RevTree.EMPTY))
                                     .call().get();
                             if (!headVersion.getMetadataId()
                                     .equals(diff.getNewObject().getMetadataId())) {

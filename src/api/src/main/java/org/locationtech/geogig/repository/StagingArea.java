@@ -43,6 +43,8 @@ public interface StagingArea {
      */
     public void updateStageHead(ObjectId newTree);
 
+    public void updateStageHead(ObjectId newTree, String reason);
+
     /**
      * @return the tree represented by STAGE_HEAD. If there is no tree set at STAGE_HEAD, it will
      *         return the HEAD tree (no staged changes).

@@ -599,7 +599,8 @@ public class WriteTree2Test extends RepositoryTestCase {
         SymRef head = (SymRef) repo.command(RefParse.class).setName(Ref.HEAD).call().get();
         final String currentBranch = head.getTarget();
 
-        repo.command(UpdateRef.class).setName(currentBranch).setNewValue(commit.getId()).call();
+        repo.command(UpdateRef.class).setName(currentBranch).setNewValue(commit.getId())
+                .setReason("test").call();
 
         verifyRepositoryTree(NodeRef.ROOT, treeId);
         verifyTreeStructure(treeId, treeRefs);
@@ -619,7 +620,8 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private RevTree createStageHeadTree(NodeRef... treeRefs) {
         RevTree root = createFromRefs(objectDb, treeRefs);
-        repo.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(root.getId()).call();
+        repo.command(UpdateRef.class).setName(Ref.STAGE_HEAD).setNewValue(root.getId())
+                .setReason("test").call();
         return root;
     }
 

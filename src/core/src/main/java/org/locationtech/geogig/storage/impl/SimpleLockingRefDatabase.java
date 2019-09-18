@@ -22,11 +22,11 @@ import org.locationtech.geogig.storage.RefDatabase;
  * 
  * @see RefDatabase
  */
-public abstract class AbstractRefDatabase extends AbstractStore implements RefDatabase {
+public abstract class SimpleLockingRefDatabase extends AbstractStore implements RefDatabase {
 
     Lock lock = new ReentrantLock();
 
-    public AbstractRefDatabase(boolean ro) {
+    public SimpleLockingRefDatabase(boolean ro) {
         super(ro);
     }
 
@@ -51,5 +51,4 @@ public abstract class AbstractRefDatabase extends AbstractStore implements RefDa
     public @Override final void unlock() {
         lock.unlock();
     }
-
 }

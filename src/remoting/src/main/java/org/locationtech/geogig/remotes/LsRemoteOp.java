@@ -32,7 +32,7 @@ import com.google.common.collect.Sets;
  * Connects to the specified remote, retrieves its {@link Ref refs}, closes the remote connection
  * and returns the list of remote references.
  */
-public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
+public class LsRemoteOp extends AbstractGeoGigOp<Set<Ref>> {
 
     // optional, if not supplied #remoteRepo is mandatory
     private Supplier<Optional<Remote>> remote;
@@ -129,7 +129,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
      * 
      * @return an immutable set of the refs for the given remote
      */
-    protected @Override ImmutableSet<Ref> _call() {
+    protected @Override Set<Ref> _call() {
         final Remote remoteConfig = this.remote.get().orElse(null);
 
         Preconditions.checkState(remoteRepo != null || remoteConfig != null,
@@ -141,7 +141,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
             return locallyKnownRefs(remoteConfig);
         }
 
-        ImmutableSet<Ref> remoteRefs;
+        Set<Ref> remoteRefs;
         IRemoteRepo remoteRepo = this.remoteRepo;
         final boolean closeRemote = remoteRepo == null;
         if (remoteRepo == null) {
@@ -183,7 +183,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<ImmutableSet<Ref>> {
     /**
      * @see ForEachRef
      */
-    private ImmutableSet<Ref> locallyKnownRefs(final Remote remoteConfig) {
+    private Set<Ref> locallyKnownRefs(final Remote remoteConfig) {
 
         Predicate<Ref> filter = input -> {
             java.util.Optional<String> remoteRef = remoteConfig.mapToRemote(input.getName());

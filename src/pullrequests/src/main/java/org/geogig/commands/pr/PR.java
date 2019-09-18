@@ -18,7 +18,6 @@ import java.util.UUID;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.TransactionResolve;
 import org.locationtech.geogig.remotes.OpenRemote;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.Context;
@@ -26,7 +25,8 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
+import org.locationtech.geogig.transaction.TransactionResolve;
 
 import com.google.common.collect.ImmutableMap;
 

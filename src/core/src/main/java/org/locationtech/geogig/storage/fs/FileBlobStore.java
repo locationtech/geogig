@@ -24,7 +24,7 @@ import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;

@@ -103,18 +103,18 @@ public class IndexTest extends RepositoryTestCase {
         insert(lines1);
         workingTree.createTypeTree(pointsName, pointsType);
 
-        List<NodeRef> workHead = toList(repo.command(LsTreeOp.class).setReference(Ref.WORK_HEAD)
-                .setStrategy(Strategy.DEPTHFIRST).call());
+        List<NodeRef> workHead = toList(repo.commands().command(LsTreeOp.class)
+                .setReference(Ref.WORK_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, workHead.size());
         Collection<NodeRef> filtered = Collections2.filter(workHead,
                 new TreeNameFilter(pointsName));
         assertEquals(1, filtered.size());
 
-        repo.command(AddOp.class).call();
+        repo.commands().command(AddOp.class).call();
 
-        List<NodeRef> indexHead = toList(repo.command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
-                .setStrategy(Strategy.DEPTHFIRST).call());
+        List<NodeRef> indexHead = toList(repo.commands().command(LsTreeOp.class)
+                .setReference(Ref.STAGE_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, indexHead.size());
         filtered = Collections2.filter(indexHead, new TreeNameFilter(pointsName));
@@ -126,8 +126,8 @@ public class IndexTest extends RepositoryTestCase {
         workingTree.createTypeTree(pointsName, pointsType);
         workingTree.createTypeTree(linesName, linesType);
 
-        List<NodeRef> workHead = toList(repo.command(LsTreeOp.class).setReference(Ref.WORK_HEAD)
-                .setStrategy(Strategy.DEPTHFIRST).call());
+        List<NodeRef> workHead = toList(repo.commands().command(LsTreeOp.class)
+                .setReference(Ref.WORK_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(2, workHead.size());
 
@@ -138,18 +138,18 @@ public class IndexTest extends RepositoryTestCase {
         filtered = Collections2.filter(workHead, new TreeNameFilter(linesName));
         assertEquals(1, filtered.size());
 
-        repo.command(AddOp.class).addPattern(pointsName).call();
+        repo.commands().command(AddOp.class).addPattern(pointsName).call();
 
         List<NodeRef> indexHead;
-        indexHead = toList(repo.command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
+        indexHead = toList(repo.commands().command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
                 .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(1, indexHead.size());
         filtered = Collections2.filter(indexHead, new TreeNameFilter(pointsName));
         assertEquals(1, filtered.size());
 
-        repo.command(AddOp.class).addPattern(linesName).call();
-        indexHead = toList(repo.command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
+        repo.commands().command(AddOp.class).addPattern(linesName).call();
+        indexHead = toList(repo.commands().command(LsTreeOp.class).setReference(Ref.STAGE_HEAD)
                 .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(2, indexHead.size());// Points and Lines
@@ -190,7 +190,7 @@ public class IndexTest extends RepositoryTestCase {
         assertEquals(oId2,
                 workingTree.findUnstaged(appendChild(pointsName, idP2)).get().getObjectId());
 
-        repo.command(AddOp.class).call();
+        repo.commands().command(AddOp.class).call();
 
         assertEquals(oId1, index.findStaged(appendChild(pointsName, idP1)).get().getObjectId());
         assertEquals(oId2, index.findStaged(appendChild(pointsName, idP2)).get().getObjectId());
@@ -204,8 +204,8 @@ public class IndexTest extends RepositoryTestCase {
                 if (treeId.isNull()) {
                     return RevTree.EMPTY;
                 }
-                return repo.command(RevObjectParse.class).setObjectId(treeId).call(RevTree.class)
-                        .get();
+                return repo.commands().command(RevObjectParse.class).setObjectId(treeId)
+                        .call(RevTree.class).get();
             }
         };
         return Suppliers.memoize(delegate);
@@ -270,9 +270,9 @@ public class IndexTest extends RepositoryTestCase {
 
         final ObjectId newRepoTreeId1;
         {
-            Ref head = repo.command(RefParse.class).setName(Ref.HEAD).call().get();
-            newRepoTreeId1 = repo.command(WriteTree2.class).setOldRoot(tree(head.getObjectId()))
-                    .call();
+            Ref head = repo.commands().command(RefParse.class).setName(Ref.HEAD).call().get();
+            newRepoTreeId1 = repo.commands().command(WriteTree2.class)
+                    .setOldRoot(tree(head.getObjectId())).call();
 
             RevTree newRepoTree = repo.objects().getTree(newRepoTreeId1);
 
@@ -294,8 +294,9 @@ public class IndexTest extends RepositoryTestCase {
                     .build();
             ObjectId commitId = commit.getId();
             repo.objects().put(commit);
-            Optional<Ref> newHead = repo.command(UpdateRef.class).setName("refs/heads/master")
-                    .setNewValue(commitId).call();
+            Optional<Ref> newHead = repo.commands().command(UpdateRef.class)
+                    .setName("refs/heads/master").setReason("test init").setNewValue(commitId)
+                    .call();
             assertTrue(newHead.isPresent());
         }
 
@@ -303,7 +304,8 @@ public class IndexTest extends RepositoryTestCase {
         {
             // write comparing the the previously generated tree instead of the repository HEAD, as
             // it was not updated (no commit op was performed)
-            newRepoTreeId2 = repo.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId1)).call();
+            newRepoTreeId2 = repo.commands().command(WriteTree2.class)
+                    .setOldRoot(tree(newRepoTreeId1)).call();
 
             RevTree newRepoTree = repo.objects().getTree(newRepoTreeId2);
 
@@ -334,8 +336,9 @@ public class IndexTest extends RepositoryTestCase {
             ObjectId commitId = commit.getId();
 
             repo.objects().put(commit);
-            Optional<Ref> newHead = repo.command(UpdateRef.class).setName("refs/heads/master")
-                    .setNewValue(commitId).call();
+            Optional<Ref> newHead = repo.commands().command(UpdateRef.class)
+                    .setName("refs/heads/master").setReason("test setup").setNewValue(commitId)
+                    .call();
             assertTrue(newHead.isPresent());
         }
 
@@ -350,7 +353,8 @@ public class IndexTest extends RepositoryTestCase {
         {
             // write comparing the the previously generated tree instead of the repository HEAD, as
             // it was not updated (no commit op was performed)
-            newRepoTreeId3 = repo.command(WriteTree2.class).setOldRoot(tree(newRepoTreeId2)).call();
+            newRepoTreeId3 = repo.commands().command(WriteTree2.class)
+                    .setOldRoot(tree(newRepoTreeId2)).call();
 
             RevTree newRepoTree = repo.objects().getTree(newRepoTreeId3);
 
@@ -373,7 +377,7 @@ public class IndexTest extends RepositoryTestCase {
     @Test
     public void testAddEmptyTree() throws Exception {
         workingTree.createTypeTree(pointsName, pointsType);
-        repo.command(AddOp.class).setUpdateOnly(false).call();
+        repo.commands().command(AddOp.class).setUpdateOnly(false).call();
         assertTrue(index.findStaged(pointsName).isPresent());
     }
 }

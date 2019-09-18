@@ -193,8 +193,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         return segments[segments.length - 1];
     }
 
-    public @Override void initialize(@NonNull URI repoURI, @NonNull Context repoContext)
-            throws IllegalArgumentException {
+    public @Override void initialize(@NonNull URI repoURI) throws IllegalArgumentException {
 
         this.getStores(repoURI);
     }

@@ -16,7 +16,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -25,12 +27,12 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevCommitBuilder;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.Repository;
@@ -41,7 +43,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -129,7 +130,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         // we get a a list of commits to apply on top of the squashed commits
         List<RevCommit> commits = getCommitsAfterUntil();
 
-        ImmutableSet<Ref> refs = command(ForEachRef.class).setPrefixFilter(Ref.HEADS_PREFIX).call();
+        Set<Ref> refs = command(ForEachRef.class).setPrefixFilter(Ref.HEADS_PREFIX).call();
 
         // we create a list of all parents of those squashed commits, in case they are
         // merge commits. The resulting commit will have all these parents
@@ -223,11 +224,21 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         newHead = newCommit.getId();
         ObjectId newTreeId = newCommit.getTreeId();
 
-        command(UpdateRef.class).setName(currentBranch).setNewValue(newHead).call();
-        command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-        workingTree().updateWorkHead(newTreeId);
-        stagingArea().updateStageHead(newTreeId);
+        String reason;
+        if (Objects.equals(since, until)) {
+            reason = String.format("squash %s '%s'", until.getId(),
+                    RevObjects.messageTitle(newCommit.getMessage()));
+        } else {
+            reason = String.format("squash from %s to %s '%s'", since.getId(), until.getId(),
+                    RevObjects.messageTitle(newCommit.getMessage()));
+        }
+        final Ref updatedRef = new Ref(currentBranch, newHead);
+        command(UpdateRefs.class).setReason(reason)//
+                .add(updatedRef)//
+                .add(new SymRef(Ref.HEAD, updatedRef))//
+                .add(Ref.WORK_HEAD, newTreeId)//
+                .add(Ref.STAGE_HEAD, newTreeId)//
+                .call();
 
         // now put the other commits after the squashed one
         newHead = addCommits(commits, currentBranch, newHead);
@@ -236,7 +247,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
 
     }
 
-    private ObjectId addCommits(List<RevCommit> commits, String currentBranch,
+    private ObjectId addCommits(List<RevCommit> commits, String branchName,
             final ObjectId squashedId) {
 
         final Platform platform = platform();
@@ -268,12 +279,14 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
             objectDatabase().put(newCommit);
             head = newCommit.getId();
             ObjectId newTreeId = newCommit.getTreeId();
-
-            command(UpdateRef.class).setName(currentBranch).setNewValue(head).call();
-            command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(currentBranch).call();
-
-            workingTree().updateWorkHead(newTreeId);
-            stagingArea().updateStageHead(newTreeId);
+            final Ref updatedBranch = new Ref(branchName, head);
+            command(UpdateRefs.class)//
+                    .setReason("squash: " + commit.getId())//
+                    .add(updatedBranch)//
+                    .add(new SymRef(Ref.HEAD, updatedBranch))//
+                    .add(Ref.WORK_HEAD, newTreeId)//
+                    .add(Ref.STAGE_HEAD, newTreeId)//
+                    .call();
         }
 
         return head;

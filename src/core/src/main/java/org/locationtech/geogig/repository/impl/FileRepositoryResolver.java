@@ -159,8 +159,7 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
         return repoName;
     }
 
-    public @Override void initialize(@NonNull URI repoURI, @NonNull Context repoContext)
-            throws IllegalArgumentException {
+    public @Override void initialize(@NonNull URI repoURI) throws IllegalArgumentException {
 
         final boolean repoExisted = repoExists(repoURI);
 

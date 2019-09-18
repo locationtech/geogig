@@ -134,8 +134,10 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        localRepo.command(UpdateRef.class).setName("master").setNewValue(ObjectId.NULL).call();
-        localRepo.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue("master").call();
+        localRepo.command(UpdateRef.class).setName("master").setNewValue(ObjectId.NULL)
+                .setReason("test init").call();
+        localRepo.command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue("master")
+                .setReason("test init").call();
 
         // Pull the commit
         PullOp pull = pullOp();

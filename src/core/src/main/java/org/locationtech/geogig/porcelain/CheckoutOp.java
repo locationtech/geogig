@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
@@ -20,9 +21,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -31,15 +34,16 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.RevParse;
-import org.locationtech.geogig.plumbing.UpdateRef;
-import org.locationtech.geogig.plumbing.UpdateSymRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.porcelain.CheckoutException.StatusCode;
 import org.locationtech.geogig.repository.Conflict;
@@ -50,7 +54,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 
@@ -129,43 +132,49 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         if (paths.isEmpty()) {
             checkoutResult = branchCheckout();
         } else {
-            checkoutResult = checkoutFiltered(ImmutableSet.copyOf(paths));
+            checkoutResult = checkoutFiltered(paths);
         }
         checkoutResult.setNewTree(workingTree().getTree().getId());
         return checkoutResult;
     }
 
-    private CheckoutResult checkoutFiltered(final Set<String> paths) throws CheckoutException {
+    /**
+     * Checks out the objects addressed by {@code paths} to the working tree
+     * 
+     * @param paths
+     * @return
+     * @throws CheckoutException
+     */
+    private CheckoutResult checkoutFiltered(final Collection<String> paths)
+            throws CheckoutException {
         CheckoutResult checkoutResult = new CheckoutResult();
         checkoutResult.setResult(CheckoutResult.Results.UPDATE_OBJECTS);
-
-        final ConflictsDatabase conflictsDatabase = conflictsDatabase();
+        final Geogig geogig = geogig();
         final ObjectDatabase objectDatabase = objectDatabase();
         final WorkingTree workingTree = workingTree();
         final RevTree currentWorkHead = workingTree.getTree();
 
         RevTree checkOutFromTree;
 
-        final Set<String> unmerged = conflictsDatabase.findConflicts(null, paths);
+        final Set<String> unmerged = geogig.conflicts().find(paths);
         if (!unmerged.isEmpty()) {
             if (!(force || ours || theirs)) {
-                StringBuilder msg = new StringBuilder();
-                for (String path : unmerged) {
-                    msg.append("error: path " + path + " is unmerged.\n");
-                }
-                throw new CheckoutException(msg.toString(), StatusCode.UNMERGED_PATHS);
+                String msg = unmerged.stream().limit(50)
+                        .map(path -> format("error: path %s is unmerged.", path))
+                        .collect(Collectors.joining("\n"));
+                throw new CheckoutException(msg, StatusCode.UNMERGED_PATHS);
             }
         }
 
         if (branchOrCommit != null) {
             Optional<ObjectId> id = command(ResolveTreeish.class).setTreeish(branchOrCommit).call();
-            checkState(id.isPresent(), "'" + branchOrCommit + "' not found in repository.");
+            checkState(id.isPresent(), "'%s' not found in repository.", branchOrCommit);
             checkOutFromTree = objectDatabase.getTree(id.get());
         } else {
             checkOutFromTree = stagingArea().getTree();
         }
 
-        UpdateTree updateTree = command(UpdateTree.class).setRoot(currentWorkHead);
+        UpdateTree updateWorkHead = command(UpdateTree.class).setRoot(currentWorkHead);
 
         Map<String, RevTreeBuilder> featureTypeTrees = new HashMap<>();
         Map<String, NodeRef> currentFeatureTypeRefs = new HashMap<>();
@@ -194,18 +203,18 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                         .setChildPath(path).call().orElse(null);
                 if (foundChild != null) {
                     if (TYPE.TREE.equals(foundChild.getType())) {
-                        updateTree.removeChildTree(foundChild.path());
+                        updateWorkHead.removeChildTree(foundChild.path());
                     } else {
                         getTreeBuilder(currentWorkHead, foundChild, featureTypeTrees,
                                 currentFeatureTypeRefs).remove(foundChild.getNode());
                     }
                 }
             } else {
-                checkArgument(null != nodeRef,
-                        "pathspec '" + path + "' didn't match a feature in the tree");
+                checkArgument(null != nodeRef, "pathspec '%s' didn't match a feature in the tree",
+                        path);
 
                 if (nodeRef.getType() == TYPE.TREE) {
-                    updateTree.setChild(nodeRef);
+                    updateWorkHead.setChild(nodeRef);
                 } else {
                     RevTreeBuilder treeBuilder = getTreeBuilder(currentWorkHead, nodeRef,
                             featureTypeTrees, currentFeatureTypeRefs);
@@ -223,11 +232,13 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             final RevTree changedTree = changedTreeBuilder.build();
             final Envelope newBounds = SpatialOps.boundsOf(changedTree);
             final NodeRef newTreeRef = currentTreeRef.update(changedTree.getId(), newBounds);
-            updateTree.setChild(newTreeRef);
+            updateWorkHead.setChild(newTreeRef);
         }
 
-        final RevTree newWorkHead = updateTree.call();
-        workingTree.updateWorkHead(newWorkHead.getId());
+        final RevTree newWorkHead = updateWorkHead.call();
+        String spaths = paths.stream().limit(3).collect(Collectors.joining(", "))
+                + (paths.size() > 3 ? ", ..." : "");
+        workingTree.updateWorkHead(newWorkHead.getId(), "checkout: paths " + spaths);
         return checkoutResult;
     }
 
@@ -240,7 +251,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         final String typeTreePath = featureRef.getParentPath();
         RevTreeBuilder typeTreeBuilder = featureTypeTrees.get(typeTreePath);
         if (typeTreeBuilder == null) {
-            NodeRef typeTreeRef = context.command(FindTreeChild.class).setParent(currentIndexHead)
+            NodeRef typeTreeRef = command(FindTreeChild.class).setParent(currentIndexHead)
                     .setChildPath(typeTreePath).call().orElse(null);
 
             final RevTree currentTypeTree;
@@ -252,9 +263,9 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 typeTreeRef = NodeRef.create(NodeRef.parentPath(typeTreePath), parentNode);
                 currentTypeTree = EMPTY;
             } else {
-                currentTypeTree = context.objectDatabase().getTree(typeTreeRef.getObjectId());
+                currentTypeTree = objectDatabase().getTree(typeTreeRef.getObjectId());
             }
-            typeTreeBuilder = RevTreeBuilder.builder(context.objectDatabase(), currentTypeTree);
+            typeTreeBuilder = RevTreeBuilder.builder(objectDatabase(), currentTypeTree);
             currentFeatureTypeRefs.put(typeTreePath, typeTreeRef);
             featureTypeTrees.put(typeTreePath, typeTreeBuilder);
         }
@@ -319,8 +330,8 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         } else {
             final Optional<ObjectId> addressed = command(RevParse.class).setRefSpec(branchOrCommit)
                     .call();
-            checkArgument(addressed.isPresent(),
-                    "source '" + branchOrCommit + "' not found in repository");
+            checkArgument(addressed.isPresent(), "source '%s' not found in repository",
+                    branchOrCommit);
 
             RevCommit commit = command(RevObjectParse.class).setObjectId(addressed.get())
                     .call(RevCommit.class).get();
@@ -336,29 +347,39 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
             }
             // update work tree
             ObjectId treeId = targetTreeId.get();
-            workingTree().updateWorkHead(treeId);
-            stagingArea().updateStageHead(treeId);
             checkoutResult.setNewTree(treeId);
+            UpdateRefs updateRefs = command(UpdateRefs.class).add(Ref.WORK_HEAD, treeId)
+                    .add(Ref.STAGE_HEAD, treeId);
+            String reason;
             if (targetRef.isPresent()) {
                 // update HEAD
                 Ref target = targetRef.get();
                 // beware of cyclic refs, peel symrefs
                 String refName = target.peel().getName();
-                command(UpdateSymRef.class).setName(Ref.HEAD).setNewValue(refName).call();
+                Optional<Ref> currHead = command(RefParse.class).setName(Ref.HEAD).call();
+                String movingFrom = currHead.map(
+                        r -> r.peel().getName() + "@" + RevObjects.toShortString(r.getObjectId()))
+                        .orElse("no HEAD");
+                reason = String.format("checkout: moving from %s to %s", movingFrom, refName);
+
+                updateRefs.add(new SymRef(Ref.HEAD, target));
                 checkoutResult.setNewRef(targetRef.get());
                 checkoutResult.setOid(targetCommitId.get());
                 checkoutResult.setResult(CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH);
             } else {
                 // set HEAD to a dettached state
                 ObjectId commitId = targetCommitId.get();
-                command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commitId).call();
+                updateRefs.add(new Ref(Ref.HEAD, commitId));
+                reason = "checkout: dettached to " + RevObjects.toShortString(commitId);
                 checkoutResult.setOid(commitId);
                 checkoutResult.setResult(CheckoutResult.Results.DETACHED_HEAD);
             }
             Optional<Ref> ref = command(RefParse.class).setName(Ref.MERGE_HEAD).call();
             if (ref.isPresent()) {
-                command(UpdateRef.class).setName(Ref.MERGE_HEAD).setDelete(true).call();
+                updateRefs.remove(Ref.MERGE_HEAD);
             }
+
+            updateRefs.setReason(reason).call();
         }
         return checkoutResult;
     }
@@ -370,7 +391,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
         StringBuilder msg = new StringBuilder();
         while (conflicts.hasNext()) {
             Conflict conflict = conflicts.next();
-            msg.append("error: " + conflict.getPath() + " needs merge.\n");
+            msg.append("error: ").append(conflict.getPath()).append(" needs merge.\n");
         }
         if (conflictCount > 25) {
             msg.append(String.format("and %,d more.\n", (conflictCount - 25)));

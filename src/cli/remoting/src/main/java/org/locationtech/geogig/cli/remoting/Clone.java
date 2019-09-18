@@ -146,7 +146,7 @@ public class Clone extends AbstractCommand implements CLICommand {
 
         cli.setRepositoryURI(cloneURI.toString());
         Context cloneContext = cli.getGeogigInjector();
-        cloneInitializer.initialize(cloneURI, cloneContext);
+        cloneInitializer.initialize(cloneURI);
         cli.setPlatform(cloneContext.platform());
 
         Console console = cli.getConsole();

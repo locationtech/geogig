@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model;
 
+import java.util.Objects;
+
 /**
  * A symbolic {@link Ref reference} is a {@code Ref} that links to a concrete {@code Ref}, just like
  * a symbolic ref in a Unix file system.
@@ -62,4 +64,21 @@ public class SymRef extends Ref {
         return new Ref(target, getObjectId());
     }
 
+    /**
+     * @param o object to compare against
+     * @return whether or not this ref is equal to the target object
+     */
+    public @Override boolean equals(Object o) {
+        if (!(o instanceof SymRef)) {
+            return false;
+        }
+        return super.equals(o) && getTarget().equals(((SymRef) o).getTarget());
+    }
+
+    /**
+     * @return a hash code for this ref
+     */
+    public @Override int hashCode() {
+        return Objects.hash(getName(), getTarget(), getObjectId());
+    }
 }

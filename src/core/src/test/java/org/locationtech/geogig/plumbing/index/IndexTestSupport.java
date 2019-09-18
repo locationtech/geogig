@@ -170,7 +170,7 @@ public class IndexTestSupport {
         NodeRef newTypeTreeRef = typeTreeRef.update(tree.getId(), SpatialOps.boundsOf(tree));
         newRootBuilder.put(newTypeTreeRef.getNode());
         RevTree newWorkTree = newRootBuilder.build();
-        workingTree.updateWorkHead(newWorkTree.getId());
+        workingTree.updateWorkHead(newWorkTree.getId(), "test data forced load");
         return newTypeTreeRef;
     }
 

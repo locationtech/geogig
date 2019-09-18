@@ -67,22 +67,24 @@ public class UpdateRefTest extends RepositoryTestCase {
         RevCommit commit2 = repo.command(CommitOp.class).call();
 
         repo.command(UpdateSymRef.class).setName("refs/heads/branch1")
-                .setOldValue(commit1.getId().toString()).setNewValue(Ref.MASTER)
-                .setReason("this is a test").call();
+                .setOldValue(commit1.getId().toString()).setNewValue(Ref.MASTER).setReason("test")
+                .call();
 
         repo.command(UpdateRef.class).setName("refs/heads/branch1").setNewValue(commit2.getId())
-                .setOldValue(Ref.MASTER).call();
+                .setOldValue(Ref.MASTER).setReason("test").call();
 
         Optional<Ref> branchId = repo.command(RefParse.class).setName("refs/heads/branch1").call();
 
         assertTrue(branchId.get().getObjectId().equals(commit2.getId()));
 
-        repo.command(UpdateRef.class).setDelete(true).setName("refs/heads/branch1").call();
+        repo.command(UpdateRef.class).setDelete(true).setName("refs/heads/branch1")
+                .setReason("test setup").call();
     }
 
     @Test
     public void testDeleteWithNonexistentName() {
-        Optional<Ref> ref = repo.command(UpdateRef.class).setDelete(true).setName("NoRef").call();
+        Optional<Ref> ref = repo.command(UpdateRef.class).setDelete(true).setName("NoRef")
+                .setReason("test").call();
         assertFalse(ref.isPresent());
     }
 }

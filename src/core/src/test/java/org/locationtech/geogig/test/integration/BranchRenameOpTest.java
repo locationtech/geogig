@@ -107,7 +107,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
         repo.command(CommitOp.class).call();
         Ref TestBranch = repo.command(BranchCreateOp.class).setName("TestBranch").call();
 
-        Optional<Ref> TestSymRef = repo.command(UpdateSymRef.class)
+        Optional<Ref> TestSymRef = repo.command(UpdateSymRef.class).setReason("test setup")
                 .setName(Ref.HEADS_PREFIX + "TestSymRef").setNewValue(TestBranch.getName()).call();
 
         assertTrue(TestSymRef.isPresent());

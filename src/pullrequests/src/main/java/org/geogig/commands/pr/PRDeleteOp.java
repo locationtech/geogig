@@ -13,7 +13,7 @@ import java.util.Optional;
 
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import lombok.NonNull;
 

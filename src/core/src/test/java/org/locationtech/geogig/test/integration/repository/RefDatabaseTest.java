@@ -12,13 +12,16 @@ package org.locationtech.geogig.test.integration.repository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,9 +35,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
 
 public abstract class RefDatabaseTest {
 
@@ -67,82 +67,81 @@ public abstract class RefDatabaseTest {
 
     @Test
     public void testEmpty() {
-        refDb.putRef(Ref.MASTER, ObjectId.NULL.toString());
+        refDb.putRef(Ref.MASTER, ObjectId.NULL);
         refDb.putSymRef(Ref.HEAD, Ref.MASTER);
-        assertEquals(ObjectId.NULL.toString(), refDb.getRef(Ref.MASTER));
-        assertEquals(Ref.MASTER, refDb.getSymRef(Ref.HEAD));
+        assertEquals(ObjectId.NULL, refDb.get(Ref.MASTER).get().getObjectId());
+        assertEquals(Ref.MASTER, refDb.get(Ref.HEAD).get().peel().getName());
     }
 
     @Test
     public void testPutGetRef() {
         byte[] raw = new byte[20];
         Arrays.fill(raw, (byte) 1);
-        ObjectId oid = new ObjectId(raw);
+        ObjectId oid = ObjectId.create(raw);
 
-        String value = refDb.getRef(Ref.MASTER);
-        assertNull(value + " is not null", value);
+        assertFalse(refDb.get(Ref.MASTER).isPresent());
 
-        refDb.putRef(Ref.MASTER, oid.toString());
-        assertEquals(oid.toString(), refDb.getRef(Ref.MASTER));
+        refDb.putRef(Ref.MASTER, oid);
+        assertEquals(oid, refDb.get(Ref.MASTER).get().getObjectId());
 
-        refDb.putRef(Ref.WORK_HEAD, sampleId.toString());
-        assertEquals(sampleId.toString(), refDb.getRef(Ref.WORK_HEAD));
-    }
-
-    @Test
-    public void testGetSymRefWhenRef() {
-        refDb.putRef(Ref.MASTER, ObjectId.NULL.toString());
-        expected.expect(IllegalArgumentException.class);
-        expected.expectMessage(Ref.MASTER + " is not a symbolic ref");
-        refDb.getSymRef(Ref.MASTER);
+        refDb.putRef(Ref.WORK_HEAD, sampleId);
+        assertEquals(sampleId, refDb.get(Ref.WORK_HEAD).get().getObjectId());
     }
 
     @Test
     public void testPutGetSymRef() {
 
         String branch = "refs/heads/branch";
-
-        assertNull(Ref.MASTER, refDb.getSymRef(Ref.HEAD));
+        refDb.putRef(branch, sampleId);
+        assertFalse(refDb.get(Ref.HEAD).isPresent());
 
         refDb.putSymRef(Ref.HEAD, branch);
 
-        assertEquals(branch, refDb.getSymRef(Ref.HEAD));
+        assertEquals(Ref.HEAD, refDb.get(Ref.HEAD).get().getName());
+        assertEquals(branch, refDb.get(Ref.HEAD).get().peel().getName());
+    }
+
+    @Test
+    public void testPutSymRefNonExistingTarget() {
+        assertFalse(refDb.get(Ref.HEAD).isPresent());
+
+        expected.expect(IllegalArgumentException.class);
+        expected.expectMessage("refs/heads/branch");
+        refDb.putSymRef(Ref.HEAD, "refs/heads/branch");
     }
 
     @Test
     public void testRemove() {
         final String origin = Ref.append(Ref.ORIGIN, "master");
-        refDb.putRef(origin, sampleId.toString());
+        refDb.putRef(origin, sampleId);
         refDb.putSymRef(Ref.HEAD, origin);
 
-        assertEquals(sampleId.toString(), refDb.getRef(origin));
-        assertEquals(origin, refDb.getSymRef(Ref.HEAD));
+        assertEquals(sampleId, refDb.get(origin).get().getObjectId());
+        assertEquals(origin, refDb.get(Ref.HEAD).get().peel().getName());
 
-        assertEquals(sampleId.toString(), refDb.remove(origin));
-        assertNull(refDb.getRef(origin));
-        assertNull(refDb.getSymRef(origin));
-
-        assertEquals(origin, refDb.remove(Ref.HEAD));
-        assertNull(refDb.getSymRef(Ref.HEAD));
-        assertNull(refDb.getRef(Ref.HEAD));
+        assertEquals(origin, refDb.delete(Ref.HEAD).oldValue().get().peel().getName());
+        assertFalse(refDb.get(Ref.HEAD).isPresent());
+        assertEquals(sampleId, refDb.delete(origin).oldValue().get().getObjectId());
+        assertFalse(refDb.get(origin).isPresent());
     }
 
     @Test
     public void testGetAll() {
-        Map<String, String> allrefs = createTestRefs();
-        Map<String, String> allOnNullNamespace = refDb.getAll();
-        for (Map.Entry<String, String> e : allrefs.entrySet()) {
-            String key = e.getKey();
-            String value = e.getValue();
-            if (key.startsWith(Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace"))) {
+        Map<String, Ref> allrefs = createTestRefs();
+        Map<String, Ref> allOnNullNamespace = refDb.getAll().stream()
+                .collect(Collectors.toMap(Ref::getName, r -> r));
+
+        for (Ref ref : allrefs.values()) {
+            String name = ref.getName();
+            if (name.startsWith(Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace"))) {
                 // createRefs added txnamespace1 and txnamespace2
                 assertFalse(
-                        key + " is in a transaction namespace, "
+                        name + " is in a transaction namespace, "
                                 + "shall not be returned by getAll()",
-                        allOnNullNamespace.containsKey(key));
+                        allOnNullNamespace.containsKey(name));
             } else {
-                assertTrue(key + " not found", allOnNullNamespace.containsKey(key));
-                assertEquals(value, allOnNullNamespace.get(key));
+                assertTrue(name + " not found", allOnNullNamespace.containsKey(name));
+                assertEquals(ref, allOnNullNamespace.get(name));
             }
         }
     }
@@ -150,14 +149,12 @@ public abstract class RefDatabaseTest {
     @Test
     public void testGetAllNullNamespace() {
         expected.expect(NullPointerException.class);
-        expected.expectMessage("namespace can't be null");
         refDb.getAll(null);
     }
 
     @Test
     public void testGetAllNonExistentNamespace() {
-        Map<String, String> all;
-        all = refDb.getAll(Ref.append(Ref.TRANSACTIONS_PREFIX, "nonexistentns"));
+        List<Ref> all = refDb.getAll(Ref.append(Ref.TRANSACTIONS_PREFIX, "nonexistentns"));
         assertNotNull(all);
         assertTrue(all.isEmpty());
     }
@@ -167,21 +164,24 @@ public abstract class RefDatabaseTest {
         final String txNamespace1 = Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace1");
         final String txNamespace2 = Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace2");
 
-        Map<String, String> allrefs = createTestRefs();
-        Map<String, String> allOnNamespace;
-        allOnNamespace = refDb.getAll(txNamespace1);
+        Map<String, Ref> allrefs = createTestRefs();
+        Map<String, Ref> allOnNamespace;
+
+        allOnNamespace = refDb.getAll(txNamespace1).stream()
+                .collect(Collectors.toMap(Ref::getName, r -> r));
         assertNamespace(txNamespace1, allrefs, allOnNamespace);
 
-        allOnNamespace = refDb.getAll(txNamespace2);
+        allOnNamespace = refDb.getAll(txNamespace2).stream()
+                .collect(Collectors.toMap(Ref::getName, r -> r));
         assertNamespace(txNamespace2, allrefs, allOnNamespace);
     }
 
-    private void assertNamespace(String namespace, Map<String, String> allrefs,
-            Map<String, String> allOnNamespace) {
+    private void assertNamespace(String namespace, Map<String, Ref> allrefs,
+            Map<String, Ref> allOnNamespace) {
 
-        for (Map.Entry<String, String> e : allrefs.entrySet()) {
+        for (Entry<String, Ref> e : allrefs.entrySet()) {
             String key = e.getKey();
-            String value = e.getValue();
+            Ref value = e.getValue();
             if (key.startsWith(namespace)) {
                 // createRefs added txnamespace1 and txnamespace2
                 assertTrue(allOnNamespace.containsKey(key));
@@ -198,43 +198,46 @@ public abstract class RefDatabaseTest {
     @Test
     public void testRemoveAllNullNamespace() {
         expected.expect(NullPointerException.class);
-        expected.expectMessage("provided namespace is null");
-        refDb.removeAll(null);
+        refDb.deleteAll(null);
     }
 
     @Test
     public void testRemoveAllNamespace() {
         final String txNamespace1 = Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace1");
         final String txNamespace2 = Ref.append(Ref.TRANSACTIONS_PREFIX, "txnamespace2");
-        final Map<String, String> allrefs = createTestRefs();
+        final Map<String, Ref> allrefs = createTestRefs();
 
-        Map<String, String> removed;
+        Set<String> expected;
+        Set<String> removed;
 
-        removed = refDb.removeAll(txNamespace1);
-        assertEquals(Maps.filterKeys(allrefs, new Predicate<String>() {
-            public @Override boolean apply(String key) {
-                return key.startsWith(txNamespace1);
-            }
-        }), removed);
+        expected = allrefs.keySet().stream().filter(n -> Ref.isChild(txNamespace1, n))
+                .collect(Collectors.toSet());
 
-        removed = refDb.removeAll(txNamespace2);
-        assertEquals(Maps.filterKeys(allrefs, new Predicate<String>() {
-            public @Override boolean apply(String key) {
-                return key.startsWith(txNamespace2);
-            }
-        }), removed);
+        removed = refDb.deleteAll(txNamespace1).stream().map(Ref::getName)
+                .collect(Collectors.toSet());
+
+        assertEquals(expected, removed);
+
+        expected = allrefs.keySet().stream().filter(n -> Ref.isChild(txNamespace2, n))
+                .collect(Collectors.toSet());
+
+        removed = refDb.deleteAll(txNamespace2).stream().map(Ref::getName)
+                .collect(Collectors.toSet());
+
+        assertEquals(expected, removed);
     }
 
-    private Map<String, String> createTestRefs() {
-        Map<String, String> refs = new TreeMap<String, String>();
+    private Map<String, Ref> createTestRefs() {
+        Map<String, Ref> refs = new TreeMap<>();
 
         // known root refs
-        putRef(Ref.CHERRY_PICK_HEAD, sampleId.toString(), refs);
-        putRef(Ref.ORIG_HEAD, sampleId.toString(), refs);
+        putRef(Ref.CHERRY_PICK_HEAD, sampleId, refs);
+        putRef(Ref.ORIG_HEAD, sampleId, refs);
+        putRef(Ref.MASTER, sampleId, refs);
         putSymRef(Ref.HEAD, "refs/heads/master", refs);
-        putRef(Ref.WORK_HEAD, sampleId.toString(), refs);
-        putRef(Ref.STAGE_HEAD, sampleId.toString(), refs);
-        putRef(Ref.MERGE_HEAD, sampleId.toString(), refs);
+        putRef(Ref.WORK_HEAD, sampleId, refs);
+        putRef(Ref.STAGE_HEAD, sampleId, refs);
+        putRef(Ref.MERGE_HEAD, sampleId, refs);
 
         // some heads
         String branch1 = Ref.append(Ref.HEADS_PREFIX, "branch1");
@@ -261,17 +264,17 @@ public abstract class RefDatabaseTest {
         return refs;
     }
 
-    private String id(String string) {
-        return RevObjectTestSupport.hashString(string).toString();
+    private ObjectId id(String string) {
+        return RevObjectTestSupport.hashString(string);
     }
 
-    private void putRef(String name, String value, Map<String, String> holder) {
+    private void putRef(String name, ObjectId value, Map<String, Ref> holder) {
         refDb.putRef(name, value);
-        holder.put(name, value);
+        holder.put(name, new Ref(name, value));
     }
 
-    private void putSymRef(String name, String value, Map<String, String> holder) {
+    private void putSymRef(String name, String value, Map<String, Ref> holder) {
         refDb.putSymRef(name, value);
-        holder.put(name, value);
+        holder.put(name, refDb.get(name).get());
     }
 }

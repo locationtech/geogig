@@ -21,6 +21,7 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevObject;
+import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.plumbing.remotes.RemoteResolve;
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -159,7 +160,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             if (remoteDeleted) {
                 if (prune) {
                     updatedLocalRemoteRefs.add(RefDiff.removed(expected.localRemoteRef));
-                    command(UpdateRef.class).setName(localName)
+                    command(UpdateRef.class).setName(localName).setReason("fetch prune")
                             .setOldValue(expected.localRemoteRef.getObjectId()).setDelete(true)
                             .call();
                 }
@@ -170,7 +171,10 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Ref oldRef = isNew ? null : expected.localRemoteRef;
             Ref newRef = new Ref(localName, expected.remoteRef.getObjectId());
 
-            command(UpdateRef.class).setName(localName).setNewValue(newRef.getObjectId()).call();
+            String reason = isNew ? "new remote branch"
+                    : "update from " + RevObjects.toShortString(oldRef.getObjectId());
+            command(UpdateRef.class).setName(localName).setNewValue(newRef.getObjectId())
+                    .setReason("fetch: " + reason).call();
 
             localRefDiff = new RefDiff(oldRef, newRef);
             updatedLocalRemoteRefs.add(localRefDiff);

@@ -75,7 +75,7 @@ public class BranchDeleteOp extends AbstractGeoGigOp<Optional<? extends Ref>> {
                 config = null;
             }
             UpdateRef updateRef = command(UpdateRef.class).setName(ref.getName()).setDelete(true)
-                    .setReason("Delete branch " + ref.getName());
+                    .setReason("Delete branch %s", ref.getName());
             branchRef = updateRef.call();
             checkState(branchRef.isPresent());
             log.debug("Deleted branch {} {}", branchRef.get(), config);

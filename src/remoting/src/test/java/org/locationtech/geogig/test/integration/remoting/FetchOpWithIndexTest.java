@@ -40,7 +40,6 @@ import org.locationtech.geogig.remotes.FetchOp;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Command;
-import org.locationtech.geogig.repository.Command.CommandListener;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;

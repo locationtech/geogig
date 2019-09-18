@@ -183,7 +183,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         ObjectId stageTree = stagingArea().getTree().getId();
         final boolean nothingElseStaged = headTree.isPresent() && headTree.get().equals(stageTree);
         if (nothingElseStaged) {
-            stagingArea().updateStageHead(finalWorkTree.getId());
+            stagingArea().updateStageHead(finalWorkTree.getId(), "remove: sync with WORK_HEAD");
         } else {
             stageDeletes(deleteTrees.values().iterator(), deleteFeatures.iterator());
         }

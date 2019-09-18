@@ -30,7 +30,7 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;

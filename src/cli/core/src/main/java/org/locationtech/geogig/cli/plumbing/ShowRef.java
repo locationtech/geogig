@@ -12,6 +12,7 @@ package org.locationtech.geogig.cli.plumbing;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -70,9 +70,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
             }
         };
         op.setFilter(filter);
-
-        ImmutableSet<Ref> refs = op.call();
-
+        Set<Ref> refs = op.call();
         for (Ref ref : refs) {
             console.println(ref.getObjectId() + " " + ref.getName());
         }

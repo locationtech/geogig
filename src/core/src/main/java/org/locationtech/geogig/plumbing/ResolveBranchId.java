@@ -10,15 +10,13 @@
 package org.locationtech.geogig.plumbing;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Given an id, returns the ref that points to that id, if it exists
@@ -35,21 +33,11 @@ public class ResolveBranchId extends AbstractGeoGigOp<Optional<Ref>> {
 
     protected @Override Optional<Ref> _call() {
         Preconditions.checkState(id != null, "id has not been set.");
-        Predicate<Ref> filter = new Predicate<Ref>() {
-
-            private ObjectId id = ResolveBranchId.this.id;
-
-            public @Override boolean apply(@Nullable Ref ref) {
-                String refName = ref.getName();
-                ObjectId refId = ref.getObjectId();
-                return refName.startsWith(Ref.HEADS_PREFIX) && refId.equals(this.id);
-            }
+        Predicate<Ref> filter = ref -> {
+            String refName = ref.getName();
+            ObjectId refId = ref.getObjectId();
+            return Ref.isChild(Ref.HEADS_PREFIX, refName) && refId.equals(this.id);
         };
-        ImmutableSet<Ref> refs = command(ForEachRef.class).setFilter(filter).call();
-        if (refs.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(refs.iterator().next());
-        }
+        return command(ForEachRef.class).setFilter(filter).call().stream().findFirst();
     }
 }

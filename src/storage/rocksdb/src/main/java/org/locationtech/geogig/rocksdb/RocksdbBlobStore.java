@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 

@@ -33,11 +33,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -491,7 +491,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
     }
 
-    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths) {
         checkNotNull(paths, "paths is null");
 
         Set<String> matches = new HashSet<>();

@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Ref;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 
@@ -152,7 +152,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
 
         if (refSpecsArg.isEmpty()) {
             if (all) {
-                ImmutableSet<Ref> localRefs = getLocalRefs();
+                Set<Ref> localRefs = getLocalRefs();
                 for (Ref ref : localRefs) {
                     String localRef = ref.getName();
                     String remoteRef = null;
@@ -207,7 +207,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
         return pushRemote.get();
     }
 
-    private ImmutableSet<Ref> getLocalRefs() {
+    private Set<Ref> getLocalRefs() {
         Predicate<Ref> filter = new Predicate<Ref>() {
             final String prefix = Ref.HEADS_PREFIX;
 
@@ -215,7 +215,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
                 return !(input instanceof SymRef) && input.getName().startsWith(prefix);
             }
         };
-        ImmutableSet<Ref> localRefs = command(ForEachRef.class).setFilter(filter).call();
+        Set<Ref> localRefs = command(ForEachRef.class).setFilter(filter).call();
         return localRefs;
     }
 

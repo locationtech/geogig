@@ -303,7 +303,7 @@ public class DefaultStepDefinitions {
     public void i_have_a_remote_ref_called(String expected) throws Throwable {
         String ref = "refs/remotes/origin/" + expected;
         localRepo.geogigCLI.getGeogig(Hints.readWrite()).command(UpdateRef.class).setName(ref)
-                .setNewValue(ObjectId.NULL).call();
+                .setNewValue(ObjectId.NULL).setReason("test setup").call();
         Optional<Ref> refValue = localRepo.geogigCLI.getGeogig(Hints.readWrite())
                 .command(RefParse.class).setName(ref).call();
         assertTrue(refValue.isPresent());

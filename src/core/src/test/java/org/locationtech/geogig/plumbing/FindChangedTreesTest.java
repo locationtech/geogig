@@ -175,7 +175,7 @@ public class FindChangedTreesTest extends Assert {
             deletedLayers.forEach(n -> tb.remove(n.getNode()));
 
             newWorkhead = tb.build();
-            workingTree.updateWorkHead(newWorkhead.getId());
+            workingTree.updateWorkHead(newWorkhead.getId(), "test setup");
 
             changedLayers.forEach(ref -> putFeatures(ref, 10));
         }
@@ -354,7 +354,7 @@ public class FindChangedTreesTest extends Assert {
         });
 
         RevTree newWorkHead = newWorkHeadBuilder.build();
-        workingTree.updateWorkHead(newWorkHead.getId());
+        workingTree.updateWorkHead(newWorkHead.getId(), "test setup");
         return layers;
     }
 }

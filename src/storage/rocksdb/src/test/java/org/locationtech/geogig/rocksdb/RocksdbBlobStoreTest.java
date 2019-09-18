@@ -11,8 +11,8 @@ package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
 
-import org.locationtech.geogig.storage.impl.TransactionBlobStore;
-import org.locationtech.geogig.storage.impl.TransactionBlobStoreTest;
+import org.locationtech.geogig.transaction.TransactionBlobStore;
+import org.locationtech.geogig.transaction.TransactionBlobStoreTest;
 
 public class RocksdbBlobStoreTest extends TransactionBlobStoreTest {
 

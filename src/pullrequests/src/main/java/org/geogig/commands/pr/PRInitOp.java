@@ -11,6 +11,7 @@ package org.geogig.commands.pr;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
 
 import java.net.URI;
 import java.util.Map;
@@ -21,15 +22,15 @@ import java.util.UUID;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
-import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.plumbing.TransactionResolve;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CheckoutResult.Results;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
+import org.locationtech.geogig.transaction.TransactionBegin;
+import org.locationtech.geogig.transaction.TransactionResolve;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -62,16 +63,18 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
         final PR pr = getOrCreate(id);
         final GeogigTransaction txContext = pr.getTransaction(liveContext);
         try {
+            UpdateRefs initRefs = txContext.command(UpdateRefs.class)
+                    .setReason(format("pr-init: #%d", pr.getId()));
             final Ref liveTargetBranch = pr.resolveTargetBranch(liveContext);
             Ref prTargetBranch;
             try {
                 prTargetBranch = pr.resolveTargetBranch(txContext);
             } catch (NoSuchElementException e) {
-                prTargetBranch = setRef(txContext, pr.getTargetBranch(),
-                        liveTargetBranch.getObjectId());
+                prTargetBranch = new Ref(pr.getTargetBranch(), liveTargetBranch.getObjectId());
+                initRefs.add(prTargetBranch);
             }
             if (!liveTargetBranch.equals(prTargetBranch)) {
-                setRef(txContext, prTargetBranch.getName(), liveTargetBranch.getObjectId());
+                initRefs.add(prTargetBranch.getName(), liveTargetBranch.getObjectId());
             }
             final ObjectId commonAncestor = findCommonAncestor(pr, prTargetBranch);
 
@@ -79,12 +82,14 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
             String headRef = pr.getHeadRef();
 
             txContext.command(MergeOp.class).setAbort().call();
-            txContext.command(UpdateRef.class).setName(pr.getMergeRef()).setDelete(true).call();
+            initRefs.remove(pr.getMergeRef());
 
             // prepare originRef for PRPrepareOp to fetch onto it from the remote's issuer branch
-            setRef(txContext, originRef, commonAncestor);
+            initRefs.add(originRef, commonAncestor);
             // prepare refs/pull/<id>/head for PrPrepareOp to track where targetBranch were
-            setRef(txContext, headRef, liveTargetBranch.getObjectId());
+            initRefs.add(headRef, liveTargetBranch.getObjectId());
+
+            initRefs.call();
 
             // checkout the target branch inside the tx for the test merge to happen there.
             Results initCheckoutResult = txContext.command(CheckoutOp.class).setForce(true)
@@ -175,10 +180,4 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
         getProgressListener().setDescription("Creating pull request " + pr);
         return pr;
     }
-
-    private Ref setRef(final GeogigTransaction transaction, String refName, ObjectId value) {
-        return transaction.command(UpdateRef.class).setName(refName).setNewValue(value).call()
-                .get();
-    }
-
 }

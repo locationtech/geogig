@@ -9,56 +9,41 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableSet;
+import lombok.NonNull;
 
 /**
  * Update the object name stored in a {@link Ref} safely.
  * <p>
  * 
  */
-public class ForEachRef extends AbstractGeoGigOp<ImmutableSet<Ref>> {
+public class ForEachRef extends AbstractGeoGigOp<Set<Ref>> {
 
     private Predicate<Ref> filter;
 
-    public ForEachRef setFilter(Predicate<Ref> filter) {
+    public ForEachRef setFilter(@NonNull Predicate<Ref> filter) {
         this.filter = filter;
         return this;
     }
 
-    public ForEachRef setPrefixFilter(final String prefix) {
-        this.filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref ref) {
-                return ref != null && ref.getName().startsWith(prefix);
-            }
-        };
+    public ForEachRef setPrefixFilter(final @NonNull String prefix) {
+        this.filter = ref -> Ref.isChild(prefix, ref.getName());
         return this;
     }
 
     /**
      * @return the new value of the ref
      */
-    protected @Override ImmutableSet<Ref> _call() {
+    protected @Override Set<Ref> _call() {
+        final Predicate<Ref> filter = this.filter == null ? r -> true : this.filter;
 
-        @SuppressWarnings("unchecked")
-        final Predicate<Ref> filter = (Predicate<Ref>) (this.filter == null
-                ? Predicates.alwaysTrue()
-                : this.filter);
-
-        ImmutableSet.Builder<Ref> refs = new ImmutableSet.Builder<Ref>();
-        for (String refName : refDatabase().getAll().keySet()) {
-            Optional<Ref> ref = command(RefParse.class).setName(refName).call();
-            if (ref.isPresent() && filter.apply(ref.get())) {
-                Ref accepted = ref.get();
-                refs.add(accepted);
-            }
-        }
-        return refs.build();
+        Set<Ref> refs = refDatabase().getAll().stream().filter(filter).collect(Collectors.toSet());
+        return refs;
     }
 }

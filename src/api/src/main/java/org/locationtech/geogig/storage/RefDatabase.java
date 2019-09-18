@@ -9,10 +9,14 @@
  */
 package org.locationtech.geogig.storage;
 
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
+import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+
+import lombok.NonNull;
 
 /**
  * Provides an interface for GeoGig reference databases.
@@ -24,64 +28,30 @@ public interface RefDatabase extends Store {
     /**
      * Locks access to the main repository refs.
      */
-    public abstract void lock() throws TimeoutException;
+    public void lock() throws TimeoutException;
 
     /**
      * Unlocks access to the main repository refs.
      */
-    public abstract void unlock();
+    public void unlock();
 
     /**
      * Retrieves a ref with the specified name.
      * 
      * @param name the name of the ref (e.g. {@code "refs/remotes/origin"}, etc).
      * @return the ref, or {@code null} if it doesn't exist
-     * @throws IllegalArgumentException if the ref {@code name} IS a symbolic ref
+     * @since 2.0
      */
-    public abstract String getRef(String name) throws IllegalArgumentException;
+    public Optional<Ref> get(@NonNull String name);
 
-    /**
-     * Retrieves a symbolic ref with the specified name.
-     * 
-     * @param name the name of the symbolic ref (e.g. {@code "HEAD"}, etc).
-     * @return the ref, or {@code null} if it doesn't exist
-     * @throws IllegalArgumentException if the ref {@code name} is NOT a symbolic ref
-     */
-    public abstract String getSymRef(String name) throws IllegalArgumentException;
-
-    /**
-     * Adds a ref to the database.
-     * 
-     * @param refName the name of the ref
-     * @param refValue the value of the ref
-     * @return {@code null} if the ref didn't exist already, its old value otherwise
-     */
-    public abstract void putRef(String refName, String refValue);
-
-    /**
-     * Adds a symbolic ref to the database.
-     * 
-     * @param name the name of the ref
-     * @param val the value of the ref
-     * @return {@code null} if the ref didn't exist already, its old value otherwise
-     */
-    public abstract void putSymRef(String name, String val);
-
-    /**
-     * Removes a ref from the database.
-     * 
-     * @param refName the name of the ref to remove (e.g. {@code "HEAD"},
-     *        {@code "refs/remotes/origin"}, etc).
-     * @return the value of the ref before removing it, or {@code null} if it didn't exist
-     */
-    public abstract String remove(String refName);
+    public List<Ref> getAllPresent(@NonNull Iterable<String> names);
 
     /**
      * @return all known references, including top level ones like HEAD, WORK_HEAD, and STAGE_HEAD,
      *         but not including transaction references (e.g. the ones under the
      *         {@link Ref#TRANSACTIONS_PREFIX transactions/} prefix.
      */
-    public abstract Map<String, String> getAll();
+    public @NonNull List<Ref> getAll();
 
     /**
      * Retrieves all refs under a specific prefix (.e.g. {@code /}, {@code /refs},
@@ -90,13 +60,48 @@ public interface RefDatabase extends Store {
      * @param prefix the prefix
      * @return the refs that matched the prefix
      */
-    public abstract Map<String, String> getAll(final String prefix);
+    public @NonNull List<Ref> getAll(@NonNull String prefix);
+
+    /**
+     * Adds a ref to the database.
+     * 
+     * @param refName the name of the ref
+     * @param refValue the value of the ref
+     * @return the old value
+     */
+    public @NonNull RefChange put(@NonNull Ref ref);
+
+    public @NonNull RefChange putRef(@NonNull String name, @NonNull ObjectId value);
+
+    public @NonNull RefChange putSymRef(@NonNull String name, @NonNull String target);
+
+    public @NonNull List<RefChange> putAll(@NonNull Iterable<Ref> refs);
+
+    /**
+     * Removes a ref from the database.
+     * 
+     * @param refName the name of the ref to remove (e.g. {@code "HEAD"},
+     *        {@code "refs/remotes/origin"}, etc).
+     * @return the value of the ref before removing it, or {@code null} if it didn't exist
+     */
+    public @NonNull RefChange delete(@NonNull String refName);
+
+    public @NonNull List<RefChange> delete(@NonNull Iterable<String> refNames);
+
+    public @NonNull RefChange delete(@NonNull Ref ref);
+
+    /**
+     * Removes all references.
+     * 
+     * @return the references removed, may be empty.
+     */
+    public @NonNull List<Ref> deleteAll();
 
     /**
      * Removes all references under the given {@code namespace} and the namespace itself
      * 
-     * @param namespace the refs namespace to remote
+     * @param namespace the refs namespace to remove (e.g. {@code "refs/remotes/origin"}, etc)
      * @return the references removed, may be empty.
      */
-    public abstract Map<String, String> removeAll(String namespace);
+    public List<Ref> deleteAll(@NonNull String namespace);
 }

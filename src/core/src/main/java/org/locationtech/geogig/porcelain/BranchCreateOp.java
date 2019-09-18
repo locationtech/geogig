@@ -17,11 +17,10 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.model.RevObject.TYPE;
+import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.CheckRefFormat;
 import org.locationtech.geogig.plumbing.RefParse;
-import org.locationtech.geogig.plumbing.ResolveObjectType;
-import org.locationtech.geogig.plumbing.RevParse;
+import org.locationtech.geogig.plumbing.ResolveCommit;
 import org.locationtech.geogig.plumbing.UpdateRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
@@ -130,14 +129,18 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
                     .setRef(remoteBranch).call();
         }
         ObjectId branchOriginCommitId;
+        String reason;
         if (orphan) {
             branchOriginCommitId = ObjectId.NULL;
+            reason = "orphan branch";
         } else {
             final String branchOrigin = Optional.ofNullable(commit_ish).orElse(Ref.HEAD);
-            branchOriginCommitId = resolveOriginCommitId(branchOrigin);
+            StringBuilder reasonBuilder = new StringBuilder();
+            branchOriginCommitId = resolveOriginCommitId(branchOrigin, reasonBuilder);
+            reason = reasonBuilder.toString();
         }
         Optional<Ref> branchRef = command(UpdateRef.class).setName(branchRefPath)
-                .setNewValue(branchOriginCommitId).call();
+                .setNewValue(branchOriginCommitId).setReason(reason).call();
         checkState(branchRef.isPresent());
 
         BranchConfig branchConfig = command(BranchConfigOp.class).setName(branchRefPath)
@@ -151,23 +154,19 @@ public class BranchCreateOp extends AbstractGeoGigOp<Ref> {
         return branchRef.get();
     }
 
-    private ObjectId resolveOriginCommitId(String branchOrigin) {
+    private ObjectId resolveOriginCommitId(String branchOrigin, StringBuilder reasonBuilder) {
         Optional<Ref> ref = command(RefParse.class).setName(branchOrigin).call();
+        reasonBuilder.append("branch ");
         if (ref.isPresent()) {
             ObjectId commitId = ref.get().getObjectId();
             checkArgument(!commitId.isNull(),
                     branchOrigin + " has no commits yet, branch cannot be created.");
+            reasonBuilder.append(ref.get().peel().getName());
             return commitId;
         }
-        Optional<ObjectId> objectId = command(RevParse.class).setRefSpec(branchOrigin).call();
-        checkArgument(objectId.isPresent(),
-                branchOrigin + " does not resolve to a repository object");
-
-        ObjectId commitId = objectId.get();
-        TYPE objectType = command(ResolveObjectType.class).setObjectId(commitId).call();
-        checkArgument(TYPE.COMMIT.equals(objectType),
-                branchOrigin + " does not resolve to a commit: " + objectType);
-
-        return commitId;
+        Optional<RevCommit> commit = command(ResolveCommit.class).setCommitIsh(branchOrigin).call();
+        checkArgument(commit.isPresent(), branchOrigin + " does not resolve to a commit");
+        reasonBuilder.append(branchOrigin);
+        return commit.get().getId();
     }
 }

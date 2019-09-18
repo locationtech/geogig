@@ -9,21 +9,18 @@
  */
 package org.locationtech.geogig.plumbing.remotes;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.locationtech.geogig.model.Ref;
-import org.locationtech.geogig.plumbing.ForEachRef;
-import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.porcelain.BranchConfig;
 import org.locationtech.geogig.porcelain.BranchConfigOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,42 +45,34 @@ public class RemoteRemoveOp extends AbstractGeoGigOp<Remote> {
             throw new RemoteException(StatusCode.MISSING_NAME);
         }
 
-        final String name = this.name;
-        final Optional<Remote> remote = command(RemoteResolve.class).setName(name).call();
-        if (!remote.isPresent()) {
-            throw new RemoteException(StatusCode.REMOTE_NOT_FOUND);
-        }
+        final String remoteName = this.name;
+        final Remote remote = command(RemoteResolve.class).setName(remoteName).call()
+                .orElseThrow(() -> new RemoteException(StatusCode.REMOTE_NOT_FOUND));
 
-        String remoteSection = "remote." + name;
-        configDatabase().removeSection(remoteSection);
+        final String remoteConfigSection = "remote." + remoteName;
+
+        configDatabase().removeSection(remoteConfigSection);
 
         // Remove refs
-        final String remotePrefix = Ref.append(Ref.REMOTES_PREFIX, name);
+        final String remotePrefix = Ref.append(Ref.REMOTES_PREFIX, remoteName);
 
-        // r -> Ref.isChild(remotePrefix, r.getName())
-        Predicate<Ref> fn = new Predicate<Ref>() {
-            public @Override boolean apply(Ref r) {
-                return Ref.isChild(remotePrefix, r.getName());
-            }
-        };
-
-        ImmutableSet<Ref> localRemoteRefs = command(ForEachRef.class).setFilter(fn).call();
-        for (Ref localRef : localRemoteRefs) {
-            command(UpdateRef.class).setDelete(true).setName(localRef.getName()).call();
-        }
+        final List<Ref> remoteRefs = refDatabase().getAll(remotePrefix);
+        UpdateRefs updateRefs = command(UpdateRefs.class).setReason("remote-remove: " + remoteName);
+        remoteRefs.stream().map(Ref::getName).forEach(updateRefs::remove);
+        updateRefs.call();
 
         Stream<BranchConfig> branchesMappedToThisRemote = command(BranchConfigOp.class).getAll()
-                .stream().filter(c -> name.equals(c.getRemoteName().orElse(null)));
+                .stream().filter(c -> remoteName.equals(c.getRemoteName().orElse(null)));
 
         branchesMappedToThisRemote.forEach(c -> {
             Ref localBranch = c.getBranch();
             command(BranchConfigOp.class).setName(localBranch.getName()).setRemoteBranch(null)
                     .setRemoteName(null).setDescription(c.getDescription().orElse(null)).set();
-            String msg = String.format("Removed branch tracking of %s to %s/%s", localBranch, name,
-                    c.getRemoteBranch().orElse(null));
+            String msg = String.format("Removed branch tracking of %s to %s/%s", localBranch,
+                    remoteName, c.getRemoteBranch().orElse(null));
             log.debug(msg);
         });
-        return remote.get();
+        return remote;
     }
 
     /**

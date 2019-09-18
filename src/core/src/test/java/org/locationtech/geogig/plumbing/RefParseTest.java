@@ -18,7 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -30,52 +30,45 @@ import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.RefDatabase;
+import org.locationtech.geogig.storage.memory.HeapRefDatabase;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 /**
  *
  */
 public class RefParseTest {
 
-    private RefDatabase mockRefDb;
+    private RefDatabase refDb;
 
     private RefParse command;
 
     @Before
     public void setUp() {
 
-        mockRefDb = mock(RefDatabase.class);
+        refDb = new HeapRefDatabase();
+        refDb.open();
 
-        Builder<String, String> builder = ImmutableMap.builder();
-        Map<String, String> allRefs = builder//
-                .put("refs/heads/master",
-                        RevObjectTestSupport.hashString("refs/heads/master").toString())//
-                .put("refs/heads/branch1",
-                        RevObjectTestSupport.hashString("refs/heads/branch1").toString())//
-                .put("refs/heads/v1.1",
-                        RevObjectTestSupport.hashString("refs/heads/v1.1").toString())//
-                .put("refs/tags/tag1", RevObjectTestSupport.hashString("refs/tags/tag1").toString())//
-                .put("refs/tags/v1.1", RevObjectTestSupport.hashString("refs/tags/v1.1").toString())//
-                .put("refs/remotes/origin/master",
-                        RevObjectTestSupport.hashString("refs/remotes/origin/master").toString())//
-                .put("refs/remotes/origin/branch1",
-                        RevObjectTestSupport.hashString("refs/remotes/origin/branch1").toString())//
-                .put("refs/remotes/juan/master",
-                        RevObjectTestSupport.hashString("refs/remotes/juan/master").toString())//
-                .put("refs/remotes/juan/v1.1",
-                        RevObjectTestSupport.hashString("refs/remotes/juan/v1.1").toString())//
+        Builder<Ref> builder = ImmutableList.builder();
+        List<Ref> allRefs = builder//
+                .add(testRef("refs/heads/master"))//
+                .add(testRef("refs/heads/branch1"))//
+                .add(testRef("refs/heads/v1.1"))//
+                .add(testRef("refs/tags/tag1"))//
+                .add(testRef("refs/tags/v1.1"))//
+                .add(testRef("refs/remotes/origin/master"))//
+                .add(testRef("refs/remotes/origin/branch1"))//
+                .add(testRef("refs/remotes/juan/master"))//
+                .add(testRef("refs/remotes/juan/v1.1"))//
                 .build();
 
-        when(mockRefDb.getAll()).thenReturn(allRefs);
+        refDb.putAll(allRefs);
+
         command = new RefParse();
-        for (String name : allRefs.keySet()) {
-            when(mockRefDb.getRef(eq(name))).thenReturn(allRefs.get(name));
-        }
 
         Context mockCommandLocator = mock(Context.class);
-        when(mockCommandLocator.refDatabase()).thenReturn(mockRefDb);
+        when(mockCommandLocator.refDatabase()).thenReturn(refDb);
         command.setContext(mockCommandLocator);
         ResolveObjectType mockResolveObjectType = mock(ResolveObjectType.class);
         when(mockCommandLocator.command(eq(ResolveObjectType.class)))
@@ -83,6 +76,10 @@ public class RefParseTest {
 
         when(mockResolveObjectType.setObjectId((ObjectId) any())).thenReturn(mockResolveObjectType);
         when(mockResolveObjectType.call()).thenReturn(TYPE.COMMIT);
+    }
+
+    private Ref testRef(String name) {
+        return new Ref(name, RevObjectTestSupport.hashString(name));
     }
 
     @Test
@@ -128,18 +125,21 @@ public class RefParseTest {
         testRsolvePartial("tag1", "refs/tags/tag1");
     }
 
-    private void testRsolvePartial(String refSpec, String refName) {
-        Optional<Ref> ref;
-        ref = command.setName(refSpec).call();
+    private void testRsolvePartial(String refSpec, String expectedResolvedName) {
+        Optional<Ref> ref = command.setName(refSpec).call();
         assertTrue(ref.isPresent());
-        assertEquals(refName, ref.get().getName());
-        assertEquals(RevObjectTestSupport.hashString(refName), ref.get().getObjectId());
+        assertEquals(expectedResolvedName, ref.get().getName());
+        assertEquals(RevObjectTestSupport.hashString(expectedResolvedName),
+                ref.get().getObjectId());
     }
 
     @Test
     public void testResolveSymbolicRef() {
-        when(mockRefDb.getRef(eq("HEAD"))).thenThrow(new IllegalArgumentException());
-        when(mockRefDb.getSymRef(eq("HEAD"))).thenReturn("refs/heads/branch1");
+        Ref target = testRef("refs/heads/branch1");
+        Ref head = new SymRef(Ref.HEAD, target);
+        refDb.put(target);
+        refDb.put(head);
+
         Optional<Ref> ref = command.setName("HEAD").call();
         assertTrue(ref.isPresent());
         assertTrue(ref.get() instanceof SymRef);

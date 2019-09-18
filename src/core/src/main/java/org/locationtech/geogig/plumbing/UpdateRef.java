@@ -20,7 +20,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
+import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import lombok.Getter;
@@ -29,6 +31,7 @@ import lombok.Getter;
  * Update the object name stored in a {@link Ref} safely.
  * <p>
  * 
+ * @implNote delegates to {@link UpdateRefs}
  */
 @Hookable(name = "update-ref")
 public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
@@ -92,9 +95,8 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
      * @param reason if provided, the ref log will be updated with this reason message
      * @return {@code this}
      */
-    // TODO: reflog not yet implemented
-    public UpdateRef setReason(String reason) {
-        this.reason = reason;
+    public UpdateRef setReason(String reason, Object... formatArgs) {
+        this.reason = String.format(reason, formatArgs);
         return this;
     }
 
@@ -106,62 +108,63 @@ public class UpdateRef extends AbstractGeoGigOp<Optional<Ref>> {
     /**
      * Executes the operation.
      * 
-     * @return the new value of the ref
+     * @return the new value of the ref, or the old value of {@link #setDelete} was set to
+     *         {@code true}
      */
     protected @Override Optional<Ref> _call() {
         final String name = this.name;
         final boolean delete = this.delete;
         final ObjectId newValue = this.newValue;
+        final String expectedValue = this.oldValue;
         checkState(name != null, "name has not been set");
         checkState(delete || newValue != null, "value has not been set");
-
-        RefDatabase refDatabase = refDatabase();
-        if (oldValue != null) {
-            String storedValue;
-            try {
-                storedValue = refDatabase.getRef(name);
-            } catch (IllegalArgumentException e) {
-                // may be updating what used to be a symref to be a direct ref
-                storedValue = refDatabase.getSymRef(name);
-            }
-            checkState(storedValue == null || oldValue.equals(storedValue), "Old value ("
-                    + storedValue + ") doesn't match expected value '" + oldValue + "'");
-        }
-
-        if (delete) {
-            Optional<Ref> oldRef = command(RefParse.class).setName(name).call();
-            if (oldRef.isPresent()) {
-                refDatabase.remove(oldRef.get().getName());
-            }
-            return oldRef;
-        }
-
-        checkState(!verifyValue || newValue.isNull() || objectDatabase().exists(newValue),
-                "Tried to update Ref %s to an object that doesn't exist: %s", name, newValue);
-
-        // if not changing a head
-        if (!HEAD.equals(name) && !WORK_HEAD.equals(name) && !STAGE_HEAD.equals(name)) {
-            final @Nullable String currentHeadTarget;
-            try {
-                currentHeadTarget = refDatabase.getSymRef(HEAD);
-                if (name.equals(currentHeadTarget)) {// and updating the current branch
-                    // and the working tree and staging are are clean...
-                    boolean workingTreeClean = workingTree().isClean();
-                    boolean stagingAreaClean = stagingArea().isClean();
-                    if (workingTreeClean && stagingAreaClean) {
-                        refDatabase.putSymRef(WORK_HEAD, name);
-                        refDatabase.putSymRef(STAGE_HEAD, name);
-                    }
+        final RefDatabase refDatabase = refDatabase();
+        if (expectedValue != null) {
+            Optional<Ref> storedValue = refDatabase.get(name);
+            if (storedValue.isPresent()) {
+                Ref current = storedValue.get();
+                try {
+                    ObjectId id = ObjectId.valueOf(expectedValue);
+                    checkState(id.equals(current.getObjectId()),
+                            "Old value (%s) doesn't match expected value '%s'", id, expectedValue);
+                } catch (IllegalArgumentException notAnId) {
+                    checkState(expectedValue.equals(current.peel().getName()),
+                            "Old value (%s) doesn't match expected value '%s'", current.getName(),
+                            expectedValue);
                 }
-            } catch (IllegalArgumentException headIsDettached) {
-                // HEAD is in a dettached state
             }
         }
 
-        refDatabase.putRef(name, newValue.toString());
-        Optional<Ref> newRef = command(RefParse.class).setName(name).call();
-        checkState(newRef.isPresent());
+        UpdateRefs updateCmd = command(UpdateRefs.class).setReason(reason);
+        if (delete) {
+            updateCmd.remove(name);
+        } else {
+            checkState(!verifyValue || newValue.isNull() || objectDatabase().exists(newValue),
+                    "Tried to update Ref %s to an object that doesn't exist: %s", name, newValue);
 
-        return newRef;
+            // if not changing a head
+            if (!HEAD.equals(name) && !WORK_HEAD.equals(name) && !STAGE_HEAD.equals(name)) {
+                final Optional<Ref> headTarget = refDatabase.get(HEAD).map(Ref::peel);
+                final @Nullable String currentHeadTarget = headTarget.map(Ref::getName)
+                        .orElse(null);
+                try {
+                    if (name.equals(currentHeadTarget)) {// and updating the current branch
+                        // and the working tree and staging are are clean...
+                        boolean workingTreeClean = workingTree().isClean();
+                        boolean stagingAreaClean = stagingArea().isClean();
+                        if (workingTreeClean && stagingAreaClean) {
+                            updateCmd.add(new SymRef(Ref.WORK_HEAD, headTarget.get()));
+                            updateCmd.add(new SymRef(Ref.STAGE_HEAD, headTarget.get()));
+                        }
+                    }
+                } catch (IllegalArgumentException headIsDettached) {
+                    // HEAD is in a dettached state
+                }
+            }
+            updateCmd.add(name, newValue);
+        }
+        RefChange change = updateCmd.call().stream().filter(c -> name.equals(c.name())).findFirst()
+                .orElseThrow(() -> new IllegalStateException());
+        return delete ? change.oldValue() : change.newValue();
     }
 }

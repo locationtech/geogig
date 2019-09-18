@@ -240,7 +240,8 @@ public class RevParseTest extends RepositoryTestCase {
         List<RevCommit> commits = createCommits(numCommits);
 
         repo.context().objectDatabase().putAll(commits.iterator());
-        repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId()).call();
+        repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId())
+                .setReason("forced for testing").call();
 
         RevParse revParse = repo.command(RevParse.class);
 
@@ -261,7 +262,8 @@ public class RevParseTest extends RepositoryTestCase {
         assertEquals(parentOfShallow.getId(), shallowCommit.getParentIds().get(0));
 
         repo.context().objectDatabase().putAll(commits.iterator());
-        repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId()).call();
+        repo.command(UpdateRef.class).setName(Ref.HEAD).setNewValue(commits.get(0).getId())
+                .setReason("forced for testing").call();
 
         RevParse revParse = repo.command(RevParse.class);
 

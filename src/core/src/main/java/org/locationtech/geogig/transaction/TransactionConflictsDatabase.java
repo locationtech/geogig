@@ -7,7 +7,7 @@
  * Contributors:
  * Johnathan Garrett (LMN Solutions) - initial implementation
  */
-package org.locationtech.geogig.storage.impl;
+package org.locationtech.geogig.transaction;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -15,10 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.plumbing.TransactionBegin;
-import org.locationtech.geogig.plumbing.TransactionEnd;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
 /**
@@ -32,7 +29,7 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
  * @see TransactionBegin
  * @see TransactionEnd
  */
-public class TransactionConflictsDatabase implements ConflictsDatabase {
+class TransactionConflictsDatabase implements ConflictsDatabase {
 
     private final ConflictsDatabase database;
 
@@ -117,7 +114,7 @@ public class TransactionConflictsDatabase implements ConflictsDatabase {
         return database.getCountByPrefix(txNamespace, treePath);
     }
 
-    public @Override Set<String> findConflicts(@Nullable String namespace, Set<String> paths) {
+    public @Override Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths) {
         return database.findConflicts(txNamespace, paths);
     }
 

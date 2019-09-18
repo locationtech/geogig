@@ -18,6 +18,7 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
+import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.merge.MergeScenarioReport;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.MergeConflictsException;
@@ -27,7 +28,7 @@ import org.locationtech.geogig.remotes.PullOp;
 import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Remote;
-import org.locationtech.geogig.repository.impl.GeogigTransaction;
+import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -90,10 +91,14 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
             boolean testMergeDone = preStatus.getMergeCommit().isPresent();
             if (conflictsAlreadyChecked || testMergeDone) {
                 if (testMergeDone && this.message != null) {
-                    RevCommit ammended = transaction.command(CommitOp.class).setAmend(true)
+                    RevCommit amended = transaction.command(CommitOp.class).setAmend(true)
                             .setMessage(message).call();
-                    setRef(transaction, testMergeRef, ammended.getId());
-                    preStatus = preStatus.withMergeCommit(Optional.of(ammended.getId()));
+                    transaction.command(UpdateRef.class)//
+                            .setReason("pr-prepare: amend")//
+                            .setName(testMergeRef)//
+                            .setNewValue(amended.getId())//
+                            .call();
+                    preStatus = preStatus.withMergeCommit(Optional.of(amended.getId()));
                 }
                 progress.setDescription("Pull request up to date, returning current status");
                 return preStatus;
@@ -113,6 +118,7 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
 
         MergeScenarioReport mergeScenarioReport = null;
         long conflictCount = 0;
+        UpdateRefs prepareRefs = transaction.command(UpdateRefs.class);
         try {
             int commitsBehind = preStatus.getCommitsBehindRemoteBranch();
             if (commitsBehind > 0) {
@@ -132,24 +138,27 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
                 }
                 testMergeCommitID = transaction.command(RefParse.class).setName(Ref.HEAD).call()
                         .get().getObjectId();
+                prepareRefs.setReason("pr-prepare: #%d, nothing to commit", pr.getId());
             } else {
                 progress.setDescription("Merge successful");
+                prepareRefs.setReason("pr-prepare: #%d merge success", pr.getId());
                 MergeReport mergeReport = pullResult.getMergeReport().get();
                 mergeScenarioReport = mergeReport.getReport().orElse(null);
                 RevCommit commit = mergeReport.getMergeCommit();
                 // update mergeRef
                 testMergeCommitID = commit.getId();
             }
-            setRef(transaction, testMergeRef, testMergeCommitID);
+            prepareRefs.add(testMergeRef, testMergeCommitID);
         } catch (MergeConflictsException mc) {
             progress.setDescription(
                     "Unable to create merge commit for pull request, there are merge conflicts");
             // delete mergeRef
-            transaction.command(UpdateRef.class).setName(testMergeRef).setDelete(true).call();
+            prepareRefs.setReason("pr-prepare: #%d merge failed", pr.getId());
+            prepareRefs.remove(testMergeRef);
             mergeScenarioReport = mc.getReport();
             conflictCount = mergeScenarioReport.getConflicts();
         }
-
+        prepareRefs.call();
         Optional<Ref> mergeCommitRef = pr.resolveMergeRef(transaction);
 
         progress.setProgressIndicator(null);
@@ -186,9 +195,5 @@ public @NoArgsConstructor @CanRunDuringConflict class PRPrepareOp extends PRComm
                 .call();
 
         return pullResult;
-    }
-
-    private void setRef(final GeogigTransaction transaction, String refName, ObjectId value) {
-        transaction.command(UpdateRef.class).setName(refName).setNewValue(value).call();
     }
 }

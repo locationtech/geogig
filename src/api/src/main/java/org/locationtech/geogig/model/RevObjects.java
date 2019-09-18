@@ -450,4 +450,16 @@ public @UtilityClass class RevObjects {
         Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
         return float32Bounds.isNull() ? null : float32Bounds;
     }
+
+    public static CharSequence messageTitle(@NonNull String message) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < message.length(); i++) {
+            char c = message.charAt(i);
+            if (c == '\n' || c == '\r') {
+                break;
+            }
+            sb.append(c);
+        }
+        return sb;
+    }
 }

@@ -1,13 +1,13 @@
-/* Copyright (c) 2016 Boundless and others.
+/* Copyright (c) 2014-2016 Boundless and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Distribution License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/org/documents/edl-v10.html
  *
  * Contributors:
- * Johnathan Garrett (Prominent Edge) - initial implementation
+ * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.geotools.cli.shp;
+package org.locationtech.geogig.cli.test.functional;
 
 import org.junit.runner.RunWith;
 
@@ -20,14 +20,10 @@ import cucumber.api.junit.Cucumber;
  * 
  */
 @RunWith(Cucumber.class)
-@CucumberOptions(plugin = { "pretty", "html:target/cucumber-report" }//
-        , strict = true //
-        // the glue option tells cucumber where to look for step definitions
-        , glue = { "org.locationtech.geogig.cli.test.functional",
-                "org.locationtech.geogig.geotools.cli.test.functional" }//
-        , features = { "src/test/resources/features/shp" }//
-        , tags = { "~@ignore" }//
-)
-public class RunShpFunctionalTest {
-
+@CucumberOptions(//
+        plugin = { "pretty", "html:cucumber-report-general" }//
+        , strict = true//
+        , features = { "src/test/resources/features/porcelain" }//
+        , tags = "~@FileSystemReposOnly")
+public class RunPorcelainFunctionalIT {
 }

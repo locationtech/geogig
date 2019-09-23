@@ -19,10 +19,11 @@ import cucumber.api.junit.Cucumber;
  * definitions and hooks are defined in their own classes so they can be reused across features.
  * 
  */
+@RunWith(Cucumber.class)
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , features = { "src/test/resources/features/general" })
-@RunWith(Cucumber.class)
-public class RunGeneralFunctionalTest {
+        , features = { "src/test/resources/features/remote" } //
+        , tags = "~@FileSystemReposOnly")
+public class RunRemoteFunctionalIT {
 }

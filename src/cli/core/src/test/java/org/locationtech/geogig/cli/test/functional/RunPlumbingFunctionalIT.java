@@ -23,7 +23,6 @@ import cucumber.api.junit.Cucumber;
 @CucumberOptions(//
         plugin = { "pretty", "html:cucumber-report-general" }//
         , strict = true//
-        , features = { "src/test/resources/features/remote" } //
-        , tags = "~@FileSystemReposOnly")
-public class RunRemoteFunctionalTest {
+        , features = { "src/test/resources/features/plumbing" })
+public class RunPlumbingFunctionalIT {
 }

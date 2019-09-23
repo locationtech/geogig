@@ -29,7 +29,7 @@ import cucumber.api.junit.Cucumber;
                 "org.locationtech.geogig.cli.test.functional" } //
         , features = { "../../cli/core/src/test/resources/features/general" } //
         , tags = { "~@FileSystemReposOnly", "~@ignore" })
-public class RunPGGenralFunctionalTest {
+public class RunPGGenralFunctionalIT {
 
     @org.junit.BeforeClass
     public static void checkPostgresTestConfig() throws PendingException {

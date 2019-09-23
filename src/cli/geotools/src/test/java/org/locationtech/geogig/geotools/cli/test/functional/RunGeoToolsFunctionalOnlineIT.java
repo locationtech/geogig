@@ -28,5 +28,5 @@ import cucumber.api.junit.Cucumber;
         , features = { "src/test/resources/features/online" }//
         , tags = { "~@ignore" }//
 )
-public class RunGeoToolsFunctionalOnlineTest {
+public class RunGeoToolsFunctionalOnlineIT {
 }

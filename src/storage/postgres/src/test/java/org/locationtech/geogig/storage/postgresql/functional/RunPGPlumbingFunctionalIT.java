@@ -30,7 +30,7 @@ import cucumber.api.junit.Cucumber;
                 "org.locationtech.geogig.cli.test.functional" } //
         , features = { "../../cli/core/src/test/resources/features/plumbing" }//
         , tags = { "~@FileSystemReposOnly", "~@ignore" })
-public class RunPGPlumbingFunctionalTest {
+public class RunPGPlumbingFunctionalIT {
 
     @org.junit.BeforeClass
     public static void checkPostgresTestConfig() throws PendingException {

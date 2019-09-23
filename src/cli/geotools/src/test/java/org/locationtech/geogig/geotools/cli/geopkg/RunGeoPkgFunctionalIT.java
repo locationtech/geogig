@@ -28,6 +28,6 @@ import cucumber.api.junit.Cucumber;
         , features = { "src/test/resources/features/geopkg" }//
         , tags = { "~@ignore" }//
 )
-public class RunGeoPkgFunctionalTest {
+public class RunGeoPkgFunctionalIT {
 
 }

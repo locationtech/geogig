@@ -5,7 +5,7 @@
 
   <groupId>org.locationtech.geogig</groupId>
   <artifactId>geogig</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4.0-beta.1</version>
   <packaging>pom</packaging>
   <name>GeoGig Root</name>
   <description>Parent pom providing dependency and plugin management for all geogig modules</description>

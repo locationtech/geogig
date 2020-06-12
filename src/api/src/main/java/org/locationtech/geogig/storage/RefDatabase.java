@@ -82,7 +82,8 @@ public interface RefDatabase extends Store {
      * 
      * @param refName the name of the ref to remove (e.g. {@code "HEAD"},
      *        {@code "refs/remotes/origin"}, etc).
-     * @return the value of the ref before removing it, or {@code null} if it didn't exist
+     * @return a {@link RefChange#isDelete() delete} ref change, {@link RefChange#oldValue()
+     *         oldValue} is absent if the ref didn't exist
      */
     public @NonNull RefChange delete(@NonNull String refName);
 

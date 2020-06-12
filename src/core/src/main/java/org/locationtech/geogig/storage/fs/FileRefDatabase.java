@@ -138,14 +138,16 @@ public class FileRefDatabase extends SimpleLockingRefDatabase {
         } catch (IllegalStateException symRefPointsToNonExistingRef) {
             oldRef = Optional.empty();
         }
-        Path refFile = toFile(refName);
-        try {
-            if (!Files.deleteIfExists(refFile)) {
-                throw new RuntimeException(
-                        "Unable to delete ref file '" + refFile.toAbsolutePath() + "'");
+        if (oldRef.isPresent()) {
+            Path refFile = toFile(refName);
+            try {
+                if (!Files.deleteIfExists(refFile)) {
+                    throw new RuntimeException(
+                            "Unable to delete ref file '" + refFile.toAbsolutePath() + "'");
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
             }
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
         }
         return RefChange.of(refName, oldRef, Optional.empty());
     }

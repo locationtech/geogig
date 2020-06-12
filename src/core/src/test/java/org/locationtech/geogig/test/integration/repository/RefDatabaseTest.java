@@ -33,8 +33,11 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Platform;
+import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;
+
+import lombok.NonNull;
 
 public abstract class RefDatabaseTest {
 
@@ -123,6 +126,15 @@ public abstract class RefDatabaseTest {
         assertFalse(refDb.get(Ref.HEAD).isPresent());
         assertEquals(sampleId, refDb.delete(origin).oldValue().get().getObjectId());
         assertFalse(refDb.get(origin).isPresent());
+    }
+
+    @Test
+    public void testRemoveNonExistent() {
+        RefChange change = refDb.delete(Ref.MERGE_HEAD);
+        assertNotNull(change);
+        assertTrue(change.isDelete());
+        assertFalse(change.oldValue().isPresent());
+        assertFalse(change.newValue().isPresent());
     }
 
     @Test

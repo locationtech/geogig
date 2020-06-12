@@ -33,7 +33,7 @@
     <compress-lzf.version>1.0.3</compress-lzf.version>
     <cucumber-java.version>1.2.4</cucumber-java.version>
     <gson.version>2.4</gson.version>
-    <gt.version>22.1</gt.version>
+    <gt.version>23.1</gt.version>
     <guava.version>27.1-jre</guava.version>
     <jcommander.version>1.48</jcommander.version>
     <picocli.version>4.0.0-beta-2</picocli.version>
@@ -88,20 +88,28 @@
   </licenses>
   <repositories>
     <repository>
-      <id>boundless</id>
-      <name>Boundless Maven Repository</name>
-      <url>https://repo.boundlessgeo.com/main/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>osgeo</id>
-      <name>Open Source Geospatial Foundation Repository</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <name>OSGeo Nexus Release Repository</name>
+      <url>https://repo.osgeo.org/repository/release/</url>
+      <!-- contains release (including third-party-dependences) -->
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+
+    <repository>
+      <id>osgeo-snapshot</id>
+      <name>OSGeo Nexus Snapshot Repository</name>
+      <url>https://repo.osgeo.org/repository/snapshot/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
     </repository>
   </repositories>
   <distributionManagement>

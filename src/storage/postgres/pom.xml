@@ -75,7 +75,7 @@
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -98,7 +98,7 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -111,7 +111,7 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-remoting</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

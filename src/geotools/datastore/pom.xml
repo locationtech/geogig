@@ -50,7 +50,7 @@
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>

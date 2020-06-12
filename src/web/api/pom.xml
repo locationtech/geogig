@@ -43,7 +43,7 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-geotools</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -103,21 +103,21 @@
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-gt-commands</artifactId>
       <version>${project.version}</version>
-      <classifier>tests</classifier>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>

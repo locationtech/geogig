@@ -204,7 +204,7 @@
         <artifactId>gt-main</artifactId>
         <version>${gt.version}</version>
         <scope>test</scope>
-        <classifier>tests</classifier>
+        <type>test-jar</type>
         <exclusions>
           <exclusion>
             <groupId>org.jdom</groupId>

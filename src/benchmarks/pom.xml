@@ -14,7 +14,6 @@
   <name>Benchmarks</name>
 
   <properties>
-    <project.relativePath>benchmarks</project.relativePath>
     <jmh.version>1.21</jmh.version>
     <jmh.report.format>csv</jmh.report.format> <!-- `org.openjdk.jmh.Main -rf`'s param, one of text, csv, scsv, json, latex -->
     <jmh.report.name>target/jmh-report-${git.commit.id.abbrev}.${jmh.report.format}</jmh.report.name>

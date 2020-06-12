@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig Query Language Extension</name>
 
-  <properties>
-    <project.relativePath>experimental/ql</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

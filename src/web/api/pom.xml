@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig Web API</name>
 
-  <properties>
-    <project.relativePath>web/api</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

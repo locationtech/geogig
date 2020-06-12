@@ -15,7 +15,6 @@
 
   <properties>
     <git.commitid.skip>false</git.commitid.skip>
-    <project.relativePath>api</project.relativePath>
   </properties>
   <dependencies>
     <dependency>

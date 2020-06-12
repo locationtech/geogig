@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoTools Command Extension</name>
 
-  <properties>
-    <project.relativePath>geotools/geotools-commands</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig DataStore Implementation</name>
 
-  <properties>
-    <project.relativePath>geotools/geotools-datastore</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

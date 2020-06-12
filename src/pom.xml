@@ -11,7 +11,6 @@
   <description>Parent pom providing dependency and plugin management for all geogig modules</description>
 
   <properties>
-    <project.relativePath></project.relativePath><!-- define this on each project -->
     <test.maxHeapSize>512M</test.maxHeapSize>
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
@@ -27,8 +26,6 @@
     <!-- git-commit-id-plugin slows down the build, skip by default, except in api which sets this property to false -->
     <git.commitid.skip>true</git.commitid.skip>
 
-    <delombok.outputDirectoryBase>${root.directory}/../src-delombok</delombok.outputDirectoryBase>
-    <delombok-targetdir>${delombok.outputDirectoryBase}</delombok-targetdir>
     <lombok.version>1.18.8</lombok.version>
     <flatbuffers-java.version>1.9.0</flatbuffers-java.version>
     <lz4.version>1.3.0</lz4.version>
@@ -668,173 +665,6 @@
       <modules>
         <module>experimental</module>
       </modules>
-    </profile>
-    <profile>
-      <id>fortify</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.hpe.security.fortify.maven.plugin</groupId>
-            <artifactId>sca-maven-plugin</artifactId>
-            <version>17.20</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>clean</goal>
-                  <goal>translate</goal>
-                  <goal>scan</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-      <modules>
-        <module>api</module>
-        <module>core</module>
-        <module>remoting</module>
-        <module>datastore</module>
-        <module>storage</module>
-        <module>geotools</module>
-        <module>pullrequests</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>delombok</id>
-      <properties>
-        <fortify.root-folder>${root.directory}/../build/fortify/geogig-${project.version}</fortify.root-folder>
-        <delombok.root-folder>${fortify.root-folder}/src</delombok.root-folder>
-        <project.delombok-targetdir>${delombok.root-folder}/${project.relativePath}</project.delombok-targetdir>
-        <project.delombok-output-directory>${project.delombok-targetdir}/src/main/java</project.delombok-output-directory>
-      </properties>
-      <modules>
-        <module>api</module>
-        <module>core</module>
-        <module>remoting</module>
-        <module>datastore</module>
-        <module>storage</module>
-        <module>geotools</module>
-        <module>pullrequests</module>
-      </modules>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-resources-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-pom-and-resources</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${project.delombok-targetdir}</outputDirectory>
-                  <encoding>UTF-8</encoding>
-                  <overwrite>true</overwrite>
-                  <resources>
-                    <resource>
-                      <directory>${basedir}</directory>
-                      <includes>
-                        <include>*.xml</include>
-                        <include>src/main/resources/**/*</include>
-                      </includes>
-                    </resource>
-                    <resource>
-                      <directory>${basedir}</directory>
-                      <includes>
-                        <include>src/main/generated-sources/**/*</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-              <execution>
-                <id>copy-readme</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>copy-resources</goal>
-                </goals>
-                <configuration>
-                  <outputDirectory>${fortify.root-folder}</outputDirectory>
-                  <encoding>UTF-8</encoding>
-                  <overwrite>true</overwrite>
-                  <resources>
-                    <resource>
-                      <directory>${root.directory}/..</directory>
-                      <includes>
-                        <include>*.*</include>
-                      </includes>
-                    </resource>
-                  </resources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok-maven-plugin</artifactId>
-            <version>1.18.6.0</version>
-            <executions>
-              <execution>
-                <!-- we don't want the delombok'ed files to be compiled, so attach to the compile instead of the generate-sources 
-                  phase -->
-                <phase>compile</phase>
-                <goals>
-                  <goal>delombok</goal>
-                </goals>
-                <configuration>
-                  <encoding>UTF-8</encoding>
-                  <!-- include sources (usually ${project.basedir/src/main/java}, exclude test sources -->
-                  <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
-                  <outputDirectory>${project.delombok-output-directory}</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-
-          <plugin>
-            <groupId>org.commonjava.maven.plugins</groupId>
-            <artifactId>directory-maven-plugin</artifactId>
-            <version>0.3.1</version>
-            <executions>
-              <execution>
-                <id>directories</id>
-                <phase>initialize</phase>
-                <goals>
-                  <goal>highest-basedir</goal>
-                </goals>
-                <configuration>
-                  <property>root.directory</property>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <version>1.8</version>
-            <executions>
-              <execution>
-                <id>echo</id>
-                <phase>compile</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <echo>##### root.directory: '${root.directory}'</echo>
-                    <echo>##### delombok.root-folder: '${delombok.root-folder}'</echo>
-                    <echo>##### project.delombok-targetdir: '${project.delombok-targetdir}'</echo>
-                    <echo>##### project.delombok-output-directory: '${project.delombok-output-directory}'</echo>
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
     <profile>
       <id>online</id>

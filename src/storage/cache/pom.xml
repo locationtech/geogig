@@ -13,10 +13,6 @@
   <packaging>pom</packaging>
   <name>RevObject cache implementations</name>
 
-  <properties>
-    <project.relativePath>storage/cache</project.relativePath>
-  </properties>
-
   <modules>
     <module>guava</module>
     <module>caffeine</module>

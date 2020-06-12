@@ -13,10 +13,6 @@
   <packaging>pom</packaging>
   <name>Storage backends</name>
 
-  <properties>
-    <project.relativePath>storage</project.relativePath>
-  </properties>
-
   <modules>
     <module>formats</module>
     <module>temporary-rocksdb</module>

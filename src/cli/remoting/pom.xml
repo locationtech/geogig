@@ -10,10 +10,6 @@
   <artifactId>geogig-cli-remoting</artifactId>
   <name>geogig-cli-remoting</name>
 
-  <properties>
-    <project.relativePath>cli/remoting</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

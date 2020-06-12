@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>Flatbuffers serialization protocol</name>
 
-  <properties>
-    <project.relativePath>storage/formats/flatbuffers</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

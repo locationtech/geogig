@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig CLI GeoTools</name>
 
-  <properties>
-    <project.relativePath>cli/geotools</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

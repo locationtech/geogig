@@ -11,9 +11,6 @@
   <artifactId>geogig-core</artifactId>
   <packaging>jar</packaging>
   <name>GeoGig Core</name>
-  <properties>
-    <project.relativePath>core</project.relativePath>
-  </properties>
 
   <licenses>
     <license>

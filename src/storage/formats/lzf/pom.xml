@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>LZF compression serialization decorator</name>
 
-  <properties>
-    <project.relativePath>storage/formats/lzf</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

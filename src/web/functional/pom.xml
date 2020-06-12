@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig Web API Automated Functional Tests</name>
 
-  <properties>
-    <project.relativePath>web/functional</project.relativePath>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

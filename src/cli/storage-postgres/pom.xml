@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGigi CLI Postgres Storage Commands</name>
 
-  <properties>
-    <project.relativePath>cli/storage-postgres</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

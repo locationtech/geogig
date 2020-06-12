@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>PostgreSQL Storage Backend</name>
 
-  <properties>
-    <project.relativePath>storage/postgres</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>LZ4 compression serialization decorator</name>
 
-  <properties>
-    <project.relativePath>storage/formats/lz4</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

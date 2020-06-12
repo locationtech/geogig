@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig Pull Requests Support Commands</name>
 
-  <properties>
-    <project.relativePath>pullrequests</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

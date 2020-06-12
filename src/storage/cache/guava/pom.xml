@@ -13,9 +13,6 @@
   <packaging>jar</packaging>
   <name>Guava Cache implementation of SharedCache</name>
 
-  <properties>
-    <project.relativePath>storage/cache/guava</project.relativePath>
-  </properties>
   <build>
     <plugins>
       <plugin>

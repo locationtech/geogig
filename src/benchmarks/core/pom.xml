@@ -10,10 +10,6 @@
   <artifactId>geogig-benchmarks-core</artifactId>
   <packaging>jar</packaging>
 
-  <properties>
-    <project.relativePath>benchmarks/core</project.relativePath>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>CRS Metadata support</name>
 
-  <properties>
-    <project.relativePath>geotools/geotools-adapter</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

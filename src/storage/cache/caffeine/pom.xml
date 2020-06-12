@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>Caffeine implementation of SharedCache</name>
 
-  <properties>
-	  <project.relativePath>storage/cache/caffeine</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

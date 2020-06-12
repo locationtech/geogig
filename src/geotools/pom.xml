@@ -13,10 +13,6 @@
   <packaging>pom</packaging>
   <name>GeoTools modules parent</name>
 
-  <properties>
-    <project.relativePath>geotools</project.relativePath>
-  </properties>
-
   <modules>
     <module>adapter</module>
     <module>commands</module>

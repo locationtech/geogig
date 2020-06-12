@@ -16,5 +16,3 @@ nb-configuration.xml
 hs_err_pid*
 #KDE
 .directory
-#Fortify
-build/fortify/geogig-*

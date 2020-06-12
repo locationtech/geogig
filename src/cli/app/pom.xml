@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig CLI App</name>
 
-  <properties>
-    <project.relativePath>cli/app</project.relativePath>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.slf4j</groupId>

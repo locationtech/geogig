@@ -12,10 +12,6 @@
   <packaging>pom</packaging>
   <name>GeoGig Experimental Modules</name>
 
-  <properties>
-    <project.relativePath>experimental</project.relativePath>
-  </properties>
-
   <modules>
     <module>ql</module>
   </modules>

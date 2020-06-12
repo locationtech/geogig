@@ -13,10 +13,6 @@
   <packaging>pom</packaging>
   <name>Web modules</name>
 
-  <properties>
-    <project.relativePath>web</project.relativePath>
-  </properties>
-
   <modules>
    <module>api</module>
    <module>app</module>

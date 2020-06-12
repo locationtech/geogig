@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>Replication and synchronization</name>
 
-  <properties>
-    <project.relativePath>remoting</project.relativePath>
-  </properties>
-
   <licenses>
     <license>
       <name>Eclipse Distribution License</name>

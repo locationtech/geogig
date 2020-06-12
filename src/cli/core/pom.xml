@@ -13,10 +13,6 @@
   <packaging>jar</packaging>
   <name>GeoGig Command Line Interface Core</name>
 
-  <properties>
-    <project.relativePath>cli/core</project.relativePath>
-  </properties>
-
   <build>
     <plugins>
       <plugin>

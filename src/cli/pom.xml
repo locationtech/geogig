@@ -12,10 +12,6 @@
   <packaging>pom</packaging>
   <name>GeoGig Command Line Interface</name>
 
-  <properties>
-    <project.relativePath>picocli</project.relativePath>
-  </properties>
-
   <modules>
     <module>core</module>
     <module>geotools</module>

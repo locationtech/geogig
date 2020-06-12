@@ -42,20 +42,26 @@ public @Value @Builder class PropertyDescriptor {
         return getName().getLocalPart();
     }
 
-    public static class PropertyDescriptorBuilder {
-        public PropertyDescriptor build() {
-            CoordinateReferenceSystem crs = this.coordinateReferenceSystem;
-            if (Geometry.class.isAssignableFrom(this.binding) && crs == null) {
-                crs = CoordinateReferenceSystem.NULL;
-            }
-            if (Feature.class.equals(binding)) {
-                if (null == complexBindingType) {
-                    throw new IllegalStateException(
-                            "Feature binding requires complexBindingType to be set");
-                }
-            }
-            return new PropertyDescriptor(name, typeName, binding, nillable, minOccurs, maxOccurs,
-                    crs, complexBindingType);
+    private static @Builder PropertyDescriptor build(//
+            @NonNull Name name, //
+            @NonNull Name typeName, //
+            @NonNull Class<?> binding, //
+            boolean nillable, //
+            int minOccurs, //
+            int maxOccurs, //
+            CoordinateReferenceSystem crs, //
+            FeatureType complexBindingType) {
+
+        if (Geometry.class.isAssignableFrom(binding) && crs == null) {
+            crs = CoordinateReferenceSystem.NULL;
         }
+        if (Feature.class.equals(binding)) {
+            if (null == complexBindingType) {
+                throw new IllegalStateException(
+                        "Feature binding requires complexBindingType to be set");
+            }
+        }
+        return new PropertyDescriptor(name, typeName, binding, nillable, minOccurs, maxOccurs, crs,
+                complexBindingType);
     }
 }

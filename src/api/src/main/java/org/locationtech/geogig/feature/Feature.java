@@ -109,19 +109,6 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
         ObjectId oid = values instanceof RevFeature ? ((RevFeature) values).getId() : null;
         return new FeatureDelegate(id, type, oid, values, geometryFactory);
     }
-    //// Iterable
-
-    public @Override Spliterator<Object> spliterator() {
-        return Spliterators.spliterator(iterator(), getAttributeCount(), Spliterator.SIZED);
-    }
-
-    public @Override void forEach(Consumer<? super Object> action) {
-        Objects.requireNonNull(action);
-        final int size = getAttributeCount();
-        for (int i = 0; i < size; i++) {
-            action.accept(getAttribute(i));
-        }
-    }
 
     public List<Object> getAttributes() {
         int size = this.getAttributeCount();
@@ -160,6 +147,19 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
         }
 
         return value;
+    }
+
+    //// Iterable
+    public @Override Spliterator<Object> spliterator() {
+        return Spliterators.spliterator(iterator(), getAttributeCount(), Spliterator.SIZED);
+    }
+
+    public @Override void forEach(Consumer<? super Object> action) {
+        Objects.requireNonNull(action);
+        final int size = getAttributeCount();
+        for (int i = 0; i < size; i++) {
+            action.accept(getAttribute(i));
+        }
     }
 
 }

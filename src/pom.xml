@@ -26,7 +26,7 @@
     <!-- git-commit-id-plugin slows down the build, skip by default, except in api which sets this property to false -->
     <git.commitid.skip>true</git.commitid.skip>
 
-    <lombok.version>1.18.8</lombok.version>
+    <lombok.version>1.18.12</lombok.version>
     <flatbuffers-java.version>1.9.0</flatbuffers-java.version>
     <lz4.version>1.3.0</lz4.version>
     <caffeine-version>2.7.0</caffeine-version>

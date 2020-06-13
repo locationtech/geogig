@@ -13,25 +13,13 @@
   <packaging>jar</packaging>
   <name>Flatbuffers serialization protocol</name>
 
+  <properties>
+    <fbs.sources>${project.basedir}/src/main/resources/fbs</fbs.sources>
+    <fbs.generated.sources>${project.build.directory}/generated-sources/java</fbs.generated.sources>
+  </properties>
+
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/main/generated-sources</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -43,13 +31,82 @@
           </archive>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>unpack</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.github.davidmoten</groupId>
+                  <artifactId>flatbuffers-compiler</artifactId>
+                  <version>${flatbuffers-compiler.version}</version>
+                  <type>tar.gz</type>
+                  <classifier>distribution-linux</classifier>
+                  <overWrite>true</overWrite>
+                  <outputDirectory>${project.build.directory}</outputDirectory>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- See https://github.com/davidmoten/flatbuffers -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+            <phase>generate-sources</phase>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>${project.build.directory}/bin/flatc</executable>
+          <workingDirectory>${fbs.sources}</workingDirectory>
+          <arguments>
+            <argument>--java</argument>
+            <argument>--gen-mutable</argument>
+            <argument>-o</argument>
+            <argument>${fbs.generated.sources}</argument>
+            <argument>Value.fbs</argument>
+            <argument>RevisionObject.fbs</argument>
+          </arguments>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${fbs.generated.sources}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
     <dependency>
       <groupId>com.google.flatbuffers</groupId>
       <artifactId>flatbuffers-java</artifactId>
-      <version>${flatbuffers-java.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

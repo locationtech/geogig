@@ -567,10 +567,11 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     private RevFeatureType testCreateFeatureType(ObjectId id, FeatureType type) {
-        RevFeatureType actual = factory.createFeatureType(id, type);
-        assertNotNull(actual);
         RevFeatureType expected = DEFAULT.createFeatureType(id, type);
         assertNotNull(expected);
+
+        RevFeatureType actual = factory.createFeatureType(id, type);
+        assertNotNull(actual);
         RevObjectTestUtil.deepEquals(expected, actual);
         return actual;
     }

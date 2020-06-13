@@ -10,7 +10,6 @@
 package org.locationtech.geogig.flatbuffers;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,8 +64,7 @@ final class FlatBuffers {
 
     private static final int[] EMPTY_OFFSETS_VECTOR = {};
 
-    private static final ByteBufferFactory BYTE_BUFFER_FACTORY = capacity -> ByteBuffer
-            .allocate(capacity).order(ByteOrder.LITTLE_ENDIAN);
+    private static final ByteBufferFactory BYTE_BUFFER_FACTORY = FlatBufferBuilder.HeapByteBufferFactory.INSTANCE;
 
     private static final ThreadLocal<FlatBufferBuilder> WRITE_BUFFERS = ThreadLocal
             .withInitial(() -> new FlatBufferBuilder(32 * 1024, BYTE_BUFFER_FACTORY));
@@ -249,7 +247,8 @@ final class FlatBuffers {
         int authorOffset = write(author, builder);
         int committerOffset = write(committer, builder);
 
-        // buffers are written "back to front", so write them in reverse order to preserve the
+        // buffers are written "back to front", so write them in reverse order to
+        // preserve the
         // expected read order
         int parentIdsOffset = 0;
         if (!parents.isEmpty()) {

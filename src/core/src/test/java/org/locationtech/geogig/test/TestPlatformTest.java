@@ -16,7 +16,6 @@ import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.locationtech.geogig.repository.Platform;
 
 public class TestPlatformTest {
 
@@ -26,7 +25,7 @@ public class TestPlatformTest {
     // simple test -- ensure that the platform clock is always increase (no repeated values).
     @Test
     public void testClock() throws IOException {
-        Platform testPlatform = new TestPlatform(tempFolder.getRoot());
+        TestPlatform testPlatform = new TestPlatform(tempFolder.getRoot());
 
         long lastTime = 0;
         for (int t = 0; t < 100; t++) {

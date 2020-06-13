@@ -59,7 +59,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("groldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
-                .setValue("groldan@boundlessgeo.com").call();
+                .setValue("groldan@test.com").call();
         points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
                 "POINT(1 1)");
         points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),

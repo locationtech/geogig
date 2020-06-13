@@ -59,7 +59,7 @@ public class CommitOpTest extends RepositoryTestCase {
         // TODO: author/committer roles need to be defined better, but for
         // now they are the same thing.
         super.repo.context().configDatabase().put("user.name", "groldan");
-        super.repo.context().configDatabase().put("user.email", "groldan@boundlessgeo.com");
+        super.repo.context().configDatabase().put("user.email", "groldan@test.com");
         this.repo = Geogig.of(super.repo.context());
     }
 
@@ -84,7 +84,7 @@ public class CommitOpTest extends RepositoryTestCase {
         assertFalse(commit.parentN(0).isPresent());
         assertNotNull(commit.getId());
         assertEquals("groldan", commit.getAuthor().getName().get());
-        assertEquals("groldan@boundlessgeo.com", commit.getAuthor().getEmail().get());
+        assertEquals("groldan@test.com", commit.getAuthor().getEmail().get());
 
         ObjectId treeId = commit.getTreeId();
 
@@ -261,7 +261,7 @@ public class CommitOpTest extends RepositoryTestCase {
         assertFalse(commit.getAuthor().getEmail().isPresent());
 
         assertEquals("groldan", commit.getCommitter().getName().get());
-        assertEquals("groldan@boundlessgeo.com", commit.getCommitter().getEmail().get());
+        assertEquals("groldan@test.com", commit.getCommitter().getEmail().get());
         assertEquals("John Doe", commit.getAuthor().getName().get());
     }
 
@@ -492,7 +492,7 @@ public class CommitOpTest extends RepositoryTestCase {
     public void testCommitUsingCommit() throws Exception {
         insertAndAdd(points1);
         final RevCommit commit = repo.commands().command(CommitOp.class)
-                .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
+                .setCommitter("anothercommitter", "anothercommitter@test.com").call();
         insertAndAdd(points2);
         RevCommit commit2 = repo.commands().command(CommitOp.class).setCommit(commit).call();
         assertEquals(commit.getMessage(), commit2.getMessage());
@@ -505,7 +505,7 @@ public class CommitOpTest extends RepositoryTestCase {
         String message = "A message";
         insertAndAdd(points1);
         final RevCommit commit = repo.commands().command(CommitOp.class)
-                .setCommitter("anothercommitter", "anothercommitter@boundlessgeo.com").call();
+                .setCommitter("anothercommitter", "anothercommitter@test.com").call();
         insertAndAdd(points2);
         RevCommit commit2 = repo.commands().command(CommitOp.class).setCommit(commit)
                 .setMessage(message).call();

@@ -82,9 +82,9 @@ public class HashObjectTest extends RepositoryTestCase {
 
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.message("cool this works");
         b.committerTimestamp(1000L);
         b.committerTimeZoneOffset(5);
@@ -146,10 +146,8 @@ public class HashObjectTest extends RepositoryTestCase {
         when(mockCommandLocator.command(eq(DescribeFeatureType.class)))
                 .thenReturn(new DescribeFeatureType());
 
-        RevPerson tagger = RevPerson.builder().build("volaya", "volaya@boundlessgeo.com", -1000,
-                -1);
-        RevPerson tagger2 = RevPerson.builder().build("groldan", "groldan@boundlessgeo.com", 10000,
-                0);
+        RevPerson tagger = RevPerson.builder().build("volaya", "volaya@test.com", -1000, -1);
+        RevPerson tagger2 = RevPerson.builder().build("groldan", "groldan@test.com", 10000, 0);
         tag1 = RevTag.builder().build(null, "tag1",
                 RevObjectTestSupport.hashString("fake commit id"), "message", tagger);
         tag2 = RevTag.builder().build(null, "tag2",

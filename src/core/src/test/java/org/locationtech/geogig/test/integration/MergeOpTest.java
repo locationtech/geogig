@@ -65,7 +65,7 @@ public class MergeOpTest extends RepositoryTestCase {
 
     private static final String COMMITTER_NAME = "groldan";
 
-    private static final String COMMITTER_EMAIL = "groldan@boundlessgeo.com";
+    private static final String COMMITTER_EMAIL = "groldan@test.com";
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer

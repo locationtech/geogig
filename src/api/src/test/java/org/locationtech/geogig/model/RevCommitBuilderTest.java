@@ -39,9 +39,9 @@ public class RevCommitBuilderTest extends TestCase {
     public void testBuildFull() throws Exception {
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.message("cool this works");
         b.committerTimestamp(1000L);
         b.committerTimeZoneOffset(10);
@@ -63,9 +63,9 @@ public class RevCommitBuilderTest extends TestCase {
         assertEquals(treeId, build.getTreeId());
         assertEquals(parentIds, build.getParentIds());
         assertEquals("groldan", build.getAuthor().getName().get());
-        assertEquals("groldan@boundlessgeo.com", build.getAuthor().getEmail().get());
+        assertEquals("groldan@test.com", build.getAuthor().getEmail().get());
         assertEquals("jdeolive", build.getCommitter().getName().get());
-        assertEquals("jdeolive@boundlessgeo.com", build.getCommitter().getEmail().get());
+        assertEquals("jdeolive@test.com", build.getCommitter().getEmail().get());
         assertEquals("cool this works", build.getMessage());
         assertEquals(1000L, build.getCommitter().getTimestamp());
         assertEquals(10, build.getCommitter().getTimeZoneOffset());
@@ -77,9 +77,9 @@ public class RevCommitBuilderTest extends TestCase {
     public void testPassingNullToSetParentIds() throws Exception {
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.message("cool this works");
         b.authorTimestamp(1000L);
 
@@ -96,9 +96,9 @@ public class RevCommitBuilderTest extends TestCase {
     public void testNoMessage() throws Exception {
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.message(null);
         b.authorTimestamp(1000L);
 
@@ -121,9 +121,9 @@ public class RevCommitBuilderTest extends TestCase {
     public void testNoAuthorTimeStamp() throws Exception {
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.committerTimestamp(1000L);
         b.message("cool this works");
         b.treeId(hashString("some tree id"));
@@ -135,9 +135,9 @@ public class RevCommitBuilderTest extends TestCase {
 
         RevCommitBuilder b = RevCommit.builder();
         b.author("groldan");
-        b.authorEmail("groldan@boundlessgeo.com");
+        b.authorEmail("groldan@test.com");
         b.committer("jdeolive");
-        b.committerEmail("jdeolive@boundlessgeo.com");
+        b.committerEmail("jdeolive@test.com");
         b.message("cool this works");
         b.authorTimestamp(1000L);
 
@@ -156,8 +156,8 @@ public class RevCommitBuilderTest extends TestCase {
 
         assertEquals("groldan", builder.author());
         assertEquals("jdeolive", builder.committer());
-        assertEquals("groldan@boundlessgeo.com", builder.authorEmail());
-        assertEquals("jdeolive@boundlessgeo.com", builder.committerEmail());
+        assertEquals("groldan@test.com", builder.authorEmail());
+        assertEquals("jdeolive@test.com", builder.committerEmail());
         assertEquals(commit1.getMessage(), builder.message());
         assertEquals(commit1.getParentIds(), builder.parentIds());
         assertEquals(commit1.getTreeId(), builder.treeId());

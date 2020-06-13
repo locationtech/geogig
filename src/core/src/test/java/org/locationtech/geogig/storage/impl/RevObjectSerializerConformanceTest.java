@@ -126,7 +126,7 @@ public abstract class RevObjectSerializerConformanceTest {
     public void before() throws Exception {
         this.serializer = newObjectSerializer();
         ObjectId treeId = RevObjectTestSupport.hashString("treeid");
-        testCommit = testCommit(treeId, "groldan", "groldan@boundlessgeo.com", 5000L, "jd",
+        testCommit = testCommit(treeId, "groldan", "groldan@test.com", 5000L, "jd",
                 "jd@lmnsolutions.com", 10000L, "test message",
                 RevObjectTestSupport.hashString("first parent"));
 
@@ -280,13 +280,13 @@ public abstract class RevObjectSerializerConformanceTest {
         RevCommitBuilder builder = RevCommit.builder();
         String author = "groldan";
         builder.author(author);
-        String authorEmail = "groldan@boundlessgeo.com";
+        String authorEmail = "groldan@test.com";
         builder.authorEmail(authorEmail);
         builder.authorTimestamp(currentTime);
         builder.authorTimeZoneOffset(timeZoneOffset);
         String committer = "mleslie";
         builder.committer(committer);
-        String committerEmail = "mleslie@boundlessgeo.com";
+        String committerEmail = "mleslie@test.com";
         builder.committerEmail(committerEmail);
         builder.committerTimestamp(currentTime);
         builder.committerTimeZoneOffset(timeZoneOffset);

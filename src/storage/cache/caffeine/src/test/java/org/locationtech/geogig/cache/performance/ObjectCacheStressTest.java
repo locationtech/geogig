@@ -353,8 +353,8 @@ public class ObjectCacheStressTest {
         // String oidString = objectId.toString();
         // ObjectId treeId = ObjectId.forString("tree" + oidString);
         // ImmutableList<ObjectId> parentIds = ImmutableList.of();
-        // RevPerson author = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
-        // RevPerson committer = new RevPersonImpl("Gabriel", "groldan@boundlessgeo.com", 1000, -3);
+        // RevPerson author = new RevPersonImpl("Gabriel", "groldan@test.com", 1000, -3);
+        // RevPerson committer = new RevPersonImpl("Gabriel", "groldan@test.com", 1000, -3);
         // String message = "message " + oidString;
         // return new RevCommitImpl(objectId, treeId, parentIds, author, committer, message);
 

@@ -732,11 +732,11 @@ public class LogOpTest extends RepositoryTestCase {
     public void testAuthorFilter() throws Exception {
         insertAndAdd(points1);
         final RevCommit firstCommit = repo.command(CommitOp.class)
-                .setAuthor("firstauthor", "firstauthor@boundlessgeo.com").call();
+                .setAuthor("firstauthor", "firstauthor@test.com").call();
 
         insertAndAdd(lines1);
         final RevCommit secondCommit = repo.command(CommitOp.class)
-                .setAuthor("secondauthor", "secondauthor@boundlessgeo.com").call();
+                .setAuthor("secondauthor", "secondauthor@test.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstauthor").call();
         assertNotNull(iterator);
@@ -755,11 +755,11 @@ public class LogOpTest extends RepositoryTestCase {
     public void testCommitterFilter() throws Exception {
         insertAndAdd(points1);
         final RevCommit firstCommit = repo.command(CommitOp.class)
-                .setCommitter("firstcommitter", "firstcommitter@boundlessgeo.com").call();
+                .setCommitter("firstcommitter", "firstcommitter@test.com").call();
 
         insertAndAdd(lines1);
         final RevCommit secondCommit = repo.command(CommitOp.class)
-                .setAuthor("secondcommitter", "secondcommitter@boundlessgeo.com").call();
+                .setAuthor("secondcommitter", "secondcommitter@test.com").call();
 
         Iterator<RevCommit> iterator = logOp.setAuthor("firstcommitter").call();
         assertNotNull(iterator);

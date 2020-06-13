@@ -37,7 +37,7 @@
     <gt.version>23.1</gt.version>
     <guava.version>29.0-jre</guava.version>
     <picocli.version>4.3.2</picocli.version>
-    <jdt-annotation.version>1.1.0</jdt-annotation.version>
+    <jdt-annotation.version>2.2.400</jdt-annotation.version>
     <jts.version>1.16.1</jts.version>
     <junit.version>4.13</junit.version>
     <logback.version>1.1.2</logback.version>

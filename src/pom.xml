@@ -44,7 +44,7 @@
     <mockito.version>3.3.3</mockito.version>
     <slf4j.version>1.7.5</slf4j.version>
     <hikaricp.version>3.4.5</hikaricp.version>
-    <rocksdb.version>6.0.1</rocksdb.version>
+    <rocksdb.version>6.8.1</rocksdb.version>
     <postgresql.version>42.2.14.jre7</postgresql.version>
     <servlet-api.version>3.1.0</servlet-api.version>
     <jetty.version>9.4.1.v20170120</jetty.version>

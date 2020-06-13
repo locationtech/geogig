@@ -1,4 +1,0 @@
-org.locationtech.geogig.rest.geopkg.GeoPkgImportContext$RepresentationFactory
-org.locationtech.geogig.rest.geotools.ImportRepresentation$Factory
-org.locationtech.geogig.rest.geotools.DataStoreImportRepresentation$Factory
-org.locationtech.geogig.rest.geopkg.GeoPkgExportOutputFormat$RepresentationFactory

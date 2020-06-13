@@ -48,7 +48,6 @@
     <hikaricp.version>3.3.1</hikaricp.version>
     <rocksdb.version>6.0.1</rocksdb.version>
     <postgresql.version>42.2.5</postgresql.version>
-    <springweb.version>4.3.7.RELEASE</springweb.version>
     <servlet-api.version>3.1.0</servlet-api.version>
     <jetty.version>9.4.1.v20170120</jetty.version>
     <appassembler.plugin.version>2.1.0</appassembler.plugin.version>
@@ -324,29 +323,6 @@
         <version>0.9.5</version>
       </dependency>
 
-      <!-- Spring MVC dependencies -->
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-web</artifactId>
-        <version>${springweb.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>${servlet-api.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.springframework</groupId>
-        <artifactId>spring-test</artifactId>
-        <version>${springweb.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <!-- Jetty Runner dependencies -->
-      <dependency>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-webapp</artifactId>
-        <version>${jetty.version}</version>
-      </dependency>
       <!-- Test scope dependencies -->
       <dependency>
         <groupId>junit</groupId>

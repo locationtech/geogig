@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
-import org.springframework.web.util.UriComponentsBuilder;
 
 public class EnvironmentBuilderTest {
 
@@ -28,62 +27,22 @@ public class EnvironmentBuilderTest {
     private URI buildUri(String host, @Nullable Integer port, String dbName,
             @Nullable String schema, String repoName, String user, String password)
             throws URISyntaxException, UnsupportedEncodingException {
-        /**
-         * Using Spring's URI builder utils here because java.net.URI doesn't handle special
-         * characters in the query parameter encoding correctly. If we want to build a URI with
-         * host=localhost, port=5432, dbName=myDb, schema=mySchema, repoName=myRepo, user=myUser and
-         * password=myPass&word, the URI should look like this:
-         * <p>
-         * postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%26word
-         * <p>
-         * If we use java.net.URI to create a URI from an unencoded String like this:
-         * <p>
-         * "postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass&word"
-         * <p>
-         * java.net.URI will try to Encode the String, but will interpret the `&` in the password
-         * value as a query parameter delimiter, in this case yielding 3 query parameters: user,
-         * password and myPass.
-         * <p>
-         * If we URLEncode the password value before building the URI, using this string:
-         * <p>
-         * "postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%26word"
-         * <p>
-         * java.net.URI will try to Encode the String anyway, thus double encoding the password
-         * value, resulting in:
-         * <p>
-         * postgresql://localhost:5432/myDb/mySchema/myRepo?user=myUser&password=myPass%2526word
-         * <p>
-         * java.net.URI doesn't have a way to construct a URI with a pre-encoded query parameter
-         * value, so there isn't a way to use it to correctly encode special characters in query
-         * parameter values. Using Spring-web's URIComponentsBuilder, we can URLEncode the parameter
-         * values first, then build a URIComponents such that the URI doesn't double encode the
-         * query parameter by using URIComponentsBuilder.build(true), which tells the builder that
-         * the URI is already encoded.
-         */
-        UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
-        // set the scheme
-        builder.scheme("postgresql");
-        // set the host and port
-        builder.host(host);
-        if (port != null && port > 0) {
-            builder.port(port);
-        } else {
-            builder.port(5432);
+
+        if (port == null || port == 0) {
+            port = 5432;
         }
         // build the path in the form of "/dbName/schema/repoName"
         StringBuilder pathBuilder = new StringBuilder(128);
-        pathBuilder.append("/").append(dbName).append("/");
+        pathBuilder.append(dbName).append("/");
         if (schema != null) {
             pathBuilder.append(schema);
         } else {
             pathBuilder.append("public");
         }
         pathBuilder.append("/").append(repoName);
-        builder.path(pathBuilder.toString());
-        // now build the query parameters
-        builder.queryParam("user", URLEncoder.encode(user, UTF8));
-        builder.queryParam("password", URLEncoder.encode(password, UTF8));
-        return builder.build(true).toUri();
+        String uri = String.format("postgresql://%s:%d/%s?user=%s&password=%s", host, port,
+                pathBuilder, URLEncoder.encode(user, UTF8), URLEncoder.encode(password, UTF8));
+        return URI.create(uri);
     }
 
     private void test(String host, @Nullable Integer port, String dbName, @Nullable String schema,

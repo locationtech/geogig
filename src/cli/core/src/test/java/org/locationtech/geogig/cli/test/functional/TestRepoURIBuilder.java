@@ -10,9 +10,13 @@
 package org.locationtech.geogig.cli.test.functional;
 
 import java.net.URI;
+import java.text.Normalizer;
 
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
+
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Splitter;
 
 import cucumber.api.Scenario;
 
@@ -62,14 +66,22 @@ public abstract class TestRepoURIBuilder {
 
     private static final class MemoryRepoURIBuilder extends TestRepoURIBuilder {
 
-        private String contextName = "default";
+        private String contextName;
 
         public @Override void before(Scenario scenario) {
-            this.contextName = scenario.getName();
+            String name = scenario.getName();
+            String contextName = Normalizer.normalize(name.trim(), Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+                    .replaceAll("[^a-zA-Z ]", "").replaceAll("\\s", "_");
+
+            contextName = CaseFormat.LOWER_UNDERSCORE.converterTo(CaseFormat.UPPER_CAMEL)
+                    .convert(contextName);
+            contextName = contextName.replaceAll("\\s", "");
+            this.contextName = contextName;
         }
 
         public @Override void after(Scenario scenario) {
-            MemoryRepositoryResolver.reset();
+            MemoryRepositoryResolver.removeContext(contextName);
         }
 
         public @Override URI newRepositoryURI(String name, Platform platform) {

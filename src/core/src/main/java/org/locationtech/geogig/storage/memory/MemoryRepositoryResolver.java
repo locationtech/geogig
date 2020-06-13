@@ -9,9 +9,12 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
@@ -30,6 +32,7 @@ import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
+import org.locationtech.geogig.storage.ConfigStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -47,9 +50,23 @@ import com.google.common.base.Strings;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+/**
+ * {@link RepositoryResolver} to handle fully on-heap, non-persistent, repositories, especially for
+ * testing.
+ * <p>
+ * The repository URI format is {@code memory://<memory context>[parent context]#<repository name>},
+ * for example: {@code memory://my_test/#repo1},
+ * {@code memory://some.context.io/myTestName#RepositoryName}
+ * <p>
+ * That is, the URI schema is {@code memory}, the {@code host} portion of the URI defines a full
+ * memory context, with its own global {@link ConfigStore}, so two memory URI's with different
+ * context names won't share the global config. The URI {@link URI#getPath() path} allows to set a
+ * user defined parent context in order to be able of creating a nested structure like a file
+ * system, and the URI {@link URI#getFragment() fragment} defines the repository name.
+ */
 public class MemoryRepositoryResolver implements RepositoryResolver {
 
-    private @EqualsAndHashCode static class StorageSet {
+    static @VisibleForTesting @EqualsAndHashCode class StorageSet {
 
         private transient ConfigDatabase config;
 
@@ -63,9 +80,9 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
         private URI uri;
 
-        public StorageSet(URI uri) {
+        public StorageSet(@NonNull URI uri, @NonNull ConfigStore globalConfig) {
             this.uri = uri;
-            config = new HeapConfigDatabase();
+            config = new HeapConfigDatabase(globalConfig);
             objects = new HeapObjectDatabase();
             index = new HeapIndexDatabase();
             refs = new HeapRefDatabase();
@@ -98,17 +115,86 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         }
     }
 
-    private static ConcurrentMap<URI, StorageSet> STORES = new ConcurrentHashMap<>();
+    static @VisibleForTesting class MemoryContext {
+        private final String name;
 
-    public static @VisibleForTesting void reset() {
-        STORES.clear();
-        HeapConfigDatabase.clearGlobal();
+        private HeapConfigStore globalConfig = new HeapConfigStore();
+
+        ConcurrentMap<URI, StorageSet> stores = new ConcurrentHashMap<>();
+
+        MemoryContext(String name) {
+            this.name = name;
+            this.globalConfig.open();
+        }
+
+        StorageSet getOrCreateRepository(@NonNull URI repoURI) {
+            return stores.computeIfAbsent(repoURI, uri -> new StorageSet(uri, globalConfig));
+        }
+
+        final @VisibleForTesting StorageSet getOrCreateRepository(
+                @NonNull String nameOrPathAndFragment) {
+            URI repoURI = URI
+                    .create(String.format("memory://%s/%s", this.name, nameOrPathAndFragment))
+                    .normalize();
+            return stores.computeIfAbsent(repoURI, uri -> new StorageSet(uri, globalConfig));
+        }
+
+        public StorageSet remove(@NonNull URI repository) {
+            return stores.remove(repository);
+        }
+
+        public void clear() {
+            stores.clear();
+            globalConfig.clear();
+        }
+
+        public boolean contains(@NonNull URI repoURI) {
+            return stores.containsKey(repoURI);
+        }
+    }
+
+    private static final ConcurrentMap<String, MemoryContext> CONTEXTS = new ConcurrentHashMap<>();
+
+    public static @VisibleForTesting void removeContext(@NonNull String context) {
+        MemoryContext ctx = CONTEXTS.remove(context);
+        if (ctx != null) {
+            ctx.clear();
+        }
+    }
+
+    public static void removeAllContexts() {
+        List<MemoryContext> contexts = new ArrayList<>(CONTEXTS.values());
+        CONTEXTS.clear();
+        contexts.forEach(MemoryContext::clear);
+    }
+
+    private static String parseContext(@NonNull URI uri) {
+        return uri.getHost();
+    }
+
+    static @VisibleForTesting Optional<MemoryContext> getContext(@NonNull String context) {
+        String cname = encodeName(context);
+        return Optional.ofNullable(CONTEXTS.get(cname));
+    }
+
+    static @VisibleForTesting Optional<MemoryContext> getContext(@NonNull URI uri) {
+        return Optional.ofNullable(CONTEXTS.get(parseContext(uri)));
+    }
+
+    static @VisibleForTesting MemoryContext getOrCreateContext(@NonNull URI uri) {
+        String cname = parseContext(uri);
+        return CONTEXTS.computeIfAbsent(cname, MemoryContext::new);
+    }
+
+    static @VisibleForTesting MemoryContext getOrCreateContext(@NonNull String context) {
+        String cname = encodeName(context);
+        return CONTEXTS.computeIfAbsent(cname, MemoryContext::new);
     }
 
     private StorageSet getStores(@NonNull URI repoURI) {
         Preconditions.checkArgument(canHandle(repoURI));
-        StorageSet stores = STORES.computeIfAbsent(repoURI, StorageSet::new);
-        return stores;
+        MemoryContext context = getOrCreateContext(repoURI);
+        return context.getOrCreateRepository(repoURI);
     }
 
     public @Override boolean canHandle(@NonNull URI repoURI) {
@@ -122,15 +208,18 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override boolean repoExists(@NonNull URI repoURI) {
-        return STORES.containsKey(repoURI);
+        MemoryContext context = CONTEXTS.get(parseContext(repoURI));
+        return context != null && context.contains(repoURI);
     }
 
     public @Override URI buildRepoURI(@NonNull URI rootRepoURI, @NonNull String repoName) {
         try {
-            String base = new URI(rootRepoURI.getScheme(), rootRepoURI.getHost(),
-                    rootRepoURI.getPath(), null).toString() + "/";
-            repoName = URLEncoder.encode(repoName, "UTF-8");
-            return URI.create(base + repoName);
+            String path = rootRepoURI.getPath();
+            if (path.length() > 1 && !path.endsWith("/")) {
+                path += "/";
+            }
+            return new URI(rootRepoURI.getScheme(), rootRepoURI.getHost(), path, repoName)
+                    .normalize();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -140,14 +229,25 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         final URI base;
         try {
             String scheme = "memory";
-            String host = "local";
-            String path = "/" + URLEncoder.encode(contextName, "UTF-8").replace('+', '_');
+            String host = encodeName(contextName);
+            String path = "/";
             String fragment = null;
             base = new URI(scheme, host, path, fragment);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
         return base;
+    }
+
+    private static String encodeName(String contextName) {
+        String host;
+        try {
+            host = URLEncoder.encode(contextName.trim(), "UTF-8").replaceAll("\\+", "");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return host;
     }
 
     public @Override URI getRootURI(@NonNull URI repoURI) {
@@ -157,11 +257,8 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
             String scheme = repoURI.getScheme();
             String host = repoURI.getHost();
             String path = repoURI.getPath();
-            String fragment = repoURI.getFragment();
-
-            String parentPath = NodeRef.parentPath(path);
-
-            base = new URI(scheme, host, parentPath, fragment);
+            String fragment = null;
+            base = new URI(scheme, host, path, fragment).normalize();
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -170,18 +267,24 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
     public @Override List<String> listRepoNamesUnderRootURI(@NonNull URI rootRepoURI) {
         Preconditions.checkArgument(canHandleURIScheme(rootRepoURI.getScheme()));
+        MemoryContext context = getContext(rootRepoURI).orElse(null);
+        if (context == null) {
+            return Collections.emptyList();
+        }
         final String base;
         try {
             String scheme = rootRepoURI.getScheme();
             String host = rootRepoURI.getHost();
             String path = rootRepoURI.getPath();
             String fragment = rootRepoURI.getFragment();
-            base = new URI(scheme, host, path, fragment).toString() + "/";
+            base = new URI(scheme, host, path, fragment).toString() + "#";
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
 
-        List<String> childNames = STORES.keySet().stream()
+        ConcurrentMap<URI, StorageSet> stores = context.stores;
+
+        List<String> childNames = stores.keySet().stream()
                 .filter(uri -> uri.toString().startsWith(base)).map(this::getName)
                 .collect(Collectors.toList());
         return childNames;
@@ -189,8 +292,8 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
     public @Override String getName(@NonNull URI repoURI) {
         Preconditions.checkArgument(canHandle(repoURI));
-        String[] segments = repoURI.getPath().split("/");
-        return segments[segments.length - 1];
+        String repoName = repoURI.getFragment();
+        return repoName;
     }
 
     public @Override void initialize(@NonNull URI repoURI) throws IllegalArgumentException {
@@ -226,14 +329,18 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
     public @Override boolean delete(@NonNull URI repositoryLocation) throws Exception {
         Preconditions.checkArgument(canHandle(repositoryLocation), "Not a memory repository: %s",
                 repositoryLocation);
-
-        StorageSet removed = STORES.remove(repositoryLocation);
+        Optional<MemoryContext> context = getContext(repositoryLocation);
+        StorageSet removed = null;
+        if (context.isPresent()) {
+            removed = context.get().remove(repositoryLocation);
+        }
         return removed != null;
     }
 
     public @Override ConfigDatabase resolveConfigDatabase(@NonNull URI repoURI,
             @NonNull Context repoContext, boolean rootUri) {
-        return getStores(repoURI).config(false, rootUri);
+        boolean readOnly = Hints.isRepoReadOnly(repoContext.hints());
+        return getStores(repoURI).config(readOnly, rootUri);
     }
 
     public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
@@ -282,6 +389,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
         public IndexDatabaseDecorator(IndexDatabase actual, boolean readOnly) {
             super(actual);
+            this.ro = readOnly;
         }
 
         public @Override boolean isReadOnly() {
@@ -306,6 +414,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
         public RefDatabaseDecorator(RefDatabase actual, boolean readOnly) {
             super(actual);
+            this.ro = readOnly;
         }
 
         public @Override boolean isReadOnly() {
@@ -330,6 +439,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
 
         public ConflictsDatabaseDecorator(ConflictsDatabase actual, boolean readOnly) {
             super(actual);
+            this.ro = readOnly;
         }
 
         public @Override boolean isReadOnly() {

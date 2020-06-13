@@ -16,7 +16,8 @@ import org.locationtech.geogig.storage.impl.ConfigDatabaseTest;
 public class HeapConfigDatabaseTest extends ConfigDatabaseTest<HeapConfigDatabase> {
 
     protected @Override HeapConfigDatabase createDatabase(Platform platform) {
-        return new HeapConfigDatabase();
+        HeapConfigStore global = new HeapConfigStore();
+        return new HeapConfigDatabase(global);
     }
 
     protected @Override void destroy(HeapConfigDatabase config) {

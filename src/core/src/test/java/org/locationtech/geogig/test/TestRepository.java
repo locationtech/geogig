@@ -27,16 +27,16 @@ public class TestRepository extends ExternalResource {
 
     private Map<URI, Repository> repositories = new HashMap<>();
 
-    private String testClassName;
+    private String repositoryName;
 
-    private String testMethodName;
+    private String testMemoryContext;
 
     private TestPlatform platform;
 
     public @Override Statement apply(Statement base, Description description) {
         String className = description.getClassName();
-        this.testClassName = className.substring(className.lastIndexOf('.') + 1);
-        this.testMethodName = description.getMethodName();
+        this.testMemoryContext = className.substring(className.lastIndexOf('.') + 1);
+        this.repositoryName = description.getMethodName();
         return super.apply(base, description);
     }
 
@@ -45,11 +45,11 @@ public class TestRepository extends ExternalResource {
         for (Repository repo : repos) {
             closeAndDelete(repo);
         }
-        MemoryRepositoryResolver.reset();
+        MemoryRepositoryResolver.removeContext(testMemoryContext);
     }
 
     public String getTestMethodName() {
-        return testMethodName;
+        return repositoryName;
     }
 
     public TestPlatform getPlatform() {
@@ -103,11 +103,11 @@ public class TestRepository extends ExternalResource {
     }
 
     public URI getRepoURI() {
-        return getRepoURI("repo");
+        return getRepoURI(repositoryName);
     }
 
-    private Function<String, URI> uriBuilder = repositoryName -> URI.create(
-            String.format("memory://%s/%s#%s", testClassName, testMethodName, repositoryName));
+    private Function<String, URI> uriBuilder = repositoryName -> URI
+            .create(String.format("memory://%s/#%s", testMemoryContext, repositoryName));
 
     public void setURIBuilder(@NonNull Function<String, URI> uriBuilder) {
         this.uriBuilder = uriBuilder;

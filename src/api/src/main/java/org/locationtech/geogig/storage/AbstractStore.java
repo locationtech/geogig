@@ -15,6 +15,10 @@ public abstract class AbstractStore implements Store {
 
     protected boolean open;
 
+    protected AbstractStore() {
+        this(false);
+    }
+
     protected AbstractStore(boolean readOnly) {
         this.readOnly = readOnly;
     }

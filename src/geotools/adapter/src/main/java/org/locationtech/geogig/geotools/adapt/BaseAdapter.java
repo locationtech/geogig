@@ -47,7 +47,7 @@ class BaseAdapter {
         return Name.valueOf(name.getNamespaceURI(), name.getLocalPart());
     }
 
-    public @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem adapt(
+    public @Nullable CoordinateReferenceSystem adapt(
             org.locationtech.geogig.crs.CoordinateReferenceSystem gigCrs) {
         if (gigCrs == null) {
             return null;
@@ -79,7 +79,7 @@ class BaseAdapter {
     // EPSG:4326 code, which works consistently when storing it and later recovering it from
     // the database.
     public @NonNull org.locationtech.geogig.crs.CoordinateReferenceSystem adapt(
-            @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem gtCrs) {
+            @Nullable CoordinateReferenceSystem gtCrs) {
 
         if (gtCrs == null) {
             return null;

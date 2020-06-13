@@ -26,28 +26,26 @@
     <!-- git-commit-id-plugin slows down the build, skip by default, except in api which sets this property to false -->
     <git.commitid.skip>true</git.commitid.skip>
 
-    <lombok.version>1.18.8</lombok.version>
-    <flatbuffers-java.version>1.9.0</flatbuffers-java.version>
+    <lombok.version>1.18.12</lombok.version>
+    <flatbuffers-java.version>1.12.0</flatbuffers-java.version>
+    <flatbuffers-compiler.version>1.12.0.1</flatbuffers-compiler.version>
     <lz4.version>1.3.0</lz4.version>
-    <caffeine-version>2.7.0</caffeine-version>
-    <compress-lzf.version>1.0.3</compress-lzf.version>
-    <cucumber-java.version>1.2.4</cucumber-java.version>
-    <gson.version>2.4</gson.version>
-    <gt.version>22.1</gt.version>
-    <guava.version>27.1-jre</guava.version>
-    <jcommander.version>1.48</jcommander.version>
-    <picocli.version>4.0.0-beta-2</picocli.version>
-    <jsonp.version>1.0.4</jsonp.version>
-    <jdt-annotation.version>1.1.0</jdt-annotation.version>
+    <caffeine-version>2.8.4</caffeine-version>
+    <compress-lzf.version>1.0.4</compress-lzf.version>
+    <cucumber-java.version>1.2.6</cucumber-java.version>
+    <gson.version>2.8.6</gson.version>
+    <gt.version>23.1</gt.version>
+    <guava.version>29.0-jre</guava.version>
+    <picocli.version>4.3.2</picocli.version>
+    <jdt-annotation.version>2.2.400</jdt-annotation.version>
     <jts.version>1.16.1</jts.version>
-    <junit.version>4.12</junit.version>
-    <xmlunit.version>2.1.0</xmlunit.version>
+    <junit.version>4.13</junit.version>
     <logback.version>1.1.2</logback.version>
-    <mockito.version>2.27.0</mockito.version>
+    <mockito.version>3.3.3</mockito.version>
     <slf4j.version>1.7.5</slf4j.version>
-    <hikaricp.version>3.3.1</hikaricp.version>
-    <rocksdb.version>6.0.1</rocksdb.version>
-    <postgresql.version>42.2.5</postgresql.version>
+    <hikaricp.version>3.4.5</hikaricp.version>
+    <rocksdb.version>6.8.1</rocksdb.version>
+    <postgresql.version>42.2.14.jre7</postgresql.version>
     <servlet-api.version>3.1.0</servlet-api.version>
     <jetty.version>9.4.1.v20170120</jetty.version>
     <appassembler.plugin.version>2.1.0</appassembler.plugin.version>
@@ -88,20 +86,28 @@
   </licenses>
   <repositories>
     <repository>
-      <id>boundless</id>
-      <name>Boundless Maven Repository</name>
-      <url>https://repo.boundlessgeo.com/main/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-    <repository>
       <id>osgeo</id>
-      <name>Open Source Geospatial Foundation Repository</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <name>OSGeo Nexus Release Repository</name>
+      <url>https://repo.osgeo.org/repository/release/</url>
+      <!-- contains release (including third-party-dependences) -->
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+
+    <repository>
+      <id>osgeo-snapshot</id>
+      <name>OSGeo Nexus Snapshot Repository</name>
+      <url>https://repo.osgeo.org/repository/snapshot/</url>
       <snapshots>
         <enabled>true</enabled>
       </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
     </repository>
   </repositories>
   <distributionManagement>
@@ -136,6 +142,11 @@
         <groupId>net.jpountz.lz4</groupId>
         <artifactId>lz4</artifactId>
         <version>${lz4.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.flatbuffers</groupId>
+        <artifactId>flatbuffers-java</artifactId>
+        <version>${flatbuffers-java.version}</version>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
@@ -263,12 +274,6 @@
         <artifactId>picocli</artifactId>
         <version>${picocli.version}</version>
       </dependency>
-      <dependency>
-        <!-- http://jcommander.org/ -->
-        <groupId>com.beust</groupId>
-        <artifactId>jcommander</artifactId>
-        <version>${jcommander.version}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.fusesource.jansi</groupId>
@@ -306,11 +311,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.glassfish</groupId>
-        <artifactId>javax.json</artifactId>
-        <version>${jsonp.version}</version>
-      </dependency>
-      <dependency>
         <!-- JDBC connection pool -->
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
@@ -320,7 +320,7 @@
         <!-- SQL parser library for geogig-ql -->
         <groupId>com.github.jsqlparser</groupId>
         <artifactId>jsqlparser</artifactId>
-        <version>0.9.5</version>
+        <version>3.1</version>
       </dependency>
 
       <!-- Test scope dependencies -->
@@ -328,18 +328,6 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.xmlunit</groupId>
-        <artifactId>xmlunit-core</artifactId>
-        <version>${xmlunit.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.xmlunit</groupId>
-        <artifactId>xmlunit-matchers</artifactId>
-        <version>${xmlunit.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>

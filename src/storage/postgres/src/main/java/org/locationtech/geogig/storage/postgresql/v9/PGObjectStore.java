@@ -441,7 +441,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         deleteAll(ids, BulkOpListener.NOOP_LISTENER);
     }
 
-    protected String tableNameForType(@Nullable RevObject.TYPE type, @Nullable PGId pgid) {
+    protected String tableNameForType(/* @Nullable */ RevObject.TYPE type, @Nullable PGId pgid) {
         final String tableName;
         final TableNames tables = config.getTables();
         if (type == null) {
@@ -477,7 +477,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
      * </p>
      */
     @Nullable
-    private RevObject getIfPresent(final ObjectId id, final @Nullable RevObject.TYPE type,
+    private RevObject getIfPresent(final ObjectId id, final /* @Nullable */ RevObject.TYPE type,
             DataSource ds) {
         RevObject cached = sharedCache.getIfPresent(id);
         if (cached != null) {

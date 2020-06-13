@@ -119,7 +119,7 @@ Feature: "index rebuild" command
       And I run the command "index create --tree Points"
      Then the response should contain "Index created successfully"
      When I run the command "index rebuild"
-     Then the response should contain "Missing required option '--tree"
+     Then the response should contain "Missing required option: '--tree"
 
   Scenario: I try to rebuild the index on an empty repository
     Given I have a repository

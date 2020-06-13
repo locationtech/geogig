@@ -173,15 +173,12 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     private static final byte[] NO_DATA = new byte[0];
 
     private boolean exists(RocksDBReference dbRef, ReadOptions readOptions, byte[] key) {
-        int size = RocksDB.NOT_FOUND;
-        if (dbRef.db().keyMayExist(key, new StringBuilder(0))) {
-            try {
-                size = dbRef.db().get(key, NO_DATA);
-            } catch (RocksDBException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            int size = dbRef.db().get(key, NO_DATA);
+            return size != RocksDB.NOT_FOUND;
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
         }
-        return size != RocksDB.NOT_FOUND;
     }
 
     public @Override void delete(ObjectId objectId) {

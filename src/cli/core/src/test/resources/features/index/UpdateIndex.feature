@@ -187,7 +187,7 @@ Feature: "index update" command
      When I run the command "index create --tree Points --extra-attributes ip"
      Then the response should contain "Index created successfully"
      When I run the command "index update --extra-attributes sp"
-     Then the response should contain "Missing required option '--tree"
+     Then the response should contain "Missing required option: '--tree"
 
   Scenario: I try to update the index for a non-existent attribute
     Given I have a repository

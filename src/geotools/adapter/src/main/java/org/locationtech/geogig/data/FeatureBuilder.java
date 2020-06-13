@@ -21,6 +21,7 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 
 import lombok.NonNull;
@@ -46,7 +47,7 @@ public class FeatureBuilder {
      * 
      * @param type the feature type of the features that will be built
      */
-    public FeatureBuilder(RevFeatureType type) {
+    public FeatureBuilder(@NonNull RevFeatureType type) {
         this(type, null);
     }
 
@@ -55,8 +56,7 @@ public class FeatureBuilder {
      * @param typeNameOverride if provided, the resulting feature type for the features will be
      *        renamed as this
      */
-    public FeatureBuilder(RevFeatureType type,
-            @Nullable org.opengis.feature.type.Name typeNameOverride) {
+    public FeatureBuilder(@NonNull RevFeatureType type, @Nullable Name typeNameOverride) {
         this.type = type;
         this.attNameToRevTypeIndex = GeogigSimpleFeature.buildAttNameToRevTypeIndex(type);
         SimpleFeatureType nativeType = GT.adapt(type.type());

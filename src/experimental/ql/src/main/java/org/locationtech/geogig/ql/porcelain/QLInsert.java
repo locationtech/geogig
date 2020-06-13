@@ -48,6 +48,7 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
 import net.sf.jsqlparser.expression.operators.relational.ItemsListVisitor;
 import net.sf.jsqlparser.expression.operators.relational.MultiExpressionList;
+import net.sf.jsqlparser.expression.operators.relational.NamedExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
@@ -239,6 +240,12 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
             @Override
             public void visit(SubSelect subSelect) {
                 throw new IllegalArgumentException("SubSelect not supported: " + subSelect);
+            }
+
+            @Override
+            public void visit(NamedExpressionList namedExpressionList) {
+                throw new IllegalArgumentException(
+                        "NamedExpressionList not supported: " + namedExpressionList);
             }
         });
 

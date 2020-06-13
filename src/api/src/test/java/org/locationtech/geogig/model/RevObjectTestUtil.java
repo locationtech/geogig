@@ -129,6 +129,13 @@ public @UtilityClass class RevObjectTestUtil {
         for (int i = 0; i < eds.size(); i++) {
             PropertyDescriptor ed = eds.get(i);
             PropertyDescriptor ad = ads.get(i);
+            assertEquals(ed.getName(), ad.getName());
+            assertEquals(ed.getBinding(), ad.getBinding());
+            assertEquals(ed.getMaxOccurs(), ad.getMaxOccurs());
+            assertEquals(ed.getMinOccurs(), ad.getMinOccurs());
+            assertEquals(ed.getComplexBindingType(), ad.getComplexBindingType());
+            assertEquals(ed.getTypeName(), ad.getTypeName());
+            assertEquals(ed.getCoordinateReferenceSystem(), ad.getCoordinateReferenceSystem());
             assertEquals(ed, ad);
         }
         assertEquals(expected, actual);

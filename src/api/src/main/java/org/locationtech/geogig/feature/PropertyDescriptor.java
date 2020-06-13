@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.Geometry;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Accessors;
 
 public @Value @Builder class PropertyDescriptor {
 
@@ -15,11 +16,11 @@ public @Value @Builder class PropertyDescriptor {
 
     private @NonNull Class<?> binding;
 
-    private @Builder.Default boolean nillable = true;
+    private boolean nillable;
 
-    private @Builder.Default int minOccurs = 0;
+    private int minOccurs;
 
-    private @Builder.Default int maxOccurs = 1;
+    private int maxOccurs;
 
     private CoordinateReferenceSystem coordinateReferenceSystem;
 
@@ -42,11 +43,26 @@ public @Value @Builder class PropertyDescriptor {
         return getName().getLocalPart();
     }
 
-    public static class PropertyDescriptorBuilder {
+    public static @Accessors(fluent = true, chain = true) class PropertyDescriptorBuilder {
+        private Name name;
+
+        private Name typeName;
+
+        private Class<?> binding;
+
+        private boolean nillable = true;
+
+        private int minOccurs = 0;
+
+        private int maxOccurs = 1;
+
+        private CoordinateReferenceSystem coordinateReferenceSystem;
+
+        private FeatureType complexBindingType;
+
         public PropertyDescriptor build() {
-            CoordinateReferenceSystem crs = this.coordinateReferenceSystem;
-            if (Geometry.class.isAssignableFrom(this.binding) && crs == null) {
-                crs = CoordinateReferenceSystem.NULL;
+            if (Geometry.class.isAssignableFrom(binding) && coordinateReferenceSystem == null) {
+                coordinateReferenceSystem = CoordinateReferenceSystem.NULL;
             }
             if (Feature.class.equals(binding)) {
                 if (null == complexBindingType) {
@@ -55,7 +71,7 @@ public @Value @Builder class PropertyDescriptor {
                 }
             }
             return new PropertyDescriptor(name, typeName, binding, nillable, minOccurs, maxOccurs,
-                    crs, complexBindingType);
+                    coordinateReferenceSystem, complexBindingType);
         }
     }
 }

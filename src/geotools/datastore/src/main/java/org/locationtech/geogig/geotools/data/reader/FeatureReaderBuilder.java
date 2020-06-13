@@ -765,7 +765,7 @@ public class FeatureReaderBuilder {
         return spatialFilterVisitor.hasSpatialFilter();
     }
 
-    private @Nullable org.locationtech.geogig.model.DiffEntry.ChangeType resolveChangeType() {
+    private /* @Nullable */ org.locationtech.geogig.model.DiffEntry.ChangeType resolveChangeType() {
         switch (changeType) {
         case ALL:
             return null;

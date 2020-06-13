@@ -96,13 +96,13 @@ public @UtilityClass class GT {
         return SFT.adapt(type);
     }
 
-    public @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem adapt(
+    public @Nullable CoordinateReferenceSystem adapt(
             org.locationtech.geogig.crs.CoordinateReferenceSystem crs) {
         return SFT.adapt(crs);
     }
 
     public @NonNull org.locationtech.geogig.crs.CoordinateReferenceSystem adapt(
-            @Nullable org.opengis.referencing.crs.CoordinateReferenceSystem crs) {
+            @Nullable CoordinateReferenceSystem crs) {
         return SFT.adapt(crs);
     }
 

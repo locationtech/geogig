@@ -61,6 +61,7 @@ import net.sf.jsqlparser.statement.select.SelectItemVisitor;
 import net.sf.jsqlparser.statement.select.SelectVisitor;
 import net.sf.jsqlparser.statement.select.SetOperationList;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
 /**
@@ -349,6 +350,11 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
             public void visit(PlainSelect plainSelect) {
                 items.addAll(plainSelect.getSelectItems());
             }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
+                throw new UnsupportedOperationException("implement me");
+            }
         });
         return items;
     }
@@ -388,6 +394,11 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
                     }
                 };
                 plainSelect.getSelectItems().forEach((i) -> i.accept(selectItemVisitor));
+            }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
+                throw new UnsupportedOperationException("implement me");
             }
         });
 
@@ -430,20 +441,27 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
                     query.setStartIndex((int) off.getOffset());
                 }
                 if (limit != null) {
-                    checkArgument(
-                            limit.getRowCount() > -1 && limit.getRowCount() <= Integer.MAX_VALUE);
-                    query.setMaxFeatures((int) limit.getRowCount());
-                    if (off == null) {
-                        int offset = (int) limit.getOffset();
-                        checkArgument(offset > -1 && offset <= Integer.MAX_VALUE);
-                        query.setStartIndex(offset);
-                    }
+                    throw new UnsupportedOperationException(
+                            "implement me, rowCount api changed from int to Expression");
+                    // checkArgument(
+                    // limit.getRowCount() > -1 && limit.getRowCount() <= Integer.MAX_VALUE);
+                    // query.setMaxFeatures((int) limit.getRowCount());
+                    // if (off == null) {
+                    // int offset = (int) limit.getOffset();
+                    // checkArgument(offset > -1 && offset <= Integer.MAX_VALUE);
+                    // query.setStartIndex(offset);
+                    // }
                 }
                 Expression where = plainSelect.getWhere();
                 if (where != null) {
                     Filter filter = new ExpressionToFilterConverter().convert(where);
                     query.setFilter(filter);
                 }
+            }
+
+            @Override
+            public void visit(ValuesStatement aThis) {
+                throw new UnsupportedOperationException("implement me");
             }
         });
 

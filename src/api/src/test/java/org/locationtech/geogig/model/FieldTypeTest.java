@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -123,8 +122,8 @@ public class FieldTypeTest {
         assertEquals(FieldType.ENVELOPE_2D, FieldType.valueOf(FieldType.ENVELOPE_2D.getTag()));
         assertEquals(FieldType.UNKNOWN, FieldType.valueOf(-1));
 
-        // If this fails it means a new type was added and all of these unit tests need to be
-        // updated with the new type.
+        // If this fails it means a new type was added and all of these unit tests need
+        // to be updated with the new type.
         exception.expect(ArrayIndexOutOfBoundsException.class);
         FieldType.valueOf(0x25);
     }
@@ -254,8 +253,6 @@ public class FieldTypeTest {
         Object roundTripped = ft.unmarshall(marshalled);
 
         if (val != null && val.getClass().isArray()) {
-            String.format("Expected %s, actual %s", ArrayUtils.toString(val),
-                    ArrayUtils.toString(roundTripped));
             assertTrue(Objects.deepEquals(val, roundTripped));
         } else {
             assertEquals(marshalled, val, roundTripped);

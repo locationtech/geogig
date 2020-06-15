@@ -256,16 +256,6 @@
       </dependencies>
     </profile>
     <profile>
-      <id>web</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.locationtech.geogig</groupId>
-          <artifactId>geogig-web-app</artifactId>
-          <version>${project.version}</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>experimental</id>
       <dependencies>
         <dependency>

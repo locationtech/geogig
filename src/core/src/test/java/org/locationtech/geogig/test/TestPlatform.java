@@ -10,7 +10,6 @@
 package org.locationtech.geogig.test;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Platform;
@@ -51,19 +50,5 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
     public @Override String toString() {
         return getClass().getSimpleName() + "[home=" + this.userHomeDirectory + ", pwd="
                 + super.workingDir + "]";
-    }
-
-    // Make sure that all the times are unique (make sure clock ticks between calls)
-    private AtomicLong lastTick = new AtomicLong();
-
-    public @Override long currentTimeMillis() {
-        final long current = super.currentTimeMillis();
-        long unique = lastTick.updateAndGet(curr -> {
-            if (curr == current) {
-                return current + 1;
-            }
-            return current;
-        });
-        return unique;
     }
 }

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test.integration;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.locationtech.geogig.porcelain.CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,11 +20,13 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.locationtech.geogig.dsl.Commands;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -38,6 +41,7 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.repository.DefaultProgressListener;
+import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Suppliers;
@@ -47,13 +51,13 @@ import com.google.common.collect.Range;
 
 public class LogOpTest extends RepositoryTestCase {
 
-    private LogOp logOp;
+    private Geogig gg;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    private LogOp logOp;
 
     protected @Override void setUpInternal() throws Exception {
         logOp = repo.command(LogOp.class);
+        this.gg = Geogig.of(super.repo.context());
     }
 
     @Test
@@ -114,7 +118,8 @@ public class LogOpTest extends RepositoryTestCase {
 
         mergeNoFF("branch1", "final merge", true);
 
-        // both arrays should have 9 elements and contain the same commits (in different order)
+        // both arrays should have 9 elements and contain the same commits (in different
+        // order)
         List<RevCommit> log_topo = newArrayList(
                 repo.command(LogOp.class).setTopoOrder(true).call());
 
@@ -317,8 +322,7 @@ public class LogOpTest extends RepositoryTestCase {
         assertEquals(1, Iterators.size(logOp.setLimit(1).call()));
         assertEquals(4, Iterators.size(logOp.setLimit(4).call()));
 
-        exception.expect(IllegalArgumentException.class);
-        logOp.setLimit(-1).call();
+        assertThrows(IllegalArgumentException.class, logOp.setLimit(-1)::call);
     }
 
     @Test
@@ -332,8 +336,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         logOp.setSkip(2).call();
 
-        exception.expect(IllegalArgumentException.class);
-        logOp.setSkip(-1).call();
+        assertThrows(IllegalArgumentException.class, logOp.setSkip(-1)::call);
     }
 
     @Test
@@ -434,8 +437,6 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testMerged() throws Exception {
         // Create the following revision graph
-        // o
-        // |
         // o - Points 1 added
         // |\
         // | o - branch1 - Points 2 added
@@ -443,24 +444,31 @@ public class LogOpTest extends RepositoryTestCase {
         // o - Points 3 added
         // |
         // o - master - HEAD - Lines 1 added
+        Commands commands = gg.commands();
+        assertEquals(0, commands.logCall().count());
+
         insertAndAdd(points1);
-        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = commands.commit("commit for %s", idP1).call();
+        assertEquals(1, commands.logCall().count());
 
         // create branch1 and checkout
-        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        commands.branch("branch1").call();
+        commands.checkout("branch1").call();
         insertAndAdd(points2);
-        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = commands.commit("commit for %s", idP2).call();
+        assertEquals(2, commands.logCall().count());
+        assertEquals("branch1", gg.refs().head().get().peel().localName());
 
         // checkout master
-        repo.command(CheckoutOp.class).setSource("master").call();
+        commands.checkout("master").call();
+        assertEquals("master", gg.refs().head().get().peel().localName());
         insertAndAdd(points3);
-        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = commands.commit("commit for %s", idP3).call();
         insertAndAdd(lines1);
-        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = commands.commit("commit for %s", idL1).call();
+        assertEquals(3, commands.logCall().count());
 
         // Merge branch1 into master to create the following revision graph
-        // o
-        // |
         // o - Points 1 added
         // |\
         // | o - branch1 - Points 2 added
@@ -471,55 +479,34 @@ public class LogOpTest extends RepositoryTestCase {
         // |/
         // o - master - HEAD - Merge commit
 
-        Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
-        MergeReport mergeReport = repo.command(MergeOp.class).addCommit(branch1.getObjectId())
-                .setMessage("My merge message.").call();
+        MergeReport mergeReport = commands.merge("branch1").setMessage("My merge message.").call();
 
         RevCommit mergeCommit = mergeReport.getMergeCommit();
+        assertEquals(c4.getId(), mergeCommit.parentN(0).get());
+        assertEquals(c2.getId(), mergeCommit.parentN(1).get());
 
-        Iterator<RevCommit> iterator = logOp.call();
-        assertNotNull(iterator);
-        assertTrue(iterator.hasNext());
-        assertEquals(mergeCommit, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c4, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c3, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c2, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c1, iterator.next());
+        List<String> expected;
+        List<String> actual;
+
+        expected = Stream.of(mergeCommit, c4, c3, c2, c1).map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+        actual = toList(repo.command(LogOp.class).call()).stream().map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+        assertEquals(expected, actual);
 
         // test log using first parent only. It should not contain commit 2)
         LogOp op = repo.command(LogOp.class).setFirstParentOnly(true);
-        iterator = op.call();
-        assertNotNull(iterator);
-        assertTrue(iterator.hasNext());
-        assertEquals(mergeCommit, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c4, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c3, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c1, iterator.next());
-        assertFalse(iterator.hasNext());
+        expected = Stream.of(mergeCommit, c4, c3, c1).map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+        actual = toList(op.call()).stream().map(RevCommit::getMessage).collect(Collectors.toList());
+        assertEquals(expected, actual);
 
         // Test topological order
         op = repo.command(LogOp.class).setTopoOrder(true);
-        iterator = op.call();
-        assertNotNull(iterator);
-        assertTrue(iterator.hasNext());
-        assertEquals(mergeCommit, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c4, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c3, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c1, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c2, iterator.next());
-        assertFalse(iterator.hasNext());
-
+        expected = Stream.of(mergeCommit, c4, c3, c1, c2).map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+        actual = toList(op.call()).stream().map(RevCommit::getMessage).collect(Collectors.toList());
+        assertEquals(expected, actual);
     }
 
     @Test
@@ -651,8 +638,6 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testAll() throws Exception {
         // Create the following revision graph
-        // o
-        // |
         // o - Points 1 added
         // |\
         // | o - branch1 - Points 2 added
@@ -660,35 +645,48 @@ public class LogOpTest extends RepositoryTestCase {
         // o - Points 3 added
         // |
         // o - master - HEAD - Lines 1 added
+        Commands commands = gg.commands();
+        assertEquals(0, commands.logCall().count());
         insertAndAdd(points1);
-        final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
+        final RevCommit c1 = commands.commit("commit for %s", idP1).call();
+        assertEquals(1, commands.logCall().count());
 
         // create branch1 and checkout
-        repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
+        commands.branch("branch1").call();
+        assertEquals(CHECKOUT_LOCAL_BRANCH, commands.checkout("branch1").call().getResult());
         insertAndAdd(points2);
-        final RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for " + idP2).call();
+        final RevCommit c2 = commands.commit("commit for %s", idP2).call();
+        assertEquals(2, commands.logCall().count());
+        MatcherAssert.assertThat(c2.getCommitter().getTimestamp(),
+                org.hamcrest.Matchers.greaterThan(c1.getCommitter().getTimestamp()));
 
         // checkout master
-        repo.command(CheckoutOp.class).setSource("master").call();
+        assertEquals(CHECKOUT_LOCAL_BRANCH, commands.checkout("master").call().getResult());
+        assertEquals(1, commands.logCall().count());
         insertAndAdd(points3);
-        final RevCommit c3 = repo.command(CommitOp.class).setMessage("commit for " + idP3).call();
+        final RevCommit c3 = commands.commit("commit for %s", idP3).call();
+        MatcherAssert.assertThat(c3.getCommitter().getTimestamp(),
+                org.hamcrest.Matchers.greaterThan(c2.getCommitter().getTimestamp()));
         insertAndAdd(lines1);
-        final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
+        final RevCommit c4 = commands.commit("commit for %s", idL1).call();
+        assertEquals(3, commands.logCall().count());
+        Platform platform = repo.context().platform();
+        platform.currentTimeMillis();
+        MatcherAssert.assertThat(c4.getCommitter().getTimestamp(),
+                org.hamcrest.Matchers.greaterThan(c3.getCommitter().getTimestamp()));
 
         LogOp op = repo.command(LogOp.class);
         op.addCommit(c2.getId());
         op.addCommit(c4.getId());
         Iterator<RevCommit> iterator = op.call();
         assertNotNull(iterator);
-        assertTrue(iterator.hasNext());
-        assertEquals(c4, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c3, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c2, iterator.next());
-        assertTrue(iterator.hasNext());
-        assertEquals(c1, iterator.next());
-        assertFalse(iterator.hasNext());
+
+        List<String> expected = Arrays.asList(c4, c3, c2, c1).stream().map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+        List<String> actual = toList(iterator).stream().map(RevCommit::getMessage)
+                .collect(Collectors.toList());
+
+        assertEquals(expected, actual);
     }
 
     @Test

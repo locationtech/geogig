@@ -11,6 +11,10 @@ package org.locationtech.geogig.dsl;
 
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -19,7 +23,9 @@ import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.ResolveCommit;
 import org.locationtech.geogig.plumbing.ResolveTree;
 import org.locationtech.geogig.porcelain.AddOp;
+import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
+import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RebaseOp;
@@ -45,8 +51,16 @@ public class Commands extends ObjectStores {
         return context.command(commandClass);
     }
 
-    public @NonNull Iterator<RevCommit> log() {
-        return command(LogOp.class).call();
+    public @NonNull LogOp log() {
+        return command(LogOp.class);
+    }
+
+    public @NonNull Stream<RevCommit> logCall() {
+        Iterator<RevCommit> iterator = command(LogOp.class).call();
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator, Spliterator.NONNULL
+                        | Spliterator.IMMUTABLE | Spliterator.ORDERED | Spliterator.DISTINCT),
+                false);
     }
 
     public Optional<ObjectId> commonAncestor(@NonNull RevCommit leftCommit,
@@ -102,5 +116,20 @@ public class Commands extends ObjectStores {
 
     public MergeOp merge(@NonNull ObjectId commitToMerge) {
         return command(MergeOp.class).addCommit(commitToMerge);
+    }
+
+    public MergeOp merge(@NonNull String commitIsh) {
+        RevCommit commitToMerge = resolveCommit(commitIsh).orElseThrow(
+                () -> new IllegalArgumentException("commit-ish not found: " + commitIsh));
+        return command(MergeOp.class).addCommit(commitToMerge.getId());
+    }
+
+    public CommitOp commit(@NonNull String messageFormaat, Object... messageArgs) {
+        String message = String.format(messageFormaat, messageArgs);
+        return command(CommitOp.class).setMessage(message);
+    }
+
+    public BranchCreateOp branch(@NonNull String branchName) {
+        return command(BranchCreateOp.class).setName(branchName);
     }
 }

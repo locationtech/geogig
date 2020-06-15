@@ -129,6 +129,7 @@ public class RebaseOpTest extends RepositoryTestCase {
 
         // Commit 3
         RevCommit logC3 = log.next();
+        assertFalse(c3.getTreeId().equals(logC3.getTreeId()));
         assertEquals(c3.getAuthor(), logC3.getAuthor());
         assertEquals(c3.getCommitter().getName(), logC3.getCommitter().getName());
         assertEquals(c3.getCommitter().getEmail(), logC3.getCommitter().getEmail());
@@ -138,7 +139,6 @@ public class RebaseOpTest extends RepositoryTestCase {
         assertEquals(c3.getCommitter().getTimeZoneOffset(),
                 logC3.getCommitter().getTimeZoneOffset());
         assertFalse(c3.getCommitter().getTimestamp() == logC3.getCommitter().getTimestamp());
-        assertFalse(c3.getTreeId().equals(logC3.getTreeId()));
 
         // Commit 2
         RevCommit logC2 = log.next();

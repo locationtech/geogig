@@ -24,10 +24,10 @@ public @RequiredArgsConstructor class Refs {
     private final @NonNull Context context;
 
     public Optional<Ref> head() {
-        return get(Ref.HEAD);
+        return find(Ref.HEAD);
     }
 
-    public Optional<Ref> get(@NonNull String name) {
+    public Optional<Ref> find(@NonNull String name) {
         return context.command(RefParse.class).setName(name).call();
     }
 

@@ -196,7 +196,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         parents.addAll(firstParents);
         parents.addAll(secondaryParents);
         ObjectId endTree = until.getTreeId();
-        RevCommitBuilder builder = RevCommit.builder().init(until);
+        RevCommitBuilder builder = RevCommit.builder().platform(this.platform()).init(until);
         Collection<ObjectId> filteredParents = Collections2.filter(parents,
                 new Predicate<ObjectId>() {
                     public @Override boolean apply(@Nullable ObjectId id) {
@@ -255,7 +255,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         replacedCommits.put(until.getId(), squashedId);
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {
-            RevCommitBuilder builder = RevCommit.builder().init(commit);
+            RevCommitBuilder builder = RevCommit.builder().platform(this.platform()).init(commit);
             Function<ObjectId, ObjectId> fn = new Function<ObjectId, ObjectId>() {
                 public @Override ObjectId apply(ObjectId id) {
                     if (replacedCommits.containsKey(id)) {

@@ -333,7 +333,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
             }
         }
 
-        RevCommitBuilder builder = RevCommit.builder();
+        RevCommitBuilder builder = RevCommit.builder().platform(this.platform());
         if (this.commit == null) {
             builder.author(resolveAuthor())//
                     .authorEmail(resolveAuthorEmail())//

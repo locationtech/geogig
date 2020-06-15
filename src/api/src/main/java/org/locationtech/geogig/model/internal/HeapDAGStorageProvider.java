@@ -74,7 +74,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     public @Override Node getNode(NodeId nodeId) {
         Object n = nodes.get(nodeId.name());
-        Preconditions.checkState(n != null,  "node not fount: " + nodeId.name());
+        Preconditions.checkState(n != null, "node not fount: " + nodeId.name());
         Node dagNode = n instanceof DAGNode ? ((DAGNode) n).resolve(source) : (Node) n;
         return dagNode;
     }

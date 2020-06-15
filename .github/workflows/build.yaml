@@ -33,6 +33,6 @@ jobs:
 
       - name: Verify
         run: |
-                mvn -f src/metadata -Dfmt.skip clean install
-                mvn -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
+                mvn -ntp -f src/metadata -Dfmt.skip clean install
+                mvn -ntp -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
 

@@ -198,7 +198,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         } else {
             checkState(!geogig.conflicts().hasConflicts(),
                     "Cannot run operation while merge conflicts exist.");
-            checkState(!geogig.refs().get(Ref.ORIG_HEAD).isPresent(),
+            checkState(!geogig.refs().find(Ref.ORIG_HEAD).isPresent(),
                     "You are currently in the middle of a merge or rebase project <ORIG_HEAD is present>.");
 
             getProgressListener().started();
@@ -227,7 +227,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             }
 
             // Get all commits between the head commit and the ancestor.
-            Iterator<RevCommit> commitIterator = geogig.commands().log();
+            Iterator<RevCommit> commitIterator = geogig.commands().logCall().iterator();
 
             List<RevCommit> commitsToRebase = new ArrayList<RevCommit>();
             RevCommit commit = commitIterator.next();
@@ -243,7 +243,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
             if (squashMessage == null) {
                 createRebaseCommitsInfo(commitsToRebase);
             } else {
-                RevCommitBuilder builder = RevCommit.builder().init(commitsToRebase.get(0));
+                RevCommitBuilder builder = RevCommit.builder().platform(this.platform())
+                        .init(commitsToRebase.get(0));
                 builder.parentIds(Arrays.asList(ancestorCommitId));
                 builder.message(squashMessage);
                 RevCommit squashCommit = builder.build();
@@ -277,7 +278,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
     private void skip(final Ref currHead) {
         final Geogig geogig = geogig();
-        geogig.refs().get(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
+        geogig.refs().find(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
                 "Cannot skip. You are not in the middle of a rebase process."));
 
         currentBranch = geogig.blobs().asString(REBASE_BRANCH_BLOB)
@@ -300,7 +301,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
                 .orElseThrow(() -> new IllegalStateException(
                         "Cannot continue. You are not in the middle of a rebase process (no rebase branch saved)."));
 
-        geogig.refs().get(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
+        geogig.refs().find(Ref.ORIG_HEAD).orElseThrow(() -> new IllegalStateException(
                 "Cannot continue. You are not in the middle of a rebase process (ref ORIG_HEAD not found)."));
 
         currentBranch = branch;
@@ -321,7 +322,7 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
         final String msg = "Cannot abort. You are not in the middle of a rebase process.";
         checkState(geogig.blobs().exists(REBASE_BRANCH_BLOB), msg);
 
-        final Ref origHead = geogig.refs().get(Ref.ORIG_HEAD)
+        final Ref origHead = geogig.refs().find(Ref.ORIG_HEAD)
                 .orElseThrow(() -> new IllegalStateException(msg));
 
         geogig.commands().reset(origHead.getObjectId(), ResetMode.HARD, true);
@@ -447,7 +448,8 @@ public class RebaseOp extends AbstractGeoGigOp<Boolean> {
 
         long timestamp = platform().currentTimeMillis();
         // Create new commit
-        RevCommitBuilder builder = RevCommit.builder().init(commitToApply);
+        RevCommitBuilder builder = RevCommit.builder().platform(this.platform())
+                .init(commitToApply);
         builder.parentIds(Arrays.asList(rebaseHead));
         builder.treeId(newTreeId);
         builder.committerTimestamp(timestamp);

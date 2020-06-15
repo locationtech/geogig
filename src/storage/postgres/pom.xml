@@ -32,23 +32,19 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cache-caffeine</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-serialization-flatbuffers</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <!-- for legacy purposes, may be removed in the future -->
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-serialization-lzf</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -73,8 +69,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>
@@ -97,22 +91,17 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.locationtech.geogig</groupId>
+      <artifactId>geogig-cli-remoting</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-remoting</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-cli-remoting</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 

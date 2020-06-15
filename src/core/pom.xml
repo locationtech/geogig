@@ -39,12 +39,10 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-metadata</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -80,9 +78,7 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-api</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

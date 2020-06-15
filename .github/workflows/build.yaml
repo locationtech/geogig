@@ -26,13 +26,13 @@ jobs:
 
       - name: Update maven dependencies
         # see https://github.com/qaware/go-offline-maven-plugin
-        run: mvn -f src/ de.qaware.maven:go-offline-maven-plugin:resolve-dependencies --no-transfer-progress
+        run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies --no-transfer-progress
          
       - name: Build without tests
-        run: mvn -f src/ -DskipTests -T1C -Dfmt.action=validate install -Pexperimental
+        run: mvn -DskipTests -T1C -Dfmt.action=validate install -Pexperimental
 
       - name: Verify
         run: |
                 mvn -f src/metadata -Dfmt.skip clean install
-                mvn -f src/ -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
+                mvn -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
 

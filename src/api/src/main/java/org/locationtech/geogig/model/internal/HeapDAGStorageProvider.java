@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Node;
@@ -33,8 +34,8 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     public HeapDAGStorageProvider(ObjectStore source) {
         this.source = source;
-        this.nodes = new HashMap<>();
-        this.trees = new HashMap<>();
+        this.nodes = new ConcurrentHashMap<>();
+        this.trees = new ConcurrentHashMap<>();
     }
 
     public void close() {
@@ -73,7 +74,7 @@ class HeapDAGStorageProvider implements DAGStorageProvider {
 
     public @Override Node getNode(NodeId nodeId) {
         Object n = nodes.get(nodeId.name());
-        Preconditions.checkState(n != null);
+        Preconditions.checkState(n != null, "node not fount: " + nodeId.name());
         Node dagNode = n instanceof DAGNode ? ((DAGNode) n).resolve(source) : (Node) n;
         return dagNode;
     }

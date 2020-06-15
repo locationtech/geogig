@@ -7,31 +7,30 @@
  * Contributors:
  * David Blasby (Boundless) - initial implementation
  */
-package org.locationtech.geogig.test;
+package org.locationtech.geogig.repository;
 
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-public class TestPlatformTest {
+public class DefaultPlatformTest {
 
-    @Rule
-    public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    // simple test -- ensure that the platform clock is always increase (no repeated values).
+    // simple test -- ensure that the platform clock is always increase (no repeated
+    // values).
     @Test
     public void testClock() throws IOException {
-        TestPlatform testPlatform = new TestPlatform(tempFolder.getRoot());
+        DefaultPlatform p1 = new DefaultPlatform();
+        DefaultPlatform p2 = new DefaultPlatform();
 
         long lastTime = 0;
-        for (int t = 0; t < 100; t++) {
-            long time = testPlatform.currentTimeMillis();
-            assertNotEquals(time, lastTime);
-            lastTime = time;
+        for (int t = 0; t < 1000; t++) {
+            long time1 = p1.currentTimeMillis();
+            long time2 = p2.currentTimeMillis();
+            assertNotEquals(time1, lastTime);
+            assertNotEquals(time1, time2);
+            lastTime = time2;
         }
     }
 }

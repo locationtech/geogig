@@ -460,7 +460,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
         String committerName = resolveCommitter();
         String committerEmail = resolveCommitterEmail();
         // Create new commit
-        RevCommitBuilder builder = RevCommit.builder();
+        RevCommitBuilder builder = RevCommit.builder().platform(this.platform());
         builder.parentIds(Arrays.asList(revertHead));
         builder.treeId(newTreeId);
         builder.committerTimestamp(timestamp);

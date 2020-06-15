@@ -36,6 +36,9 @@ public interface Platform extends Serializable {
 
     /**
      * @return the current time in milliseconds
+     * @apiNote a proper implementation must ensure that not two calls can ever return the same
+     *          value on the same JVM, even among different instances in order to prevent possible
+     *          time-based topology errors in the commit graph.
      */
     public long currentTimeMillis();
 

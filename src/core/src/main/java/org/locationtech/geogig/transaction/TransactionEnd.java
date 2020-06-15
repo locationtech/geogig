@@ -164,7 +164,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Void> {
                     transaction.getTransactionId());
             return Optional.empty();
         }
-        Optional<Ref> currValue = geogig().refs().get(deleted.name());
+        Optional<Ref> currValue = geogig().refs().find(deleted.name());
         if (currValue.isPresent() && !currValue.equals(deleted.oldValue())) {
             log.warn(
                     "Not deleting {} when committing transaction {}. Ref changed outside the transaction.",
@@ -193,7 +193,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Void> {
 
         Geogig tx = new Geogig(transaction);
 
-        final @Nullable Ref valueOutsideTx = geogig().refs().get(refName).orElse(null);
+        final @Nullable Ref valueOutsideTx = geogig().refs().find(refName).orElse(null);
         final Ref valueInsideTx = change.newValue().get();
         final Ref finalValue;
 
@@ -216,7 +216,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Void> {
                         refName, valueInsideTx.getObjectId(), valueOutsideTx.getObjectId(), ce);
                 throw ce;
             }
-            finalValue = tx.refs().get(refName).get();
+            finalValue = tx.refs().find(refName).get();
         } else {
             try { // sync transactions have to use merge to prevent divergent history
                 tx.commands().merge(valueOutsideTx.getObjectId())
@@ -226,7 +226,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Void> {
                 LOGGER.debug("Transaction merge for {} unnecessary. {}", valueOutsideTx.getName(),
                         e.getMessage());
             }
-            finalValue = tx.refs().get(refName).get();
+            finalValue = tx.refs().find(refName).get();
         }
         List<Ref> updates;
         if (currentBranchOutsideTx.isPresent()

@@ -47,7 +47,6 @@ public final @Accessors(fluent = true) class RevCommitBuilder {
     private @Setter Platform platform;
 
     RevCommitBuilder() {
-
     }
 
     /**

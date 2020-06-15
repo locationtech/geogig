@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Standard platform for GeoGig.
@@ -54,8 +55,21 @@ public class DefaultPlatform implements Platform {
      * @return the current time in milliseconds
      * @see org.locationtech.geogig.repository.Platform#currentTimeMillis()
      */
+    // Make sure that all the times are unique (make sure clock ticks between calls)
+    private static final AtomicLong lastTick = new AtomicLong();
+
     public @Override long currentTimeMillis() {
-        return System.currentTimeMillis();
+        final long currentTime = System.currentTimeMillis();
+        long unique = lastTick.updateAndGet(lastReturnedTime -> {
+            if (lastReturnedTime == currentTime) {
+                return currentTime + 1;
+            }
+            if (lastReturnedTime > currentTime) {
+                return lastReturnedTime + 1;
+            }
+            return currentTime;
+        });
+        return unique;
     }
 
     /**

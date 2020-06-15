@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,7 +31,6 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -90,7 +91,6 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * @return {@code this}
      */
     public LogOp setSkip(int skip) {
-        Preconditions.checkArgument(skip > 0, "skip shall be > 0: " + skip);
         this.skip = Integer.valueOf(skip);
         return this;
     }
@@ -100,7 +100,6 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * @return {@code this}
      */
     public LogOp setLimit(int limit) {
-        Preconditions.checkArgument(limit > 0, "limit shall be > 0: " + limit);
         this.limit = Integer.valueOf(limit);
         return this;
     }
@@ -224,6 +223,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
      * @see org.locationtech.geogig.repository.impl.AbstractGeoGigOp#call()
      */
     protected @Override Iterator<RevCommit> _call() {
+        checkArgument(limit == null || limit > 0, "limit shall be > 0: " + limit);
+        checkArgument(skip == null || skip > 0, "skip shall be > 0: " + skip);
 
         Geogig geogig = geogig();
         ObjectId newestCommitId;

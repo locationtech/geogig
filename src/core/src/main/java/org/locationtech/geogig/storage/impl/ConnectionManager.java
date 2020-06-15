@@ -9,8 +9,10 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import lombok.NonNull;
 
 /**
  * A connection manager for ensuring that connections are acquired or released in a threadsafe way.
@@ -28,58 +30,55 @@ public abstract class ConnectionManager<A, C> {
     protected abstract void disconnect(C connection);
 
     private static class PoolEntry<C> {
-        public final C connection;
+        public final @NonNull C connection;
 
-        public int clients;
+        private final AtomicInteger clients = new AtomicInteger();
 
         public PoolEntry(C connection) {
             this.connection = connection;
         }
 
+        public void acquired() {
+            this.clients.incrementAndGet();
+        }
+
+        public int released() {
+            return this.clients.decrementAndGet();
+        }
+
         public @Override String toString() {
-            return getClass().getSimpleName() + "[clients:" + clients + ", connection: "
+            return getClass().getSimpleName() + "[clients:" + clients.get() + ", connection: "
                     + connection + "]";
         }
     }
 
-    private Map<A, PoolEntry<C>> pool = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<A, PoolEntry<C>> pool = new ConcurrentHashMap<>();
 
-    private Map.Entry<A, PoolEntry<C>> lookupConnection(C connection) {
-        for (Map.Entry<A, PoolEntry<C>> entry : pool.entrySet()) {
-            if (entry.getValue().connection == connection) {
-                return entry;
-            }
-        }
-        throw new IllegalStateException(
-                "Attempted to retrieve connection that is not managed by this manager");
-    }
-
-    public final synchronized C acquire(A address) {
-        PoolEntry<C> entry = pool.get(address);
-        if (entry == null) {
-            C connection = connect(address);
-            entry = new PoolEntry<C>(connection);
-            pool.put(address, entry);
-        }
-        entry.clients += 1;
+    public final C acquire(A address) {
+        PoolEntry<C> entry = pool.computeIfAbsent(address, this::connectInternal);
+        entry.acquired();
         return entry.connection;
     }
 
-    public final synchronized boolean release(C connection) {
-        Map.Entry<A, PoolEntry<C>> record = lookupConnection(connection);
-        A address = record.getKey();
-        PoolEntry<C> poolentry = record.getValue();
-        poolentry.clients -= 1;
-        if (poolentry.clients < 0)
-            throw new IllegalStateException("Negative client count for connection pool entry!");
-        if (poolentry.clients == 0) {
-            try {
-                disconnect(poolentry.connection);
-            } finally {
-                pool.remove(address);
+    private PoolEntry<C> connectInternal(A address) {
+        C connection = connect(address);
+        return new PoolEntry<C>(connection);
+    }
+
+    public final boolean release(C connection) {
+        return pool.entrySet().removeIf(e -> {
+            if (e.getValue().connection == connection) {
+                int remaining = e.getValue().released();
+                if (remaining < 0) {
+                    throw new IllegalStateException(
+                            "Negative client count for connection pool entry!");
+                }
+                if (remaining == 0) {
+                    disconnect(e.getValue().connection);
+                    return true;
+                }
             }
-            return true;
-        }
-        return false;
+            return false;
+        });
     }
 }

@@ -10,12 +10,12 @@
 package org.locationtech.geogig.storage.memory;
 
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 
@@ -30,17 +30,9 @@ import lombok.NonNull;
  */
 class Graph {
 
-    final ConcurrentMap<ObjectId, Node> nodes;
+    final ConcurrentMap<ObjectId, Node> nodes = new ConcurrentHashMap<>();
 
-    final ConcurrentMap<ObjectId, ObjectId> mappings;
-
-    /**
-     * Creates an empty graph.
-     */
-    Graph() {
-        nodes = Maps.newConcurrentMap();
-        mappings = Maps.newConcurrentMap();
-    }
+    final ConcurrentMap<ObjectId, ObjectId> mappings = new ConcurrentHashMap<>();
 
     /**
      * Gets a node in the graph by its object id, creating a new node if one does already exist.

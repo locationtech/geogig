@@ -22,7 +22,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 
@@ -87,7 +86,7 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
     public @Override GraphDatabase getGraphDatabase() {
         Preconditions.checkState(isOpen(), "Database is closed");
         config.checkRepositoryExists();
-        return new SynchronizedGraphDatabase(graph);
+        return graph;
     }
 
     /**

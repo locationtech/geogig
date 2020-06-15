@@ -12,66 +12,27 @@ package org.locationtech.geogig.porcelain;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+@Data
+@Accessors(chain = true)
 public class CheckoutResult {
 
     public enum Results {
         NO_RESULT, DETACHED_HEAD, CHECKOUT_REMOTE_BRANCH, CHECKOUT_LOCAL_BRANCH, UPDATE_OBJECTS
     }
 
-    private ObjectId oid = null;
+    private @Setter(value = AccessLevel.PACKAGE) ObjectId oid;
 
-    private Ref newRef = null;
+    private @Setter(value = AccessLevel.PACKAGE) Ref newRef;
 
-    private String remoteName = null;
+    private @Setter(value = AccessLevel.PACKAGE) String remoteName;
 
-    private ObjectId newTree = null;
+    private @Setter(value = AccessLevel.PACKAGE) ObjectId newTree;
 
-    private Results resultEnumVal = Results.NO_RESULT;
-
-    public ObjectId getOid() {
-        return oid;
-    }
-
-    public CheckoutResult setOid(ObjectId oid) {
-        this.oid = oid;
-        return this;
-    }
-
-    public Ref getNewRef() {
-        return newRef;
-    }
-
-    public CheckoutResult setNewRef(Ref newRef) {
-        this.newRef = newRef;
-        return this;
-    }
-
-    public ObjectId getNewTree() {
-        return newTree;
-    }
-
-    public CheckoutResult setNewTree(ObjectId newTree) {
-        this.newTree = newTree;
-        return this;
-    }
-
-    public Results getResult() {
-        return resultEnumVal;
-    }
-
-    public CheckoutResult setResult(Results result) {
-        if (this.resultEnumVal == Results.NO_RESULT) {
-            this.resultEnumVal = result;
-        }
-        return this;
-    }
-
-    public String getRemoteName() {
-        return remoteName;
-    }
-
-    public void setRemoteName(String remoteName) {
-        this.remoteName = remoteName;
-    }
-
+    private @NonNull @Setter(value = AccessLevel.PACKAGE) Results result = Results.NO_RESULT;
 }

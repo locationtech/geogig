@@ -46,6 +46,7 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.porcelain.CheckoutException.StatusCode;
+import org.locationtech.geogig.porcelain.CheckoutResult.Results;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
@@ -365,7 +366,9 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
                 updateRefs.add(new SymRef(Ref.HEAD, target));
                 checkoutResult.setNewRef(targetRef.get());
                 checkoutResult.setOid(targetCommitId.get());
-                checkoutResult.setResult(CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH);
+                if (checkoutResult.getResult() != Results.CHECKOUT_REMOTE_BRANCH) {
+                    checkoutResult.setResult(CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH);
+                }
             } else {
                 // set HEAD to a dettached state
                 ObjectId commitId = targetCommitId.get();

@@ -32,7 +32,6 @@ jobs:
         run: mvn -f src/ -DskipTests -T1C -Dfmt.action=validate install -Pexperimental
 
       - name: Verify
-        #The github profile awaits for necessary docker containers to be ready, but does not tear them down, so they're reused across module builds
         run: |
                 mvn -f src/metadata -Dfmt.skip clean install
                 mvn -f src/ -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api

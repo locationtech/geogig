@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.junit.rules.ExternalResource;
@@ -25,7 +26,7 @@ import lombok.NonNull;
 
 public class TestRepository extends ExternalResource {
 
-    private Map<URI, Repository> repositories = new HashMap<>();
+    private Map<URI, Repository> repositories = new ConcurrentHashMap<>();
 
     private String repositoryName;
 
@@ -60,9 +61,13 @@ public class TestRepository extends ExternalResource {
         return platform;
     }
 
-    public Repository repository() {
+    public synchronized Repository repository() {
         URI uri = getRepoURI();
-        return repositories.computeIfAbsent(uri, this::createAndInitRepository);
+        Repository repository = repositories.get(uri);
+        if (null == repository) {
+            repository = createAndInitRepository(uri);
+        }
+        return repository;
     }
 
     public Repository getRepo(@NonNull String name) {
@@ -91,6 +96,12 @@ public class TestRepository extends ExternalResource {
     public Repository createRepository(@NonNull URI uri) {
         Preconditions.checkState(!this.repositories.containsKey(uri),
                 "Repository %s already exists", uri);
+        Repository repository = createRepositoryInternal(uri);
+        this.repositories.put(uri, repository);
+        return repository;
+    }
+
+    public Repository createRepositoryInternal(@NonNull URI uri) {
         Repository repository;
         try {
             Hints hints = new Hints().platform(getPlatform());
@@ -98,7 +109,6 @@ public class TestRepository extends ExternalResource {
         } catch (RepositoryConnectionException e) {
             throw new RuntimeException(e);
         }
-        this.repositories.put(uri, repository);
         return repository;
     }
 

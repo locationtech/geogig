@@ -36,12 +36,10 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-serialization-flatbuffers</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <!-- Test scope dependencies -->
 
@@ -58,8 +56,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>

@@ -14,24 +14,20 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
       <scope>compile</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-serialization-flatbuffers</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

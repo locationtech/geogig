@@ -32,7 +32,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>
@@ -48,8 +47,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>

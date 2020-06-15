@@ -21,43 +21,35 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-temporary-storage-rocksdb</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-serialization-flatbuffers</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-remoting</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-pg-storage</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-rocksdb</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-postgres</artifactId>
-      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cache-caffeine</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -70,15 +62,11 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-cli-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
       <type>test-jar</type>
     </dependency>
   </dependencies>
@@ -239,7 +227,6 @@
         <dependency>
           <groupId>org.locationtech.geogig</groupId>
           <artifactId>geogig-cli-geotools</artifactId>
-          <version>${project.version}</version>
         </dependency>
         <dependency>
           <groupId>ch.qos.logback</groupId>
@@ -261,7 +248,6 @@
         <dependency>
           <groupId>org.locationtech.geogig</groupId>
           <artifactId>geogig-ql</artifactId>
-          <version>${project.version}</version>
         </dependency>
       </dependencies>
     </profile>

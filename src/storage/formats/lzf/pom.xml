@@ -32,7 +32,6 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-api</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.ning</groupId>
@@ -43,15 +42,12 @@
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
       <artifactId>geogig-core</artifactId>
-      <version>${project.version}</version>
       <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>

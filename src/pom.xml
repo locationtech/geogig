@@ -71,8 +71,8 @@
   </scm>
 
   <organization>
-    <name>Boundless</name>
-    <url>http://boundlessgeo.com</url>
+    <name>Locationtech</name>
+    <url>https://projects.eclipse.org/projects/locationtech.geogig</url>
   </organization>
   <inceptionYear>2011</inceptionYear>
 
@@ -112,14 +112,12 @@
   </repositories>
   <distributionManagement>
     <repository>
-      <id>boundless</id>
-      <name>Boundless Release Repository</name>
-      <url>https://repo.boundlessgeo.com/release/</url>
+      <name>GeoGig Repository</name>
+      <url>https://repo.locationtech.org/content/repositories/geogig/</url>
     </repository>
     <snapshotRepository>
-      <id>boundless</id>
-      <name>Boundless Snapshot Repository</name>
-      <url>https://repo.boundlessgeo.com/snapshot/</url>
+      <name>GeoGig Snapshots Repository</name>
+      <url>https://repo.locationtech.org/content/repositories/geogig/</url>
     </snapshotRepository>
   </distributionManagement>
 

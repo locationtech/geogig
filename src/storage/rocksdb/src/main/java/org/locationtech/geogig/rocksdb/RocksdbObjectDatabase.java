@@ -23,7 +23,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
-import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Closeables;
@@ -45,7 +44,7 @@ public class RocksdbObjectDatabase extends RocksdbObjectStore implements ObjectD
     }
 
     public @Override GraphDatabase getGraphDatabase() {
-        return new SynchronizedGraphDatabase(graph);
+        return graph;
     }
 
     public @Override synchronized void open() {

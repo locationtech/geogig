@@ -29,7 +29,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingObjectStore;
-import org.locationtech.geogig.storage.impl.SynchronizedGraphDatabase;
 
 /**
  * Provides an implementation of a GeoGig object database that utilizes the heap for the storage of
@@ -81,7 +80,7 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     }
 
     public @Override GraphDatabase getGraphDatabase() {
-        return new SynchronizedGraphDatabase(graph);
+        return graph;
     }
 
     public @Override boolean put(RevObject object) {

@@ -15,17 +15,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.sql.SQLException;
 
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.impl.IndexDatabaseConformanceTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
 
@@ -34,29 +32,15 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    ConfigDatabase configdb;
-
     protected @Override IndexDatabase createIndexDatabase(boolean readOnly) throws IOException {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-
-        closeConfigDb();
-
-        configdb = new PGConfigDatabase(config);
-        PGIndexDatabase db = new PGIndexDatabase(configdb, config, readOnly);
+        Environment env = testConfig.getEnvironment(readOnly);
+        PGStorage.createNewRepo(env);
+        PGIndexDatabase db = new PGIndexDatabase(new PGConfigDatabase(env), env);
         return db;
     }
 
-    @After
-    public void closeConfigDb() throws IOException {
-        if (configdb != null) {
-            configdb.close();
-            configdb = null;
-        }
-    }
-
     public @Test void testCopyIndexesToSameDatabase() {
-        Environment newRepoConfig = testConfig.getEnvironment().asRepository("targetRepo");
+        Environment newRepoConfig = testConfig.getEnvironment().withRepository("targetRepo");
         testCopyIndexesToSameDatabase(newRepoConfig);
     }
 
@@ -69,15 +53,16 @@ public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest
         try {
             testCopyIndexesToSameDatabase(targetEnv);
         } finally {
-            testConfig.delete(targetEnv);
+            testConfig.deleteTables(targetEnv);
+            targetEnv.close();
         }
     }
 
-    private void testCopyIndexesToSameDatabase(Environment newRepoConfig) {
-        assertTrue(PGStorage.createNewRepo(newRepoConfig));
-        PGConfigDatabase targetRepoConfigDb = new PGConfigDatabase(newRepoConfig);
+    private void testCopyIndexesToSameDatabase(Environment targetRepoEnvironment) {
+        assertTrue(PGStorage.createNewRepo(targetRepoEnvironment));
+        PGConfigDatabase targetRepoConfigDb = new PGConfigDatabase(targetRepoEnvironment);
         try {
-            PGIndexDatabase target = new PGIndexDatabase(targetRepoConfigDb, newRepoConfig, false);
+            PGIndexDatabase target = new PGIndexDatabase(targetRepoConfigDb, targetRepoEnvironment);
             try {
                 target.open();
                 super.testCopyIndexesTo(target);

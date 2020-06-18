@@ -245,10 +245,10 @@ public class RevParseTest extends RepositoryTestCase {
 
         RevParse revParse = repo.command(RevParse.class);
 
-        for (int i = 0; i < numCommits; i += 100) {
-            Optional<ObjectId> ancestorN = revParse.setRefSpec("HEAD~" + i).call();
-            assertTrue("Ancestor " + i + " not found", ancestorN.isPresent());
-            assertEquals("at index " + i, commits.get(i).getId(), ancestorN.get());
+        for (int parentN = 0; parentN < numCommits; parentN += 1000) {
+            Optional<ObjectId> ancestorN = revParse.setRefSpec("HEAD~" + parentN).call();
+            assertTrue("Ancestor " + parentN + " not found", ancestorN.isPresent());
+            assertEquals("at index " + parentN, commits.get(parentN).getId(), ancestorN.get());
         }
     }
 

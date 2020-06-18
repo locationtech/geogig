@@ -23,7 +23,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
@@ -68,7 +67,7 @@ class GetAllOp<T extends RevObject> implements Callable<List<T>> {
                     "SELECT ((id).h1), ((id).h2),((id).h3), object FROM %s WHERE ((id).h1) = ANY(?)",
                     tableName);
 
-            try (Connection cx = PGStorage.newConnection(db.dataSource)) {
+            try (Connection cx = db.env.getConnection()) {
                 try (PreparedStatement ps = cx
                         .prepareStatement(log(sql, PGObjectStore.LOG, queryIds))) {
                     final Array array = toJDBCArray(cx, queryIds);

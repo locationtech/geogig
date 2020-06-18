@@ -47,8 +47,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
-import javax.sql.DataSource;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -72,7 +70,6 @@ import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,13 +99,11 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     private static final ObjectStoreSharedResources SHARED_RESOURCES = new ObjectStoreSharedResources();
 
-    protected final Environment config;
+    final Environment env;
 
     protected final ConfigDatabase configdb;
 
     static final PGSerializationProxy encoder = new PGSerializationProxy();
-
-    protected DataSource dataSource;
 
     ObjectCache sharedCache = null;
 
@@ -118,23 +113,17 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     private SharedResourceReference resources;
 
-    public PGObjectStore(final @NonNull ConfigDatabase configdb, final @NonNull Environment config,
-            boolean readOnly) {
-        super(readOnly);
-        Preconditions.checkNotNull(config.getRepositoryName(), "Repository id not provided");
-        // REVISIT: the following check should be done at open() instead?
-        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-                config.getRepositoryName());
+    public PGObjectStore(final @NonNull ConfigDatabase configdb, final @NonNull Environment env) {
+        super(env.isReadOnly());
+        Preconditions.checkNotNull(env.getRepositoryName(), "Repository name not set");
         this.configdb = configdb;
-        this.config = config;
+        this.env = env;
     }
 
     public @Override void open() {
         if (isOpen()) {
             return;
         }
-        dataSource = PGStorage.newDataSource(config);
-
         Optional<Integer> getAllFetchSize = configdb.get(KEY_GETALL_BATCH_SIZE, Integer.class);
         Optional<Integer> putAllBatchSize = configdb.get(KEY_PUTALL_BATCH_SIZE, Integer.class);
         Optional<Integer> tpoolSize = configdb.getGlobal(KEY_THREADPOOL_SIZE, Integer.class);
@@ -163,7 +152,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
             threadPoolSize = Math.max(Runtime.getRuntime().availableProcessors(), 2);
         }
 
-        final ConnectionConfig connectionConfig = config.connectionConfig;
+        final ConnectionConfig connectionConfig = env.getConnectionConfig();
         this.resources = SHARED_RESOURCES.acquire(connectionConfig);
         resources.trySetThreadPoolSize(threadPoolSize);
 
@@ -185,20 +174,15 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
     public @Override void close() {
         if (isOpen()) {
             super.close();
-            DataSource ds = this.dataSource;
+            env.close();
             SharedResourceReference res = this.resources;
             ObjectCache sharedCache = this.sharedCache;
-            this.dataSource = null;
             this.resources = null;
             this.sharedCache = null;
-            try {
-                PGStorage.closeDataSource(ds);
-            } finally {
-                if (res != null) {
-                    SHARED_RESOURCES.release(res);
-                }
-                CacheManager.INSTANCE.release(sharedCache);
+            if (res != null) {
+                SHARED_RESOURCES.release(res);
             }
+            CacheManager.INSTANCE.release(sharedCache);
         }
     }
 
@@ -213,13 +197,13 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
     }
 
     protected String objectsTable() {
-        return config.getTables().objects();
+        return env.getTables().objects();
     }
 
     public @Override boolean exists(final ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         if (sharedCache.contains(id)) {
             return true;
         }
@@ -227,7 +211,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
                 "SELECT TRUE WHERE EXISTS ( SELECT 1 FROM %s WHERE ((id).h1) = ? AND id = CAST(ROW(?,?,?) AS OBJECTID) )",
                 objectsTable());
         final PGId pgid = PGId.valueOf(id);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -246,14 +230,14 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
         checkState(isOpen(), "db is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         final int hash1 = RevObjects.h1(partialId);
         final String sql = format(
                 "SELECT ((id).h2), ((id).h3) FROM %s WHERE ((id).h1) = ? LIMIT 1000",
                 objectsTable());
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 ps.setInt(1, hash1);
 
@@ -279,7 +263,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "db is closed");
 
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         RevObject obj = getIfPresent(id);
         if (obj == null) {
             throw new IllegalArgumentException("Object does not exist: " + id);
@@ -294,7 +278,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(type, "argument class is null");
         checkState(isOpen(), "db is closed");
 
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         RevObject obj = getIfPresent(id, type);
         if (obj == null) {
             throw new IllegalArgumentException("Object does not exist: " + id);
@@ -305,7 +289,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
     public @Override RevObject getIfPresent(ObjectId id) {
         checkNotNull(id, "argument id is null");
         checkState(isOpen(), "db is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         return getIfPresent(id, RevObject.class);
     }
 
@@ -315,7 +299,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(id, "argument id is null");
         checkNotNull(type, "argument class is null");
         checkState(isOpen(), "db is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         final RevObject obj;
         if (RevTree.EMPTY_TREE_ID.equals(id)) {
@@ -330,7 +314,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
             objectType = RevObject.TYPE.valueOf(type);
         }
 
-        obj = getIfPresent(id, objectType, dataSource);
+        obj = getIfPresentInternal(id, objectType);
         if (obj == null) {
             return null;
         }
@@ -378,7 +362,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(listener, "listener is null");
         checkNotNull(type, "type is null");
         checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         Iterator<T> stream = new PGObjectStoreGetAllIterator(ids.iterator(), type, listener, this);
 
@@ -391,7 +375,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(listener, "listener is null");
         checkNotNull(type, "type is null");
         checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         AutoCloseableIterator<ObjectInfo<T>> stream = new PGObjectStoreObjectIterator<T>(refs, type,
                 listener, this);
@@ -403,14 +387,14 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
         checkWritable();
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         final ObjectId id = object.getId();
         final PGId pgid = PGId.valueOf(id);
         final String tableName = tableNameForType(object.getType(), pgid);
         final String sql = format("INSERT INTO %s (id, object) VALUES (ROW(?,?,?),?)", tableName);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id, object))) {
                 pgid.setArgs(ps, 1);
@@ -433,8 +417,19 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
     public @Override void delete(ObjectId objectId) {
         checkNotNull(objectId, "argument objectId is null");
         checkWritable();
-        config.checkRepositoryExists();
-        delete(objectId, dataSource);
+        env.checkRepositoryExists();
+
+        String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
+                objectsTable());
+
+        try (Connection cx = env.getConnection();
+                PreparedStatement stmt = cx.prepareStatement(sql)) {
+            PGId.valueOf(objectId).setArgs(stmt, 1);
+            stmt.executeUpdate();
+            sharedCache.invalidate(objectId);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public @Override void deleteAll(Iterator<ObjectId> ids) {
@@ -443,7 +438,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     protected String tableNameForType(/* @Nullable */ RevObject.TYPE type, @Nullable PGId pgid) {
         final String tableName;
-        final TableNames tables = config.getTables();
+        final TableNames tables = env.getTables();
         if (type == null) {
             tableName = objectsTable();
         } else {
@@ -477,8 +472,8 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
      * </p>
      */
     @Nullable
-    private RevObject getIfPresent(final ObjectId id, final /* @Nullable */ RevObject.TYPE type,
-            DataSource ds) {
+    private RevObject getIfPresentInternal(final ObjectId id,
+            final /* @Nullable */ RevObject.TYPE type) {
         RevObject cached = sharedCache.getIfPresent(id);
         if (cached != null) {
             return cached;
@@ -499,7 +494,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
         byte[] bytes = null;
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, id))) {
                 ps.setInt(1, pgid.hash1());
                 pgid.setArgs(ps, 2);
@@ -562,28 +557,6 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         return future;
     }
 
-    /**
-     * Deletes the object with the specified id.
-     * 
-     * @return Flag indicating if object was actually removed.
-     */
-
-    private void delete(final ObjectId id, DataSource ds) {
-        String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
-                objectsTable());
-
-        try (Connection cx = PGStorage.newConnection(ds)) {
-            cx.setAutoCommit(true);
-            try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG, id))) {
-                PGId.valueOf(id).setArgs(stmt, 1);
-                stmt.executeUpdate();
-                sharedCache.invalidate(id);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     protected static class EncodedObject {
 
         private RevObject object;
@@ -622,8 +595,6 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
     private static class InsertDbOp implements Callable<Void> {
 
-        private final DataSource ds;
-
         private final AtomicReference<Throwable> abortFlag;
 
         private final BulkOpListener listener;
@@ -634,7 +605,6 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
 
         InsertDbOp(AtomicReference<Throwable> abortFlag, List<EncodedObject> batch,
                 BulkOpListener listener, PGObjectStore objectStore) {
-            this.ds = objectStore.dataSource;
             this.abortFlag = abortFlag;
             this.batch = batch;
             this.listener = listener;
@@ -649,7 +619,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
             if (isAborted()) {
                 return null;
             }
-            try (Connection cx = PGStorage.newConnection(ds)) {
+            try (Connection cx = objectStore.env.getConnection()) {
                 Map<EncodedObject, Boolean> insertResults = Collections.emptyMap();
                 cx.setAutoCommit(false);
                 try {
@@ -764,7 +734,7 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(objects, "objects is null");
         checkNotNull(listener, "listener is null");
         checkWritable();
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         Iterator<EncodedObject> encoded;
         {
@@ -860,12 +830,12 @@ public class PGObjectStore extends AbstractStore implements ObjectStore {
         checkNotNull(ids, "argument objectId is null");
         checkNotNull(listener, "argument listener is null");
         checkWritable();
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
 
         final String sql = format("DELETE FROM %s WHERE id = CAST(ROW(?,?,?) AS OBJECTID)",
                 objectsTable());
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement stmt = cx.prepareStatement(log(sql, LOG))) {
                 // partition the objects into chunks for batch processing

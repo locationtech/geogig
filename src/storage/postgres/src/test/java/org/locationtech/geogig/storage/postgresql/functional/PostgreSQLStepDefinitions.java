@@ -16,7 +16,7 @@ import java.util.List;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 
 import com.google.common.collect.Lists;
 
@@ -60,9 +60,9 @@ public class PostgreSQLStepDefinitions {
             PGTemporaryTestConfig testConfig = PGTestUtil.newTestConfig(repoName);
             testConfig.before();
 
-            String repoURI = testConfig.getRepoURL();
+            URI repoURI = testConfig.getEnvironment().toURI();
             testConfigs.add(testConfig);
-            return new URI(repoURI);
+            return repoURI;
         }
 
         public @Override URI buildRootURI(Platform platform) {

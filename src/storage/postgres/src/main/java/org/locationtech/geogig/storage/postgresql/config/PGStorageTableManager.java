@@ -3,7 +3,6 @@ package org.locationtech.geogig.storage.postgresql.config;
 import static java.lang.String.format;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,8 +13,6 @@ import org.locationtech.geogig.porcelain.VersionInfo;
 import org.locationtech.geogig.porcelain.VersionOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Throwables;
 
 public abstract class PGStorageTableManager {
 
@@ -138,6 +135,8 @@ public abstract class PGStorageTableManager {
     public List<String> createDDL(final String databaseName, final TableNames tables) {
         List<String> ddl = new ArrayList<>();
 
+        ddl.add("-- Use pg_trgm to create a gin indexe for fast LIKE queries on the refs table");
+        ddl.add("CREATE EXTENSION IF NOT EXISTS pg_trgm;");
         ddl.add("-- tell postgres to send bytea fields in a more compact format than hex encoding");
         ddl.add("SELECT pg_advisory_lock(-1);");
         String sql = format("do language plpgsql\n"//
@@ -211,29 +210,8 @@ public abstract class PGStorageTableManager {
     }
 
     public void createTables(Connection cx, Environment config) throws SQLException {
-        final TableNames tables = config.getTables();
-        final String reposTable = tables.repositories();
-        final String schema = PGStorageTableManager.schema(reposTable);
-        final String table = PGStorageTableManager.stripSchema(reposTable);
-
-        DatabaseMetaData md = cx.getMetaData();
-        try (ResultSet rs = md.getTables(null, schema, table, null)) {
-            if (rs.next()) {
-                return;
-            }
-        }
         final List<String> ddl = createDDL(config);
-        try {
-            cx.setAutoCommit(false);
-            runScript(cx, ddl);
-            cx.commit();
-        } catch (SQLException | RuntimeException e) {
-            cx.rollback();
-            Throwables.throwIfInstanceOf(e, SQLException.class);
-            throw e;
-        } finally {
-            cx.setAutoCommit(true);
-        }
+        runScript(cx, ddl);
     }
 
     public void runScript(Connection cx, final List<String> ddl) throws SQLException {
@@ -328,8 +306,7 @@ public abstract class PGStorageTableManager {
         String sql = funcSql.toString();
         ddl.add(sql);
 
-        sql = format(
-                "CREATE TRIGGER %s BEFORE INSERT ON " + "%s FOR EACH ROW EXECUTE PROCEDURE %s();",
+        sql = format("CREATE TRIGGER %s BEFORE INSERT ON %s FOR EACH ROW EXECUTE PROCEDURE %s();",
                 triggerFunction, parentTable, triggerFunction);
         ddl.add(sql);
     }
@@ -343,10 +320,10 @@ public abstract class PGStorageTableManager {
     protected void createIgnoreDuplicatesRule(List<String> ddl, String tableName) {
         String rulePrefix = stripSchema(tableName);
 
-        String rule = "CREATE OR REPLACE RULE " + rulePrefix
+        String rule = "CREATE OR REPLACE RULE " + rulePrefix //
                 + "_ignore_duplicate_inserts AS ON INSERT TO " + tableName
                 + " WHERE (EXISTS ( SELECT 1 FROM " + tableName
-                + " WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id))" + " DO INSTEAD NOTHING;";
+                + " WHERE ((id).h1) = (NEW.id).h1 AND id = NEW.id)) DO INSTEAD NOTHING;";
         ddl.add(rule);
     }
 
@@ -429,12 +406,18 @@ public abstract class PGStorageTableManager {
     }
 
     protected void createRefsTable(List<String> ddl, TableNames tables) {
-        final String TABLE_STMT = format(
-                "CREATE TABLE %s (" + "repository INTEGER, path TEXT, name TEXT, value TEXT, "
-                        + "PRIMARY KEY(repository, path, name), "
-                        + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
-                tables.refs(), tables.repositories());
+        final String refsTable = tables.refs();
+        final String TABLE_STMT = format("CREATE TABLE %s ("//
+                + "repository INTEGER, path TEXT, name TEXT, value TEXT, "
+                + "PRIMARY KEY(repository, path, name), "
+                + "FOREIGN KEY (repository) REFERENCES %s(repository) ON DELETE CASCADE);",
+                refsTable, tables.repositories());
         ddl.add(TABLE_STMT);
+        final String indexName = stripSchema(refsTable);
+        final String INDEX_STMT = format(
+                "CREATE INDEX %s_full_name ON %s USING gin ( (path || name ) gin_trgm_ops);",
+                indexName, refsTable);
+        ddl.add(INDEX_STMT);
     }
 
     protected void createConfigTable(List<String> ddl, TableNames tables) {
@@ -450,7 +433,7 @@ public abstract class PGStorageTableManager {
         sql = format("CREATE INDEX %s_section_idx ON %s (repository, section);",
                 stripSchema(configTable), configTable);
         ddl.add(sql);
-        sql = format("CREATE VIEW %s " + "AS SELECT r.*, c.value AS name FROM "
+        sql = format("CREATE VIEW %s AS SELECT r.*, c.value AS name FROM "
                 + "%s r INNER JOIN %s c ON r.repository = c.repository WHERE c.section = 'repo' AND c.key = 'name';",
                 viewName, repositories, configTable);
         ddl.add(sql);

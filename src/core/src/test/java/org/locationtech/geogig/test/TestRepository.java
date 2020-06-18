@@ -3,7 +3,6 @@ package org.locationtech.geogig.test;
 import java.io.File;
 import java.net.URI;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -23,6 +22,7 @@ import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
 import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
+import lombok.Setter;
 
 public class TestRepository extends ExternalResource {
 
@@ -34,6 +34,8 @@ public class TestRepository extends ExternalResource {
 
     private TestPlatform platform;
 
+    private @Setter boolean removeRepositoriesAtTearDown = true;
+
     public @Override Statement apply(Statement base, Description description) {
         String className = description.getClassName();
         this.testMemoryContext = className.substring(className.lastIndexOf('.') + 1);
@@ -42,9 +44,11 @@ public class TestRepository extends ExternalResource {
     }
 
     public @Override void after() {
-        Collection<Repository> repos = repositories.values();
-        for (Repository repo : repos) {
-            closeAndDelete(repo);
+        if (removeRepositoriesAtTearDown) {
+            Collection<Repository> repos = repositories.values();
+            for (Repository repo : repos) {
+                closeAndDelete(repo);
+            }
         }
         MemoryRepositoryResolver.removeContext(testMemoryContext);
     }

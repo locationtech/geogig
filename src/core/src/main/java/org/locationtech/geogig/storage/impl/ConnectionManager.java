@@ -52,7 +52,7 @@ public abstract class ConnectionManager<A, C> {
         }
     }
 
-    private final ConcurrentHashMap<A, PoolEntry<C>> pool = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<A, PoolEntry<C>> pool = new ConcurrentHashMap<>();
 
     public final C acquire(A address) {
         PoolEntry<C> entry = pool.computeIfAbsent(address, this::connectInternal);
@@ -63,6 +63,12 @@ public abstract class ConnectionManager<A, C> {
     private PoolEntry<C> connectInternal(A address) {
         C connection = connect(address);
         return new PoolEntry<C>(connection);
+    }
+
+    public final void releaseAll() {
+        ConcurrentHashMap<A, PoolEntry<C>> pool = this.pool;
+        this.pool = new ConcurrentHashMap<>();
+        pool.values().forEach(v -> disconnect(v.connection));
     }
 
     public final boolean release(C connection) {

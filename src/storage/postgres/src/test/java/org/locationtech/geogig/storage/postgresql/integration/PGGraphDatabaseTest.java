@@ -14,10 +14,10 @@ import org.junit.Rule;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.v9.PGGraphDatabase;
 
 public class PGGraphDatabaseTest extends GraphDatabaseTest {
@@ -28,9 +28,9 @@ public class PGGraphDatabaseTest extends GraphDatabaseTest {
             getClass().getSimpleName(), ds);
 
     protected @Override GraphDatabase createDatabase(Platform platform) throws Exception {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-        return new PGGraphDatabase(config, false);
+        Environment env = testConfig.getEnvironment();
+        PGStorage.createNewRepo(env);
+        return new PGGraphDatabase(env);
     }
 
 }

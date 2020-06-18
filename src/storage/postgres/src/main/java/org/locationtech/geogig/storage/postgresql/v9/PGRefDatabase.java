@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
-import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newConnection;
 
 import java.net.URISyntaxException;
 import java.sql.Connection;
@@ -23,17 +22,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
-import javax.sql.DataSource;
-
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,45 +45,29 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private static ThreadLocal<Connection> LockConnection = new ThreadLocal<>();
 
-    private Environment config;
-
-    private DataSource dataSource;
+    private Environment env;
 
     private final PGRefDatabaseWorker worker;
 
-    public PGRefDatabase(Hints hints) throws URISyntaxException {
-        super(Hints.isRepoReadOnly(hints));
-        Environment config = Environment.get(hints);
-
-        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-                config.getRepositoryName());
-        Preconditions.checkState(config.isRepositorySet());
-
-        this.config = config;
-        this.worker = new PGRefDatabaseWorker(config);
+    public PGRefDatabase(Environment env) throws URISyntaxException {
+        super(env.isReadOnly());
+        Preconditions.checkState(env.isRepositoryNameSet());
+        this.env = env;
+        this.worker = new PGRefDatabaseWorker(env);
     }
 
     public @Override void checkOpen() {
         super.checkOpen();
-        Preconditions.checkState(config.isRepositorySet(), "Repository ID is not set");
+        Preconditions.checkState(env.canResolveRepositoryId(), "Repository ID is not set");
     }
 
-    public @Override synchronized void open() {
-        if (!isOpen()) {
-            dataSource = PGStorage.newDataSource(config);
-            super.open();
-        }
+    public @Override void open() {
+        super.open();
     }
 
-    public @Override synchronized void close() {
+    public @Override void close() {
         super.close();
-        if (dataSource != null) {
-            try {
-                PGStorage.closeDataSource(dataSource);
-            } finally {
-                dataSource = null;
-            }
-        }
+        env.close();
     }
 
     public @Override void lock() throws TimeoutException {
@@ -97,15 +76,15 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     }
 
     @VisibleForTesting
-    void lockWithTimeout(int timeout) throws TimeoutException {
-        Preconditions.checkState(config.isRepositorySet());
-        final int repo = config.getRepositoryId();
+    synchronized void lockWithTimeout(int timeout) throws TimeoutException {
+        Preconditions.checkState(env.isRepositoryIdSet());
+        final int repo = env.getRepositoryId();
         Connection c = LockConnection.get();
         if (c == null) {
-            c = newConnection(dataSource);
+            c = env.getConnection();
             LockConnection.set(c);
         }
-        final String repoTable = config.getTables().repositories();
+        final String repoTable = env.getTables().repositories();
         final String sql = format(
                 "SELECT pg_advisory_lock((SELECT repository FROM %s WHERE repository=?));",
                 repoTable);
@@ -132,9 +111,9 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
     public @Override void unlock() {
         checkWritable();
 
-        final int repo = config.getRepositoryId();
+        final int repo = env.getRepositoryId();
 
-        final String repoTable = config.getTables().repositories();
+        final String repoTable = env.getTables().repositories();
         final String sql = format(
                 "SELECT pg_advisory_unlock((SELECT repository FROM %s WHERE repository=?));",
                 repoTable);
@@ -236,7 +215,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private <T> T run(Command<T> cmd) {
         T result;
-        try (Connection conn = dataSource.getConnection()) {
+        try (Connection conn = env.getConnection()) {
             result = cmd.run(conn);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -246,7 +225,7 @@ public class PGRefDatabase extends AbstractStore implements RefDatabase {
 
     private <T> T runInTransaction(Command<T> cmd) {
         T result;
-        try (Connection conn = dataSource.getConnection()) {
+        try (Connection conn = env.getConnection()) {
             conn.setAutoCommit(false);
             try {
                 result = cmd.run(conn);

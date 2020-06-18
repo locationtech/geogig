@@ -7,10 +7,8 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.test.integration.OnlineTestProperties;
 
 public class PGTestProperties extends OnlineTestProperties {
@@ -33,11 +31,7 @@ public class PGTestProperties extends OnlineTestProperties {
         super(CONFIG_FILE, DEFAULTS);
     }
 
-    public Environment newConfig(@Nullable String repositoryId) {
-        return newConfig(repositoryId, null);
-    }
-
-    public Environment newConfig(@Nullable String repositoryId, @Nullable String tablePrefix) {
+    public ConnectionConfig getConnectionConfig() {
         String server = get(Environment.KEY_DB_SERVER, String.class).orElse(null);
         String port = get(Environment.KEY_DB_PORT, String.class).orElse("5432");
         String schema = get(Environment.KEY_DB_SCHEMA, String.class).orElse("public");
@@ -45,30 +39,9 @@ public class PGTestProperties extends OnlineTestProperties {
         String user = get(Environment.KEY_DB_USERNAME, String.class).orElse(null);
         String pwd = get(Environment.KEY_DB_PASSWORD, String.class).orElse(null);
         int portNumber = Integer.parseInt(port);
-        return new Environment(server, portNumber, dbName, schema, user, pwd, repositoryId,
-                tablePrefix);
-    }
-
-    public String buildRepoURL(@Nullable String repoId, @Nullable String tablePrefix) {
-        String server = get(Environment.KEY_DB_SERVER, String.class).orElse(null);
-        String port = get(Environment.KEY_DB_PORT, String.class).orElse("5432");
-        String schema = get(Environment.KEY_DB_SCHEMA, String.class).orElse("public");
-        String dbName = get(Environment.KEY_DB_NAME, String.class).orElse(null);
-        String user = get(Environment.KEY_DB_USERNAME, String.class).orElse(null);
-        String pwd = get(Environment.KEY_DB_PASSWORD, String.class).orElse(null);
-        String url;
-        if (repoId == null) {
-            url = String.format("postgresql://%s:%s/%s/%s?user=%s&password=%s", server, port,
-                    dbName, schema, user, pwd);
-        } else {
-            url = String.format("postgresql://%s:%s/%s/%s/%s?user=%s&password=%s", server, port,
-                    dbName, schema, repoId, user, pwd);
-        }
-
-        if (tablePrefix != null) {
-            url += "&tablePrefix=" + tablePrefix;
-        }
-        return url;
+        ConnectionConfig config = new ConnectionConfig(server, portNumber, dbName, schema, user,
+                pwd, null);
+        return config;
     }
 
 }

@@ -155,7 +155,15 @@ public abstract class RepositoryTestCase extends Assert {
             throw new IllegalStateException("Are you calling super.setUp()!?");
         }
         setup = true;
+        beforeSetup();
         doSetUp();
+    }
+
+    /**
+     * To be overridden if some subclass needs to set up some state before {@link #doSetUp()}
+     */
+    protected void beforeSetup() {
+        //
     }
 
     @After

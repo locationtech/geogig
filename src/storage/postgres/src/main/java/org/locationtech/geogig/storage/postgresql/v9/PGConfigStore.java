@@ -29,8 +29,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntSupplier;
 
-import javax.sql.DataSource;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.AbstractStore;
@@ -39,7 +37,6 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConfigStore;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,9 +67,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
 
     static final Logger LOG = LoggerFactory.getLogger(PGConfigStore.class);
 
-    private final Environment config;
-
-    private DataSource dataSource;
+    private final Environment env;
 
     private Version _serverVersion;
 
@@ -81,7 +76,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     public PGConfigStore(@NonNull Environment environment,
             @NonNull IntSupplier repositoryIdSupplier) {
         super(false);
-        this.config = environment;
+        this.env = environment;
         this.repositoryIdSupplier = repositoryIdSupplier;
     }
 
@@ -89,9 +84,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
         return repositoryIdSupplier.getAsInt();
     }
 
-    private Version serverVersion(Connection cx) throws SQLException {
+    private Version serverVersion() {
         if (_serverVersion == null) {
-            _serverVersion = PGStorage.getServerVersion(cx);
+            _serverVersion = env.getServerVersion();
         }
         return _serverVersion;
     }
@@ -196,12 +191,12 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
 
         final String sql = format(
                 "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
-                config.getTables().config());
+                env.getTables().config());
 
         final String s = entry.section;
         final String k = entry.key;
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, s, k))) {
                 ps.setInt(1, repositoryPK);
                 ps.setString(2, s);
@@ -219,9 +214,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     protected Map<String, String> all(final int repositoryPK) {
 
         final String sql = format("SELECT section,key,value FROM %s WHERE repository = ?",
-                config.getTables().config());
+                env.getTables().config());
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK))) {
                 ps.setInt(1, repositoryPK);
                 Map<String, String> all = new LinkedHashMap<>();
@@ -240,9 +235,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
 
     protected Map<String, String> all(final String section, final int repositoryPK) {
         final String sql = format("SELECT key,value FROM %s WHERE repository = ? AND section = ?",
-                config.getTables().config());
+                env.getTables().config());
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, section))) {
                 ps.setInt(1, repositoryPK);
                 ps.setString(2, section);
@@ -265,9 +260,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     protected List<String> list(final String section, final int repositoryPK) {
         String sql = format(
                 "SELECT DISTINCT section FROM %s WHERE repository = ? AND section LIKE ?",
-                config.getTables().config());
+                env.getTables().config());
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             List<String> all = new ArrayList<>(1);
 
             final String sectionPrefix = section + (section.endsWith(".") ? "" : ".");
@@ -300,7 +295,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     private String insertSql() {
         if (_INSERT == null) {
             _INSERT = format("insert into %s (repository, section, key, value) values(?, ?, ?, ?)",
-                    config.getTables().config());
+                    env.getTables().config());
         }
         return _INSERT;
     }
@@ -309,15 +304,15 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
         if (_UPSERT == null) {
             _UPSERT = format(
                     "insert into %s (repository, section, key, value) values(?, ?, ?, ?) ON CONFLICT (repository, section, key) DO UPDATE SET value = ?",
-                    config.getTables().config());
+                    env.getTables().config());
         }
         return _UPSERT;
     }
 
     private void put(final Map<Entry, String> entries, final int repositoryPK) {
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
-            final Version version = serverVersion(cx);
+        final Version version = serverVersion();
+        try (Connection cx = env.getConnection()) {
             final boolean useUpsert = version.greatherOrEqualTo(Version.V9_5_0);
             final String sql = useUpsert ? upsertSql() : insertSql();
 
@@ -374,7 +369,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     }
 
     private void remove(final Entry entry, final int repositoryPK) {
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             doRemove(entry, cx, repositoryPK);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -385,7 +380,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
             throws SQLException {
 
         final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ? AND key = ?",
-                config.getTables().config());
+                env.getTables().config());
 
         final String s = entry.section;
         final String k = entry.key;
@@ -402,9 +397,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
 
     protected void removeSection(final String section, final int repositoryId) {
         final String sql = format("DELETE FROM %s WHERE repository = ? AND section = ?",
-                config.getTables().config());
+                env.getTables().config());
 
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryId, section))) {
                 ps.setInt(1, repositoryId);
                 ps.setString(2, section);
@@ -418,23 +413,9 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
         }
     }
 
-    synchronized DataSource connect(final Environment config) {
-        if (this.dataSource == null) {
-            this.dataSource = PGStorage.newDataSource(config);
-            if (!PGStorage.tableExists(this.dataSource, config.getTables().config())) {
-                PGStorage.createTables(config);
-            }
-            PGStorage.verifyDatabaseCompatibility(dataSource, config);
-        }
-        return dataSource;
-    }
-
-    public @Override synchronized void close() {
+    public @Override void close() {
         super.close();
-        if (dataSource != null) {
-            PGStorage.closeDataSource(dataSource);
-            dataSource = null;
-        }
+        env.close();
     }
 
     /**
@@ -452,7 +433,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
      */
     public Optional<Integer> resolveRepositoryPK(String repositoryName) throws SQLException {
         checkNotNull(repositoryName, "provided null repository name");
-        try (Connection cx = PGStorage.newConnection(connect(config))) {
+        try (Connection cx = env.getConnection()) {
             return resolveRepositoryPK(repositoryName, cx);
         }
     }
@@ -460,7 +441,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     private Optional<Integer> resolveRepositoryPK(String repositoryName, Connection cx)
             throws SQLException {
 
-        final String configTable = config.getTables().repositoryNamesView();
+        final String configTable = env.getTables().repositoryNamesView();
         final String sql = format("SELECT repository FROM %s WHERE name = ?", configTable);
 
         Integer repoPK = null;

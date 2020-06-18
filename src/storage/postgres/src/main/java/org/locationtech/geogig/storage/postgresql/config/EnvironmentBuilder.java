@@ -34,12 +34,20 @@ import lombok.NonNull;
 
 public class EnvironmentBuilder {
 
-    private Environment config;
+    private Environment environment;
 
-    public EnvironmentBuilder(Hints hints) throws URISyntaxException {
+    private boolean readOnly;
+
+    public EnvironmentBuilder(Hints hints) {
+        this.readOnly = Hints.isRepoReadOnly(hints);
         Optional<Serializable> repoUrl = hints.get(Hints.REPOSITORY_URL);
         checkArgument(repoUrl.isPresent(), "%s was not given", Hints.REPOSITORY_URL);
-        URI url = new URI(String.valueOf(repoUrl.get()));
+        URI url;
+        try {
+            url = new URI(String.valueOf(repoUrl.get()));
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Error parsing repository URI", e);
+        }
         init(url, false);
     }
 
@@ -153,18 +161,22 @@ public class EnvironmentBuilder {
         if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
             tablePrefix = null;
         }
-        this.config = new Environment(server, port, databaseName, schema, userName, password,
-                repoId, tablePrefix);
+
+        ConnectionConfig config = new ConnectionConfig(server, port, databaseName, schema, userName,
+                password, tablePrefix);
+
+        this.environment = new Environment(config, DataSourceManager.INSTANCE, repoId);
+        this.environment.setReadOnly(this.readOnly);
     }
 
     public Environment build() {
-        return config;
+        return environment;
     }
 
     public static ConnectionConfig parse(URI uri) {
         EnvironmentBuilder eb = new EnvironmentBuilder(uri);
         Environment e = eb.build();
-        return e.connectionConfig;
+        return e.getConnectionConfig();
     }
 
     /**
@@ -236,9 +248,10 @@ public class EnvironmentBuilder {
 
         final int port = Integer.parseInt(portNumber);
 
-        Environment env = new Environment(server, port, databaseName, schema, userName, password,
-                repoName, tablePrefix);
-        final URI repoURI = env.connectionConfig.toURI(repoName);
+        ConnectionConfig config = new ConnectionConfig(server, port, databaseName, schema, userName,
+                password, tablePrefix);
+        Environment env = new Environment(config, DataSourceManager.INSTANCE, repoName);
+        final URI repoURI = env.getConnectionConfig().toURI(repoName);
 
         return repoURI;
     }

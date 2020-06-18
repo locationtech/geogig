@@ -11,7 +11,6 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -21,13 +20,12 @@ import java.util.concurrent.TimeoutException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.RefDatabase;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 import org.locationtech.geogig.test.integration.repository.RefDatabaseTest;
 
 public class PGRefDatabaseTest extends RefDatabaseTest {
@@ -42,9 +40,7 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
     protected @Override RefDatabase createDatabase(Platform platform) throws Exception {
         mainEnvironment = testConfig.getEnvironment();
         PGStorage.createNewRepo(mainEnvironment);
-        URI uri = mainEnvironment.toURI();
-        Hints hints = new Hints().uri(uri);
-        return new PGRefDatabase(hints);
+        return new PGRefDatabase(mainEnvironment);
     }
 
     @Test
@@ -90,14 +86,11 @@ public class PGRefDatabaseTest extends RefDatabaseTest {
     @Test
     public void testLockMultiRepo() throws Exception {
         // Create a second repository in the same database.
-        Environment secondEnvironment = new Environment(mainEnvironment.getServer(),
-                mainEnvironment.getPortNumber(), mainEnvironment.getDatabaseName(),
-                mainEnvironment.getSchema(), mainEnvironment.getUser(),
-                mainEnvironment.getPassword(), getClass().getSimpleName() + "2",
-                mainEnvironment.getTables().getPrefix());
+        Environment secondEnvironment = mainEnvironment
+                .withRepository(getClass().getSimpleName() + "2");
         PGStorage.createNewRepo(secondEnvironment);
 
-        PGRefDatabase secondRefDb = new PGRefDatabase(new Hints().uri(secondEnvironment.toURI()));
+        PGRefDatabase secondRefDb = new PGRefDatabase(secondEnvironment);
         secondRefDb.open();
         PGRefDatabase firstRefDb = PGRefDatabase.class.cast(refDb);
         Callable<Long> lockFirstRepo = new Callable<Long>() {

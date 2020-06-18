@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 
-import java.net.URISyntaxException;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,21 +26,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
@@ -79,60 +73,23 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
 
     private static final String NULL_NAMESPACE = "";
 
-    private final Environment environment;
+    private final Environment env;
 
     private final String conflictsTable;
 
-    private int repositoryId;
-
-    @VisibleForTesting
-    DataSource dataSource;
-
-    /**
-     * @param hints
-     * @throws IllegalArgumentException if {@link Hints#REPOSITORY_URL} is not given in hints
-     * @throws URISyntaxException
-     */
-    public PGConflictsDatabase(@NonNull Hints hints)
-            throws IllegalArgumentException, URISyntaxException {
-        super(Hints.isRepoReadOnly(hints));
-        environment = Environment.get(hints);
-        Preconditions.checkNotNull(environment.getRepositoryName(), "Repository id not provided");
-        conflictsTable = environment.getTables().conflicts();
-        repositoryId = Environment.REPOSITORY_ID_UNSET;
+    public PGConflictsDatabase(@NonNull Environment env) throws IllegalArgumentException {
+        super(env.isReadOnly());
+        Preconditions.checkNotNull(env.getRepositoryName(), "Repository name not provided");
+        this.env = env;
+        this.conflictsTable = env.getTables().conflicts();
     }
 
-    @VisibleForTesting
-    PGConflictsDatabase(DataSource mockSource) {
-        super(false);
-        dataSource = mockSource;
-        environment = null;
-        conflictsTable = "geogig_conflicts";
-    }
-
-    public @Override synchronized void open() {
-        if (dataSource == null) {
-            dataSource = PGStorage.newDataSource(environment);
-            boolean repoExists = PGStorage.repoExists(environment);
-            if (!repoExists) {
-                close();
-                throw new IllegalArgumentException(String.format("Repository %s does not exist",
-                        environment.getRepositoryName()));
-            }
-            repositoryId = environment.getRepositoryId();
-            super.open();
-        }
+    public @Override void open() {
+        super.open();
     }
 
     public @Override synchronized void close() {
         super.close();
-        if (dataSource != null) {
-            try {
-                PGStorage.closeDataSource(dataSource);
-            } finally {
-                dataSource = null;
-            }
-        }
     }
 
     public @Override void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
@@ -144,11 +101,11 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
                 conflictsTable);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             log(sql, LOG, namespace, path, conflict);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace);
                 ps.setString(3, path);
                 ObjectId ancestor = conflict.getAncestor();
@@ -180,14 +137,14 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 "INSERT INTO %s (repository, namespace, path, ancestor, ours, theirs) VALUES (?,?,?,?,?,?)",
                 conflictsTable);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 for (Conflict conflict : conflicts) {
                     final String path = conflict.getPath();
                     Preconditions.checkNotNull(path);
 
-                    ps.setInt(1, repositoryId);
+                    ps.setInt(1, env.getRepositoryId());
                     ps.setString(2, namespace);
                     ps.setString(3, path);
                     ObjectId ancestor = conflict.getAncestor();
@@ -226,9 +183,9 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
 
         Conflict conflict = null;
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace(namespace));
                 ps.setString(3, path);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -255,9 +212,9 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 conflictsTable);
 
         boolean hasConflicts;
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace(namespace));
                 try (ResultSet rs = ps.executeQuery()) {
                     hasConflicts = rs.next();
@@ -293,15 +250,15 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
 
         List<Conflict> batch = new ArrayList<>();
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace(namespace));
                 if (treePath != null) {
                     ps.setString(3, treePath);
                     ps.setString(4, treePath + "/%");
                 }
-                log(sql, LOG, repositoryId, namespace);
+                log(sql, LOG, env.getRepositoryId(), namespace);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String path = rs.getString(1);
@@ -380,9 +337,9 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         }
 
         int count;
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, namespace))) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace);
                 if (null != treePath) {
                     String likeArg = treePath + "/%";
@@ -413,10 +370,10 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 conflictsTable);
         log(sql, LOG, namespace, path);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace);
                 ps.setString(3, path);
                 ps.executeUpdate();
@@ -440,7 +397,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ANY(?)",
                 conflictsTable);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 final int partitionSize = 1000;
@@ -450,7 +407,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                     Array array = cx.createArrayOf("varchar", pathsArg);
 
                     ps.clearParameters();
-                    ps.setInt(1, repositoryId);
+                    ps.setInt(1, env.getRepositoryId());
                     ps.setString(2, namespace);
                     ps.setArray(3, array);
                     ps.executeUpdate();
@@ -473,10 +430,10 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
         sql = format("DELETE FROM %s WHERE repository = ? AND namespace = ?", conflictsTable);
         log(sql, LOG, namespace);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace);
                 ps.executeUpdate();
                 cx.commit();
@@ -504,7 +461,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                 "SELECT path FROM %s WHERE repository = ? AND namespace = ? AND path = ANY(?)",
                 conflictsTable);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(true);
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 Iterable<List<String>> partitions = Iterables.partition(paths, partitionSize);
@@ -513,7 +470,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
                     Array array = cx.createArrayOf("varchar", pathsArg);
 
                     ps.clearParameters();
-                    ps.setInt(1, repositoryId);
+                    ps.setInt(1, env.getRepositoryId());
                     ps.setString(2, namespace);
                     ps.setArray(3, array);
                     try (ResultSet rs = ps.executeQuery()) {
@@ -546,9 +503,9 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
             sql = sb.toString();
         }
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
-                ps.setInt(1, repositoryId);
+                ps.setInt(1, env.getRepositoryId());
                 ps.setString(2, namespace(namespace));
                 if (pathPrefix != null) {
                     ps.setString(3, pathPrefix);

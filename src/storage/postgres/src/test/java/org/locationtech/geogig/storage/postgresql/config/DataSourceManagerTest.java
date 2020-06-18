@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.collect.ImmutableList;
@@ -42,17 +41,19 @@ public class DataSourceManagerTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName());
 
+    private DataSourceManager dsm;
+
     public @Before void before() {
-        DataSourceManager.driverVersionVerified = false;
+        dsm = new DataSourceManager();
+        dsm.driverVersionVerified = false;
     }
 
     public @After void after() {
-        DataSourceManager.driverVersionVerified = false;
+        dsm.releaseAll();
     }
 
     public @Test void testAcquireRelease() {
-        DataSourceManager dsm = new DataSourceManager();
-        ConnectionConfig config = testConfig.getEnvironment().connectionConfig;
+        ConnectionConfig config = testConfig.getEnvironment().getConnectionConfig();
         DataSource ds1 = dsm.acquire(config.getKey());
         assertNotNull(ds1);
         DataSource ds2 = dsm.acquire(config.getKey());
@@ -68,14 +69,11 @@ public class DataSourceManagerTest {
     }
 
     public @Test void testVerifyDriverVersion() {
-        DataSourceManager dsm = new DataSourceManager();
-
         assertEquals(42, dsm.getDriverMajorVersion());
         assertTrue(dsm.verifyDriverVersion());
     }
 
     public @Test void testGetPostgresJars() {
-        DataSourceManager dsm = new DataSourceManager();
         List<String> jarlocations = dsm.getPostgresJars();
         assertNotNull(jarlocations);
         assertEquals("There are more than one postgres jar in the classpath: " + jarlocations, 1,
@@ -83,7 +81,7 @@ public class DataSourceManagerTest {
     }
 
     public @Test void testVerifyDriverVersionInvalid() {
-        DataSourceManager dsm = spy(new DataSourceManager());
+        dsm = spy(new DataSourceManager());
         doReturn(9).when(dsm).getDriverMajorVersion();
         doReturn(11).when(dsm).getDriverMinorVersion();
 
@@ -107,12 +105,12 @@ public class DataSourceManagerTest {
     }
 
     public @Test void testAcquireDriverVersionInvalid() {
-        DataSourceManager dsm = spy(new DataSourceManager());
+        dsm = spy(new DataSourceManager());
         doReturn(9).when(dsm).getDriverMajorVersion();
         doReturn(11).when(dsm).getDriverMinorVersion();
 
         expected.expect(IllegalStateException.class);
         expected.expectMessage("PostgreSQL JDBC Driver version not supported by GeoGig: 9.11");
-        dsm.acquire(testConfig.getEnvironment().connectionConfig.getKey());
+        dsm.acquire(testConfig.getEnvironment().getConnectionConfig().getKey());
     }
 }

@@ -25,8 +25,6 @@ import javax.sql.DataSource;
 
 import org.locationtech.geogig.storage.impl.ConnectionManager;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
@@ -34,20 +32,29 @@ import com.google.common.base.Throwables;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, DataSource> {
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
-    private static final Logger LOG = LoggerFactory.getLogger(DataSourceManager.class);
+@Slf4j
+public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, DataSource>
+        implements PGDataSourceProvider {
+
+    public static final DataSourceManager INSTANCE = new DataSourceManager();
 
     /**
      * Flag to perform the driver version check only once at {@link #connect} ->
      * {@link #verifyDriverVersion()}
      */
     @VisibleForTesting
-    static boolean driverVersionVerified = false;
+    boolean driverVersionVerified = false;
 
-    private static String driverVersion;
+    private String driverVersion;
 
-    private static int driverMajorVersion;
+    private int driverMajorVersion;
+
+    public DataSourceManager() {
+
+    }
 
     @VisibleForTesting
     int getDriverMajorVersion() {
@@ -57,6 +64,18 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
     @VisibleForTesting
     int getDriverMinorVersion() {
         return new org.postgresql.Driver().getMinorVersion();
+    }
+
+    public @Override DataSource get(@NonNull ConnectionConfig config) {
+        return this.acquire(config.getKey());
+    }
+
+    public void close() {
+
+    }
+
+    public @Override void close(DataSource dataSource) {
+        this.release(dataSource);
     }
 
     /**
@@ -99,7 +118,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
     }
 
     void logError(String msg) {
-        LOG.error(msg);
+        log.error(msg);
     }
 
     @VisibleForTesting
@@ -134,11 +153,11 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
         PGSimpleDataSource pgSimpleDataSource = new PGSimpleDataSource();
         pgSimpleDataSource.setBinaryTransfer(true);
         pgSimpleDataSource.setApplicationName("geogig");
-        pgSimpleDataSource.setServerName(connInfo.server);
-        pgSimpleDataSource.setDatabaseName(connInfo.databaseName);
-        pgSimpleDataSource.setPortNumber(connInfo.portNumber);
-        pgSimpleDataSource.setUser(connInfo.user);
-        pgSimpleDataSource.setPassword(connInfo.password);
+        pgSimpleDataSource.setServerName(connInfo.getServer());
+        pgSimpleDataSource.setDatabaseName(connInfo.getDatabaseName());
+        pgSimpleDataSource.setPortNumber(connInfo.getPortNumber());
+        pgSimpleDataSource.setUser(connInfo.getUser());
+        pgSimpleDataSource.setPassword(connInfo.getPassword());
         pgSimpleDataSource.setAssumeMinServerVersion("9.4");
         // A value of {@code -1} stands for forceBinary
         pgSimpleDataSource.setPrepareThreshold(-1);
@@ -156,16 +175,20 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
         hc.setMaximumPoolSize(10);
         hc.setMinimumIdle(0);
         // hc.setIdleTimeout(30/* seconds */);
-        hc.setUsername(connInfo.user);
-        hc.setPassword(connInfo.password);
+        hc.setUsername(connInfo.getUser());
+        hc.setPassword(connInfo.getPassword());
         hc.setConnectionTimeout(5000);
 
-        String jdbcUrl = connInfo.server + ":" + connInfo.portNumber + "/" + connInfo.databaseName;
-        LOG.debug("Connecting to " + jdbcUrl + " as user " + connInfo.user);
+        String jdbcUrl = connInfo.getServer() + ":" + connInfo.getPortNumber() + "/"
+                + connInfo.getDatabaseName();
+        log.debug("Connecting to " + jdbcUrl + " as user " + connInfo.getUser());
         HikariDataSource ds = new HikariDataSource(hc);
 
-        final String configTable = (connInfo.tablePrefix == null ? TableNames.DEFAULT_TABLE_PREFIX
-                : connInfo.tablePrefix) + "config";
+        final String configTable = (connInfo.getTablePrefix() == null
+                ? TableNames.DEFAULT_TABLE_PREFIX
+                : connInfo.getTablePrefix()) + "config";
+
+        int configuredMaxConnections = -1;
         try (Connection c = ds.getConnection()) {
             final String sql = format(
                     "SELECT value FROM %s WHERE repository = ? AND section = ? AND key = ?",
@@ -174,7 +197,7 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
             String section = maxConnections[0];
             String key = maxConnections[1];
             try (PreparedStatement ps = c
-                    .prepareStatement(log(sql, LOG, Environment.GLOBAL_KEY, section, key))) {
+                    .prepareStatement(log(sql, log, Environment.GLOBAL_KEY, section, key))) {
                 ps.setInt(1, Environment.GLOBAL_KEY);
                 ps.setString(2, section);
                 ps.setString(3, key);
@@ -182,22 +205,27 @@ public class DataSourceManager extends ConnectionManager<ConnectionConfig.Key, D
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         String globalMaxConnections = rs.getString(1);
-                        ds.setMaximumPoolSize(Integer.parseInt(globalMaxConnections));
+                        configuredMaxConnections = Integer.parseInt(globalMaxConnections);
                     }
                 }
             } catch (SQLException e) {
                 // tables weren't set up yet
             }
-
-            LOG.debug("Connected to " + jdbcUrl + " as " + connInfo.user);
         } catch (SQLException e) {
-            LOG.error("Unable to connect to " + jdbcUrl + " as " + connInfo.user, e);
+            log.error("Unable to connect to " + jdbcUrl + " as " + connInfo.getUser(), e);
             throw new IllegalArgumentException(e);
         }
+        if (configuredMaxConnections > -1) {
+            ds.close();
+            hc.setMaximumPoolSize(configuredMaxConnections);
+            ds = new HikariDataSource(hc);
+        }
+        log.debug("Connected to " + jdbcUrl + " as " + connInfo.getUser());
         return ds;
     }
 
     protected @Override void disconnect(DataSource ds) {
         ((HikariDataSource) ds).close();
     }
+
 }

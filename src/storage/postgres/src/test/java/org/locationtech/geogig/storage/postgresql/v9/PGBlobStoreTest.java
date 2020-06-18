@@ -11,15 +11,12 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import java.io.File;
 
-import javax.sql.DataSource;
-
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.locationtech.geogig.transaction.TransactionBlobStoreTest;
 
@@ -30,24 +27,11 @@ public class PGBlobStoreTest extends TransactionBlobStoreTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    private DataSource dataSource;
-
     protected @Override TransactionBlobStore createBlobStore(File currentDirectory) {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-
-        dataSource = PGStorage.newDataSource(config);
-        String blobsTable = config.getTables().blobs();
-        int repositoryId = config.getRepositoryId();
-
-        PGBlobStore pgBlobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
+        Environment env = testConfig.getEnvironment();
+        PGStorage.createNewRepo(env);
+        PGBlobStore pgBlobStore = new PGBlobStore(env);
         return pgBlobStore;
     }
 
-    @After
-    public void after() {
-        if (dataSource != null) {
-            PGStorage.closeDataSource(dataSource);
-        }
-    }
 }

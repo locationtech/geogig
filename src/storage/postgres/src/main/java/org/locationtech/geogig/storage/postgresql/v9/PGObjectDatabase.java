@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
@@ -18,7 +17,6 @@ import java.util.stream.Stream;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -38,9 +36,8 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     private PGGraphDatabase graph;
 
-    public PGObjectDatabase(final ConfigDatabase configdb, final Hints hints)
-            throws URISyntaxException {
-        this(configdb, Environment.get(hints), Hints.isRepoReadOnly(hints));
+    public PGObjectDatabase(final ConfigDatabase configdb, final Environment env) {
+        super(configdb, env);
     }
 
     protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
@@ -48,20 +45,11 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
         return cacheIdentifier;
     }
 
-    public PGObjectDatabase(final ConfigDatabase configdb, final Environment config,
-            final boolean readOnly) {
-        super(configdb, config, readOnly);
-    }
-
     public @Override void open() {
         if (!isOpen()) {
             super.open();
-            Preconditions.checkState(super.dataSource != null);
-            final int repositoryId = config.getRepositoryId();
-            final String blobsTable = config.getTables().blobs();
-
-            blobStore = new PGBlobStore(dataSource, blobsTable, repositoryId);
-            graph = new PGGraphDatabase(config, isReadOnly());
+            blobStore = new PGBlobStore(env);
+            graph = new PGGraphDatabase(env);
             graph.open();
         }
     }
@@ -79,13 +67,13 @@ public class PGObjectDatabase extends PGObjectStore implements ObjectDatabase {
 
     public @Override PGBlobStore getBlobStore() {
         Preconditions.checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         return blobStore;
     }
 
     public @Override GraphDatabase getGraphDatabase() {
         Preconditions.checkState(isOpen(), "Database is closed");
-        config.checkRepositoryExists();
+        env.checkRepositoryExists();
         return graph;
     }
 

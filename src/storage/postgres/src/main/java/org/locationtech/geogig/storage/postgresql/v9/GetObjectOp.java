@@ -26,7 +26,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 
 import com.google.common.collect.Sets;
 
@@ -65,7 +64,7 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
 
         Map<ObjectId, byte[]> queryMatches = new HashMap<>();
 
-        try (Connection cx = PGStorage.newConnection(db.dataSource)) {
+        try (Connection cx = db.env.getConnection()) {
 
             final Array array = toJDBCArray(cx, queryNodes);
 

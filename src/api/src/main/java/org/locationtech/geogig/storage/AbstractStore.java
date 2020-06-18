@@ -11,9 +11,9 @@ package org.locationtech.geogig.storage;
 
 public abstract class AbstractStore implements Store {
 
-    protected boolean readOnly;
+    protected volatile boolean readOnly;
 
-    protected boolean open;
+    protected volatile boolean open;
 
     protected AbstractStore() {
         this(false);

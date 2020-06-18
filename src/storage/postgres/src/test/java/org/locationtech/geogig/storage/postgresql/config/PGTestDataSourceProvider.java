@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import java.io.File;
 
@@ -17,20 +17,15 @@ import org.junit.AssumptionViolatedException;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
-import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Utility to be used as a {@link Rule} or {@link ClassRule} that provides access to a
  * {@link DataSource} for the PostgreSQL database the tests should run against.
  *
  */
-public class PGTestDataSourceProvider extends ExternalResource {
+public class PGTestDataSourceProvider extends ExternalResource implements PGDataSourceProvider {
 
     private static final Logger LOG = LoggerFactory.getLogger(PGTestDataSourceProvider.class);
 
@@ -40,35 +35,32 @@ public class PGTestDataSourceProvider extends ExternalResource {
 
     private DataSource dataSource;
 
+    private DataSourceManager actualProvider = new DataSourceManager();
+
+    public @Override DataSource get(ConnectionConfig config) {
+        return dataSource;
+    }
+
+    public @Override void close(DataSource dataSource) {
+        // no-op
+    }
+
     public @Override void before() throws AssumptionViolatedException {
-        loadProperties();
+        this.props = new PGTestProperties();
         org.junit.Assume.assumeTrue(isEnabled());
 
-        {// won't even get there if the above statement is not true
-            String repositoryId = null;
-            Environment config = props.newConfig(repositoryId);
-            connectionConfig = config.connectionConfig;
-        }
-        getDataSource();
+        // won't even get there if the above statement is not true
+        this.connectionConfig = props.getConnectionConfig();
+        this.dataSource = actualProvider.get(connectionConfig);
     }
 
     public @Override void after() {
+        actualProvider.releaseAll();
         connectionConfig = null;
-        closeDataSource();
+        dataSource = null;
     }
 
-    public void closeDataSource() {
-        if (dataSource != null) {
-            PGStorage.closeDataSource(dataSource);
-            dataSource = null;
-        }
-    }
-
-    public synchronized DataSource getDataSource() {
-        Preconditions.checkNotNull(connectionConfig);
-        if (dataSource == null) {
-            dataSource = PGStorage.newDataSource(connectionConfig);
-        }
+    public DataSource getDataSource() {
         return dataSource;
     }
 
@@ -86,21 +78,16 @@ public class PGTestDataSourceProvider extends ExternalResource {
         return enabled;
     }
 
-    private void loadProperties() {
-        this.props = new PGTestProperties();
-    }
-
-    public synchronized ConnectionConfig getConnectionConfig() {
+    public ConnectionConfig getConnectionConfig() {
         return connectionConfig;
     }
 
-    public Environment newEnvironment(String repositoryId, String tablePrefix) {
-        Environment config = props.newConfig(repositoryId, tablePrefix);
-        return config;
+    public Environment newEnvironment(String repositoryName, String tablePrefix) {
+        ConnectionConfig newConfig = getConnectionConfig().withTablePrefix(tablePrefix);
+        return new Environment(newConfig, this, repositoryName);
     }
 
     public PGTestProperties getTestProperties() {
         return props;
     }
-
 }

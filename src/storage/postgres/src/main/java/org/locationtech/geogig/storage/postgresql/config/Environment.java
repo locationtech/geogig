@@ -10,18 +10,32 @@
 package org.locationtech.geogig.storage.postgresql.config;
 
 import static com.google.common.base.Objects.equal;
+import static java.lang.String.format;
 
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * <p>
@@ -72,7 +86,7 @@ public class Environment implements Cloneable {
      */
     public static final int REPOSITORY_ID_UNSET = Integer.MIN_VALUE;
 
-    public final ConnectionConfig connectionConfig;
+    private @Getter final ConnectionConfig connectionConfig;
 
     private String repositoryName;
 
@@ -80,29 +94,92 @@ public class Environment implements Cloneable {
 
     private int repositoryId = REPOSITORY_ID_UNSET;
 
+    private boolean readOnly;
+
+    private @NonNull PGDataSourceProvider dataSourceProvider;
+
+    private DataSource dataSource;
+
     /**
-     * @param server postgres server name
-     * @param portNumber postgres server port number
-     * @param databaseName postgres database name
-     * @param schema database schema name
-     * @param user postgres connection user name
-     * @param password postgres user password
      * @param repositoryName repository id, optional. If not given this config can only be used by
      *        {@link PGConfigDatabase} to access the "global" configuration.
      */
-    public Environment(final String server, final int portNumber, final String databaseName,
-            final String schema, final String user, final String password,
-            final @Nullable String repositoryName, @Nullable String tablePrefix) {
+    public Environment(//
+            @NonNull ConnectionConfig connectionConfig, //
+            @NonNull PGDataSourceProvider dataSource, //
+            String repositoryName) {
 
-        if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
-            tablePrefix = null;
+        this.connectionConfig = connectionConfig;
+        this.dataSourceProvider = dataSource;
+        this.repositoryName = repositoryName;
+        this.tables = createTables(connectionConfig);
+    }
+
+    public Environment(//
+            @NonNull ConnectionConfig connectionConfig, //
+            @NonNull DataSource dataSource, //
+            String repositoryName) {
+
+        this.connectionConfig = connectionConfig;
+        this.dataSourceProvider = new ProvidedDataSource(dataSource);
+        this.repositoryName = repositoryName;
+        this.tables = createTables(connectionConfig);
+    }
+
+    private static @RequiredArgsConstructor class ProvidedDataSource
+            implements PGDataSourceProvider {
+        private final DataSource dataSource;
+
+        public @Override DataSource get(ConnectionConfig config) {
+            return dataSource;
         }
 
-        this.connectionConfig = new ConnectionConfig(server, portNumber, databaseName, schema, user,
-                password, tablePrefix);
-        this.repositoryName = repositoryName;
-        this.tables = new TableNames(schema == null ? TableNames.DEFAULT_SCHEMA : schema,
+        public @Override void close(DataSource dataSource) {
+            // no-op
+        }
+    }
+
+    private TableNames createTables(ConnectionConfig connectionConfig) {
+        String schema = connectionConfig.getSchema();
+        String tablePrefix = connectionConfig.getTablePrefix();
+        return new TableNames(schema == null ? TableNames.DEFAULT_SCHEMA : schema,
                 tablePrefix == null ? TableNames.DEFAULT_TABLE_PREFIX : tablePrefix);
+    }
+
+    public DataSource getDataSource() {
+        if (this.dataSource == null) {
+            synchronized (this) {
+                if (this.dataSource == null) {
+                    this.dataSource = this.dataSourceProvider.get(this.connectionConfig);
+                }
+            }
+        }
+        return this.dataSource;
+    }
+
+    public void close() {
+        this.dataSourceProvider.close(this.dataSource);
+        this.dataSource = null;
+    }
+
+    public boolean isReadOnly() {
+        return this.readOnly;
+    }
+
+    final @VisibleForTesting void setReadOnly(boolean ro) {
+        this.readOnly = ro;
+    }
+
+    public Connection getConnection() {
+        return PGStorage.newConnection(getDataSource());
+    }
+
+    public Version getServerVersion() {
+        try (Connection c = getConnection()) {
+            return PGStorage.getServerVersion(c);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -138,15 +215,15 @@ public class Environment implements Cloneable {
         repositoryExistsChecked.set(true);
     }
 
-    public static Environment get(final Hints hints) throws URISyntaxException {
+    public static Environment get(final Hints hints) {
         return new EnvironmentBuilder(hints).build();
     }
 
-    public static Environment get(final Properties properties) throws URISyntaxException {
+    public static Environment get(final Properties properties) {
         return new EnvironmentBuilder(properties).build();
     }
 
-    public static Environment get(final URI repoURI) throws URISyntaxException {
+    public static Environment get(final URI repoURI) {
         return new EnvironmentBuilder(repoURI).build();
     }
 
@@ -180,15 +257,27 @@ public class Environment implements Cloneable {
     }
 
     public int getRepositoryId() {
+        if (REPOSITORY_ID_UNSET == repositoryId && repositoryName != null) {
+            repositoryId = resolveRepositoryPK().orElseThrow(() -> new IllegalStateException(
+                    "Repository " + repositoryName + " does not exist"));
+        }
         return repositoryId;
     }
 
-    public void setRepositoryId(int repoPK) {
+    void setRepositoryId(int repoPK) {
         this.repositoryId = repoPK;
     }
 
-    public boolean isRepositorySet() {
+    public boolean isRepositoryIdSet() {
         return repositoryId != REPOSITORY_ID_UNSET;
+    }
+
+    public boolean canResolveRepositoryId() {
+        return REPOSITORY_ID_UNSET != getRepositoryId();
+    }
+
+    public boolean isRepositoryNameSet() {
+        return repositoryName != null;
     }
 
     public @Override Environment clone() {
@@ -199,7 +288,7 @@ public class Environment implements Cloneable {
         }
     }
 
-    public Environment asRepository(String repoName) {
+    public Environment withRepository(String repoName) {
         Environment clone = clone();
         clone.repositoryId = REPOSITORY_ID_UNSET;
         clone.repositoryName = repoName;
@@ -213,4 +302,45 @@ public class Environment implements Cloneable {
         return connectionConfig.toURI(repositoryName);
     }
 
+    public Optional<Integer> resolveRepositoryPK() {
+        return resolveRepositoryPK(getRepositoryName());
+    }
+
+    public Optional<Integer> resolveRepositoryPK(@NonNull String repositoryName) {
+        try (Connection cx = getConnection()) {
+            return resolveRepositoryPK(repositoryName, cx);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new IllegalStateException(
+                    "Unable to connect to resolve repository id of " + repositoryName, e);
+        }
+    }
+
+    private Optional<Integer> resolveRepositoryPK(String repositoryName, Connection cx)
+            throws SQLException {
+
+        final String configTable = getTables().repositoryNamesView();
+        final String sql = format("SELECT repository FROM %s WHERE name = ?", configTable);
+
+        Integer repoPK = null;
+        try (PreparedStatement ps = cx.prepareStatement(sql)) {
+            ps.setString(1, repositoryName);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    repoPK = rs.getInt(1);
+                    List<Integer> all = Lists.newArrayList(repoPK);
+                    while (rs.next()) {
+                        all.add(rs.getInt(1));
+                    }
+                    if (all.size() > 1) {
+                        throw new IllegalStateException(format(
+                                "There're more than one repository named '%s'. "
+                                        + "Check the repo.name config property for the following repository ids: %s",
+                                repositoryName, all.toString()));
+                    }
+                }
+            }
+        }
+        return Optional.ofNullable(repoPK);
+    }
 }

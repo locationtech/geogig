@@ -75,7 +75,7 @@ public class SchemaUpgrade0To1 {
         for (String repoName : repoNames) {
             progress.setProgressIndicator(
                     p -> String.format("Upgrading graph for repository %s", repoName));
-            URI repoURI = env.connectionConfig.toURI(repoName);
+            URI repoURI = env.getConnectionConfig().toURI(repoName);
             Repository repo;
             try {
                 repo = RepositoryFinder.INSTANCE.open(repoURI);

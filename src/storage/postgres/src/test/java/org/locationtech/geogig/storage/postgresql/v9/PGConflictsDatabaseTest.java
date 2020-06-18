@@ -21,8 +21,6 @@ import static org.mockito.Mockito.when;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,7 +28,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.storage.ConflictsDatabase;
+import org.locationtech.geogig.repository.impl.RepositoryBusyException;
+import org.locationtech.geogig.storage.postgresql.config.Environment;
+import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -51,30 +51,34 @@ public class PGConflictsDatabaseTest {
     public ExpectedException expected = ExpectedException.none();
 
     @Mock
-    private DataSource mockSource;
+    private Environment mockEnv;
 
-    private ConflictsDatabase mockSourceConflicts;
+    private PGConflictsDatabase mockSourceConflicts;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private Connection mockConnection;
 
     @Before
     public void beforeMocks() throws SQLException {
-        when(mockSource.getConnection()).thenReturn(mockConnection);
-        mockSourceConflicts = new PGConflictsDatabase(mockSource);
+        when(mockEnv.getRepositoryName()).thenReturn("mock-repo");
+        TableNames mockTables = new TableNames();
+        when(mockEnv.getTables()).thenReturn(mockTables);
+        when(mockEnv.getConnection()).thenReturn(mockConnection);
+        mockSourceConflicts = new PGConflictsDatabase(mockEnv);
     }
 
     @Test
     public void addConflictConnectException() throws SQLException {
-        when(mockSource.getConnection()).thenThrow(new SQLException("connection error"));
-        expected.expect(RuntimeException.class);
-        expected.expectMessage("connection error");
+        when(mockEnv.getConnection()).thenThrow(
+                new RepositoryBusyException("No available connections to the repository."));
+        expected.expect(RepositoryBusyException.class);
+        expected.expectMessage("No available connections to the repository");
         mockSourceConflicts.addConflict(null, c1);
     }
 
     @Test
     public void addConflictExecutionException() throws SQLException {
-        when(mockSource.getConnection().prepareStatement(anyString()))
+        when(mockEnv.getConnection().prepareStatement(anyString()))
                 .thenThrow(new SQLException("propagate this message"));
         try {
             mockSourceConflicts.addConflict(null, c1);
@@ -89,7 +93,7 @@ public class PGConflictsDatabaseTest {
 
     @Test
     public void getConflictException() throws SQLException {
-        when(mockSource.getConnection().prepareStatement(anyString()).executeQuery())
+        when(mockEnv.getConnection().prepareStatement(anyString()).executeQuery())
                 .thenThrow(new SQLException("propagate this message"));
         try {
             mockSourceConflicts.getConflict(null, c1.getPath());
@@ -102,15 +106,16 @@ public class PGConflictsDatabaseTest {
 
     @Test
     public void removeConflictConnectException() throws SQLException {
-        when(mockSource.getConnection()).thenThrow(new SQLException("connection error"));
-        expected.expect(RuntimeException.class);
-        expected.expectMessage("connection error");
+        when(mockEnv.getConnection()).thenThrow(
+                new RepositoryBusyException("No available connections to the repository."));
+        expected.expect(RepositoryBusyException.class);
+        expected.expectMessage("No available connections to the repository");
         mockSourceConflicts.removeConflict(null, c1.getPath());
     }
 
     @Test
     public void removeConflictExecutionException() throws SQLException {
-        when(mockSource.getConnection().prepareStatement(anyString()))
+        when(mockEnv.getConnection().prepareStatement(anyString()))
                 .thenThrow(new SQLException("propagate this message"));
         try {
             mockSourceConflicts.removeConflict(null, c1.getPath());
@@ -125,15 +130,16 @@ public class PGConflictsDatabaseTest {
 
     @Test
     public void removeConflictsConnectException() throws SQLException {
-        when(mockSource.getConnection()).thenThrow(new SQLException("connection error"));
-        expected.expect(RuntimeException.class);
-        expected.expectMessage("connection error");
+        when(mockEnv.getConnection()).thenThrow(
+                new RepositoryBusyException("No available connections to the repository."));
+        expected.expect(RepositoryBusyException.class);
+        expected.expectMessage("No available connections to the repository");
         mockSourceConflicts.removeConflicts(null);
     }
 
     @Test
     public void removeConflictsExecutionException() throws SQLException {
-        when(mockSource.getConnection().prepareStatement(anyString()))
+        when(mockEnv.getConnection().prepareStatement(anyString()))
                 .thenThrow(new SQLException("propagate this message"));
         try {
             mockSourceConflicts.removeConflicts(null);

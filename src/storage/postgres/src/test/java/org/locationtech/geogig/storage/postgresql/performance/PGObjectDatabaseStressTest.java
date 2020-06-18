@@ -50,10 +50,10 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.fs.IniFileConfigDatabase;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 import org.locationtech.geogig.test.performance.EnablePerformanceTestRule;
@@ -101,7 +101,7 @@ public class PGObjectDatabaseStressTest {
 
         Environment envconfig = testConfig.getEnvironment();
         PGStorage.createNewRepo(envconfig);
-        PGObjectDatabase db = new PGObjectDatabase(configdb, envconfig, false);
+        PGObjectDatabase db = new PGObjectDatabase(configdb, envconfig);
         db.open();
         this.db = db;
         sharedCache = db.getCache();

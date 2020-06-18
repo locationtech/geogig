@@ -10,35 +10,42 @@
 package org.locationtech.geogig.storage.postgresql.commands;
 
 import java.net.URI;
-import java.util.List;
 
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
-import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
-import org.locationtech.geogig.storage.postgresql.config.Version;
+import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 
 import com.google.common.base.Preconditions;
 
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 /**
- * 
- * @since 1.2.1
+ * Initializes a PostgreSQL database to host geogig repositories
  */
-public class CreateDDL extends AbstractGeoGigOp<List<String>> {
-    private Environment environment;
+@Accessors(chain = true)
+public class PGInitDB extends AbstractGeoGigOp<Void> {
 
-    private URI baseURI;
+    private @Setter Environment environment;
 
-    protected @Override List<String> _call() {
-        Environment env = resolveEnvironment();
+    private @Setter URI baseURI;
+
+    protected @Override Void _call() {
+        final Environment env = resolveEnvironment();
+        getProgressListener().started();
+        ConnectionConfig conf = env.getConnectionConfig();
+        getProgressListener().setDescription("Initializing geogig on host %s:%d, db %s, schema %s",
+                conf.getServer(), conf.getPortNumber(), conf.getDatabaseName(), conf.getSchema());
         try {
-            Version dbVersion = env.getServerVersion();
-            PGStorageTableManager tableManager = PGStorageTableManager.forVersion(dbVersion);
-            List<String> ddl = tableManager.createDDL(env);
-            return ddl;
+            PGStorage.createTables(env);
         } finally {
-            env.close();
+            if (this.environment == null) {
+                env.close();
+            }
         }
+        return null;
     }
 
     private Environment resolveEnvironment() {
@@ -50,17 +57,5 @@ public class CreateDDL extends AbstractGeoGigOp<List<String>> {
         EnvironmentBuilder environmentBuilder = new EnvironmentBuilder(baseURI, true);
         Environment env = environmentBuilder.build();
         return env;
-    }
-
-    public CreateDDL setEnvironment(Environment env) {
-        this.environment = env;
-        this.baseURI = null;
-        return this;
-    }
-
-    public CreateDDL setBaseURI(URI baseURI) {
-        this.environment = null;
-        this.baseURI = baseURI;
-        return this;
     }
 }

@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.storage.postgresql.integration;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 import org.locationtech.geogig.test.integration.DiffOpTest;
 
 public class PGDiffOpTest extends DiffOpTest {
@@ -23,8 +22,7 @@ public class PGDiffOpTest extends DiffOpTest {
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    public @Before void before() {
-        testRepository.setURIBuilder(testConfig);
+    protected @Override void beforeSetup() {
+        testConfig.init(testRepository);
     }
-
 }

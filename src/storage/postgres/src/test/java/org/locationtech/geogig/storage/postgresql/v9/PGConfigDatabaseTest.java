@@ -9,23 +9,17 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static org.junit.Assert.assertEquals;
-
-import java.net.URISyntaxException;
-
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.impl.ConfigDatabaseTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
-import org.locationtech.geogig.storage.postgresql.PGTestProperties;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 
@@ -35,9 +29,9 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
             getClass().getSimpleName(), ds);
 
     protected @Override PGConfigDatabase createDatabase(Platform platform) {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-        return new PGConfigDatabase(config);
+        Environment env = testConfig.getEnvironment();
+        PGStorage.createNewRepo(env);
+        return new PGConfigDatabase(env);
     }
 
     protected @Override void destroy(PGConfigDatabase config) {
@@ -46,9 +40,8 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
 
     @Test
     public @Override void testNoRepository() {
-
-        PGTestProperties props = new PGTestProperties();
-        PGConfigDatabase globalOnlydb = new PGConfigDatabase(props.newConfig(null));
+        Environment env = testConfig.newEnvironment(null);
+        PGConfigDatabase globalOnlydb = new PGConfigDatabase(env);
         try {
             exception.expect(ConfigException.class);
             globalOnlydb.put("section.int", 1);
@@ -65,36 +58,5 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
     @Ignore
     public @Override void testNoUserHome() {
         // intentionally empty
-    }
-
-    @Test
-    public void testHintsConstructor() throws URISyntaxException {
-        Hints hints = new Hints();
-        String repoURI = testConfig.getRepoURL();
-        hints.set(Hints.REPOSITORY_URL, repoURI);
-
-        try (PGConfigDatabase db = new PGConfigDatabase(hints)) {
-            db.putGlobal("testSection.testKey", "testValue");
-            assertEquals("testValue", db.getGlobal("testSection.testKey").get());
-        }
-    }
-
-    @SuppressWarnings("resource")
-    @Test
-    public void testHintsConstructorNoRepoURIProvided() throws URISyntaxException {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("REPOSITORY_URL was not given");
-        new PGConfigDatabase(new Hints());
-    }
-
-    @SuppressWarnings("resource")
-    @Test
-    public void testHintsConstructorBadURI() throws URISyntaxException {
-        Hints hints = new Hints();
-        String repoURI = "this is not a valid URI";
-        hints.set(Hints.REPOSITORY_URL, repoURI);
-
-        exception.expect(URISyntaxException.class);
-        new PGConfigDatabase(hints);
     }
 }

@@ -12,7 +12,6 @@ package org.locationtech.geogig.geotools.cli.postgis;
 import org.geotools.data.DataStore;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
-import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.geotools.cli.base.DataStoreList;
 import org.locationtech.geogig.geotools.plumbing.ListOp;
 

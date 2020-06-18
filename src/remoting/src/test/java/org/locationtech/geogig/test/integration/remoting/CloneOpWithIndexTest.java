@@ -15,7 +15,6 @@ import static org.locationtech.geogig.test.integration.remoting.RemotesIndexTest
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.remotes.CloneOp;
 import org.locationtech.geogig.repository.Command;
-import org.locationtech.geogig.repository.Command.CommandListener;
 import org.locationtech.geogig.repository.Repository;
 
 /**

@@ -37,7 +37,6 @@ import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;

@@ -10,10 +10,8 @@
 package org.locationtech.geogig.storage.postgresql.config;
 
 import static java.lang.String.format;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -29,8 +27,6 @@ import javax.sql.DataSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.locationtech.geogig.repository.impl.RepositoryBusyException;
-import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 public class PGStorageTest {
 

@@ -16,7 +16,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Splitter;
 
 import cucumber.api.Scenario;
 

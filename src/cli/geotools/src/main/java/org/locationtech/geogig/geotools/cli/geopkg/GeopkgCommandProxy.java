@@ -14,9 +14,9 @@ import org.locationtech.geogig.cli.CLISubCommand;
 import lombok.AccessLevel;
 import lombok.Getter;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Spec;
-import picocli.CommandLine.Model.CommandSpec;
 
 /**
  * {@link CLICommandExtension} that provides a {@link JCommander} for geppackage specific commands.

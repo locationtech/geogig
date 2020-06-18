@@ -20,8 +20,6 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
-import org.locationtech.geogig.repository.impl.ContextBuilderImpl;
 import org.locationtech.geogig.storage.postgresql.commands.PGDatabaseUpgrade;
 
 import com.google.common.base.Stopwatch;

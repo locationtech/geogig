@@ -37,8 +37,6 @@ import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.test.TestPlatform;
 
-import lombok.NonNull;
-
 public abstract class RefDatabaseTest {
 
     protected RefDatabase refDb;

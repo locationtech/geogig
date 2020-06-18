@@ -15,12 +15,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.sql.DataSource;
-
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGStorageTableManager;
 import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.locationtech.geogig.storage.postgresql.config.Version;
@@ -38,54 +35,57 @@ public class PGDatabaseUpgrade extends AbstractGeoGigOp<Void> {
     private URI baseURI;
 
     protected @Override Void _call() {
-        Environment env = resolveEnvironment();
-        Version serverVersion = PGStorage.getServerVersion(env);
-        PGStorageTableManager tableManager = PGStorageTableManager.forVersion(serverVersion);
-        TableNames tables = env.getTables();
-        DataSource dataSource = PGStorage.newDataSource(env);
+        final Environment env = resolveEnvironment();
+        try {
+            // DDL to tell the user to run if we don't have priviledges to
+            List<String> DDL = new ArrayList<>();
+            Version serverVersion = env.getServerVersion();
+            PGStorageTableManager tableManager = PGStorageTableManager.forVersion(serverVersion);
+            TableNames tables = env.getTables();
 
-        // DDL to tell the user to run if we don't have priviledges to
-        List<String> DDL = new ArrayList<>();
-        try (Connection cx = dataSource.getConnection()) {
-            final int currentSchemaVersion = tableManager.getSchemaVersion(cx, tables);
-            final boolean createMetadataTable = currentSchemaVersion == 0;
-            if (createMetadataTable) {
-                tableManager.createMetadata(DDL, tables);
-            }
-            final SchemaUpgrade0To1 upgrade = new SchemaUpgrade0To1(env);
-            final boolean runUpgrade = upgrade.shouldRun(cx);
-            if (runUpgrade) {
-                DDL.addAll(upgrade.createDDL());
-            }
-
-            if (DDL.isEmpty()) {
-                getProgressListener().setDescription(
-                        "Database schema is up to date, checking for non DDL related upgrade actions...");
-            } else {
-                getProgressListener().setDescription("Running DDL script:");
-                String script = "-- SCRIPT START --\n" + Joiner.on('\n').join(DDL)
-                        + "\n-- SCRIPT END --\n";
-                getProgressListener().setDescription(script);
-
-                cx.setAutoCommit(false);
-                if (runScript(cx, DDL, tableManager)) {
-                    cx.commit();
-                    cx.setAutoCommit(true);
-                } else {
-                    cx.rollback();
-                    return null;
+            try (Connection cx = env.getConnection()) {
+                final int currentSchemaVersion = tableManager.getSchemaVersion(cx, tables);
+                final boolean createMetadataTable = currentSchemaVersion == 0;
+                if (createMetadataTable) {
+                    tableManager.createMetadata(DDL, tables);
                 }
-            }
-            if (runUpgrade) {
-                upgrade.run(cx, tableManager, getProgressListener());
-                getProgressListener().setDescription(
-                        "Finished upgrading the geogig database to the latest version.");
-            } else {
-                getProgressListener()
-                        .setDescription("Nothing to upgrade. Database schema is up to date");
+                final SchemaUpgrade0To1 upgrade = new SchemaUpgrade0To1(env);
+                final boolean runUpgrade = upgrade.shouldRun(cx);
+                if (runUpgrade) {
+                    DDL.addAll(upgrade.createDDL());
+                }
+
+                if (DDL.isEmpty()) {
+                    getProgressListener().setDescription(
+                            "Database schema is up to date, checking for non DDL related upgrade actions...");
+                } else {
+                    getProgressListener().setDescription("Running DDL script:");
+                    String script = "-- SCRIPT START --\n" + Joiner.on('\n').join(DDL)
+                            + "\n-- SCRIPT END --\n";
+                    getProgressListener().setDescription(script);
+
+                    cx.setAutoCommit(false);
+                    if (runScript(cx, DDL, tableManager)) {
+                        cx.commit();
+                        cx.setAutoCommit(true);
+                    } else {
+                        cx.rollback();
+                        return null;
+                    }
+                }
+                if (runUpgrade) {
+                    upgrade.run(cx, tableManager, getProgressListener());
+                    getProgressListener().setDescription(
+                            "Finished upgrading the geogig database to the latest version.");
+                } else {
+                    getProgressListener()
+                            .setDescription("Nothing to upgrade. Database schema is up to date");
+                }
             }
         } catch (SQLException e) {
             throw new IllegalStateException(e);
+        } finally {
+            env.close();
         }
         return null;
     }

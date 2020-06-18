@@ -19,7 +19,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,7 +32,6 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
@@ -45,7 +43,6 @@ import org.locationtech.geogig.storage.datastream.ValueSerializer;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,9 +61,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
 
     private final ValueSerializer valueEncoder = DataStreamValueSerializerV2.INSTANCE;
 
-    public PGIndexDatabase(final ConfigDatabase configdb, final Hints hints)
-            throws URISyntaxException {
-        this(configdb, Environment.get(hints), Hints.isRepoReadOnly(hints));
+    public PGIndexDatabase(final ConfigDatabase configdb, final Environment env) {
+        super(configdb, env);
     }
 
     protected @Override String getCacheIdentifier(ConnectionConfig connectionConfig) {
@@ -74,23 +70,13 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         return cacheIdentifier;
     }
 
-    public PGIndexDatabase(final ConfigDatabase configdb, final Environment config,
-            final boolean readOnly) {
-        super(configdb, config, readOnly);
-    }
-
     public @Override void open() {
         super.open();
-        repositoryId = config.getRepositoryId();
-        if (this.dataSource != null) {
-            if (!PGStorage.tableExists(dataSource, config.getTables().index())) {
-                PGStorage.createTables(config);
-            }
-        }
+        repositoryId = env.getRepositoryId();
     }
 
     protected @Override String objectsTable() {
-        return config.getTables().indexObjects();
+        return env.getTables().indexObjects();
     }
 
     protected @Override String tableNameForType(RevObject.TYPE type, PGId pgid) {
@@ -118,9 +104,9 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String sql = format(
                 "INSERT INTO %s (repository, treeName, attributeName, strategy, metadata) VALUES(?, ?, ?, ?, ?)",
-                config.getTables().index());
+                env.getTables().index());
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(
                     log(sql, log, repositoryId, treeName, attributeName, strategy, metadata));
@@ -155,12 +141,12 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         IndexInfo index = new IndexInfo(treeName, attributeName, strategy, metadata);
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
-                config.getTables().index());
+                env.getTables().index());
         final String insertSql = format(
                 "INSERT INTO %s (repository, treeName, attributeName, strategy, metadata) VALUES(?, ?, ?, ?, ?)",
-                config.getTables().index());
+                env.getTables().index());
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ps = cx.prepareStatement(
@@ -204,11 +190,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public @Override Optional<IndexInfo> getIndexInfo(String treeName, String attributeName) {
         final String sql = format(
                 "SELECT strategy, metadata FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
-                config.getTables().index());
+                env.getTables().index());
 
         IndexInfo index = null;
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, log, repositoryId, treeName, attributeName))) {
                 ps.setInt(1, repositoryId);
@@ -240,11 +226,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public @Override List<IndexInfo> getIndexInfos(String treeName) {
         final String sql = format(
                 "SELECT attributeName, strategy, metadata FROM %s WHERE repository = ? AND treeName = ?",
-                config.getTables().index());
+                env.getTables().index());
 
         List<IndexInfo> indexes = Lists.newArrayList();
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, log, repositoryId, treeName))) {
                 ps.setInt(1, repositoryId);
@@ -276,11 +262,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public @Override List<IndexInfo> getIndexInfos() {
         final String sql = format(
                 "SELECT treeName, attributeName, strategy, metadata FROM %s WHERE repository = ?",
-                config.getTables().index());
+                env.getTables().index());
 
         List<IndexInfo> indexes = Lists.newArrayList();
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, log, repositoryId))) {
                 ps.setInt(1, repositoryId);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -311,9 +297,9 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     public @Override boolean dropIndex(IndexInfo index) {
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND treeName = ? AND attributeName = ?",
-                config.getTables().index());
+                env.getTables().index());
         int deletedRows = 0;
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx.prepareStatement(log(deleteSql, log, repositoryId,
                     index.getTreeName(), index.getAttributeName()))) {
@@ -341,8 +327,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         PGId pgIndexId = PGId.valueOf(index.getId());
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)",
-                config.getTables().indexMappings());
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+                env.getTables().indexMappings());
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement ps = cx
                     .prepareStatement(log(deleteSql, log, repositoryId, pgIndexId))) {
@@ -369,11 +355,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
         final String deleteSql = format(
                 "DELETE FROM %s WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)"
                         + " AND ((treeId).h1) = ? AND treeId = CAST(ROW(?,?,?) AS OBJECTID)",
-                config.getTables().indexMappings());
+                env.getTables().indexMappings());
         final String insertSql = format(
                 "INSERT INTO %s (repository, indexId, treeId, indexTreeId) VALUES(?, ROW(?,?,?), ROW(?,?,?), ROW(?,?,?))",
-                config.getTables().indexMappings());
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+                env.getTables().indexMappings());
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ps = cx
@@ -411,11 +397,11 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 "SELECT ((indexTreeId).h1), ((indexTreeId).h2), ((indexTreeId).h3) FROM %s"
                         + " WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)"
                         + " AND ((treeId).h1) = ? AND treeId = CAST(ROW(?,?,?) AS OBJECTID) ",
-                config.getTables().indexMappings());
+                env.getTables().indexMappings());
 
         ObjectId indexedTreeId = null;
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, log, repositoryId, pgIndexId, pgTreeId))) {
                 ps.setInt(1, repositoryId);
@@ -443,10 +429,10 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 + "((treeid).h1), ((treeid).h2), ((treeid).h3), "//
                 + "((indexTreeId).h1), ((indexTreeId).h2), ((indexTreeId).h3) FROM %s"//
                 + " WHERE repository = ? AND ((indexId).h1) = ? AND indexId = CAST(ROW(?,?,?) AS OBJECTID)",
-                config.getTables().indexMappings());
+                env.getTables().indexMappings());
 
         List<IndexTreeMapping> mappings = new ArrayList<>();
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx
                     .prepareStatement(log(sql, log, repositoryId, pgIndexId))) {
                 ps.setInt(1, repositoryId);
@@ -473,10 +459,10 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
             throws UnsupportedOperationException {
         if (target instanceof PGIndexDatabase) {
             PGIndexDatabase pgtarget = (PGIndexDatabase) target;
-            ConnectionConfig cfg = this.config.connectionConfig;
-            final boolean samedb = cfg.isSameDatabase(pgtarget.config.connectionConfig);
+            ConnectionConfig cfg = this.env.getConnectionConfig();
+            final boolean samedb = cfg.isSameDatabase(pgtarget.env.getConnectionConfig());
             if (samedb) {
-                final Version serverVersion = PGStorage.getServerVersion(config);
+                final Version serverVersion = env.getServerVersion();
                 if (serverVersion.greatherOrEqualTo(Version.V9_5_0)) {
                     fastCopyIndexesWithUpsert(pgtarget);
                 } else {
@@ -489,14 +475,14 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     private void fastCopyIndexesPG94(PGIndexDatabase pgtarget) {
-        final int srcRepoId = this.config.getRepositoryId();
-        final int targetRepoId = pgtarget.config.getRepositoryId();
+        final int srcRepoId = this.env.getRepositoryId();
+        final int targetRepoId = pgtarget.env.getRepositoryId();
 
         final String indexSql;
         final String mappingsSql;
         {
-            final String srcIndexTable = this.config.getTables().index();
-            final String targetIndexTable = pgtarget.config.getTables().index();
+            final String srcIndexTable = this.env.getTables().index();
+            final String targetIndexTable = pgtarget.env.getTables().index();
             indexSql = "insert into " + targetIndexTable//
                     + " select " + targetRepoId + ", treename, attributename, strategy, metadata "
                     + " from " + srcIndexTable + " src where "//
@@ -507,8 +493,8 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                     + " and target.treename = src.treename and target.attributename = src.attributename)";
         }
         {
-            final String srcIndexMappingsTable = this.config.getTables().indexMappings();
-            final String targetIndexMappingsTable = pgtarget.config.getTables().indexMappings();
+            final String srcIndexMappingsTable = this.env.getTables().indexMappings();
+            final String targetIndexMappingsTable = pgtarget.env.getTables().indexMappings();
 
             mappingsSql = "insert into " + targetIndexMappingsTable//
                     + " select " + targetRepoId + ", indexid, treeid, indextreeid "//
@@ -525,19 +511,19 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     private void fastCopyIndexesWithUpsert(PGIndexDatabase pgtarget) {
         final String indexSql;
         final String mappingsSql;
-        final int srcRepoId = this.config.getRepositoryId();
-        final int targetRepoId = pgtarget.config.getRepositoryId();
+        final int srcRepoId = this.env.getRepositoryId();
+        final int targetRepoId = pgtarget.env.getRepositoryId();
         {
-            final String srcIndexTable = this.config.getTables().index();
-            final String targetIndexTable = pgtarget.config.getTables().index();
+            final String srcIndexTable = this.env.getTables().index();
+            final String targetIndexTable = pgtarget.env.getTables().index();
             indexSql = String.format("insert into %s "//
                     + " select %d, treename, attributename, strategy, metadata from"
                     + " %s where repository = %d on conflict do nothing", //
                     targetIndexTable, targetRepoId, srcIndexTable, srcRepoId);
         }
         {
-            final String srcIndexMappingsTable = this.config.getTables().indexMappings();
-            final String targetIndexMappingsTable = pgtarget.config.getTables().indexMappings();
+            final String srcIndexMappingsTable = this.env.getTables().indexMappings();
+            final String targetIndexMappingsTable = pgtarget.env.getTables().indexMappings();
             mappingsSql = String.format("insert into %s "//
                     + " select %d, indexid, treeid, indextreeid "
                     + " from %s where repository = %d on conflict do nothing", //
@@ -547,18 +533,18 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
     }
 
     private void fastCopyIndexes(PGIndexDatabase pgtarget, String indexSql, String mappingsSql) {
-        final boolean sameSchema = this.config.connectionConfig
-                .isSameDatabaseAndSchema(pgtarget.config.connectionConfig);
+        final boolean sameSchema = this.env.getConnectionConfig()
+                .isSameDatabaseAndSchema(pgtarget.env.getConnectionConfig());
 
         final String copyTrees;
         if (sameSchema) {
             copyTrees = "select 1";
         } else {
-            String srcObjects = this.config.getTables().indexObjects();
-            String targetObjects = pgtarget.config.getTables().indexObjects();
+            String srcObjects = this.env.getTables().indexObjects();
+            String targetObjects = pgtarget.env.getTables().indexObjects();
             copyTrees = "insert into " + targetObjects + " select * from " + srcObjects;
         }
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 execute(copyTrees, cx);

@@ -28,10 +28,10 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectStoreConformanceTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 import com.google.common.collect.Lists;
 
@@ -45,13 +45,13 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
     ConfigDatabase configdb;
 
     protected @Override PGObjectStore createOpen() throws IOException {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
+        Environment env = testConfig.getEnvironment();
+        PGStorage.createNewRepo(env);
 
         closeConfigDb();
 
-        configdb = new PGConfigDatabase(config);
-        PGObjectStore db = new PGObjectStore(configdb, config, false);
+        configdb = new PGConfigDatabase(env);
+        PGObjectStore db = new PGObjectStore(configdb, env);
         db.open();
         return db;
     }
@@ -91,8 +91,8 @@ public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
         configdb.put(Environment.KEY_THREADPOOL_SIZE, 1);
         db.close();
 
-        Environment config = testConfig.getEnvironment();
-        db = new PGObjectStore(configdb, config, false);
+        Environment env = testConfig.getEnvironment();
+        db = new PGObjectStore(configdb, env);
         db.open();
 
         RevObject originalObject = RevObjectTestSupport.feature(0, null, "some value");

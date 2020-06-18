@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.storage.postgresql.integration;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 public class PGCheckSparsePathTest
         extends org.locationtech.geogig.test.integration.CheckSparsePathTest {
@@ -23,7 +22,7 @@ public class PGCheckSparsePathTest
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    public @Before void before() {
-        testRepository.setURIBuilder(testConfig);
+    protected @Override void beforeSetup() {
+        testConfig.init(testRepository);
     }
 }

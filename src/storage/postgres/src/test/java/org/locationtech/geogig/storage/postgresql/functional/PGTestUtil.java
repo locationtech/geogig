@@ -10,8 +10,8 @@
 package org.locationtech.geogig.storage.postgresql.functional;
 
 import org.junit.internal.AssumptionViolatedException;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 import com.google.common.base.Preconditions;
 

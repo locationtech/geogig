@@ -10,11 +10,8 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
 import static java.lang.String.format;
-import static org.locationtech.geogig.storage.postgresql.config.PGStorage.closeDataSource;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
-import static org.locationtech.geogig.storage.postgresql.config.PGStorage.newDataSource;
 
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,7 +33,6 @@ import javax.sql.DataSource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
@@ -70,39 +66,27 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
 
     private DataSource dataSource;
 
-    private Environment config;
+    private Environment env;
 
     private Version serverVersion;
 
-    public PGGraphDatabase(Hints hints) throws URISyntaxException {
-        this(Environment.get(hints), Hints.isRepoReadOnly(hints));
-    }
-
-    public PGGraphDatabase(@NonNull Environment config, boolean readOnly) {
-        super(readOnly);
-        Preconditions.checkArgument(PGStorage.repoExists(config), "Repository %s does not exist",
-                config.getRepositoryName());
-        this.config = config;
-        TableNames tables = config.getTables();
+    public PGGraphDatabase(@NonNull Environment env) {
+        super(env.isReadOnly());
+        Preconditions.checkNotNull(env.getRepositoryName(), "Repository name not set");
+        this.env = env;
+        TableNames tables = env.getTables();
         this.EDGES = tables.graphEdges();
         this.PROPS = tables.graphProperties();
         this.MAPPINGS = tables.graphMappings();
     }
 
-    public @Override synchronized void open() {
-        if (dataSource == null) {
-            dataSource = newDataSource(config);
-            serverVersion = PGStorage.getServerVersion(config);
-            super.open();
-        }
+    public @Override void open() {
+        super.open();
+        serverVersion = env.getServerVersion();
     }
 
-    public @Override synchronized void close() {
+    public @Override void close() {
         super.close();
-        if (dataSource != null) {
-            closeDataSource(dataSource);
-            dataSource = null;
-        }
     }
 
     /**
@@ -112,7 +96,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
      */
     public @Override boolean exists(ObjectId commitId) {
         final PGId node = PGId.valueOf(commitId);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             return exists(node, cx);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -146,7 +130,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     }
 
     public @Override boolean put(ObjectId commitId, List<ObjectId> parentIds) {
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             return put(cx, commitId, parentIds);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -319,7 +303,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
                 MAPPINGS);
         String insert = format("INSERT INTO %s (alias, nid) VALUES ( ROW(?,?,?), ROW(?,?,?) )",
                 MAPPINGS);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement deleteSt = cx.prepareStatement(log(delete, LOG, from))) {
@@ -359,7 +343,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
                 MAPPINGS);
 
         final ObjectId mapped;
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
                 node.setArgs(ps, 1);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -377,7 +361,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
         int depth = 0;
 
         Queue<PGId> q = Lists.newLinkedList();
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             Iterables.addAll(q, outgoing(PGId.valueOf(commitId), cx));
 
             List<PGId> next = Lists.newArrayList();
@@ -412,7 +396,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
                 "DELETE FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND  key = ?", PROPS);
         final String insert = format("INSERT INTO %s (nid,key,val) VALUES (ROW(?,?,?), ?, ?)",
                 PROPS);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 try (PreparedStatement ds = cx.prepareStatement(log(delete, LOG, node, name))) {
@@ -440,7 +424,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     }
 
     public @Override void truncate() {
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try {
                 try (Statement st = cx.createStatement()) {
@@ -478,7 +462,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
         final String sql = format(
                 "SELECT val FROM %s WHERE nid = CAST(ROW(?,?,?) AS OBJECTID) AND key = ?", PROPS);
 
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node, key))) {
                 node.setArgs(ps, 1);
                 ps.setString(4, key);
@@ -493,7 +477,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     }
 
     Iterable<PGId> outgoing(final PGId node) {
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             return outgoing(node, cx);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -537,7 +521,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
                 EDGES);
 
         List<PGId> incoming = new ArrayList<>(2);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+        try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, node))) {
                 node.setArgs(ps, 1);
                 try (ResultSet rs = ps.executeQuery()) {

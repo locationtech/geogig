@@ -9,17 +9,14 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import java.net.URI;
-
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 public class PGConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<PGConflictsDatabase> {
@@ -30,19 +27,16 @@ public class PGConflictsDatabaseConformanceTest
             getClass().getSimpleName(), ds);
 
     protected @Override PGConflictsDatabase createConflictsDatabase() throws Exception {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-
-        String repoURL = testConfig.getRepoURL();
-        Hints hints = new Hints().uri(URI.create(repoURL));
-        PGConflictsDatabase conflicts = new PGConflictsDatabase(hints);
+        Environment env = testConfig.getEnvironment();
+        PGStorage.createNewRepo(env);
+        PGConflictsDatabase conflicts = new PGConflictsDatabase(env);
         conflicts.open();
         return conflicts;
     }
 
     protected @Override void dispose(@Nullable PGConflictsDatabase conflicts) throws Exception {
         if (conflicts != null) {
-            PGStorage.closeDataSource(conflicts.dataSource);
+            conflicts.close();
         }
     }
 }

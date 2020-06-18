@@ -42,8 +42,6 @@ public class PGStorage {
 
     static final Logger LOG = LoggerFactory.getLogger(PGStorage.class);
 
-    private static final DataSourceManager DATASOURCE_POOL = new DataSourceManager();
-
     /**
      * Logs a (prepared) sql statement.
      * 
@@ -72,16 +70,6 @@ public class PGStorage {
         return sql;
     }
 
-    public synchronized static DataSource newDataSource(Environment config) {
-        DataSource dataSource = newDataSource(config.connectionConfig);
-        return dataSource;
-    }
-
-    public synchronized static DataSource newDataSource(ConnectionConfig config) {
-        DataSource dataSource = DATASOURCE_POOL.acquire(config.getKey());
-        return dataSource;
-    }
-
     public static void verifyDatabaseCompatibility(DataSource dataSource, Environment config) {
         try (Connection cx = dataSource.getConnection()) {
             Version version = getServerVersion(cx);
@@ -92,13 +80,7 @@ public class PGStorage {
         }
     }
 
-    public static void closeDataSource(DataSource ds) {
-        if (ds != null) {
-            DATASOURCE_POOL.release(ds);
-        }
-    }
-
-    public static Connection newConnection(DataSource ds) {
+    static Connection newConnection(DataSource ds) {
         try {
             Connection connection = ds.getConnection();
             return connection;
@@ -117,49 +99,36 @@ public class PGStorage {
         throw new RuntimeException(e);
     }
 
-    public static boolean repoExists(final @NonNull Environment config)
+    public static boolean repoExists(final @NonNull Environment env)
             throws IllegalArgumentException {
-        checkArgument(config.getRepositoryName() != null, "no repository name provided");
+        checkArgument(env.getRepositoryName() != null, "no repository name provided");
 
         Optional<Integer> repoPK;
-        try (PGConfigDatabase configdb = new PGConfigDatabase(config)) {
-            if (config.isRepositorySet()) {
+        try (PGConfigDatabase configdb = new PGConfigDatabase(env)) {
+            if (env.isRepositoryIdSet()) {
                 String configuredName = configdb.get("repo.name").orElse(null);
-                Preconditions.checkState(config.getRepositoryName().equals(configuredName));
+                Preconditions.checkState(env.getRepositoryName().equals(configuredName));
                 return true;
             } else {
-                repoPK = configdb.resolveRepositoryPK(config.getRepositoryName());
+                repoPK = env.resolveRepositoryPK();
                 if (repoPK.isPresent()) {
-                    if (config.isRepositorySet()) {
-                        if (repoPK.get() != config.getRepositoryId()) {
+                    if (env.isRepositoryIdSet()) {
+                        if (repoPK.get() != env.getRepositoryId()) {
                             String msg = format("The provided primary key for the repository '%s' "
                                     + "does not match the one in the database. Provided: %d, returned: %d. "
                                     + "Check the consistency of the repo.name config property for those repository ids");
                             throw new IllegalStateException(msg);
                         }
                     } else {
-                        config.setRepositoryId(repoPK.get());
+                        env.setRepositoryId(repoPK.get());
                     }
                 }
                 return repoPK.isPresent();
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
     }
 
-    public static Version getServerVersion(final Environment env) {
-        DataSource ds = newDataSource(env);
-        try (Connection cx = newConnection(ds)) {
-            return getServerVersion(cx);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally {
-            closeDataSource(ds);
-        }
-    }
-
-    public static Version getServerVersion(Connection cx) throws SQLException {
+    static Version getServerVersion(Connection cx) throws SQLException {
         try (Statement st = cx.createStatement()) {
             try (ResultSet rs = st.executeQuery("SHOW server_version")) {
                 Preconditions.checkState(rs.next(),
@@ -177,19 +146,15 @@ public class PGStorage {
     /**
      * List the names of all repositories in the given {@link Environment}.
      * 
-     * @param config the environment
+     * @param env the environment
      * @return the list of repository names
      */
-    public static List<String> listRepos(final @NonNull Environment config) {
-        final DataSource dataSource = PGStorage.newDataSource(config);
-        TableNames tables = config.getTables();
-
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
+    public static List<String> listRepos(final @NonNull Environment env) {
+        TableNames tables = env.getTables();
+        try (Connection cx = env.getConnection()) {
             return listRepos(cx, tables);
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            PGStorage.closeDataSource(dataSource);
         }
     }
 
@@ -212,34 +177,29 @@ public class PGStorage {
     }
 
     /**
-     * Initializes all the tables as given by the names in {@link Environment#getTables()
-     * config.getTables()} if need be, and creates an entry in the {@link TableNames#repositories()
-     * repsitories} table with the repository id given by {@link Environment#repositoryId
-     * config.repositoryId}, returning true if the entry was created and false if it already
-     * existed.
+     * Creates an entry in the {@link TableNames#repositories() repsitories} table with the
+     * repository id given by {@link Environment#repositoryId environment.repositoryId}, returning
+     * true if the entry was created and false if it already existed.
      * 
      * @return {@code true} if the repository was created, {@code false} if it already exists
      */
-    public static boolean createNewRepo(final @NonNull Environment config)
+    public static boolean createNewRepo(final @NonNull Environment environment)
             throws IllegalArgumentException {
-        checkArgument(config.getRepositoryName() != null, "no repository name provided");
-        createTables(config);
+        checkArgument(environment.getRepositoryName() != null, "no repository name provided");
 
-        final String argRepoName = config.getRepositoryName();
-        if (config.isRepositorySet()) {
+        final String argRepoName = environment.getRepositoryName();
+        if (environment.isRepositoryIdSet()) {
             return false;
         }
 
-        final DataSource dataSource = PGStorage.newDataSource(config);
-
-        try (PGConfigDatabase configdb = new PGConfigDatabase(config)) {
-            final Optional<Integer> repositoryPK = configdb.resolveRepositoryPK(argRepoName);
+        try (PGConfigDatabase configdb = new PGConfigDatabase(environment)) {
+            final Optional<Integer> repositoryPK = environment.resolveRepositoryPK(argRepoName);
             if (repositoryPK.isPresent()) {
                 return false;
             }
             final int pk;
-            try (Connection cx = PGStorage.newConnection(dataSource)) {
-                final String reposTable = config.getTables().repositories();
+            try (Connection cx = environment.getConnection()) {
+                final String reposTable = environment.getTables().repositories();
                 cx.setAutoCommit(false);
                 try {
                     String sql = format("INSERT INTO %s (created) VALUES (NOW())", reposTable);
@@ -250,7 +210,7 @@ public class PGStorage {
                             checkState(generatedKeys.next());
                             pk = generatedKeys.getInt(1);
                         }
-                        config.setRepositoryId(pk);
+                        environment.setRepositoryId(pk);
                     }
                     cx.commit();
                 } catch (SQLException | RuntimeException e) {
@@ -260,18 +220,14 @@ public class PGStorage {
                 }
             }
             // set the config option outside the try-with-resources block to avoid acquiring
-            // 2
-            // connections
+            // 2 connections
             configdb.put("repo.name", argRepoName);
-            checkState(pk == configdb.resolveRepositoryPK(argRepoName)
+            checkState(pk == environment.resolveRepositoryPK(argRepoName)
                     .orElse(Environment.REPOSITORY_ID_UNSET));
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            PGStorage.closeDataSource(dataSource);
         }
-
-        checkState(config.isRepositorySet());
+        checkState(environment.isRepositoryIdSet());
         return true;
     }
 
@@ -299,39 +255,39 @@ public class PGStorage {
         return tableExists;
     }
 
-    public static synchronized void createTables(final Environment config) {
-        final DataSource dataSource = PGStorage.newDataSource(config);
-        try (Connection cx = PGStorage.newConnection(dataSource)) {
-            final Version serverVersion = getServerVersion(cx);
-            final PGStorageTableManager tableManager;
-            tableManager = PGStorageTableManager.forVersion(serverVersion);
-            tableManager.createTables(cx, config);
+    public static void createTables(final Environment environment) {
+        try (Connection cx = environment.getConnection()) {
+            try {
+                cx.setAutoCommit(false);
+                final Version serverVersion = getServerVersion(cx);
+                final PGStorageTableManager tableManager;
+                tableManager = PGStorageTableManager.forVersion(serverVersion);
+                tableManager.createTables(cx, environment);
+                cx.commit();
+            } catch (SQLException e) {
+                cx.rollback();
+            } finally {
+                cx.setAutoCommit(true);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-            PGStorage.closeDataSource(dataSource);
         }
-
     }
 
     public static boolean deleteRepository(final Environment env) {
         checkArgument(env.getRepositoryName() != null, "No repository name provided");
 
-        final String repositoryName = env.getRepositoryName();
+        final @NonNull String repositoryName = env.getRepositoryName();
         final int repositoryPK;
 
-        if (env.isRepositorySet()) {
+        if (env.isRepositoryIdSet()) {
             repositoryPK = env.getRepositoryId();
         } else {
-            try (PGConfigDatabase configdb = new PGConfigDatabase(env)) {
-                Optional<Integer> pk = configdb.resolveRepositoryPK(repositoryName);
-                if (pk.isPresent()) {
-                    repositoryPK = pk.get();
-                } else {
-                    return false;
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            Optional<Integer> pk = env.resolveRepositoryPK();
+            if (pk.isPresent()) {
+                repositoryPK = pk.get();
+            } else {
+                return false;
             }
         }
         final TableNames tables = env.getTables();
@@ -339,9 +295,7 @@ public class PGStorage {
         boolean deleted = false;
 
         final String sql = String.format("DELETE FROM %s WHERE repository = ?", reposTable);
-        final DataSource ds = PGStorage.newDataSource(env);
-
-        try (Connection cx = PGStorage.newConnection(ds)) {
+        try (Connection cx = env.getConnection()) {
             cx.setAutoCommit(false);
             try (PreparedStatement st = cx.prepareStatement(log(sql, LOG, repositoryName))) {
                 st.setInt(1, repositoryPK);
@@ -356,10 +310,7 @@ public class PGStorage {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            PGStorage.closeDataSource(ds);
         }
-
         return Boolean.valueOf(deleted);
     }
 }

@@ -9,27 +9,11 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static java.lang.String.format;
-
-import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigStore;
 import org.locationtech.geogig.storage.internal.AbstractConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
-
-import com.google.common.collect.Lists;
-
-import lombok.NonNull;
 
 /**
  * PostgreSQL based config database.
@@ -57,19 +41,15 @@ import lombok.NonNull;
  *           for the {@code repository} column.
  */
 public class PGConfigDatabase extends AbstractConfigDatabase {
-    private final Environment config;
+    private final Environment env;
 
     private final PGConfigStore globalConfigStore;
 
     private final PGConfigStore localConfigStore;
 
-    public PGConfigDatabase(Hints hints) throws URISyntaxException {
-        this(Environment.get(hints));
-    }
-
     public PGConfigDatabase(Environment environment) {
-        super(false);
-        this.config = environment;
+        super(environment.isReadOnly());
+        this.env = environment;
         this.globalConfigStore = new PGConfigStore(environment, this::globalRepoPK);
         this.localConfigStore = new PGConfigStore(environment, this::localRepoPK);
     }
@@ -88,61 +68,13 @@ public class PGConfigDatabase extends AbstractConfigDatabase {
     }
 
     private int localRepoPK() {
-        if (!config.isRepositorySet()) {
-            String repositoryName = config.getRepositoryName();
-            if (null == repositoryName) {
-                throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
-            }
-            Optional<Integer> pk;
-            try {
-                pk = resolveRepositoryPK(repositoryName);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            if (!pk.isPresent()) {
-                throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
-            }
-            config.setRepositoryId(pk.get());
+        if (!env.canResolveRepositoryId()) {
+            throw new ConfigException(ConfigException.StatusCode.INVALID_LOCATION);
         }
-        return config.getRepositoryId();
+        return env.getRepositoryId();
     }
 
     private int globalRepoPK() {
         return Environment.GLOBAL_KEY;
-    }
-
-    public Optional<Integer> resolveRepositoryPK(@NonNull String repositoryName)
-            throws SQLException {
-        try (Connection cx = PGStorage.newConnection(localConfigStore.connect(config))) {
-            return resolveRepositoryPK(repositoryName, cx);
-        }
-    }
-
-    private Optional<Integer> resolveRepositoryPK(String repositoryName, Connection cx)
-            throws SQLException {
-
-        final String configTable = config.getTables().repositoryNamesView();
-        final String sql = format("SELECT repository FROM %s WHERE name = ?", configTable);
-
-        Integer repoPK = null;
-        try (PreparedStatement ps = cx.prepareStatement(sql)) {
-            ps.setString(1, repositoryName);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    repoPK = rs.getInt(1);
-                    List<Integer> all = Lists.newArrayList(repoPK);
-                    while (rs.next()) {
-                        all.add(rs.getInt(1));
-                    }
-                    if (all.size() > 1) {
-                        throw new IllegalStateException(format(
-                                "There're more than one repository named '%s'. "
-                                        + "Check the repo.name config property for the following repository ids: %s",
-                                repositoryName, all.toString()));
-                    }
-                }
-            }
-        }
-        return Optional.ofNullable(repoPK);
     }
 }

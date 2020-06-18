@@ -38,7 +38,6 @@ import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
 
 import lombok.NonNull;
 
@@ -63,7 +62,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override boolean repoExists(URI repoURI) throws IllegalArgumentException {
-        Environment config = parseConfig(repoURI);
+        Environment config = parseRequireRepositorySet(repoURI);
         boolean exists = PGStorage.repoExists(config);
         return exists;
     }
@@ -84,11 +83,16 @@ public class PGRepositoryResolver implements RepositoryResolver {
     public @Override List<String> listRepoNamesUnderRootURI(URI rootRepoURI) {
         Properties properties = EnvironmentBuilder.getRootURIProperties(rootRepoURI);
         EnvironmentBuilder builder = new EnvironmentBuilder(properties);
-        return PGStorage.listRepos(builder.build());
+        Environment env = builder.build();
+        try {
+            return PGStorage.listRepos(env);
+        } finally {
+            env.close();
+        }
     }
 
     public @Override void initialize(URI repoURI) throws IllegalArgumentException {
-        Environment config = parseConfig(repoURI);
+        Environment config = parseRequireRepositorySet(repoURI);
         PGStorage.createNewRepo(config);
     }
 
@@ -105,7 +109,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
             EnvironmentBuilder builder = new EnvironmentBuilder(properties);
             config = builder.build();
         } else {
-            config = parseConfig(repoURI);
+            config = parseRequireRepositorySet(repoURI);
         }
         PGConfigDatabase configDb = new PGConfigDatabase(config);
         if (config.getRepositoryName() != null && PGStorage.repoExists(config)) {
@@ -134,17 +138,11 @@ public class PGRepositoryResolver implements RepositoryResolver {
         return configDb;
     }
 
-    private Environment parseConfig(URI repoURI) {
-        Environment config;
-        try {
-            config = new EnvironmentBuilder(repoURI).build();
-        } catch (RuntimeException e) {
-            Throwables.throwIfInstanceOf(e, IllegalArgumentException.class);
-            throw new IllegalArgumentException("Error parsing URI", e);
-        }
-        Preconditions.checkArgument(config.getRepositoryName() != null,
+    private Environment parseRequireRepositorySet(URI repoURI) {
+        Environment env = Environment.get(repoURI);
+        Preconditions.checkArgument(env.getRepositoryName() != null,
                 "No repository id provided in repo URI: '" + maskPassword(repoURI) + "'");
-        return config;
+        return env;
     }
 
     public @Override Repository open(@NonNull URI repositoryURI)
@@ -171,13 +169,13 @@ public class PGRepositoryResolver implements RepositoryResolver {
     }
 
     public @Override String getName(URI repoURI) {
-        Environment env = parseConfig(repoURI);
+        Environment env = parseRequireRepositorySet(repoURI);
         String repositoryId = env.getRepositoryName();
         return repositoryId;
     }
 
     public @Override boolean delete(URI repositoryLocation) throws Exception {
-        Environment env = parseConfig(repositoryLocation);
+        Environment env = parseRequireRepositorySet(repositoryLocation);
         return PGStorage.deleteRepository(env);
     }
 
@@ -192,35 +190,27 @@ public class PGRepositoryResolver implements RepositoryResolver {
 
     public @Override ObjectDatabase resolveObjectDatabase(@NonNull URI repoURI, Hints hints) {
         ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null, false);
-        try {
-            return new PGObjectDatabase(configDatabase, hints);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        Environment env = parseRequireRepositorySet(repoURI);
+        return new PGObjectDatabase(configDatabase, env);
     }
 
     public @Override IndexDatabase resolveIndexDatabase(@NonNull URI repoURI, Hints hints) {
         ConfigDatabase configDatabase = resolveConfigDatabase(repoURI, null, false);
-        try {
-            return new PGIndexDatabase(configDatabase, hints);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        Environment env = parseRequireRepositorySet(repoURI);
+        return new PGIndexDatabase(configDatabase, env);
     }
 
     public @Override RefDatabase resolveRefDatabase(@NonNull URI repoURI, Hints hints) {
         try {
-            return new PGRefDatabase(hints);
+            Environment env = parseRequireRepositorySet(repoURI);
+            return new PGRefDatabase(env);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
 
     public @Override ConflictsDatabase resolveConflictsDatabase(@NonNull URI repoURI, Hints hints) {
-        try {
-            return new PGConflictsDatabase(hints);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
+        Environment env = parseRequireRepositorySet(repoURI);
+        return new PGConflictsDatabase(env);
     }
 }

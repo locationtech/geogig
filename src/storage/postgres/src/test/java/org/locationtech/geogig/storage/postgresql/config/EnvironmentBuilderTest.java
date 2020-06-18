@@ -13,7 +13,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
@@ -26,7 +25,7 @@ public class EnvironmentBuilderTest {
 
     private URI buildUri(String host, @Nullable Integer port, String dbName,
             @Nullable String schema, String repoName, String user, String password)
-            throws URISyntaxException, UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
 
         if (port == null || port == 0) {
             port = 5432;
@@ -46,13 +45,12 @@ public class EnvironmentBuilderTest {
     }
 
     private void test(String host, @Nullable Integer port, String dbName, @Nullable String schema,
-            String repoName, String user, String password)
-            throws URISyntaxException, UnsupportedEncodingException {
+            String repoName, String user, String password) throws UnsupportedEncodingException {
         // build the URI
         URI uri = buildUri(host, port, dbName, schema, repoName, user, password);
         // Build an Environment
         EnvironmentBuilder builder = new EnvironmentBuilder(uri);
-        ConnectionConfig config = builder.build().connectionConfig;
+        ConnectionConfig config = builder.build().getConnectionConfig();
         // assert properties
         assertEquals("Unexpected HOST value", host, config.getServer());
         if (port != null) {
@@ -71,28 +69,26 @@ public class EnvironmentBuilderTest {
     }
 
     @Test
-    public void testextractShortKeys() throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys() throws UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "testPassword");
     }
 
     @Test
-    public void testextractShortKeys_withPassword_hash()
-            throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys_withPassword_hash() throws UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "test#Password");
     }
 
     @Test
-    public void testextractShortKeys_withPassword_ampersand()
-            throws URISyntaxException, UnsupportedEncodingException {
+    public void testextractShortKeys_withPassword_ampersand() throws UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "test&Password");
     }
 
     @Test
     public void testextractShortKeys_withPassword_multiSpecial()
-            throws URISyntaxException, UnsupportedEncodingException {
+            throws UnsupportedEncodingException {
         // test some basic values
         test("testHost", null, "testDb", null, "testRepo", "testUser", "!@#$%^&*()");
     }

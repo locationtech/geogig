@@ -26,4 +26,7 @@ public class RepositoryBusyException extends RuntimeException {
         super(message, cause);
     }
 
+    public RepositoryBusyException(String message) {
+        super(message);
+    }
 }

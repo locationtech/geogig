@@ -11,15 +11,13 @@ package org.locationtech.geogig.storage.postgresql.v9;
 
 import java.io.IOException;
 
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.impl.ObjectDatabaseConformanceTest;
-import org.locationtech.geogig.storage.postgresql.PGTemporaryTestConfig;
-import org.locationtech.geogig.storage.postgresql.PGTestDataSourceProvider;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.PGStorage;
+import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
+import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
 public class PGObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTest {
 
@@ -28,24 +26,11 @@ public class PGObjectDatabaseConformanceTest extends ObjectDatabaseConformanceTe
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    ConfigDatabase configdb;
-
     protected @Override PGObjectDatabase createOpen(boolean readOnly) throws IOException {
-        Environment config = testConfig.getEnvironment();
-        PGStorage.createNewRepo(config);
-
-        closeConfigDb();
-
-        configdb = new PGConfigDatabase(config);
-        PGObjectDatabase db = new PGObjectDatabase(configdb, config, readOnly);
+        Environment env = testConfig.getEnvironment(readOnly);
+        PGStorage.createNewRepo(env);
+        PGObjectDatabase db = new PGObjectDatabase(new PGConfigDatabase(env), env);
         db.open();
         return db;
-    }
-
-    public @After void closeConfigDb() throws IOException {
-        if (configdb != null) {
-            configdb.close();
-            configdb = null;
-        }
     }
 }

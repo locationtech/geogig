@@ -1,7 +1,5 @@
 package org.locationtech.geogig.storage.postgresql.config;
 
-import static com.google.common.base.Objects.equal;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -9,11 +7,14 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Objects;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.Delegate;
 
-public class ConnectionConfig implements Cloneable {
+public @Value class ConnectionConfig implements Cloneable {
 
-    private final ConnectionConfig.Key key;
+    private final @NonNull @Delegate ConnectionConfig.Key key;
 
     /**
      * Checks if both connection configs target the same database regardless of the schema, user,
@@ -40,59 +41,34 @@ public class ConnectionConfig implements Cloneable {
     /**
      * Encapsulates the parts of the connection config that uniquely identify a connection to the
      * database in order to be used as key for {@link DataSourceManager}. As such, #schema and
-     * #tablePrefix are ignored by {@link #equals(Object)} and {@link #hashCode()}, while they're
-     * taking into account for {@link ConnectionConfig} itself.
-     *
+     * #tablePrefix left aside.
      */
-    static class Key implements Cloneable {
+    @EqualsAndHashCode(exclude = { "schema", "tablePrefix" })
+    static @Value class Key implements Cloneable {
 
-        final String server;
+        final @NonNull String server;
 
         final int portNumber;
 
-        final String databaseName;
+        final @NonNull String databaseName;
 
-        @Nullable
         final String user;
 
-        @Nullable
         final String password;
 
-        final String schema;
+        final @NonNull String schema;
 
-        @Nullable
         final String tablePrefix;
 
-        Key(String server, int portNumber, String databaseName, String schema, String user,
-                String password, String tablePrefix) {
-            this.server = server;
-            this.portNumber = portNumber;
-            this.databaseName = databaseName;
-            this.schema = schema;
-            this.user = user;
-            this.password = password;
-            this.tablePrefix = tablePrefix;
-        }
-
-        public @Override boolean equals(Object o) {
-            if (o instanceof ConnectionConfig.Key) {
-                ConnectionConfig.Key k = (ConnectionConfig.Key) o;
-                return equal(server, k.server) && equal(portNumber, k.portNumber)
-                        && equal(databaseName, k.databaseName) && equal(user, k.user)
-                        && equal(password, k.password);
-            }
-            return false;
-        }
-
-        public @Override int hashCode() {
-            return Objects.hashCode(server, portNumber, databaseName, user, password);
+        public Key withPrefix(String newTablePrefix) {
+            return new Key(this.server, this.portNumber, this.databaseName, this.user,
+                    this.password, this.schema, newTablePrefix);
         }
 
         public @Override String toString() {
             return String.format(
                     "%s[host: %s, port: %d, db: %s, schema: %s, user: %s, pwd: %s, prefix: %s]",
-                    getClass().getSimpleName(), server, portNumber, databaseName, schema, user,
-                    "***", tablePrefix);
+                    getClass().getSimpleName(), server, portNumber, databaseName, user, "***");
         }
 
     }
@@ -100,11 +76,22 @@ public class ConnectionConfig implements Cloneable {
     ConnectionConfig(final String server, final int portNumber, final String databaseName,
             final String schema, @Nullable final String user, @Nullable final String password,
             @Nullable String tablePrefix) {
-        this.key = new Key(server, portNumber, databaseName, schema, user, password, tablePrefix);
+        if (tablePrefix != null && tablePrefix.trim().isEmpty()) {
+            tablePrefix = null;
+        }
+        this.key = new Key(server, portNumber, databaseName, user, password, schema, tablePrefix);
+    }
+
+    ConnectionConfig(Key key) {
+        this.key = key;
     }
 
     public URI toURIMaskPassword() {
         return toURIInternal(null, true);
+    }
+
+    public ConnectionConfig withTablePrefix(String tablePrefix) {
+        return new ConnectionConfig(this.key.withPrefix(tablePrefix));
     }
 
     public URI toURI() {
@@ -148,54 +135,5 @@ public class ConnectionConfig implements Cloneable {
             throw new RuntimeException(e);
         }
         return repoURI;
-    }
-
-    public @Override boolean equals(Object o) {
-        if (!(o instanceof ConnectionConfig)) {
-            return false;
-        }
-        ConnectionConfig d = (ConnectionConfig) o;
-        return equal(key, d.key) && equal(getSchema(), d.getSchema())
-                && equal(key.tablePrefix, d.key.tablePrefix);
-    }
-
-    public @Override int hashCode() {
-        return Objects.hashCode(key, key.schema, key.tablePrefix);
-    }
-
-    public @Override String toString() {
-        return String.format("%s[%s]", getClass().getSimpleName(), key);
-    }
-
-    public String getDatabaseName() {
-        return key.databaseName;
-    }
-
-    public @Nullable String getUser() {
-        return key.user;
-    }
-
-    public @Nullable String getPassword() {
-        return key.password;
-    }
-
-    public String getSchema() {
-        return key.schema;
-    }
-
-    public int getPortNumber() {
-        return key.portNumber;
-    }
-
-    public String getServer() {
-        return key.server;
-    }
-
-    public @Nullable String getTablePrefix() {
-        return key.tablePrefix;
-    }
-
-    public ConnectionConfig.Key getKey() {
-        return key;
     }
 }

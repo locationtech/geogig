@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.storage.postgresql;
+package org.locationtech.geogig.storage.postgresql.config;
 
 import java.net.URI;
 import java.sql.Connection;
@@ -20,8 +20,8 @@ import javax.sql.DataSource;
 
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
-import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.TableNames;
+import org.locationtech.geogig.storage.postgresql.commands.PGInitDB;
+import org.locationtech.geogig.test.TestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,16 +52,23 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
         this.externalDataSource = true;
     }
 
-    public @Override URI apply(String repositoryName) {
-        return newRepoURI(repositoryName);
-    }
-
     public @Override void before() throws AssumptionViolatedException {
         if (!externalDataSource) {
             dataSourceProvider.before();
         }
         org.junit.Assume.assumeTrue(isEnabled());
-        environment = getEnvironment();
+        environment = newEnvironment(repositoryName);
+    }
+
+    public void init(TestRepository testRepository) {
+        testRepository.setURIBuilder(this);
+        // PGTemporaryTestConfig removes all tables for the environment's table prefix so no need
+        // for TestRepository to try to remove the repositories
+        testRepository.setRemoveRepositoriesAtTearDown(false);
+    }
+
+    public @Override URI apply(String repositoryName) {
+        return newRepoURI(repositoryName);
     }
 
     private boolean isEnabled() {
@@ -76,7 +83,7 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
             return;
         }
         try {
-            delete(environment);
+            deleteTables(environment);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -84,24 +91,22 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
                 dataSourceProvider.after();
             }
             dataSourceProvider = null;
+            environment.close();
         }
-    }
-
-    public void closeDataSource() {
-        dataSourceProvider.closeDataSource();
     }
 
     public DataSource getDataSource() {
         return dataSourceProvider.getDataSource();
     }
 
-    public void delete(Environment environment) throws SQLException {
+    public void deleteTables(Environment environment) throws SQLException {
         if (environment == null) {
             return;
         }
 
         TableNames tables = environment.getTables();
         try (Connection cx = getDataSource().getConnection()) {
+            cx.setAutoCommit(false);
             execute(cx, String.format("DROP VIEW IF EXISTS %s", tables.repositoryNamesView()));
             delete(cx, tables.objects(), true);
             delete(cx, tables.conflicts());
@@ -120,6 +125,7 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
             delete(cx, tables.config());
             delete(cx, tables.repositories());
             delete(cx, tables.metadata());
+            cx.commit();
         }
     }
 
@@ -139,20 +145,19 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
         }
     }
 
-    public synchronized Environment getEnvironment() {
-        if (environment == null) {
-            environment = newEnvironment(repositoryName);
-        }
+    public Environment getEnvironment() {
+        return environment;
+    }
+
+    public Environment getEnvironment(boolean readOnly) {
+        environment.setReadOnly(readOnly);
         return environment;
     }
 
     public Environment newEnvironment(String repositoryName) {
-        try (Connection cx = getDataSource().getConnection()) {
-        } catch (SQLException e) {
-            throw new RuntimeException();
-        }
         String tablePrefix = "geogig_" + newTablePrefix() + "_";
         Environment env = dataSourceProvider.newEnvironment(repositoryName, tablePrefix);
+        new PGInitDB().setEnvironment(env).call();
         return env;
     }
 
@@ -181,31 +186,13 @@ public class PGTemporaryTestConfig extends ExternalResource implements Function<
     }
 
     public String getRootURI() {
-        PGTestProperties props = dataSourceProvider.getTestProperties();
         Environment env = getEnvironment();
-        String repositoryName = null;
-        String prefix = env.getTables().getPrefix();
-        String url = props.buildRepoURL(repositoryName, prefix);
+        URI uri = env.getConnectionConfig().toURI();
+        String url = uri.toString();
         return url;
-    }
-
-    public String getRepoURL() {
-        Environment env = getEnvironment();
-        return getRepoURI(env);
     }
 
     public URI newRepoURI(String repositoryName) {
-        Environment env = getEnvironment();
-        PGTestProperties props = dataSourceProvider.getTestProperties();
-        String url = props.buildRepoURL(repositoryName, env.getTables().getPrefix());
-        return URI.create(url);
+        return getEnvironment().withRepository(repositoryName).toURI();
     }
-
-    public String getRepoURI(Environment env) {
-        String repoName = env.getRepositoryName();
-        PGTestProperties props = dataSourceProvider.getTestProperties();
-        String url = props.buildRepoURL(repoName, env.getTables().getPrefix());
-        return url;
-    }
-
 }

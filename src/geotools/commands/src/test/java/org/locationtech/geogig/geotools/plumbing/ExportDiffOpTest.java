@@ -45,7 +45,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
 
         final String featureId = points1.getId();
         final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
-                featureId, "changedProp", new Integer(1500), "POINT(1 1)");
+                featureId, "changedProp", Integer.valueOf(1500), "POINT(1 1)");
         insertAndAdd(modifiedFeature, points2);
         final RevCommit changeCommit = repo.command(CommitOp.class).setAll(true).call();
 
@@ -60,9 +60,9 @@ public class ExportDiffOpTest extends RepositoryTestCase {
 
         FeatureType gigOutputFeatureType = GT.adapt(outputFeatureType);
         final org.locationtech.geogig.feature.Feature outputFeature1 = feature(gigOutputFeatureType,
-                featureId, "M", "changedProp", new Integer(1500), "POINT(1 1)");
+                featureId, "M", "changedProp", Integer.valueOf(1500), "POINT(1 1)");
         final org.locationtech.geogig.feature.Feature outputFeature2 = feature(gigOutputFeatureType,
-                points2.getId(), "A", "StringProp1_2", new Integer(2000), "POINT(2 2)");
+                points2.getId(), "A", "StringProp1_2", Integer.valueOf(2000), "POINT(2 2)");
 
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);
         final String typeName = dataStore.getTypeNames()[0];
@@ -86,7 +86,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
 
         final String featureId = points1.getId();
         final org.locationtech.geogig.feature.Feature modifiedFeature = feature(points1.getType(),
-                featureId, "changedProp", new Integer(1500));
+                featureId, "changedProp", Integer.valueOf(1500));
         insertAndAdd(modifiedFeature, points2);
         final RevCommit changeCommit = repo.command(CommitOp.class).setAll(true).call();
 
@@ -100,7 +100,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
         SimpleFeatureType outputFeatureType = builder.buildFeatureType();
 
         final org.locationtech.geogig.feature.Feature outputFeature1 = feature(
-                GT.adapt(outputFeatureType), featureId, "M", "StringProp1_1", new Integer(1000),
+                GT.adapt(outputFeatureType), featureId, "M", "StringProp1_1", Integer.valueOf(1000),
                 "POINT(1 1)");
 
         MemoryDataStore dataStore = new MemoryDataStore(outputFeatureType);

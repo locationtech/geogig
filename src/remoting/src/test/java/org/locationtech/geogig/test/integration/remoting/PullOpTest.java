@@ -263,7 +263,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         RevCommit commit = originRepo.command(CommitOp.class).call();
         expectedMaster.addFirst(commit);
 
-        Feature points4 = feature(pointsType, "Points.4", "4", new Integer(4), "POINT(4 4)");
+        Feature points4 = feature(pointsType, "Points.4", "4", Integer.valueOf(4), "POINT(4 4)");
         checkout(originRepo, "Branch1");
         insertAndAdd(originRepo, points4);
         commit(originRepo, "Points.4");
@@ -367,13 +367,13 @@ public class PullOpTest extends RemoteRepositoryTestCase {
             insertAndAdd(localRepo, points1, points3);
             local.command(CommitOp.class).call();
             local.command(BranchCreateOp.class).setName("TestBranch").call();
-            Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
-                    "POINT(1 1)");
+            Feature points1Modified = feature(pointsType, idP1, "StringProp1_2",
+                    Integer.valueOf(1000), "POINT(1 1)");
             insertAndAdd(local, points1Modified);
             local.command(CommitOp.class).call();
             local.command(CheckoutOp.class).setSource("TestBranch").call();
-            Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
-                    "POINT(1 1)");
+            Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3",
+                    Integer.valueOf(2000), "POINT(1 1)");
             insertAndAdd(local, points1ModifiedB);
             insertAndAdd(local, points2);
             local.command(CommitOp.class).call();

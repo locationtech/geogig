@@ -427,7 +427,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
@@ -439,7 +439,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
         repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
@@ -470,7 +470,7 @@ public class RebaseOpTest extends RepositoryTestCase {
                 RevFeature.builder().build(points1ModifiedB).getId());
 
         // solve, and continue
-        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1Merged);
         repo.command(AddOp.class).call();
@@ -525,7 +525,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
@@ -536,7 +536,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
         repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
@@ -567,7 +567,7 @@ public class RebaseOpTest extends RepositoryTestCase {
                 RevFeature.builder().build(points1ModifiedB).getId());
 
         // solve, and continue
-        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1Merged);
         repo.command(AddOp.class).call();
@@ -649,7 +649,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
@@ -660,7 +660,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
         repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
@@ -738,7 +738,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         RevCommit firstCommit = repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
@@ -750,7 +750,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         RevCommit masterCommit = repo.command(CommitOp.class).setMessage("adding lines.1").call();
         repo.command(CheckoutOp.class).setSource("branch1").call();
         insert(points3);
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);

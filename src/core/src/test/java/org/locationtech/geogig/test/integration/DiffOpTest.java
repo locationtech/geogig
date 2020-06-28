@@ -493,7 +493,7 @@ public class DiffOpTest extends RepositoryTestCase {
         insertAndAdd(lines1);
         final RevCommit commit1 = repo.command(CommitOp.class).setAll(true).call();
 
-        Feature lines1B = feature(linesType, idL2, "StringProp2_1", new Integer(1000),
+        Feature lines1B = feature(linesType, idL2, "StringProp2_1", Integer.valueOf(1000),
                 "LINESTRING (1 1, 2 2)");
         delete(lines1);
         // insert(lines2);

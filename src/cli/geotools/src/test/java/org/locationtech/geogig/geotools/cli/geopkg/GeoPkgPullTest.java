@@ -98,7 +98,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
             Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
             store.setTransaction(gttx);
             SimpleFeature points4 = (SimpleFeature) feature(pointsType, "Points.4", "StringProp1_4",
-                    new Integer(4000), "POINT(4 4)");
+                    Integer.valueOf(4000), "POINT(4 4)");
             store.addFeatures(DataUtilities.collection(points4));
             gttx.commit();
         } finally {
@@ -167,7 +167,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
             Preconditions.checkState(store.getQueryCapabilities().isUseProvidedFIDSupported());
             store.setTransaction(gttx);
             SimpleFeature points4 = (SimpleFeature) feature(pointsType, "Points.4", "StringProp1_4",
-                    new Integer(4000), "POINT(4 4)");
+                    Integer.valueOf(4000), "POINT(4 4)");
             store.addFeatures(DataUtilities.collection(points4));
             gttx.commit();
         } finally {

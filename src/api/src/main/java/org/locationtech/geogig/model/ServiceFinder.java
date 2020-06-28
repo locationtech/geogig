@@ -152,12 +152,12 @@ public class ServiceFinder {
                 systemPropertyName, className);
 
         try {
-            Object newInstance = Class.forName(className).newInstance();
+            Object newInstance = Class.forName(className).getConstructor().newInstance();
             T service = type.cast(newInstance);
             log.debug("Created instance of {} of type {} given as system property {}",
                     type.getName(), service.getClass().getName(), systemPropertyName);
             return service;
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Unable to instantiate '" + className
                     + "' provided as System property " + systemPropertyName, e);
         }
@@ -178,12 +178,12 @@ public class ServiceFinder {
                 environmentVariable, className);
 
         try {
-            Object newInstance = Class.forName(className).newInstance();
+            Object newInstance = Class.forName(className).getConstructor().newInstance();
             T service = type.cast(newInstance);
             log.debug("Created instance of {} of type {} given as environment variable {}",
                     type.getName(), service.getClass().getName(), environmentVariable);
             return service;
-        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException("Unable to instantiate '" + className
                     + "' provided as environment variable " + environmentVariable, e);
         }

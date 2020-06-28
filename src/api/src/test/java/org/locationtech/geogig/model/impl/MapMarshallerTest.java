@@ -54,7 +54,7 @@ public class MapMarshallerTest {
         map.put("key3", Integer.valueOf(12345));
         map.put("nullval", null);
         map.put("arrayval", new double[] { Math.PI, Double.MIN_VALUE, Double.MAX_VALUE });
-        map.put("submap", ImmutableMap.of("submap1", "subvalue1", "submap2", new Long(789)));
+        map.put("submap", ImmutableMap.of("submap1", "subvalue1", "submap2", Long.valueOf(789)));
 
         // assertNull(StringConverters.marshall(map, Integer.class));
 

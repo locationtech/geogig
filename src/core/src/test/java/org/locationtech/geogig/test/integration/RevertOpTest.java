@@ -300,8 +300,8 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1_modified);
         RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for modified " + idP1)
                 .call();
-        Feature points1_modifiedB = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
-                "POINT(1 1)");
+        Feature points1_modifiedB = feature(pointsType, idP1, "StringProp1_2",
+                Integer.valueOf(2000), "POINT(1 1)");
         insertAndAdd(points1_modifiedB);
         RevCommit c3 = repo.command(CommitOp.class)
                 .setMessage("commit for modified " + idP1 + " again").call();
@@ -362,8 +362,8 @@ public class RevertOpTest extends RepositoryTestCase {
         insertAndAdd(points1_modified);
         RevCommit c2 = repo.command(CommitOp.class).setMessage("commit for modified " + idP1)
                 .call();
-        Feature points1_modifiedB = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
-                "POINT(1 1)");
+        Feature points1_modifiedB = feature(pointsType, idP1, "StringProp1_2",
+                Integer.valueOf(2000), "POINT(1 1)");
         ObjectId oId = insertAndAdd(points1_modifiedB);
         RevCommit c3 = repo.command(CommitOp.class)
                 .setMessage("commit for modified " + idP1 + " again").call();

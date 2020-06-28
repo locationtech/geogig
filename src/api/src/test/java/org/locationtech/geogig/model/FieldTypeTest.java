@@ -132,13 +132,13 @@ public class FieldTypeTest {
     public void testForValue() throws Exception {
         WKTReader reader = new WKTReader();
         assertEquals(FieldType.NULL, FieldType.forValue(Optional.empty()));
-        assertEquals(FieldType.BOOLEAN, FieldType.forValue(Optional.of(new Boolean(false))));
+        assertEquals(FieldType.BOOLEAN, FieldType.forValue(Optional.of(Boolean.FALSE)));
         assertEquals(FieldType.BYTE, FieldType.forValue(Optional.of((byte) 0x0)));
         assertEquals(FieldType.SHORT, FieldType.forValue(Optional.of((short) 0)));
         assertEquals(FieldType.INTEGER, FieldType.forValue(Optional.of(0)));
         assertEquals(FieldType.LONG, FieldType.forValue(Optional.of(0L)));
         assertEquals(FieldType.FLOAT, FieldType.forValue(Optional.of(0.f)));
-        assertEquals(FieldType.DOUBLE, FieldType.forValue(Optional.of(new Double(0))));
+        assertEquals(FieldType.DOUBLE, FieldType.forValue(Optional.of(Double.valueOf(0))));
         assertEquals(FieldType.STRING, FieldType.forValue(Optional.of("")));
         assertEquals(FieldType.BOOLEAN_ARRAY, FieldType.forValue(Optional.of(new boolean[2])));
         assertEquals(FieldType.BYTE_ARRAY, FieldType.forValue(Optional.of(new byte[2])));

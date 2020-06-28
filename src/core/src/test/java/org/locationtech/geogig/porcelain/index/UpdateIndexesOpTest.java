@@ -251,8 +251,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = getPointFid(10, 5);
-        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)", new Double(1),
-                new Double(1), "1,1");
+        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)",
+                Double.valueOf(1), Double.valueOf(1), "1,1");
         insertAndAdd(modified);
         RevCommit commit = commit("modified 10, 5");
         NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
@@ -290,8 +290,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         }
 
         // resolve conflict
-        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)", new Double(2),
-                new Double(1), "2,1");
+        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)",
+                Double.valueOf(2), Double.valueOf(1), "2,1");
         insertAndAdd(resolved);
 
         // commit
@@ -395,8 +395,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         branch("testbranch1");
 
         String fid = getPointFid(10, 5);
-        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)", new Double(1),
-                new Double(1), "1,1");
+        Feature modified = feature(IndexTestSupport.featureType, fid, "POINT(1 1)",
+                Double.valueOf(1), Double.valueOf(1), "1,1");
         insertAndAdd(modified);
         RevCommit masterCommit = commit("modified 10, 5");
         NodeRef featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
@@ -452,8 +452,8 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         // resolve the conflict
         fid = getPointFid(10, 5);
-        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)", new Double(2),
-                new Double(1), "2,1");
+        Feature resolved = feature(IndexTestSupport.featureType, fid, "POINT(2 1)",
+                Double.valueOf(2), Double.valueOf(1), "2,1");
         insertAndAdd(resolved);
 
         // continue rebase

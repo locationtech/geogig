@@ -188,9 +188,9 @@ public class AddOpTest extends RepositoryTestCase {
 
     @Test
     public void testInsertionAndAdditionFixesConflict() throws Exception {
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
@@ -220,9 +220,9 @@ public class AddOpTest extends RepositoryTestCase {
 
     @Test
     public void testAdditionFixesConflict() throws Exception {
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();

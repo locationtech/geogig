@@ -31,7 +31,8 @@ public class RevFeatureBuilderTest {
     public @Before void before() {
         FeatureType pointsType = FeatureTypes.createType("Points", "sp:String", "ip:Integer",
                 "pp:Point:srid=4326");
-        points1 = feature(pointsType, "Points.1", "StringProp1_1", new Integer(1000), "POINT(1 1)");
+        points1 = feature(pointsType, "Points.1", "StringProp1_1", Integer.valueOf(1000),
+                "POINT(1 1)");
 
     }
 

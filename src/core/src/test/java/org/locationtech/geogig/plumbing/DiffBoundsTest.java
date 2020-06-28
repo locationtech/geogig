@@ -38,20 +38,20 @@ public class DiffBoundsTest extends RepositoryTestCase {
                 .newArrayList(populate(true, points1, points3, points1_modified));
         this.points1_modified_commit = commits.get(2);
 
-        Feature p1ModifiedAgain = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
+        Feature p1ModifiedAgain = feature(pointsType, idP1, "StringProp1_1a", Integer.valueOf(1001),
                 "POINT(10 20)");// used to be POINT(1 2)
         insertAndAdd(p1ModifiedAgain);
         commits.add(repo.command(CommitOp.class).call());
 
-        points1B_modified = feature(pointsType, idP1, "StringProp1B_1a", new Integer(2000),
+        points1B_modified = feature(pointsType, idP1, "StringProp1B_1a", Integer.valueOf(2000),
                 "POINT(10 220)");
         insertAndAdd(points1B_modified);
         commits.add(repo.command(CommitOp.class).call());
 
-        l1Modified = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
+        l1Modified = feature(linesType, idL1, "StringProp2_1", Integer.valueOf(1000),
                 "LINESTRING (1 1, -2 -2)");// used to be LINESTRING (1 1, 2 2)
 
-        l2Modified = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
+        l2Modified = feature(linesType, idL2, "StringProp2_2", Integer.valueOf(2000),
                 "LINESTRING (3 3, 4 4)");// used to be LINESTRING (3 3, 4 4)
     }
 

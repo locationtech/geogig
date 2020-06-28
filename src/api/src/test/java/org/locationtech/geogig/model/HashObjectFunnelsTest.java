@@ -272,13 +272,13 @@ public class HashObjectFunnelsTest {
         WKTReader reader = new WKTReader();
         // Make sure properties of each type are hashed
         values.add(Optional.empty());
-        values.add(Optional.of(new Boolean(false)));
+        values.add(Optional.of(Boolean.FALSE));
         values.add(Optional.of((byte) 0x0));
         values.add(Optional.of((short) 0));
         values.add(Optional.of(0));
         values.add(Optional.of(0L));
         values.add(Optional.of(0.f));
-        values.add(Optional.of(new Double(0)));
+        values.add(Optional.of(Double.valueOf(0)));
         values.add(Optional.of(""));
         values.add(Optional.of(new boolean[] { true, false }));
         values.add(Optional.of(new byte[] { 0x01, 0x02 }));

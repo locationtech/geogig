@@ -167,29 +167,29 @@ public abstract class RemoteRepositoryTestCase {
 
         pointsType = FeatureTypes.createType(pointsTypeName.toString(), pointsTypeSpec.split(","));
 
-        points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
-        points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
+        points1 = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(1000), "POINT(1 1)");
+        points1_modified = feature(pointsType, idP1, "StringProp1_1a", Integer.valueOf(1001),
                 "POINT(1 2)");
-        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
-        points2_modified = feature(pointsType, idP2, "StringProp1_2a", new Integer(2001),
+        points2 = feature(pointsType, idP2, "StringProp1_2", Integer.valueOf(2000), "POINT(2 2)");
+        points2_modified = feature(pointsType, idP2, "StringProp1_2a", Integer.valueOf(2001),
                 "POINT(2 3)");
-        points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
-        points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
+        points3 = feature(pointsType, idP3, "StringProp1_3", Integer.valueOf(3000), "POINT(3 3)");
+        points3_modified = feature(pointsType, idP3, "StringProp1_3a", Integer.valueOf(3001),
                 "POINT(3 4)");
 
         linesType = FeatureTypes.createType(linesTypeName.toString(), linesTypeSpec.split(","));
 
-        lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
+        lines1 = feature(linesType, idL1, "StringProp2_1", Integer.valueOf(1000),
                 "LINESTRING (1 1, 2 2)");
-        lines1_modified = feature(linesType, idL1, "StringProp2_1a", new Integer(1001),
+        lines1_modified = feature(linesType, idL1, "StringProp2_1a", Integer.valueOf(1001),
                 "LINESTRING (1 2, 2 2)");
-        lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
+        lines2 = feature(linesType, idL2, "StringProp2_2", Integer.valueOf(2000),
                 "LINESTRING (3 3, 4 4)");
-        lines2_modified = feature(linesType, idL2, "StringProp2_2a", new Integer(2001),
+        lines2_modified = feature(linesType, idL2, "StringProp2_2a", Integer.valueOf(2001),
                 "LINESTRING (3 4, 4 4)");
-        lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
+        lines3 = feature(linesType, idL3, "StringProp2_3", Integer.valueOf(3000),
                 "LINESTRING (5 5, 6 6)");
-        lines3_modified = feature(linesType, idL3, "StringProp2_3a", new Integer(3001),
+        lines3_modified = feature(linesType, idL3, "StringProp2_3a", Integer.valueOf(3001),
                 "LINESTRING (5 6, 6 6)");
 
         setUpInternal();

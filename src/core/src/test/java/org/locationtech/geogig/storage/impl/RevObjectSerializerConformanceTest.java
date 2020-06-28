@@ -141,13 +141,13 @@ public abstract class RevObjectSerializerConformanceTest {
                 "StringProp1_1", //
                 Boolean.TRUE, //
                 Byte.valueOf("18"), //
-                new Double(100.01), //
+                Double.valueOf(100.01), //
                 new BigDecimal("1.89e1021"), //
-                new Float(12.5), //
-                new Integer(1000), //
+                Float.valueOf(12.5f), //
+                Integer.valueOf(1000), //
                 new BigInteger("90000000"), //
                 "POINT(1 1)", //
-                new Long(800000), //
+                Long.valueOf(800000), //
                 new java.util.Date(1264396155228L), //
                 new java.sql.Date(1364356800000L), //
                 new java.sql.Time(57355228L), //

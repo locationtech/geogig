@@ -432,7 +432,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
                 "sp:String,ip:Integer");
 
         org.locationtech.geogig.feature.Feature newFeature = feature(GT.adapt(newType),
-                "someType.1", "StringProp1", new Integer(1000));
+                "someType.1", "StringProp1", Integer.valueOf(1000));
 
         SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
@@ -448,7 +448,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
                 new String[] { "ip" });
         FeatureType gigType = GT.adapt(subType);
         SimpleFeature newFeature = GT.adapt(subType,
-                feature(gigType, "subtype.1", new Integer(-1)));
+                feature(gigType, "subtype.1", Integer.valueOf(-1)));
         newFeature.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
 
         collection = DataUtilities
@@ -470,7 +470,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
         FeatureType gigType = GT.adapt(newType);
 
         org.locationtech.geogig.feature.Feature newFeature = feature(gigType, "someid",
-                "StringProp1", new Integer(1000), (Geometry) null,
+                "StringProp1", Integer.valueOf(1000), (Geometry) null,
                 "value of att not in target schema");
 
         SimpleFeatureCollection collection = collection(points1, points2, newFeature);

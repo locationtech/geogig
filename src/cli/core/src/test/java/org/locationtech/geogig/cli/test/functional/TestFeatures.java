@@ -80,21 +80,21 @@ public final class TestFeatures {
         modifiedPointsType = FeatureTypes.createType(pointsTypeName,
                 modifiedPointsTypeSpec.split(","));
 
-        points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
-        points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
+        points1 = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(1000), "POINT(1 1)");
+        points1_modified = feature(pointsType, idP1, "StringProp1_1a", Integer.valueOf(1001),
                 "POINT(1 2)");
-        points1_FTmodified = feature(modifiedPointsType, idP1, "StringProp1_1", new Integer(1000),
-                "POINT(1 1)", "ExtraString");
-        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
-        points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
+        points1_FTmodified = feature(modifiedPointsType, idP1, "StringProp1_1",
+                Integer.valueOf(1000), "POINT(1 1)", "ExtraString");
+        points2 = feature(pointsType, idP2, "StringProp1_2", Integer.valueOf(2000), "POINT(2 2)");
+        points3 = feature(pointsType, idP3, "StringProp1_3", Integer.valueOf(3000), "POINT(3 3)");
 
         linesType = FeatureTypes.createType(linesTypeName, linesTypeSpec.split(","));
 
-        lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
+        lines1 = feature(linesType, idL1, "StringProp2_1", Integer.valueOf(1000),
                 "LINESTRING (1 1, 2 2)");
-        lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
+        lines2 = feature(linesType, idL2, "StringProp2_2", Integer.valueOf(2000),
                 "LINESTRING (3 3, 4 4)");
-        lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
+        lines3 = feature(linesType, idL3, "StringProp2_3", Integer.valueOf(3000),
                 "LINESTRING (5 5, 6 6)");
         created = true;
     }

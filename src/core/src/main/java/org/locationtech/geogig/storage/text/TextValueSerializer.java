@@ -68,38 +68,38 @@ public class TextValueSerializer {
         });
         serializers.put(FieldType.BOOLEAN, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Boolean(in);
+                return Boolean.valueOf(in);
             }
 
         });
         serializers.put(FieldType.BYTE, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Byte(in);
+                return Byte.valueOf(in);
             }
         });
         serializers.put(FieldType.SHORT, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Short(in);
+                return Short.valueOf(in);
             }
         });
         serializers.put(FieldType.INTEGER, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Integer(in);
+                return Integer.valueOf(in);
             }
         });
         serializers.put(FieldType.LONG, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Long(in);
+                return Long.valueOf(in);
             }
         });
         serializers.put(FieldType.FLOAT, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Float(in);
+                return Float.valueOf(in);
             }
         });
         serializers.put(FieldType.DOUBLE, new DefaultValueSerializer() {
             public @Override Object fromString(String in) {
-                return new Double(in);
+                return Double.valueOf(in);
             }
         });
         serializers.put(FieldType.STRING, new DefaultValueSerializer() {
@@ -113,7 +113,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Boolean> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Boolean(token));
+                    list.add(Boolean.valueOf(token));
                 }
                 return list.toArray(new Boolean[0]);
             }
@@ -123,7 +123,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Byte> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Byte(token));
+                    list.add(Byte.valueOf(token));
                 }
                 return list.toArray(new Byte[0]);
             }
@@ -133,7 +133,7 @@ public class TextValueSerializer {
                 String[] s = in.replace("[", "").replace("]", "").split(" ");
                 List<Short> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Short(token));
+                    list.add(Short.valueOf(token));
                 }
                 return list.toArray(new Short[0]);
             }
@@ -143,7 +143,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Integer> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Integer(token));
+                    list.add(Integer.valueOf(token));
                 }
                 return list.toArray(new Integer[0]);
             }
@@ -153,7 +153,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Long> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Long(token));
+                    list.add(Long.valueOf(token));
                 }
                 return list.toArray(new Long[0]);
             }
@@ -163,7 +163,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Float> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Float(token));
+                    list.add(Float.valueOf(token));
                 }
                 return list.toArray(new Float[0]);
             }
@@ -173,7 +173,7 @@ public class TextValueSerializer {
                 String[] s = in.split(" ");
                 List<Double> list = Lists.newArrayList();
                 for (String token : s) {
-                    list.add(new Double(token));
+                    list.add(Double.valueOf(token));
                 }
                 return list.toArray(new Byte[0]);
             }

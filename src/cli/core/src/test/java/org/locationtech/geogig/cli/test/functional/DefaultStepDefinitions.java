@@ -356,9 +356,9 @@ public class DefaultStepDefinitions {
         // ............|
         // ............o - master - HEAD - Lines 1 modified
         // branch1 and master are conflicting
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         localRepo.insertAndAdd(points1);
         localRepo.runCommand(true, "commit -m Commit1");

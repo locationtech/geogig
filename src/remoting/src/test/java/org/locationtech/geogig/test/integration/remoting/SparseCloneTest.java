@@ -113,22 +113,22 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
     protected @Override void setUpInternal() throws Exception {
         citiesType = FeatureTypes.createType(citiesTypeName.toString(), citiesTypeSpec.split(","));
 
-        city1 = feature(citiesType, idC1, "San Francisco", new Integer(200000),
+        city1 = feature(citiesType, idC1, "San Francisco", Integer.valueOf(200000),
                 "POINT(10.5559899 -71.6524294)");
-        city1_modified = feature(citiesType, idC1, "San Francisco", new Integer(200000),
+        city1_modified = feature(citiesType, idC1, "San Francisco", Integer.valueOf(200000),
                 "POINT(37.76169 -122.44791)");
-        city2 = feature(citiesType, idC2, "San Diego", new Integer(350000),
+        city2 = feature(citiesType, idC2, "San Diego", Integer.valueOf(350000),
                 "POINT(32.7443 -117.2157)");
-        city3 = feature(citiesType, idC3, "Los Angeles", new Integer(1000000),
+        city3 = feature(citiesType, idC3, "Los Angeles", Integer.valueOf(1000000),
                 "POINT(34.0455 -118.2380)");
 
         roadsType = FeatureTypes.createType(roadsTypeName.toString(), roadsTypeSpec.split(","));
 
-        road1 = feature(roadsType, idR1, "Main Street", new Integer(236),
+        road1 = feature(roadsType, idR1, "Main Street", Integer.valueOf(236),
                 "LINESTRING (37.76169 -122.44791, 34.0455 -118.2380)");
-        road2 = feature(roadsType, idR2, "Long Road", new Integer(2845),
+        road2 = feature(roadsType, idR2, "Long Road", Integer.valueOf(2845),
                 "LINESTRING (37.76169 -122.44791, 32.7443 -117.2157)");
-        road3 = feature(roadsType, idR3, "San Rafael Way", new Integer(528),
+        road3 = feature(roadsType, idR3, "San Rafael Way", Integer.valueOf(528),
                 "LINESTRING (34.0455 -118.2380, 37.76169 -122.44791)");
     }
 

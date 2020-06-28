@@ -25,7 +25,8 @@ public class RevFeatureTest {
 
     @Test
     public void testRevFeatureConstructorAndAccessors() {
-        List<Object> values = Lists.newArrayList("StringProp1_1", new Integer(1000), "POINT(1 1)");
+        List<Object> values = Lists.newArrayList("StringProp1_1", Integer.valueOf(1000),
+                "POINT(1 1)");
 
         RevFeature feature = RevFeature.builder().addAll(values).build();
 
@@ -36,7 +37,8 @@ public class RevFeatureTest {
 
     @Test
     public void testRevFeatureToString() {
-        List<Object> values = Lists.newArrayList("StringProp1_1", new Integer(1000), "POINT(1 1)");
+        List<Object> values = Lists.newArrayList("StringProp1_1", Integer.valueOf(1000),
+                "POINT(1 1)");
 
         RevFeature feature = RevFeature.builder().addAll(values).build();
 

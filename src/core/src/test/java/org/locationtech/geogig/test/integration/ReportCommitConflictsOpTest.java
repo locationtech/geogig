@@ -93,12 +93,12 @@ public class ReportCommitConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -117,7 +117,7 @@ public class ReportCommitConflictsOpTest extends RepositoryTestCase {
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -133,12 +133,12 @@ public class ReportCommitConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -154,12 +154,12 @@ public class ReportCommitConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(1000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -175,7 +175,7 @@ public class ReportCommitConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();

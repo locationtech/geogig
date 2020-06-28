@@ -36,7 +36,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
 
         final String featureId = points1.getId();
         final Feature modifiedFeature = feature((FeatureType) points1.getType(), featureId,
-                "changedProp", new Integer(1500), "POINT (2 2)");
+                "changedProp", Integer.valueOf(1500), "POINT (2 2)");
         insert(modifiedFeature);
         insert(points3);
         delete(points2);
@@ -65,7 +65,7 @@ public class CreatePatchOpTest extends RepositoryTestCase {
 
         final String featureId = points1.getId();
         final Feature modifiedFeature = feature((FeatureType) points1.getType(), featureId,
-                "changedProp", new Integer(1500), null);
+                "changedProp", Integer.valueOf(1500), null);
 
         insertAndAdd(modifiedFeature);
         insertAndAdd(points3);

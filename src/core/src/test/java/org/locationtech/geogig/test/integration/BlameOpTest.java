@@ -68,7 +68,7 @@ public class BlameOpTest extends RepositoryTestCase {
     public void testBlameChangedByTwoCommits() throws Exception {
         insertAndAdd(points1);
         RevCommit firstCommit = repo.command(CommitOp.class).call();
-        Feature pointsModified = feature(pointsType, idP1, "StringProp1_3", new Integer(1000),
+        Feature pointsModified = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(pointsModified);
         RevCommit secondCommit = repo.command(CommitOp.class).call();

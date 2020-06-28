@@ -106,12 +106,12 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         RevCommit masterCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -122,7 +122,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         assertEquals(1, conflicts.getMerged());
-        Feature pointsMerged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature pointsMerged = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         assertEquals(RevFeature.builder().build(pointsMerged), consumer.merged.get(0).getFeature());
         Boolean hasConflictsOrAutomerge = repo.command(CheckMergeScenarioOp.class)
@@ -136,12 +136,12 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         RevCommit masterCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -160,12 +160,12 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         RevCommit masterCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(1000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branchCommit = repo.command(CommitOp.class).call();
@@ -184,7 +184,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         RevCommit masterCommit = repo.command(CommitOp.class).call();

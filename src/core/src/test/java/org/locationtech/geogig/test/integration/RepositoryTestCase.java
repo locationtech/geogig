@@ -192,43 +192,43 @@ public abstract class RepositoryTestCase extends Assert {
         modifiedPointsType = FeatureTypes.createType(pointsNs + "#" + pointsName,
                 modifiedPointsTypeSpec.split(","));
 
-        points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
-        points1_modified = feature(pointsType, idP1, "StringProp1_1a", new Integer(1001),
+        points1 = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(1000), "POINT(1 1)");
+        points1_modified = feature(pointsType, idP1, "StringProp1_1a", Integer.valueOf(1001),
                 "POINT(1 2)");
-        points1B = feature(modifiedPointsType, idP1, "StringProp1_1", new Integer(1000),
+        points1B = feature(modifiedPointsType, idP1, "StringProp1_1", Integer.valueOf(1000),
                 "POINT(1 1)", "ExtraString");
 
-        points1B_modified = feature(modifiedPointsType, idP1, "StringProp1_1a", new Integer(1001),
-                "POINT(1 2)", "ExtraStringB");
+        points1B_modified = feature(modifiedPointsType, idP1, "StringProp1_1a",
+                Integer.valueOf(1001), "POINT(1 2)", "ExtraStringB");
 
-        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
-        points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
+        points2 = feature(pointsType, idP2, "StringProp1_2", Integer.valueOf(2000), "POINT(2 2)");
+        points3 = feature(pointsType, idP3, "StringProp1_3", Integer.valueOf(3000), "POINT(3 3)");
 
         linesType = FeatureTypes.createType(linesNs + "#" + linesName, linesTypeSpec.split(","));
 
-        lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
+        lines1 = feature(linesType, idL1, "StringProp2_1", Integer.valueOf(1000),
                 "LINESTRING (1 1, 2 2)");
-        lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
+        lines2 = feature(linesType, idL2, "StringProp2_2", Integer.valueOf(2000),
                 "LINESTRING (3 3, 4 4)");
-        lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
+        lines3 = feature(linesType, idL3, "StringProp2_3", Integer.valueOf(3000),
                 "LINESTRING (5 5, 6 6)");
 
         polyType = FeatureTypes.createType(polyNs + "#" + polyName, polyTypeSpec.split(","));
 
-        poly1 = feature(polyType, idPG1, "StringProp3_1", new Integer(1000),
+        poly1 = feature(polyType, idPG1, "StringProp3_1", Integer.valueOf(1000),
                 "POLYGON ((1 1, 2 2, 3 3, 4 4, 1 1))");
-        poly2 = feature(polyType, idPG2, "StringProp3_2", new Integer(2000),
+        poly2 = feature(polyType, idPG2, "StringProp3_2", Integer.valueOf(2000),
                 "POLYGON ((6 6, 7 7, 8 8, 9 9, 6 6))");
-        poly3 = feature(polyType, idPG3, "StringProp3_3", new Integer(3000),
+        poly3 = feature(polyType, idPG3, "StringProp3_3", Integer.valueOf(3000),
                 "POLYGON ((11 11, 12 12, 13 13, 14 14, 11 11))");
 
-        points2_modified = feature(pointsType, idP2, "StringProp1_2a", new Integer(2001),
+        points2_modified = feature(pointsType, idP2, "StringProp1_2a", Integer.valueOf(2001),
                 "POINT(2 3)");
 
-        points3_modified = feature(pointsType, idP3, "StringProp1_3a", new Integer(3001),
+        points3_modified = feature(pointsType, idP3, "StringProp1_3a", Integer.valueOf(3001),
                 "POINT(3 4)");
 
-        lines1_modified = feature(linesType, idL1, "StringProp2_1a", new Integer(1001),
+        lines1_modified = feature(linesType, idL1, "StringProp2_1a", Integer.valueOf(1001),
                 "LINESTRING (1 2, 2 2)");
 
         setUpInternal();

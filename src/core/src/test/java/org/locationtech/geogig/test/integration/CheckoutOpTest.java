@@ -60,9 +60,9 @@ public class CheckoutOpTest extends RepositoryTestCase {
                 .setValue("groldan").call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue("groldan@test.com").call();
-        points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
-        points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
     }
 

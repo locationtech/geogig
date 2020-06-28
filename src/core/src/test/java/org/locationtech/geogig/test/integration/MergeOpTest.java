@@ -742,12 +742,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         repo.command(CommitOp.class).call();
@@ -852,7 +852,7 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1, points2);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insert(points1Modified);
         delete(points2);
@@ -860,7 +860,7 @@ public class MergeOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).call();
         RevCommit masterCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         delete(points2);
@@ -905,7 +905,7 @@ public class MergeOpTest extends RepositoryTestCase {
         }
 
         // solve, and commit
-        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1Merged = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1Merged);
         repo.command(AddOp.class).call();
@@ -953,17 +953,17 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points2);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("branch2").call();
-        Feature points1ModifiedC = feature(pointsType, idP1, "StringProp1_4", new Integer(3000),
+        Feature points1ModifiedC = feature(pointsType, idP1, "StringProp1_4", Integer.valueOf(3000),
                 "POINT(1 3)");
         insertAndAdd(points1ModifiedC);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("branch1").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("branch2").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 2)");
         insertAndAdd(points1ModifiedB);
         repo.command(CommitOp.class).call();
@@ -998,12 +998,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         insertAndAdd(points2);
@@ -1038,12 +1038,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         repo.command(CommitOp.class).call();
@@ -1064,12 +1064,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         repo.command(CommitOp.class).call();
@@ -1145,12 +1145,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         insertAndAdd(points2);
@@ -1216,12 +1216,12 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).call();
         repo.command(BranchCreateOp.class).setName("TestBranch").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("TestBranch").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_1", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         insertAndAdd(points2);
@@ -1239,7 +1239,7 @@ public class MergeOpTest extends RepositoryTestCase {
                              */"WORK_HEAD" + ":" + path).call(RevFeature.class);
         assertTrue(feature.isPresent());
 
-        Feature mergedFeature = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature mergedFeature = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         RevFeature expected = RevFeature.builder().build(mergedFeature);
         assertEquals(expected, feature.get());
@@ -1349,7 +1349,7 @@ public class MergeOpTest extends RepositoryTestCase {
         repo.command(BranchCreateOp.class).setName("branch4").call();
         repo.command(BranchCreateOp.class).setName("branch5").call();
         repo.command(BranchCreateOp.class).setName("branch6").call();
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(CommitOp.class).call();
@@ -1369,7 +1369,7 @@ public class MergeOpTest extends RepositoryTestCase {
         insertAndAdd(lines3);
         RevCommit branch5 = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource("branch6").call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insertAndAdd(points1ModifiedB);
         RevCommit branch6 = repo.command(CommitOp.class).call();

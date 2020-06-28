@@ -167,13 +167,13 @@ public class CherryPickOpTest extends RepositoryTestCase {
         // create branch1, checkout and add a commit
         repo.command(BranchCreateOp.class).setAutoCheckout(true).setName("branch1").call();
         insert(points2);
-        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", new Integer(1000),
+        Feature points1Modified = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(1000),
                 "POINT(1 1)");
         insertAndAdd(points1Modified);
         repo.command(AddOp.class).call();
         RevCommit branchCommit = repo.command(CommitOp.class).call();
         repo.command(CheckoutOp.class).setSource(Ref.MASTER).call();
-        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", new Integer(2000),
+        Feature points1ModifiedB = feature(pointsType, idP1, "StringProp1_3", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1ModifiedB);
         repo.command(AddOp.class).call();
@@ -198,7 +198,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         assertTrue(pts2.isPresent());
         assertEquals(RevFeature.builder().build(points2), pts2.get());
         // solve and commit
-        Feature points1Solved = feature(pointsType, idP1, "StringProp1_2", new Integer(2000),
+        Feature points1Solved = feature(pointsType, idP1, "StringProp1_2", Integer.valueOf(2000),
                 "POINT(1 1)");
         insert(points1Solved);
         repo.command(AddOp.class).call();

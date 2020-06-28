@@ -24,13 +24,13 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.ql.porcelain.QLDelete;
 import org.locationtech.geogig.ql.porcelain.QLInsert;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.ql.porcelain.QLUpdate;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -75,28 +75,28 @@ public class QL extends AbstractCommand implements org.locationtech.geogig.cli.C
     }
 
     private void runInsert(GeogigCLI cli, String statement) throws IOException {
-        GeoGIG repo = cli.getGeogig();
+        Geogig repo = cli.getGeogig();
         Supplier<DiffObjectCount> res = repo.command(QLInsert.class).setStatement(statement).call();
         DiffObjectCount count = res.get();
         cli.getConsole().println(format("Inserted %,d features", count.getFeaturesAdded()));
     }
 
     private void runUpdate(GeogigCLI cli, String statement) throws IOException {
-        GeoGIG repo = cli.getGeogig();
+        Geogig repo = cli.getGeogig();
         Supplier<DiffObjectCount> res = repo.command(QLUpdate.class).setStatement(statement).call();
         DiffObjectCount count = res.get();
         cli.getConsole().println(format("Updated %,d features", count.getFeaturesChanged()));
     }
 
     private void runDelete(GeogigCLI cli, String statement) throws IOException {
-        GeoGIG repo = cli.getGeogig();
+        Geogig repo = cli.getGeogig();
         Supplier<DiffObjectCount> res = repo.command(QLDelete.class).setStatement(statement).call();
         DiffObjectCount count = res.get();
         cli.getConsole().println(format("Deleted %,d features", count.getFeaturesRemoved()));
     }
 
     private void runSelect(GeogigCLI cli, String statement) throws IOException {
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         ProgressListener listener = cli.getProgressListener();
         SimpleFeatureCollection fcol;
         try {

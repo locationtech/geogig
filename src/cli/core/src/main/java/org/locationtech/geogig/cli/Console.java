@@ -102,13 +102,18 @@ public class Console {
         return forceAnsi || (ansiEnabled && ansiSupported);
     }
 
+    @SuppressWarnings("resource")
     public boolean checkAnsiSupported(OutputStream out, String osName) throws Throwable {
         if (out != System.out) {
             return false;
         }
 
         if (osName.startsWith("windows") && osName.endsWith("10")) {
-            new WindowsAnsiOutputStream(out);
+            try {
+                new WindowsAnsiOutputStream(out);
+            } catch (IOException e) {
+                return false;
+            }
         } else if (osName.startsWith("windows") && !osName.endsWith("10")) {
             return false;
         }

@@ -22,12 +22,12 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -116,7 +116,7 @@ public class Init extends AbstractCommand implements CLICommand {
         final Repository repository;
         {
             final Map<String, String> suppliedConfiguration = splitConfig(config);
-            GeoGIG geogig = cli.newGeoGIG(hints);
+            Geogig geogig = cli.newGeoGIG(hints);
             try {
                 repository = geogig.command(InitOp.class).setConfig(suppliedConfiguration).call();
                 repository.close();

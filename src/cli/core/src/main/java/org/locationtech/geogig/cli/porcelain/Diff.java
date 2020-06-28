@@ -22,6 +22,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffBounds;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.plumbing.DiffCount;
 import org.locationtech.geogig.plumbing.diff.DiffSummary;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.jts.geom.Envelope;
 
@@ -93,7 +93,7 @@ public class Diff extends AbstractCommand implements CLICommand {
         checkParameter(!(cached && refSpec.size() > 1),
                 "--cached allows zero or one ref specs to compare the index with.");
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         String oldVersion = resolveOldVersion();
         String newVersion = resolveNewVersion();
@@ -191,7 +191,7 @@ public class Diff extends AbstractCommand implements CLICommand {
 
     private static final class BoundsDiffPrinter {
 
-        public static void print(GeoGIG geogig, Console console,
+        public static void print(Geogig geogig, Console console,
                 DiffSummary<Envelope, Envelope> diffBounds) throws IOException {
 
             Envelope left = diffBounds.getLeft();

@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -35,7 +36,6 @@ import org.locationtech.geogig.porcelain.FeatureNodeRefFromRefspec;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.base.Preconditions;
@@ -67,7 +67,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
     @Option(names = { "--refspecs-only" }, description = "Just show refspecs of elements")
     private boolean refspecsOnly;
 
-    private GeoGIG geogig;
+    private Geogig geogig;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!(idsOnly && previewDiff),
@@ -100,7 +100,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         }
     }
 
-    private void printRefspecs(Conflict conflict, Console console, GeoGIG geogig)
+    private void printRefspecs(Conflict conflict, Console console, Geogig geogig)
             throws IOException {
         ObjectId theirsHeadId = getTheirsHeadId();
         Optional<RevCommit> theirsHead = geogig.command(RevObjectParse.class)
@@ -123,7 +123,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         console.println(sb.toString());
     }
 
-    private void printConflictDiff(Conflict conflict, Console console, GeoGIG geogig)
+    private void printConflictDiff(Conflict conflict, Console console, Geogig geogig)
             throws IOException {
         FullDiffPrinter diffPrinter = new FullDiffPrinter(false, true);
         console.println("---" + conflict.getPath() + "---");
@@ -155,7 +155,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
 
     }
 
-    private void printConflict(Conflict conflict, Console console, GeoGIG geogig)
+    private void printConflict(Conflict conflict, Console console, Geogig geogig)
             throws IOException {
 
         console.println(conflict.getPath());
@@ -190,7 +190,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         return theirsHeadId;
     }
 
-    private void printObject(String name, ObjectId id, Console console, GeoGIG geogig)
+    private void printObject(String name, ObjectId id, Console console, Geogig geogig)
             throws IOException {
 
         console.println(name + "\t" + id.toString());

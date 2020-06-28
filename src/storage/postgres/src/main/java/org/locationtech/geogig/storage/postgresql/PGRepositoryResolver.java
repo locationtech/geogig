@@ -15,12 +15,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConflictsDatabase;
@@ -157,7 +157,7 @@ public class PGRepositoryResolver implements RepositoryResolver {
 
         hints = hints.uri(repositoryLocation);
         Context context = GlobalContextBuilder.builder().build(hints);
-        Repository repository = new GeoGIG(context).getRepository();
+        Repository repository = Geogig.of(context).getRepository();
         // Ensure the repository exists. If it's null, we might have a non-existing repo URI
         // location
         if (repository == null) {

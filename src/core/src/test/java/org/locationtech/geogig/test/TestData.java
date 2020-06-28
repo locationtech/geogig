@@ -54,7 +54,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectInfo;
@@ -165,10 +164,6 @@ public class TestData {
     private Repository repo;
 
     private GeogigTransaction transaction = null;
-
-    public TestData(final GeoGIG repo) {
-        this.repo = repo.getOrCreateRepository();
-    }
 
     public TestData(final Repository repo) {
         this.repo = repo;

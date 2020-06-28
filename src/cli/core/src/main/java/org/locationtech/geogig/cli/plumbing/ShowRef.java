@@ -19,9 +19,9 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -47,7 +47,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
     public @Override void runInternal(GeogigCLI cli) throws IOException {
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         ForEachRef op = geogig.command(ForEachRef.class);
 

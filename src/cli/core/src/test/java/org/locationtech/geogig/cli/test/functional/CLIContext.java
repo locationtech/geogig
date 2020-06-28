@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
@@ -42,7 +43,6 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
 
@@ -181,7 +181,7 @@ public class CLIContext {
 
     public void deleteAndReplaceFeatureType() throws Exception {
 
-        GeoGIG geogig = geogigCLI.newGeoGIG();
+        Geogig geogig = geogigCLI.newGeoGIG();
         try {
             final WorkingTree workTree = geogig.getRepository().context().workingTree();
             workTree.delete(points1.getType().getName().getLocalPart());
@@ -224,7 +224,7 @@ public class CLIContext {
 
     public List<ObjectId> insert(Feature... features) throws Exception {
         geogigCLI.close();
-        GeoGIG geogig = geogigCLI.newGeoGIG(Hints.readWrite());
+        Geogig geogig = geogigCLI.newGeoGIG(Hints.readWrite());
         List<ObjectId> ids = Lists.newArrayListWithCapacity(features.length);
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (Feature f : features) {
@@ -273,7 +273,7 @@ public class CLIContext {
     }
 
     public boolean delete(Feature f) throws Exception {
-        GeoGIG geogig = geogigCLI.newGeoGIG();
+        Geogig geogig = geogigCLI.newGeoGIG();
         try {
             final WorkingTree workTree = geogig.getRepository().context().workingTree();
             Name name = f.getType().getName();

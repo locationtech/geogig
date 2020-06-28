@@ -18,10 +18,10 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.CatObject;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 
@@ -58,7 +58,7 @@ public class Cat extends AbstractCommand {
         checkParameter(!path.isEmpty(), "A refspec must be specified");
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         String spath = path.get(0);
 

@@ -46,6 +46,7 @@ import org.hamcrest.core.StringContains;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
@@ -74,7 +75,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
@@ -560,7 +560,7 @@ public class DefaultStepDefinitions {
     @Given("^I have unstaged an empty feature type$")
     public void I_have_unstaged_an_empty_feature_type() throws Throwable {
         localRepo.insert(points1);
-        GeoGIG geogig = localRepo.geogigCLI.newGeoGIG();
+        Geogig geogig = localRepo.geogigCLI.newGeoGIG();
         final WorkingTree workTree = geogig.getRepository().context().workingTree();
         workTree.delete(pointsName, idP1);
         geogig.close();
@@ -701,7 +701,7 @@ public class DefaultStepDefinitions {
 
     @Then("^the response should contain the index ID for tree \"([^\"]*)\"$")
     public void the_response_contains_indexID(String tree) throws Throwable {
-        GeoGIG gig = localRepo.geogigCLI.getGeogig();
+        Geogig gig = localRepo.geogigCLI.getGeogig();
 
         ObjectId canonicalTreeId = gig.command(ResolveTreeish.class).setTreeish("HEAD:" + tree)
                 .call().get();

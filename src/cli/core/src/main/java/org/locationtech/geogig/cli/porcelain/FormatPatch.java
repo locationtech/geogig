@@ -19,12 +19,12 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.porcelain.CreatePatchOp;
 import org.locationtech.geogig.porcelain.DiffOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import picocli.CommandLine.Command;
@@ -61,7 +61,7 @@ public class FormatPatch extends AbstractCommand implements CLICommand {
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(refSpec.size() < 3, "Commit list is too long :%s", refSpec);
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         checkParameter(file != null, "Patch file not specified");
 
         try (AutoCloseableIterator<DiffEntry> entries = buildEntries(cli)) {

@@ -20,8 +20,8 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 @Ignore // REVISIT: ExportOp needs a revamp
@@ -36,7 +36,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(new GeoGIG(repo));
+        cli.setGeogig(Geogig.of(repo));
 
         // Add points
         insertAndAdd(points1);

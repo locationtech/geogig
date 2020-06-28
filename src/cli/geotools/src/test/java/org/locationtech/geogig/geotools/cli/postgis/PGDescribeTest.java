@@ -23,8 +23,8 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.geotools.TestHelper;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.mockito.exceptions.base.MockitoException;
 
@@ -49,7 +49,7 @@ public class PGDescribeTest extends RepositoryTestCase {
         consoleReader = spy(new Console().disableAnsi());
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(new GeoGIG(repo));
+        cli.setGeogig(Geogig.of(repo));
     }
 
     @After

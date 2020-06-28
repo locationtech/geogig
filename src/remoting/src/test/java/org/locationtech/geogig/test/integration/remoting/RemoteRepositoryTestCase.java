@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -56,7 +57,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.TestRepository;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -247,12 +247,12 @@ public abstract class RemoteRepositoryTestCase {
         return feature;
     }
 
-    protected List<RevCommit> populate(GeoGIG geogig, boolean oneCommitPerFeature,
+    protected List<RevCommit> populate(Geogig geogig, boolean oneCommitPerFeature,
             Feature... features) throws Exception {
         return populate(geogig, oneCommitPerFeature, Arrays.asList(features));
     }
 
-    protected List<RevCommit> populate(GeoGIG geogig, boolean oneCommitPerFeature,
+    protected List<RevCommit> populate(Geogig geogig, boolean oneCommitPerFeature,
             List<Feature> features) throws Exception {
 
         List<RevCommit> commits = new ArrayList<RevCommit>();
@@ -276,7 +276,7 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Inserts the Feature to the index and stages it to be committed.
      */
-    protected ObjectId insertAndAdd(GeoGIG geogig, Feature f) throws Exception {
+    protected ObjectId insertAndAdd(Geogig geogig, Feature f) throws Exception {
         ObjectId objectId = insert(geogig, f);
 
         add(geogig);
@@ -298,7 +298,7 @@ public abstract class RemoteRepositoryTestCase {
     /**
      * Inserts the feature to the index but does not stages it to be committed
      */
-    protected ObjectId insert(GeoGIG geogig, Feature f) throws Exception {
+    protected ObjectId insert(Geogig geogig, Feature f) throws Exception {
         return insert(geogig.getRepository(), f);
     }
 
@@ -314,12 +314,12 @@ public abstract class RemoteRepositoryTestCase {
         return fi.getFeature().getId();
     }
 
-    protected void insertAndAdd(GeoGIG geogig, Feature... features) throws Exception {
+    protected void insertAndAdd(Geogig geogig, Feature... features) throws Exception {
         insert(geogig, features);
         add(geogig);
     }
 
-    protected void add(GeoGIG geogig) {
+    protected void add(Geogig geogig) {
         add(geogig.getRepository());
     }
 
@@ -350,7 +350,7 @@ public abstract class RemoteRepositoryTestCase {
         workingTree.insert(featureInfos.iterator(), new DefaultProgressListener());
     }
 
-    protected void insert(GeoGIG geogig, Feature... features) throws Exception {
+    protected void insert(Geogig geogig, Feature... features) throws Exception {
         for (Feature f : features) {
             insert(geogig, f);
         }
@@ -377,7 +377,7 @@ public abstract class RemoteRepositoryTestCase {
      * @return
      * @throws Exception
      */
-    protected boolean deleteAndAdd(GeoGIG geogig, Feature f) throws Exception {
+    protected boolean deleteAndAdd(Geogig geogig, Feature f) throws Exception {
         boolean existed = delete(geogig, f);
         if (existed) {
             add(geogig);
@@ -386,7 +386,7 @@ public abstract class RemoteRepositoryTestCase {
         return existed;
     }
 
-    protected boolean delete(GeoGIG geogig, Feature f) throws Exception {
+    protected boolean delete(Geogig geogig, Feature f) throws Exception {
         final WorkingTree workTree = geogig.getRepository().context().workingTree();
         Name name = f.getType().getName();
         String localPart = name.getLocalPart();

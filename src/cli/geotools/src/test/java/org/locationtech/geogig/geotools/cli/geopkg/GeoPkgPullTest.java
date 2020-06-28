@@ -28,13 +28,13 @@ import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.porcelain.CommitOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
@@ -63,7 +63,7 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = new GeogigCLI(consoleReader);
 
-        cli.setGeogig(new GeoGIG(repo));
+        cli.setGeogig(Geogig.of(repo));
 
         support = new GeoPackageTestSupport();
     }

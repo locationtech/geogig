@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test;
 
 import java.io.File;
+import java.util.function.LongSupplier;
 
 import org.locationtech.geogig.repository.DefaultPlatform;
 import org.locationtech.geogig.repository.Platform;
@@ -17,6 +18,8 @@ import org.locationtech.geogig.repository.Platform;
 public class TestPlatform extends DefaultPlatform implements Platform, Cloneable {
 
     private static final long serialVersionUID = 1L;
+
+    private LongSupplier ticker;
 
     private File userHomeDirectory;
 
@@ -29,6 +32,10 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
     public TestPlatform(final File workingDirectory, final File userHomeDirectory) {
         super.workingDir = workingDirectory;
         this.userHomeDirectory = userHomeDirectory;
+    }
+
+    public @Override long currentTimeMillis() {
+        return ticker == null ? super.currentTimeMillis() : ticker.getAsLong();
     }
 
     public @Override File pwd() {
@@ -50,5 +57,9 @@ public class TestPlatform extends DefaultPlatform implements Platform, Cloneable
     public @Override String toString() {
         return getClass().getSimpleName() + "[home=" + this.userHomeDirectory + ", pwd="
                 + super.workingDir + "]";
+    }
+
+    public void setTicker(LongSupplier ticker) {
+        this.ticker = ticker;
     }
 }

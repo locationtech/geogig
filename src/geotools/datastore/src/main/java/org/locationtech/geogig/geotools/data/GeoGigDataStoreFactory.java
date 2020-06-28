@@ -20,18 +20,14 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.Parameter;
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
@@ -164,16 +160,9 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
         final URI repositoryUri = resolveURI(repositoryLocation);
 
-        final RepositoryResolver initializer;
-        try {
-            initializer = RepositoryFinder.INSTANCE.lookup(repositoryUri);
-        } catch (IllegalArgumentException e) {
-            throw new IOException(e.getMessage(), e);
-        }
-
         Repository repo;
         try {
-            repo = initializer.open(repositoryUri);
+            repo = Geogig.open(repositoryUri).getRepository();
         } catch (RepositoryConnectionException | RuntimeException e) {
             throw new IOException(e.getMessage(), e);
         }
@@ -201,19 +190,14 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
             throw new IOException("Repository already exists " + repositoryRoot);
         }
 
-        Hints hints = new Hints().uri(repositoryRoot);
-        Context context = GlobalContextBuilder.builder().build(hints);
-        GeoGIG geogig = new GeoGIG(context);
-
-        Repository repository;
+        Geogig geogig;
         try {
-            repository = geogig.getOrCreateRepository();
-            Preconditions.checkState(repository != null);
-        } catch (RuntimeException e) {
+            geogig = Geogig.create(repositoryRoot);
+        } catch (RepositoryConnectionException | RuntimeException e) {
             throw new IOException(e);
         }
 
-        GeoGigDataStore store = new GeoGigDataStore(repository);
+        GeoGigDataStore store = new GeoGigDataStore(geogig.getRepository());
         if (defaultNamespace != null) {
             store.setNamespaceURI(defaultNamespace);
         }

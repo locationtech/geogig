@@ -22,6 +22,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Charsets;
@@ -57,7 +57,7 @@ public class Insert extends AbstractCommand implements CLICommand {
     @Option(names = "-f", description = "File with definition of features to insert")
     private String filepath;
 
-    private GeoGIG geogig;
+    private Geogig geogig;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
 

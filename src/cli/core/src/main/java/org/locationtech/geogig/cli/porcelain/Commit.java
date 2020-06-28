@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -87,7 +87,7 @@ public class Commit extends AbstractCommand implements CLICommand {
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
 
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         if (message == null || Strings.isNullOrEmpty(message)) {
             message = geogig.command(ReadMergeCommitMessageOp.class).call();

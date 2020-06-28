@@ -11,16 +11,13 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.net.URI;
 import java.util.List;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TestName;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
@@ -34,11 +31,7 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
-import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeoGIG;
-import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
@@ -53,7 +46,7 @@ import com.google.common.collect.Iterators;
  */
 public class DiffTreeTest extends Assert {
 
-    public @Rule TestName testName = new TestName();
+    public @Rule TestRepository testRepo = new TestRepository();
 
     public @Rule ExpectedException exception = ExpectedException.none();
 
@@ -67,24 +60,13 @@ public class DiffTreeTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-        URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
-                testName.getMethodName()));
-
-        Context injector = GlobalContextBuilder.builder().build(Hints.repository(uri));
-
-        repository = new GeoGIG(injector).getOrCreateRepository();
-        assertNotNull(repository);
+        repository = testRepo.repository();
         diffTree = repository.command(DiffTree.class);
-
         FeatureType ft = FeatureTypes.createType("points", "sp:String", "ip:Integer",
                 "pp:Point:srid=3857");
         revtype = RevFeatureType.builder().type(ft).build();
         metadataId = revtype.getId();
         repository.context().objectDatabase().put(revtype);
-    }
-
-    public @After void after() {
-        TestRepository.closeAndDelete(repository);
     }
 
     @Test

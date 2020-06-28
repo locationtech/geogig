@@ -26,6 +26,7 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
+import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RebaseOp;
@@ -131,5 +132,9 @@ public class Commands extends ObjectStores {
 
     public BranchCreateOp branch(@NonNull String branchName) {
         return command(BranchCreateOp.class).setName(branchName);
+    }
+
+    public InitOp init() {
+        return command(InitOp.class);
     }
 }

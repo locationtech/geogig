@@ -27,12 +27,12 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.BlameException;
 import org.locationtech.geogig.porcelain.BlameOp;
 import org.locationtech.geogig.porcelain.BlameReport;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import picocli.CommandLine.Command;
@@ -65,7 +65,7 @@ public class Blame extends AbstractCommand {
         checkParameter(!featurePath.isEmpty(), "A path must be specified");
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         String path = featurePath.get(0);
 

@@ -36,7 +36,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * Abstract test suite for {@link GraphDatabase} implementations.
  * <p>
- * Create a concrete subclass of this test suite and implement {@link #createInjector()} so that
+ * Create a concrete subclass of this test suite and implement {@link #createDatabase} so that
  * {@code GraphDtabase.class} is bound to your implementation instance as a singleton.
  */
 public abstract class AbstractGraphDatabaseStressTest {

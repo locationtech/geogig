@@ -22,12 +22,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
@@ -318,7 +318,7 @@ public class MemoryRepositoryResolver implements RepositoryResolver {
         }
 
         Context context = GlobalContextBuilder.builder().build(hints.uri(repositoryURI));
-        GeoGIG geoGIG = new GeoGIG(context);
+        Geogig geoGIG = Geogig.of(context);
 
         Repository repository = geoGIG.getRepository();
         repository.open();

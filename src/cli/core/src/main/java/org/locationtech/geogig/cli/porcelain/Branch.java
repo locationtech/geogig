@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.BranchRenameOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -115,7 +115,7 @@ public class Branch extends AbstractCommand implements CLICommand {
     private boolean rename = false;
 
     public @Override void runInternal(final GeogigCLI cli) throws IOException {
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         final Console console = cli.getConsole();
 
@@ -173,7 +173,7 @@ public class Branch extends AbstractCommand implements CLICommand {
 
     private void listBranches(GeogigCLI cli) throws IOException {
         final Console console = cli.getConsole();
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         boolean local = all || !(remotes);
         boolean remote = all || remotes;
@@ -225,7 +225,7 @@ public class Branch extends AbstractCommand implements CLICommand {
      * @param branchRef
      * @return
      */
-    private Optional<RevCommit> findCommit(GeoGIG geogig, Ref branchRef) {
+    private Optional<RevCommit> findCommit(Geogig geogig, Ref branchRef) {
         ObjectId commitId = branchRef.getObjectId();
         if (commitId.isNull()) {
             return Optional.empty();

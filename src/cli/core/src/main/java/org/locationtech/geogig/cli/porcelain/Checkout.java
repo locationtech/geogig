@@ -18,10 +18,10 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.porcelain.CheckoutException;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CheckoutResult;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -69,7 +69,7 @@ public class Checkout extends AbstractCommand implements CLICommand {
     private boolean theirs;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
         checkParameter(commitish.size() != 0 || !paths.isEmpty(), "no branch or paths specified");
         checkParameter(commitish.size() < 2, "too many arguments");
 

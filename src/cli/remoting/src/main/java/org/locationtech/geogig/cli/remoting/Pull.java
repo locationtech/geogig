@@ -18,6 +18,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.DiffObjectCount;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Objects;
 
@@ -79,7 +79,7 @@ public class Pull extends AbstractCommand implements CLICommand {
         checkParameter(depth > 0 ? !fulldepth : true,
                 "Cannot specify a depth and full depth.  Use --depth <depth> or --fulldepth.");
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         if (depth > 0 || fulldepth) {
             if (!geogig.getRepository().getDepth().isPresent()) {
                 throw new CommandFailedException(

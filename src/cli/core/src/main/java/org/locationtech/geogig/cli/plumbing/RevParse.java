@@ -20,10 +20,10 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -57,7 +57,7 @@ public class RevParse extends AbstractCommand {
      * Executes the rev-parse command using the provided options.
      */
     protected @Override void runInternal(GeogigCLI cli) throws IOException {
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         if (!refSpecs.isEmpty()) {
             checkParameter(!(resolve_geogig_uri || is_inside_work_tree),
@@ -93,7 +93,7 @@ public class RevParse extends AbstractCommand {
         }
     }
 
-    private void isInsideWorkTree(Console console, GeoGIG geogig) throws IOException {
+    private void isInsideWorkTree(Console console, Geogig geogig) throws IOException {
         Optional<URI> repoUrl = geogig.command(ResolveGeogigURI.class).call();
 
         File pwd = geogig.getPlatform().pwd();
@@ -107,7 +107,7 @@ public class RevParse extends AbstractCommand {
         }
     }
 
-    private void resolveGeogigDir(Console console, GeoGIG geogig) throws IOException {
+    private void resolveGeogigDir(Console console, Geogig geogig) throws IOException {
 
         URI repoUrl = geogig.command(ResolveGeogigURI.class).call().orElse(null);
         if (null == repoUrl) {

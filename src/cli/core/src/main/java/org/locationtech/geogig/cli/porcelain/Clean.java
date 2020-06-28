@@ -17,6 +17,7 @@ import java.util.Optional;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.porcelain.CleanOp;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import picocli.CommandLine.Command;
@@ -44,7 +44,7 @@ public class Clean extends AbstractCommand {
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         final Console console = cli.getConsole();
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         String pathFilter = null;
         if (!path.isEmpty()) {

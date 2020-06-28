@@ -19,12 +19,12 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
@@ -48,7 +48,7 @@ public class MergeBase extends AbstractCommand implements CLICommand {
         checkParameter(commits.size() == 2, "Two commit references must be provided");
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         Optional<RevObject> left = geogig.command(RevObjectParse.class).setRefSpec(commits.get(0))
                 .call();

@@ -191,7 +191,7 @@ public class TransactionEnd extends AbstractGeoGigOp<Void> {
         checkArgument(Ref.isChild(Ref.REFS_PREFIX, refName));
         checkArgument(change.newValue().isPresent());
 
-        Geogig tx = new Geogig(transaction);
+        Geogig tx = Geogig.of(transaction);
 
         final @Nullable Ref valueOutsideTx = geogig().refs().find(refName).orElse(null);
         final Ref valueInsideTx = change.newValue().get();

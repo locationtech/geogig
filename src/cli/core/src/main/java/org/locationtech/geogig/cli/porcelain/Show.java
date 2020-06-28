@@ -24,6 +24,7 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.plumbing.CatObject;
 import org.locationtech.geogig.plumbing.ResolveFeatureType;
 import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 
 import com.google.common.base.Strings;
@@ -79,7 +79,7 @@ public class Show extends AbstractCommand implements CLICommand {
 
     private void printRaw(GeogigCLI cli) throws IOException {
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         for (String ref : refs) {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class).setRefSpec(ref).call();
             if (!obj.isPresent()) {
@@ -128,7 +128,7 @@ public class Show extends AbstractCommand implements CLICommand {
 
     public void printFormatted(GeogigCLI cli) throws IOException {
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         for (String ref : refs) {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class).setRefSpec(ref).call();
             if (!obj.isPresent()) {

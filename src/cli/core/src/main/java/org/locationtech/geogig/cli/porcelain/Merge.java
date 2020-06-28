@@ -22,6 +22,7 @@ import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Suppliers;
 
@@ -96,7 +96,7 @@ public class Merge extends AbstractCommand implements CLICommand {
 
         Console console = cli.getConsole();
 
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         if (abort) {
             Optional<Ref> ref = geogig.command(RefParse.class).setName(Ref.ORIG_HEAD).call();

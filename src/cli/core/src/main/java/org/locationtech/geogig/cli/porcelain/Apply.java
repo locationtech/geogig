@@ -24,13 +24,13 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.plumbing.diff.PatchSerializer;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchOp;
 import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
@@ -82,7 +82,7 @@ public class Apply extends AbstractCommand {
         checkParameter(!file.isEmpty(), "No patch file specified");
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         File patchFile = new File(file.get(0));
         checkParameter(patchFile.exists(), "Patch file cannot be found");

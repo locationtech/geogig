@@ -18,12 +18,12 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.GeoToolsOpException;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.filter.Filter;
 
 import picocli.CommandLine.Option;
@@ -106,7 +106,7 @@ public abstract class DataStoreImport extends AbstractCommand implements CLIComm
                 }
             }
 
-            GeoGIG geogig = cli.getGeogig();
+            Geogig geogig = cli.getGeogig();
             cli.getConsole().println("Importing from database " + getSourceDatabaseName());
 
             ProgressListener progressListener = cli.getProgressListener();

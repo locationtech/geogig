@@ -17,6 +17,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.porcelain.CheckoutException;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Suppliers;
 
@@ -90,7 +90,7 @@ public class Rebase extends AbstractCommand implements CLICommand {
         checkParameter(!(skip && abort), "Cannot use both --skip and --abort");
         checkParameter(!(abort && continueRebase), "Cannot use both --abort and --continue");
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         RebaseOp rebase = geogig.command(RebaseOp.class).setSkip(skip).setContinue(continueRebase)
                 .setAbort(abort).setSquashMessage(squash);
         rebase.setProgressListener(cli.getProgressListener());

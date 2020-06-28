@@ -29,6 +29,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.plumbing.ExportDiffOp;
 import org.locationtech.geogig.geotools.plumbing.ExportOp;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.plumbing.ResolveTreeish;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.Feature;
 import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
@@ -181,7 +181,7 @@ public class ShpExportDiff extends AbstractShpCommand implements CLICommand {
 
         checkParameter(path != null, "No path specified.");
 
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         Optional<ObjectId> rootTreeId = geogig.command(ResolveTreeish.class).setTreeish(ref).call();
 

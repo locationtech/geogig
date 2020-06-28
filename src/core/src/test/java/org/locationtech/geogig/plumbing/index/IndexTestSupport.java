@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.Node;
@@ -36,7 +37,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Coordinate;
@@ -47,7 +47,7 @@ import com.google.common.collect.Lists;
 
 public class IndexTestSupport {
 
-    public static void verifyIndex(GeoGIG geogig, ObjectId indexTreeId, ObjectId canonicalTreeId,
+    public static void verifyIndex(Geogig geogig, ObjectId indexTreeId, ObjectId canonicalTreeId,
             String... extraAttributes) {
         verifyIndex(geogig.getContext(), indexTreeId, canonicalTreeId, extraAttributes);
     }

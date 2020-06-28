@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
@@ -203,7 +204,7 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
         }
 
         Context context = GlobalContextBuilder.builder().build(hints.uri(repositoryLocation));
-        GeoGIG geoGIG = new GeoGIG(context);
+        Geogig geoGIG = Geogig.of(context);
 
         Repository repository = geoGIG.getRepository();
         repository.open();

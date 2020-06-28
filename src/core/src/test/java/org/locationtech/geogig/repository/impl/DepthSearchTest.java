@@ -20,14 +20,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Optional;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -38,7 +35,6 @@ import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.plumbing.UpdateTree;
 import org.locationtech.geogig.repository.Context;
-import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.TestRepository;
@@ -48,7 +44,7 @@ import org.locationtech.geogig.test.TestRepository;
  */
 public class DepthSearchTest {
 
-    public @Rule TestName testName = new TestName();
+    public @Rule TestRepository testRepo = new TestRepository();
 
     private Repository repository;
 
@@ -62,11 +58,7 @@ public class DepthSearchTest {
 
     @Before
     public void setUp() throws IOException {
-        URI uri = URI.create(String.format("memory://%s/%s", getClass().getSimpleName(),
-                testName.getMethodName()));
-        Hints hints = Hints.repository(uri);
-        Context context = GlobalContextBuilder.builder().build(hints);
-        repository = new GeoGIG(context).getOrCreateRepository();
+        repository = testRepo.repository();
         odb = repository.context().objectDatabase();
         search = new DepthSearch(odb);
 
@@ -78,15 +70,11 @@ public class DepthSearchTest {
         rootTreeId = root.getId();
     }
 
-    public @After void after() {
-        TestRepository.closeAndDelete(repository);
-    }
-
     private RevTree addTree(RevTree root, final String treePath, String... singleNodeNames) {
 
-        Context mockInjector = mock(Context.class);
-        when(mockInjector.objectDatabase()).thenReturn(odb);
-        RevTreeBuilder subTreeBuilder = CanonicalTreeBuilder.create(mockInjector.objectDatabase());
+        Context mockContext = mock(Context.class);
+        when(mockContext.objectDatabase()).thenReturn(odb);
+        RevTreeBuilder subTreeBuilder = CanonicalTreeBuilder.create(mockContext.objectDatabase());
 
         if (singleNodeNames != null) {
             for (String singleNodeName : singleNodeNames) {

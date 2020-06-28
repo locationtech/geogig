@@ -25,12 +25,12 @@ import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.RepositoryFinder;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
@@ -97,7 +97,7 @@ public class Config extends AbstractCommand implements CLICommand {
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
         checkParameter(!(local && global), "local and global are mutually exclusive");
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         boolean closeIt = geogig == null;
         if (closeIt) {
             // we're not in a repository, need a geogig anyways to run the global commands

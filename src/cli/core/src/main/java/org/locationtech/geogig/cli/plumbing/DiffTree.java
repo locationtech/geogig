@@ -22,6 +22,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff;
 import org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
@@ -82,7 +82,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                     "Cannot use --describe and --tree-stats simultaneously");
         }
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         DiffEntry diffEntry;
         HashMap<String, Long[]> stats = Maps.newHashMap();

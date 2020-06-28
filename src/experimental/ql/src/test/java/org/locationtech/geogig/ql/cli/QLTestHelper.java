@@ -23,9 +23,9 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.collect.Iterators;
@@ -39,7 +39,7 @@ public class QLTestHelper {
 
     public QLTestHelper(Repository geogig) {
         this.repository = geogig;
-        this.cli = new GeogigCLI(new GeoGIG(repository), new Console().disableAnsi());
+        this.cli = new GeogigCLI(Geogig.of(repository), new Console().disableAnsi());
     }
 
     public void close() {

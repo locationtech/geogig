@@ -23,6 +23,7 @@ import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.plumbing.DescribeFeatureType;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.LineString;
@@ -53,7 +53,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         Console consoleReader = new Console().disableAnsi();
         cli = spy(new GeogigCLI(consoleReader));
 
-        cli.setGeogig(new GeoGIG(repo));
+        cli.setGeogig(Geogig.of(repo));
     }
 
     @After

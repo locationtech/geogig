@@ -29,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,13 +72,13 @@ public class GeogigCLI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeogigCLI.class);
 
-    private Context geogigInjector;
+    private Context geogigContext;
 
     private Platform platform;
 
-    private GeoGIG geogig;
+    private Geogig geogig;
 
-    private final GeoGIG providedGeogig;
+    private final Geogig providedGeogig;
 
     private final Console consoleReader;
 
@@ -104,7 +104,7 @@ public class GeogigCLI {
     /**
      * Constructor to use the provided {@code GeoGIG} instance and never try to close it.
      */
-    public GeogigCLI(final GeoGIG geogig, final Console consoleReader) {
+    public GeogigCLI(final Geogig geogig, final Console consoleReader) {
         this.consoleReader = consoleReader;
         this.platform = new DefaultPlatform();
         this.providedGeogig = geogig;
@@ -157,12 +157,12 @@ public class GeogigCLI {
      * @see ResolveGeogigURI
      */
     @Nullable
-    public synchronized GeoGIG getGeogig() {
+    public synchronized Geogig getGeogig() {
         if (providedGeogig != null) {
             return providedGeogig;
         }
         if (geogig == null) {
-            GeoGIG geogig = loadRepository();
+            Geogig geogig = loadRepository();
             setGeogig(geogig);
         }
         return geogig;
@@ -177,9 +177,9 @@ public class GeogigCLI {
     }
 
     @VisibleForTesting
-    public synchronized GeoGIG getGeogig(Hints hints) {
+    public synchronized Geogig getGeogig(Hints hints) {
         close();
-        GeoGIG geogig = loadRepository(hints);
+        Geogig geogig = loadRepository(hints);
         setGeogig(geogig);
         return geogig;
     }
@@ -189,7 +189,7 @@ public class GeogigCLI {
      * 
      * @param geogig
      */
-    public void setGeogig(@Nullable GeoGIG geogig) {
+    public void setGeogig(@Nullable Geogig geogig) {
         this.geogig = geogig;
     }
 
@@ -217,20 +217,20 @@ public class GeogigCLI {
     }
 
     /**
-     * Loads the repository _if_ inside a geogig repository and returns a configured {@link GeoGIG}
+     * Loads the repository _if_ inside a geogig repository and returns a configured {@link Geogig}
      * facade.
      * 
      * @return a geogig for the current repository or {@code null} if not inside a geogig repository
      *         directory.
      */
     @Nullable
-    private GeoGIG loadRepository() {
+    private Geogig loadRepository() {
         return loadRepository(this.hints);
     }
 
     @Nullable
-    private GeoGIG loadRepository(Hints hints) {
-        GeoGIG geogig = newGeoGIG(hints);
+    private Geogig loadRepository(Hints hints) {
+        Geogig geogig = newGeoGIG(hints);
 
         if (geogig.command(ResolveGeogigURI.class).call().isPresent()) {
             Repository repository = geogig.getRepository();
@@ -249,7 +249,7 @@ public class GeogigCLI {
      * 
      * @return the constructed GeoGIG.
      */
-    public GeoGIG newGeoGIG() {
+    public Geogig newGeoGIG() {
         return newGeoGIG(Hints.readWrite());
     }
 
@@ -257,31 +257,31 @@ public class GeogigCLI {
      * try opening, if present, may return null Repository but the GeoGIG instance is still valid
      * and may being used to init a repo;
      */
-    public @NonNull GeoGIG newGeoGIG(Hints hints) {
-        Context inj = newGeogigInjector(hints);
+    public @NonNull Geogig newGeoGIG(Hints hints) {
+        Context context = newGeogigContext(hints);
 
-        GeoGIG geogig = new GeoGIG(inj);
+        Geogig geogig = Geogig.of(context);
         geogig.getRepository();
 
         return geogig;
     }
 
     /**
-     * @return the Guice injector being used by the command line interface. If one hasn't been made,
-     *         it will be created.
+     * @return the Context being used by the command line interface. If one hasn't been made, it
+     *         will be created.
      */
-    public Context getGeogigInjector() {
-        return getGeogigInjector(this.hints);
+    public Context getContext() {
+        return getContext(this.hints);
     }
 
-    private Context getGeogigInjector(Hints hints) {
-        if (this.geogigInjector == null || !Objects.equal(this.hints, hints)) {
-            geogigInjector = newGeogigInjector(hints);
+    private Context getContext(Hints hints) {
+        if (this.geogigContext == null || !Objects.equal(this.hints, hints)) {
+            geogigContext = newGeogigContext(hints);
         }
-        return geogigInjector;
+        return geogigContext;
     }
 
-    private Context newGeogigInjector(Hints hints) {
+    private Context newGeogigContext(Hints hints) {
         if (repositoryURI != null) {
             LOGGER.debug("using REPO_URL '{}'", repositoryURI);
             hints.set(Hints.REPOSITORY_URL, repositoryURI);
@@ -289,8 +289,8 @@ public class GeogigCLI {
         if (!hints.get(Hints.PLATFORM).isPresent()) {
             hints.set(Hints.PLATFORM, this.platform);
         }
-        Context geogigInjector = GlobalContextBuilder.builder().build(hints);
-        return geogigInjector;
+        Context context = GlobalContextBuilder.builder().build(hints);
+        return context;
     }
 
     /**
@@ -312,7 +312,7 @@ public class GeogigCLI {
             geogig = null;
         }
         this.hints = Hints.readWrite();
-        this.geogigInjector = null;
+        this.geogigContext = null;
     }
 
     /**
@@ -323,7 +323,7 @@ public class GeogigCLI {
     }
 
     /**
-     * Finds all commands that are bound do the command injector.
+     * Finds all commands that are bound do the command SPI.
      * 
      * @return a collection of keys, one for each command
      */
@@ -333,7 +333,7 @@ public class GeogigCLI {
     }
 
     public CommandLine buildRootCommand() {
-        Geogig command = new Geogig(this);
+        org.locationtech.geogig.cli.Geogig command = new org.locationtech.geogig.cli.Geogig(this);
         CommandLine cmdline = new CommandLine(command);
         cmdline.setCommandName("geogig");
         cmdline.setPosixClusteredShortOptionsAllowed(true);

@@ -18,6 +18,7 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.collect.ImmutableList;
 
@@ -75,7 +75,7 @@ public class Tag extends AbstractCommand implements CLICommand {
 
         Console console = cli.getConsole();
 
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         if (delete) {
             geogig.command(TagRemoveOp.class).setName(name).call();
@@ -92,7 +92,7 @@ public class Tag extends AbstractCommand implements CLICommand {
 
     private void listTags(GeogigCLI cli) {
 
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
         ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
         for (RevTag tag : tags) {
             try {

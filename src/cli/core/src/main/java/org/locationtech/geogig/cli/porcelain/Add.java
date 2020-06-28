@@ -18,11 +18,11 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.merge.ConflictsCheckOp;
 import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.WorkingTree;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -76,7 +76,7 @@ public class Add extends AbstractCommand implements CLICommand {
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         final Console console = cli.getConsole();
 

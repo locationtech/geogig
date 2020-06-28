@@ -18,11 +18,11 @@ import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.RevertConflictsException;
 import org.locationtech.geogig.porcelain.RevertOp;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import com.google.common.base.Suppliers;
 
@@ -67,7 +67,7 @@ public class Revert extends AbstractCommand implements CLICommand {
         checkParameter(commits.size() > 0 || abort || continueRevert,
                 "nothing specified for reverting");
 
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
         RevertOp revert = geogig.command(RevertOp.class);
 
         for (String st : commits) {

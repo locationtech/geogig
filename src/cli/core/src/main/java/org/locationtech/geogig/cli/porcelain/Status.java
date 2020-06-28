@@ -20,6 +20,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.NodeRef;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.porcelain.StatusOp;
 import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.repository.Conflict;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.collect.Iterators;
@@ -68,7 +68,7 @@ public class Status extends AbstractCommand implements CLICommand {
         checkParameter(limit >= 0, "Limit must be 0 or greater.");
 
         Console console = cli.getConsole();
-        GeoGIG geogig = cli.getGeogig();
+        Geogig geogig = cli.getGeogig();
 
         StatusOp op = geogig.command(StatusOp.class).setReportLimit(limit);
         StatusSummary summary = op.call();

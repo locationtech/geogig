@@ -22,13 +22,13 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.plumbing.RevObjectParse;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Iterators;
@@ -100,7 +100,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
                 numberFormat.setGroupingUsed(true);
 
                 StringBuilder sb = new StringBuilder();
-                GeoGIG geogig = cli.getGeogig();
+                Geogig geogig = cli.getGeogig();
                 if (!verbose) {
                     sb.append(input.path());
                     if (printSize && input.getType().equals(TYPE.TREE)) {

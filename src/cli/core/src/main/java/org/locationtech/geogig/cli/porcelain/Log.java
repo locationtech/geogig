@@ -27,6 +27,7 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -42,7 +43,6 @@ import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
@@ -135,7 +135,7 @@ public class Log extends AbstractCommand implements CLICommand {
 
     private Map<ObjectId, String> refs;
 
-    private GeoGIG geogig;
+    private Geogig geogig;
 
     private Console console;
 

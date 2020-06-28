@@ -18,6 +18,7 @@ import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.ObjectId;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Suppliers;
@@ -96,7 +96,7 @@ public class Reset extends AbstractCommand implements CLICommand {
      * @see org.locationtech.geogig.cli.AbstractCommand#runInternal(org.locationtech.geogig.cli.GeogigCLI)
      */
     public @Override void runInternal(GeogigCLI cli) {
-        final GeoGIG geogig = cli.getGeogig();
+        final Geogig geogig = cli.getGeogig();
 
         ResetMode mode = resolveResetMode();
 

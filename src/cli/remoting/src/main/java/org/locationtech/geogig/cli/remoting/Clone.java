@@ -25,6 +25,7 @@ import org.locationtech.geogig.cli.InvalidParameterException;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
 import org.locationtech.geogig.cli.annotation.RequiresRepository;
 import org.locationtech.geogig.cli.porcelain.Init;
+import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.InitOp;
 import org.locationtech.geogig.remotes.CloneOp;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
-import org.locationtech.geogig.repository.impl.GeoGIG;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -145,7 +145,7 @@ public class Clone extends AbstractCommand implements CLICommand {
         }
 
         cli.setRepositoryURI(cloneURI.toString());
-        Context cloneContext = cli.getGeogigInjector();
+        Context cloneContext = cli.getContext();
         cloneInitializer.initialize(cloneURI);
         cli.setPlatform(cloneContext.platform());
 
@@ -179,7 +179,7 @@ public class Clone extends AbstractCommand implements CLICommand {
             cloneRepo.close();
             if (!succeeded) {
                 try {
-                    GeoGIG.delete(cloneURI);
+                    Geogig.delete(cloneURI);
                 } catch (Exception ex) {
                     // Do nothing, the original exception will be thrown
                 }

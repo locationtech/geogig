@@ -67,7 +67,6 @@
       <!-- for TableWriter -->
       <groupId>org.geotools</groupId>
       <artifactId>gt-metadata</artifactId>
-      <version>${gt.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

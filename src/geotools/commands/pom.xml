@@ -64,13 +64,6 @@
     <dependency>
       <groupId>org.geotools.jdbc</groupId>
       <artifactId>gt-jdbc-postgis</artifactId>
-      <version>${gt.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.postgresql</groupId>
-          <artifactId>postgresql</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -80,35 +73,11 @@
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-geopkg</artifactId>
-      <version>${gt.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.geotools</groupId>
-          <artifactId>gt-coverage</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>it.geosolutions.imageio-ext</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>it.geosolutions.jaiext</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>org.jaitools</groupId>
-          <artifactId>*</artifactId>
-        </exclusion>
-        <exclusion>
-          <groupId>xml-apis</groupId>
-          <artifactId>xml-apis</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.geotools</groupId>
       <artifactId>gt-geojson</artifactId>
-      <version>${gt.version}</version>
     </dependency>
 
     <!-- Test scope dependencies -->

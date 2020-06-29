@@ -9,11 +9,12 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
@@ -26,8 +27,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.MergeOp.MergeReport;
 
 public class FindCommonAncestorTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer

@@ -9,12 +9,17 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -27,9 +32,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import com.google.common.collect.Lists;
 
 public class GeoPkgImportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -102,9 +104,9 @@ public class GeoPkgImportTest extends RepositoryTestCase {
     @Test
     public void testImportFileNotExist() throws Exception {
         importCommand.commonArgs.database = "file://nonexistent.gpkg";
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Database file not found.");
-        importCommand.run(cli);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> importCommand.run(cli));
+        assertThat(e.getMessage(), containsString("Database file not found."));
     }
 
 }

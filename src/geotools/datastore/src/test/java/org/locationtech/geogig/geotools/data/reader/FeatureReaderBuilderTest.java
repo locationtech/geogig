@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -235,11 +240,6 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         SimpleFeature f = reader.next();
         assertNotNull(f);
         assertEquals(redefinedFullSchema, f.getType());
-    }
-
-    private void assertEquals(SimpleFeatureType expected, SimpleFeatureType actual) {
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getAttributeDescriptors(), actual.getAttributeDescriptors());
     }
 
     @Test

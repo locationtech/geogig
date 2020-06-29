@@ -9,10 +9,11 @@
  */
 package org.locationtech.geogig.test.integration.remoting;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -23,8 +24,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import com.google.common.collect.ImmutableList;
 
 public class RemoteListOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public final void setUpInternal() {

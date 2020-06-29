@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -27,7 +28,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
@@ -37,9 +37,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -228,27 +225,23 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
     @Test
     public void testNoDot() {
-        exception.expect(ConfigException.class);
-        config.get("nodot");
+        assertThrows(ConfigException.class, () -> config.get("nodot"));
     }
 
     @Test
     public void testNoSection() {
-        exception.expect(ConfigException.class);
-        config.get(".int");
+        assertThrows(ConfigException.class, () -> config.get(".int"));
     }
 
     @Test
     public void testNoKey() {
-        exception.expect(ConfigException.class);
-        config.get("section.");
+        assertThrows(ConfigException.class, () -> config.get("section."));
     }
 
     @Test
     public void testNoRepository() {
         tempFolder.delete();
-        exception.expect(ConfigException.class);
-        config.put("section.int", 1);
+        assertThrows(ConfigException.class, () -> config.put("section.int", 1));
     }
 
     @Test
@@ -258,14 +251,12 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
         final ConfigDatabase config = createDatabase(platform);
 
-        exception.expect(ConfigException.class);
-        config.putGlobal("section.int", 1);
+        assertThrows(ConfigException.class, () -> config.putGlobal("section.int", 1));
     }
 
     @Test
     public void testNullSectionKeyPair() {
-        exception.expect(ConfigException.class);
-        config.get(null);
+        assertThrows(ConfigException.class, () -> config.get(null));
     }
 
     @Test
@@ -280,8 +271,8 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     public void testNumberFormatException() {
         config.put("section.string", "notanumber");
 
-        exception.expect(IllegalArgumentException.class);
-        config.get("section.string", Integer.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> config.get("section.string", Integer.class));
     }
 
     @Test

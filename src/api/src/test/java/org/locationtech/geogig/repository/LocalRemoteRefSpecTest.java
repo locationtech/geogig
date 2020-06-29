@@ -1,18 +1,17 @@
 package org.locationtech.geogig.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class LocalRemoteRefSpecTest {
-
-    public @Rule ExpectedException ex = ExpectedException.none();
 
     private String remoteName = "upstream";
 
@@ -27,15 +26,14 @@ public class LocalRemoteRefSpecTest {
     }
 
     public @Test void testNullSpec() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("no refspecs provided");
-        parse(null);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> parse(null));
+        assertThat(e.getMessage(), containsString("no refspecs provided"));
     }
 
     public @Test void testEmptySpec() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("no refspecs provided");
-        parse(" ");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> parse(" "));
+        assertThat(e.getMessage(), containsString("no refspecs provided"));
     }
 
     public @Test void testDefaultSpecs() {

@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.cli.test.functional;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.feature;
@@ -42,9 +42,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.hamcrest.core.StringContains;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.StringStartsWith;
-import org.junit.Assert;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
@@ -231,7 +230,7 @@ public class DefaultStepDefinitions {
         expected = replaceKnownVariables(expected);
         String actual = localRepo.stdOut.toString().replaceAll("\\\\", "/");
 
-        assertThat(actual, StringContains.containsString(expected));
+        assertThat(actual, Matchers.containsString(expected));
     }
 
     @Then("^the response should not contain \"([^\"]*)\"$")
@@ -267,7 +266,7 @@ public class DefaultStepDefinitions {
     public void the_response_should_start_with(String expected) throws Throwable {
         expected = replaceKnownVariables(expected);
         String actual = localRepo.stdOut.toString();
-        Assert.assertThat(actual, StringStartsWith.startsWith(expected));
+        assertThat(actual, StringStartsWith.startsWith(expected));
         // assertTrue(actual, actual.startsWith(expected));
     }
 
@@ -327,7 +326,7 @@ public class DefaultStepDefinitions {
         assertEquals(output.toString(), 1, output.size());
         assertNotNull(output.get(0));
         String alloutput = output.toString();
-        assertThat(alloutput, StringContains.containsString("Initialized"));
+        assertThat(alloutput, Matchers.containsString("Initialized"));
     }
 
     @Given("^I have a merge conflict state$")

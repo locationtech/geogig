@@ -9,6 +9,16 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -21,9 +31,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
@@ -49,8 +57,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import com.google.common.collect.ImmutableList;
 
 public class CommitOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private Geogig repo;
 
@@ -66,8 +72,7 @@ public class CommitOpTest extends RepositoryTestCase {
     @Test
     public void testNothingToCommit() throws Exception {
         repo.commands().add(".");
-        exception.expect(NothingToCommitException.class);
-        repo.commands().command(CommitOp.class).call();
+        assertThrows(NothingToCommitException.class, repo.commands().command(CommitOp.class)::call);
     }
 
     @Test
@@ -392,17 +397,15 @@ public class CommitOpTest extends RepositoryTestCase {
 
         repo.config().remove("user.name");
 
-        CommitOp commitCommand = repo.commands().command(CommitOp.class);
-        exception.expect(IllegalStateException.class);
-        commitCommand.setAllowEmpty(true).call();
+        CommitOp commitCommand = repo.commands().command(CommitOp.class).setAllowEmpty(true);
+        assertThrows(IllegalStateException.class, commitCommand::call);
     }
 
     @Test
     public void testNoCommitterEmail() throws Exception {
         repo.config().remove("user.email");
-        CommitOp commitCommand = repo.commands().command(CommitOp.class);
-        exception.expect(IllegalStateException.class);
-        commitCommand.setAllowEmpty(true).call();
+        CommitOp commitCommand = repo.commands().command(CommitOp.class).setAllowEmpty(true);
+        assertThrows(IllegalStateException.class, commitCommand::call);
     }
 
     @Test
@@ -685,11 +688,12 @@ public class CommitOpTest extends RepositoryTestCase {
             assertEquals(id, repo.head().child(appendChild(pointsName, idP1)).get().getObjectId());
             assertNotNull(repo.objects().get(id));
         }
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "You must specify a new commit message, timestamp, or commit to reuse when amending a commit with no changes.");
-        repo.commands().command(CommitOp.class).setAmend(true).call();
 
+        assertThat(
+                assertThrows(IllegalArgumentException.class,
+                        repo.commands().command(CommitOp.class).setAmend(true)::call).getMessage(),
+                containsString(
+                        "You must specify a new commit message, timestamp, or commit to reuse when amending a commit with no changes."));
     }
 
     @Test

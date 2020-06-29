@@ -13,14 +13,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class RefTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     final ObjectId oid = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
 

@@ -11,6 +11,7 @@ package org.locationtech.geogig.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
@@ -21,9 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -36,8 +35,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
 
 public class FieldTypeTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testFieldTypes() {
@@ -124,8 +121,7 @@ public class FieldTypeTest {
 
         // If this fails it means a new type was added and all of these unit tests need
         // to be updated with the new type.
-        exception.expect(ArrayIndexOutOfBoundsException.class);
-        FieldType.valueOf(0x25);
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> FieldType.valueOf(0x25));
     }
 
     @Test

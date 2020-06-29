@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObject;

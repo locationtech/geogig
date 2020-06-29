@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
+import static org.junit.Assert.assertThrows;
+
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -43,8 +45,7 @@ public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
         Environment env = testConfig.newEnvironment(null);
         PGConfigDatabase globalOnlydb = new PGConfigDatabase(env);
         try {
-            exception.expect(ConfigException.class);
-            globalOnlydb.put("section.int", 1);
+            assertThrows(ConfigException.class, () -> globalOnlydb.put("section.int", 1));
         } finally {
             globalOnlydb.close();
         }

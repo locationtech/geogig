@@ -9,15 +9,21 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -41,9 +47,6 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     private IndexDatabase indexdb;
 
     private Node worldPointsLayer;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
@@ -272,99 +275,100 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateIndexAttributesNoFlagSpecified() {
         createIndex("x");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Extra attributes already exist on index, specify add or overwrite to update.");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("y"))//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString(
+                "Extra attributes already exist on index, specify add or overwrite to update."));
     }
 
     @Test
     public void testUpdateIndexOverwriteSameAttribute() {
         createIndex("x");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Nothing to update...");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("x"))//
                 .setOverwrite(true)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("Nothing to update..."));
     }
 
     @Test
     public void testUpdateIndexAddSameAttribute() {
         createIndex("x", "y");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Nothing to update...");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("x"))//
                 .setAdd(true)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("Nothing to update..."));
     }
 
     @Test
     public void testUpdateIndexDoNothing() {
         createIndex("x");
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Nothing to update...");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .call();
+        ::call);
+
+        assertThat(e.getMessage(), containsString("Nothing to update..."));
+
     }
 
     @Test
     public void testUpdateNoExistingIndex() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("A matching index could not be found.");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setExtraAttributes(Lists.newArrayList("y"))//
-                .call();
+        ::call);
+
+        assertThat(e.getMessage(), containsString("A matching index could not be found."));
     }
 
     @Test
     public void testUpdateNoMatchingIndex() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("A matching index could not be found.");
-        repo.command(UpdateIndexOp.class)//
+
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setAttributeName("y")//
-                .call();
+        ::call);
+
+        assertThat(e.getMessage(), containsString("A matching index could not be found."));
     }
 
     @Test
     public void testUpdateMultipleMatchingIndexes() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
         indexdb.createIndexInfo(worldPointsLayer.getName(), "y", IndexType.QUADTREE, null);
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Multiple indexes were found for the specified tree, please specify the attribute.");
-        repo.command(UpdateIndexOp.class)//
+
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .call();
+        ::call);
+
+        assertThat(e.getMessage(), containsString(
+                "Multiple indexes were found for the specified tree, please specify the attribute."));
     }
 
     @Test
     public void testUpdateIndexNoTreeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Tree ref spec not provided.");
-        repo.command(UpdateIndexOp.class).call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                repo.command(UpdateIndexOp.class)::call);
+
+        assertThat(e.getMessage(), containsString("Tree ref spec not provided."));
     }
 
     @Test
     public void testUpdateIndexWrongTreeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't find feature tree 'nonexistent'");
-        repo.command(UpdateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec("nonexistent")//
-                .call();
+        ::call);
+
+        assertThat(e.getMessage(), containsString("Can't find feature tree 'nonexistent'"));
     }
 
     @Test

@@ -11,16 +11,11 @@ package org.locationtech.geogig.model;
 
 import java.util.Arrays;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import junit.framework.TestCase;
 
 public class ObjectIdTest extends TestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testIsNull() {

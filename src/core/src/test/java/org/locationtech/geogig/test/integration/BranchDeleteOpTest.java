@@ -9,11 +9,14 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
 import org.locationtech.geogig.plumbing.UpdateRef;
@@ -28,9 +31,6 @@ import org.locationtech.geogig.transaction.TransactionBegin;
 
 public class BranchDeleteOpTest extends RepositoryTestCase {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     protected @Override void setUpInternal() throws Exception {
         repo.context().configDatabase().put("user.name", "groldan");
         repo.context().configDatabase().put("user.email", "groldan@test.com");
@@ -41,9 +41,7 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
         BranchDeleteOp testOp = new BranchDeleteOp();
         testOp.setName(null);
 
-        exception.expect(IllegalStateException.class);
-
-        testOp.call();
+        assertThrows(IllegalStateException.class, testOp::call);
     }
 
     @Test
@@ -80,8 +78,8 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).call();
         repo.command(CommitOp.class).call();
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchDeleteOp.class).setName("TestBranch").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(BranchDeleteOp.class).setName("TestBranch")::call);
     }
 
     @Test
@@ -94,8 +92,8 @@ public class BranchDeleteOpTest extends RepositoryTestCase {
         testBranch = repo.command(UpdateRef.class).setName("TestBranch")
                 .setNewValue(testBranch.getObjectId()).setReason("test init").call().get();
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchDeleteOp.class).setName("TestBranch").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(BranchDeleteOp.class).setName("TestBranch")::call);
     }
 
     @Test

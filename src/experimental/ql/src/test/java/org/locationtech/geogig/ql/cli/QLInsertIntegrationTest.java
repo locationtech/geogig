@@ -10,6 +10,13 @@
 package org.locationtech.geogig.ql.cli;
 
 import static java.lang.String.format;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.ql.porcelain.QLInsert.parse;
 
 import java.util.ArrayList;
@@ -26,9 +33,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.store.FeatureIteratorIterator;
 import org.junit.After;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLInsert;
@@ -47,9 +52,6 @@ import com.google.common.collect.Sets;
 import net.sf.jsqlparser.statement.insert.Insert;
 
 public class QLInsertIntegrationTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private QLTestHelper helper;
 
@@ -185,9 +187,8 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
     @Test
     public void insertSelectAllTargetDoesNotexist() {
         String sql = "insert into Points2 select * from Points";
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Points2 does not resolve to a feature tree");
-        insert(sql);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> insert(sql));
+        assertThat(e.getMessage(), containsString("Points2 does not resolve to a feature tree"));
     }
 
     @Test

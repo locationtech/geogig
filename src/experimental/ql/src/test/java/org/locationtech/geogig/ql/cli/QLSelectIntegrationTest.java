@@ -10,6 +10,11 @@
 package org.locationtech.geogig.ql.cli;
 
 import static com.google.common.collect.Sets.newHashSet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,9 +26,7 @@ import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
@@ -40,9 +43,6 @@ import com.google.common.collect.Lists;
 import net.sf.jsqlparser.statement.select.Select;
 
 public class QLSelectIntegrationTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private QLTestHelper helper;
 

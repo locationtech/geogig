@@ -13,6 +13,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Optional.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -21,9 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -50,8 +49,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private LinkedList<RevCommit> expectedMaster;
 
@@ -558,7 +555,6 @@ public class PushOpTest extends RemoteRepositoryTestCase {
         // Push the commit
         PushOp push = pushOp();
         push.addRefSpec("Branch1:master:HEAD");
-        exception.expect(IllegalArgumentException.class);
-        push.call();
+        assertThrows(IllegalArgumentException.class, push::call);
     }
 }

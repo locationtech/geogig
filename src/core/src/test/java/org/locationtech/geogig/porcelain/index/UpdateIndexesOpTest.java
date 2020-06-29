@@ -9,14 +9,16 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.plumbing.index.IndexTestSupport.getPointFid;
 
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -51,9 +53,6 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
     private IndexDatabase indexdb;
 
     private Node worldPointsLayer;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();

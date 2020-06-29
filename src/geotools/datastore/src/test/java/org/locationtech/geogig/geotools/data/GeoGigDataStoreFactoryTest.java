@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.geotools.data.GeoGigDataStoreFactory.REPOSITORY;
 
 import java.io.IOException;

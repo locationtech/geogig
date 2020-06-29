@@ -10,9 +10,12 @@
 package org.locationtech.geogig.test.integration.remoting;
 
 import static java.util.Optional.empty;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
@@ -20,9 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
@@ -53,8 +54,6 @@ import com.google.common.collect.Lists;
  *
  */
 public class FetchOpTest extends RemoteRepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     LinkedList<RevCommit> expectedMaster;
 
@@ -334,9 +333,8 @@ public class FetchOpTest extends RemoteRepositoryTestCase {
     public void testFetchNoRemotes() throws Exception {
         localRepo.command(RemoteRemoveOp.class).setName(REMOTE_NAME).call();
         FetchOp fetch = fetchOp();
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Remote could not be resolved");
-        fetch.call();
+        Exception e = assertThrows(IllegalArgumentException.class, fetch::call);
+        assertThat(e.getMessage(), containsString("Remote could not be resolved"));
     }
 
     @Test

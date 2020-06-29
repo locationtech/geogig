@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration.remoting;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -20,9 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.ObjectId;
@@ -62,8 +61,6 @@ import com.google.common.collect.Lists;
  *
  */
 public class CloneOpTest extends RemoteRepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected Repository remoteRepo;
 
@@ -596,16 +593,14 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testCloneNoRepoSpecified() throws Exception {
         CloneOp clone = cloneOp();
-        exception.expect(IllegalArgumentException.class);
-        clone.call();
+        assertThrows(IllegalArgumentException.class, clone::call);
     }
 
     @Test
     public void testCloneEmptyRepoString() throws Exception {
         CloneOp clone = cloneOp();
-        exception.expect(IllegalArgumentException.class);
         // clone.setRepositoryURL("").call();
-        clone.setRemoteURI(null).call();
+        assertThrows(IllegalArgumentException.class, clone.setRemoteURI(null)::call);
     }
 
 }

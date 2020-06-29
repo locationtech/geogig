@@ -9,11 +9,16 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -22,9 +27,6 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 
 public class BranchCreateOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         repo.context().configDatabase().put("user.name", "groldan");
@@ -48,15 +50,16 @@ public class BranchCreateOpTest extends RepositoryTestCase {
 
     @Test
     public void testNullNameForBranch() {
-        exception.expect(IllegalStateException.class);
-        repo.command(BranchCreateOp.class).setName(null).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(BranchCreateOp.class).setName(null)::call);
     }
 
     @Test
     public void testInvalidNameForBranch() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        repo.command(BranchCreateOp.class).setName("ma..er").call();
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                repo.command(BranchCreateOp.class).setName("ma..er")::call);
+        assertThat(e.getMessage(),
+                containsString("Component of ref cannot have two consecutive dots (..) anywhere."));
     }
 
     @Test
@@ -65,8 +68,8 @@ public class BranchCreateOpTest extends RepositoryTestCase {
         repo.command(CommitOp.class).setMessage("Commit1").call();
         repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true).call();
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchCreateOp.class).setName("branch1").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(BranchCreateOp.class).setName("branch1")::call);
     }
 
     @Test
@@ -84,8 +87,8 @@ public class BranchCreateOpTest extends RepositoryTestCase {
 
     @Test
     public void testCreateBranchFromMasterWithNoCommitsMade() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchCreateOp.class).setName("branch1").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(BranchCreateOp.class).setName("branch1")::call);
     }
 
     @Test
@@ -138,9 +141,8 @@ public class BranchCreateOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("Commit1").call();
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
-                .setSource("Nonexistent Commit").call();
+        assertThrows(IllegalArgumentException.class, repo.command(BranchCreateOp.class)
+                .setName("branch1").setAutoCheckout(true).setSource("Nonexistent Commit")::call);
     }
 
     @Test
@@ -152,9 +154,9 @@ public class BranchCreateOpTest extends RepositoryTestCase {
         insertAndAdd(points3);
         repo.command(CommitOp.class).setMessage("Commit3").call();
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
-                .setSource(c1.getTreeId().toString()).call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(BranchCreateOp.class).setName("branch1").setAutoCheckout(true)
+                        .setSource(c1.getTreeId().toString())::call);
     }
 
     @Test

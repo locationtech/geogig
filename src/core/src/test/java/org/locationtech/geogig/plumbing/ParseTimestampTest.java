@@ -9,16 +9,19 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.test.TestRepository;
@@ -26,7 +29,7 @@ import org.locationtech.geogig.test.TestRepository;
 /**
  *
  */
-public class ParseTimestampTest extends Assert {
+public class ParseTimestampTest {
 
     private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
@@ -40,8 +43,6 @@ public class ParseTimestampTest extends Assert {
     }
 
     public @Rule TestRepository testRepo = new TestRepository();
-
-    public @Rule ExpectedException exception = ExpectedException.none();
 
     private ParseTimestamp command;
 
@@ -57,13 +58,13 @@ public class ParseTimestampTest extends Assert {
     @Test
     public void testWrongString() {
         command.setString("awrongstring");
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Invalid timestamp string: awrongstring");
-        command.call();
+
+        Exception e = assertThrows(IllegalArgumentException.class, command::call);
+        assertThat(e.getMessage(), containsString("Invalid timestamp string: awrongstring"));
+
         command.setString("a wrong string");
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Invalid timestamp string: a wrong string");
-        command.call();
+        e = assertThrows(IllegalArgumentException.class, command::call);
+        assertThat(e.getMessage(), containsString("Invalid timestamp string: a wrong string"));
     }
 
     @Test

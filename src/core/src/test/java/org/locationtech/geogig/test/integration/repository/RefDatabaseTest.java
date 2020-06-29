@@ -9,9 +9,12 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -27,7 +30,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -40,9 +42,6 @@ import org.locationtech.geogig.test.TestPlatform;
 public abstract class RefDatabaseTest {
 
     protected RefDatabase refDb;
-
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -106,9 +105,9 @@ public abstract class RefDatabaseTest {
     public void testPutSymRefNonExistingTarget() {
         assertFalse(refDb.get(Ref.HEAD).isPresent());
 
-        expected.expect(IllegalArgumentException.class);
-        expected.expectMessage("refs/heads/branch");
-        refDb.putSymRef(Ref.HEAD, "refs/heads/branch");
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> refDb.putSymRef(Ref.HEAD, "refs/heads/branch"));
+        assertThat(e.getMessage(), containsString("refs/heads/branch"));
     }
 
     @Test
@@ -158,8 +157,7 @@ public abstract class RefDatabaseTest {
 
     @Test
     public void testGetAllNullNamespace() {
-        expected.expect(NullPointerException.class);
-        refDb.getAll(null);
+        Exception e = assertThrows(NullPointerException.class, () -> refDb.getAll(null));
     }
 
     @Test
@@ -207,8 +205,7 @@ public abstract class RefDatabaseTest {
 
     @Test
     public void testRemoveAllNullNamespace() {
-        expected.expect(NullPointerException.class);
-        refDb.deleteAll(null);
+        Exception e = assertThrows(NullPointerException.class, () -> refDb.deleteAll(null));
     }
 
     @Test

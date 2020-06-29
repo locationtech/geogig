@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;

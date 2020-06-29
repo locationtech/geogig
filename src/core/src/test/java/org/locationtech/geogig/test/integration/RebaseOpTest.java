@@ -9,13 +9,19 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.Ref;
@@ -42,8 +48,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class RebaseOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
@@ -388,16 +392,14 @@ public class RebaseOpTest extends RepositoryTestCase {
 
     @Test
     public void testRebaseNoUpstream() throws Exception {
-        exception.expect(IllegalStateException.class);
-        repo.command(RebaseOp.class).call();
+        assertThrows(IllegalStateException.class, repo.command(RebaseOp.class)::call);
     }
 
     @Test
     public void testRebaseNoCommits() throws Exception {
         Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
-        exception.expect(IllegalStateException.class);
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
-                .call();
+        assertThrows(IllegalStateException.class, repo.command(RebaseOp.class)
+                .setUpstream(Suppliers.ofInstance(master.get().getObjectId()))::call);
     }
 
     @Test
@@ -407,9 +409,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        exception.expect(IllegalStateException.class);
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
-                .call();
+        assertThrows(IllegalStateException.class, repo.command(RebaseOp.class)
+                .setUpstream(Suppliers.ofInstance(master.get().getObjectId()))::call);
     }
 
     @Test

@@ -9,9 +9,11 @@
  */
 package org.locationtech.geogig.model;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
@@ -20,9 +22,8 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.TreeMap;
 
-import org.junit.Rule;
+import org.hamcrest.Matchers;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -32,8 +33,6 @@ import org.locationtech.jts.io.WKTReader;
 import com.google.common.collect.ImmutableMap;
 
 public class NodeTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testNodeAccessorsAndConstructors() {
@@ -243,11 +242,12 @@ public class NodeTest {
 
     @Test
     public void testCreateInvalidType() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("only FEATURE and TREE nodes can be created");
-        RevObjectFactory.defaultInstance().createNode("Points",
-                ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
-                TYPE.FEATURETYPE, null, null);
+        IllegalArgumentException t = assertThrows(IllegalArgumentException.class,
+                () -> RevObjectFactory.defaultInstance().createNode("Points",
+                        ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
+                        TYPE.FEATURETYPE, null, null));
+        assertThat(t.getMessage(),
+                Matchers.containsString("only FEATURE and TREE nodes can be created"));
     }
 
     @Test

@@ -12,6 +12,7 @@ package org.locationtech.geogig.porcelain;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.Ref.HEAD;
 import static org.locationtech.geogig.model.Ref.MASTER;
@@ -37,7 +38,6 @@ import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -89,9 +89,6 @@ public class InitOpTest {
 
     private RepositoryResolver mockResolver;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Before
     public void setUp() throws IOException, RepositoryConnectionException {
         context = mock(Context.class);
@@ -139,9 +136,7 @@ public class InitOpTest {
     @Test
     public void testNullWorkingDir() {
         when(platform.pwd()).thenReturn(null);
-        exception.expect(IllegalStateException.class);
-        init.call();
-        when(platform.pwd()).thenReturn(workingDir);
+        assertThrows(IllegalStateException.class, init::call);
     }
 
     @Test

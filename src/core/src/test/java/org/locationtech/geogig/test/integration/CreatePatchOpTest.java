@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;

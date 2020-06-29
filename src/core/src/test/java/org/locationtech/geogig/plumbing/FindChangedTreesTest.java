@@ -9,6 +9,13 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -17,11 +24,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -56,12 +61,9 @@ import com.google.common.collect.Sets;
 /**
  *
  */
-public class FindChangedTreesTest extends Assert {
+public class FindChangedTreesTest {
 
     public @Rule TestRepository testRepo = new TestRepository();
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private FindChangedTrees command;
 
@@ -78,25 +80,24 @@ public class FindChangedTreesTest extends Assert {
     }
 
     public @Test void testNoOldVersionSet() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("old version");
-        command.call();
+        Exception e = assertThrows(IllegalArgumentException.class, command::call);
+        assertThat(e.getMessage(), containsString("old version"));
     }
 
     public @Test void testNoNewVersionSet() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("new version");
-        command.setOldTreeIsh(Ref.HEAD).call();
+        command.setOldTreeIsh(Ref.HEAD);
+        Exception e = assertThrows(IllegalArgumentException.class, command::call);
+        assertThat(e.getMessage(), containsString("new version"));
     }
 
     public @Test void testInvalidOldVersion() {
-        exception.expect(IllegalArgumentException.class);
-        command.setOldTreeIsh("abcdef0123").setNewTreeIsh(Ref.HEAD).call();
+        command.setOldTreeIsh("abcdef0123").setNewTreeIsh(Ref.HEAD);
+        assertThrows(IllegalArgumentException.class, command::call);
     }
 
     public @Test void testInvalidNewVersion() {
-        exception.expect(IllegalArgumentException.class);
-        command.setOldTreeIsh(Ref.HEAD).setNewTreeIsh("abcdef0123").call();
+        command.setOldTreeIsh(Ref.HEAD).setNewTreeIsh("abcdef0123");
+        assertThrows(IllegalArgumentException.class, command::call);
     }
 
     public @Test void testNullTrees() {

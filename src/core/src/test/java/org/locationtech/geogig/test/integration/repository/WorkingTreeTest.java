@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Iterator;
@@ -16,9 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.Name;
 import org.locationtech.geogig.model.DiffEntry;
@@ -44,9 +47,6 @@ import com.google.common.collect.Iterators;
 public class WorkingTreeTest extends RepositoryTestCase {
 
     private WorkingTree workTree;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         workTree = repo.context().workingTree();

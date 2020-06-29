@@ -9,13 +9,18 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -40,8 +45,6 @@ import org.locationtech.geogig.repository.Conflict;
 import com.google.common.collect.Lists;
 
 public class RevertOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
@@ -172,8 +175,7 @@ public class RevertOpTest extends RepositoryTestCase {
 
     @Test
     public void testHeadWithNoHistory() throws Exception {
-        exception.expect(IllegalStateException.class);
-        repo.command(RevertOp.class).call();
+        assertThrows(IllegalStateException.class, repo.command(RevertOp.class)::call);
     }
 
     @Test
@@ -182,8 +184,8 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insert(points2);
-        exception.expect(IllegalStateException.class);
-        repo.command(RevertOp.class).addCommit(c1.getId()).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(RevertOp.class).addCommit(c1.getId())::call);
     }
 
     @Test
@@ -192,8 +194,8 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insertAndAdd(points2);
-        exception.expect(IllegalStateException.class);
-        repo.command(RevertOp.class).addCommit(c1.getId()).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(RevertOp.class).addCommit(c1.getId())::call);
     }
 
     @Test
@@ -222,8 +224,8 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue(null).call();
-        exception.expect(IllegalStateException.class);
-        repo.command(RevertOp.class).addCommit(c1.getId()).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(RevertOp.class).addCommit(c1.getId())::call);
     }
 
     @Test
@@ -232,25 +234,24 @@ public class RevertOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.email")
                 .setValue(null).call();
-        exception.expect(IllegalStateException.class);
-        repo.command(RevertOp.class).addCommit(c1.getId()).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(RevertOp.class).addCommit(c1.getId())::call);
     }
 
     @Test
     public void testRevertToWrongCommit() throws Exception {
         insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevertOp.class).addCommit(RevObjectTestSupport.hashString("wrong")).call();
+        assertThrows(IllegalArgumentException.class, repo.command(RevertOp.class)
+                .addCommit(RevObjectTestSupport.hashString("wrong"))::call);
     }
 
     @Test
     public void testRevertUsingContinueAndAbort() throws Exception {
         insertAndAdd(points1);
         RevCommit commit = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevertOp.class).addCommit(commit.getId()).setAbort(true).setContinue(true)
-                .call();
+        assertThrows(IllegalArgumentException.class, repo.command(RevertOp.class)
+                .addCommit(commit.getId()).setAbort(true).setContinue(true)::call);
     }
 
     @Test

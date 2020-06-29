@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.ObjectId.NULL;
@@ -22,9 +25,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Conflict;
@@ -47,9 +48,6 @@ public class PGConflictsDatabaseTest {
     private static final Conflict c1 = new Conflict("Rivers/1", NULL,
             RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));
 
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
-
     @Mock
     private Environment mockEnv;
 
@@ -71,9 +69,9 @@ public class PGConflictsDatabaseTest {
     public void addConflictConnectException() throws SQLException {
         when(mockEnv.getConnection()).thenThrow(
                 new RepositoryBusyException("No available connections to the repository."));
-        expected.expect(RepositoryBusyException.class);
-        expected.expectMessage("No available connections to the repository");
-        mockSourceConflicts.addConflict(null, c1);
+        Exception e = assertThrows(RepositoryBusyException.class,
+                () -> mockSourceConflicts.addConflict(null, c1));
+        assertThat(e.getMessage(), containsString("No available connections to the repository"));
     }
 
     @Test
@@ -108,9 +106,9 @@ public class PGConflictsDatabaseTest {
     public void removeConflictConnectException() throws SQLException {
         when(mockEnv.getConnection()).thenThrow(
                 new RepositoryBusyException("No available connections to the repository."));
-        expected.expect(RepositoryBusyException.class);
-        expected.expectMessage("No available connections to the repository");
-        mockSourceConflicts.removeConflict(null, c1.getPath());
+        Exception e = assertThrows(RepositoryBusyException.class,
+                () -> mockSourceConflicts.removeConflict(null, c1.getPath()));
+        assertThat(e.getMessage(), containsString("No available connections to the repository"));
     }
 
     @Test
@@ -132,9 +130,10 @@ public class PGConflictsDatabaseTest {
     public void removeConflictsConnectException() throws SQLException {
         when(mockEnv.getConnection()).thenThrow(
                 new RepositoryBusyException("No available connections to the repository."));
-        expected.expect(RepositoryBusyException.class);
-        expected.expectMessage("No available connections to the repository");
-        mockSourceConflicts.removeConflicts(null);
+
+        Exception e = assertThrows(RepositoryBusyException.class,
+                () -> mockSourceConflicts.removeConflicts(null));
+        assertThat(e.getMessage(), containsString("No available connections to the repository"));
     }
 
     @Test

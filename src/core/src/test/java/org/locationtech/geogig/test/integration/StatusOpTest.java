@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import org.locationtech.geogig.porcelain.StatusOp;
 import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;

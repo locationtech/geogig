@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.test.integration;
 
-import org.junit.Rule;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.CheckSparsePath;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -23,8 +24,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 public class CheckSparsePathTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer

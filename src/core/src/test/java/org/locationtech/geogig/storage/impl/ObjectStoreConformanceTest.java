@@ -13,10 +13,13 @@ import static com.google.common.collect.Iterators.concat;
 import static com.google.common.collect.Iterators.singletonIterator;
 import static com.google.common.collect.Iterators.transform;
 import static java.util.Collections.emptyIterator;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.feature;
@@ -39,9 +42,7 @@ import java.util.stream.IntStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -86,8 +87,6 @@ import com.google.common.collect.Sets;
 public abstract class ObjectStoreConformanceTest {
 
     protected ObjectStore db;
-
-    public @Rule ExpectedException ex = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -149,15 +148,13 @@ public abstract class ObjectStoreConformanceTest {
     }
 
     private void checkClosed(Runnable op) {
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("closed");
-        op.run();
+        Exception e = assertThrows(IllegalStateException.class, op::run);
+        assertThat(e.getMessage(), containsString("closed"));
     }
 
     private void checkNullArgument(Runnable op) {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("is null");
-        op.run();
+        Exception e = assertThrows(NullPointerException.class, op::run);
+        assertThat(e.getMessage(), containsString("is null"));
     }
 
     @Test

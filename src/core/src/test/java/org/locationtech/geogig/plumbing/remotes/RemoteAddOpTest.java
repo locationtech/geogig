@@ -9,17 +9,17 @@
  */
 package org.locationtech.geogig.plumbing.remotes;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class RemoteAddOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public final void setUpInternal() {
@@ -29,41 +29,39 @@ public class RemoteAddOpTest extends RepositoryTestCase {
     public void testNullName() {
         final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
-        exception.expect(RemoteException.class);
-        remoteAdd.setName(null).setURL("http://test.com").call();
+        assertThrows(RemoteException.class,
+                remoteAdd.setName(null).setURL("http://test.com")::call);
     }
 
     @Test
     public void testEmptyName() {
         final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
-        exception.expect(RemoteException.class);
-        remoteAdd.setName("").setURL("http://test.com").call();
+        assertThrows(RemoteException.class, remoteAdd.setName("").setURL("http://test.com")::call);
     }
 
     @Test
     public void testInvalidName() {
         final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        remoteAdd.setName("ma..er").setURL("http://test.com").call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                remoteAdd.setName("ma..er").setURL("http://test.com")::call);
+        assertThat(e.getMessage(),
+                containsString("Component of ref cannot have two consecutive dots (..) anywhere."));
     }
 
     @Test
     public void testNullURL() {
         final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
-        exception.expect(RemoteException.class);
-        remoteAdd.setName("myremote").setURL(null).call();
+        assertThrows(RemoteException.class, remoteAdd.setName("myremote").setURL(null)::call);
     }
 
     @Test
     public void testEmptyURL() {
         final RemoteAddOp remoteAdd = repo.command(RemoteAddOp.class);
 
-        exception.expect(RemoteException.class);
-        remoteAdd.setName("myremote").setURL("").call();
+        assertThrows(RemoteException.class, remoteAdd.setName("myremote").setURL("")::call);
     }
 
     @Test
@@ -128,8 +126,8 @@ public class RemoteAddOpTest extends RepositoryTestCase {
         assertEquals(remoteURL, remote.getPushURL());
         assertEquals(Remote.defaultRemoteRefSpec(remoteName), remote.getFetchSpec());
 
-        exception.expect(RemoteException.class);
-        remoteAdd.setName(remoteName).setURL("someotherurl.com").call();
+        assertThrows(RemoteException.class,
+                remoteAdd.setName(remoteName).setURL("someotherurl.com")::call);
     }
 
     @Test

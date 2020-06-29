@@ -11,6 +11,7 @@ package org.locationtech.geogig.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -22,15 +23,11 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 public class RevTreeTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testEmptyTree() {
@@ -128,8 +125,7 @@ public class RevTreeTest {
         };
 
         // Empty tree, but not the empty tree object id.
-        exception.expect(IllegalStateException.class);
-        testTree.isEmpty();
+        assertThrows(IllegalStateException.class, testTree::isEmpty);
     }
 
     @Test
@@ -161,8 +157,7 @@ public class RevTreeTest {
         };
 
         // Empty tree, but not the empty tree object id.
-        exception.expect(IllegalStateException.class);
-        testTree.isEmpty();
+        assertThrows(IllegalStateException.class, testTree::isEmpty);
     }
 
     @Test

@@ -25,9 +25,7 @@ import java.util.UUID;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -41,9 +39,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDatabase> {
-
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     protected T conflicts;
 

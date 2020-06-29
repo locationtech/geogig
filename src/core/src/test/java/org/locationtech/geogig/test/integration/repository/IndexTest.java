@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.test.integration.repository;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Collection;

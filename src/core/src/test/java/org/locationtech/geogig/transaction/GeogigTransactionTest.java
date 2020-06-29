@@ -9,6 +9,14 @@
  */
 package org.locationtech.geogig.transaction;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,9 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -35,8 +41,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import com.google.common.collect.Lists;
 
 public class GeogigTransactionTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         repo.context().configDatabase().put("user.name", "groldan");
@@ -477,8 +481,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
 
     @Test
     public void testEndNoTransaction() throws Exception {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(TransactionEnd.class).call();
+        assertThrows(IllegalArgumentException.class, repo.command(TransactionEnd.class)::call);
     }
 
     @Test
@@ -495,8 +498,8 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         t.command(CommitOp.class).call();
 
         // End the transaction
-        exception.expect(IllegalStateException.class);
-        t.command(TransactionEnd.class).setTransaction(t).call();
+        assertThrows(IllegalStateException.class,
+                t.command(TransactionEnd.class).setTransaction(t)::call);
 
     }
 
@@ -510,8 +513,7 @@ public class GeogigTransactionTest extends RepositoryTestCase {
         GeogigTransaction t = repo.command(TransactionBegin.class).call();
 
         // start a transaction within the transaction
-        exception.expect(IllegalStateException.class);
-        t.command(TransactionBegin.class).call();
+        assertThrows(IllegalStateException.class, t.command(TransactionBegin.class)::call);
 
     }
 

@@ -10,27 +10,22 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.TestHelper;
 
 public class ListOpTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testNullDataStore() throws Exception {
         ListOp list = new ListOp();
-        exception.expect(GeoToolsOpException.class);
-        list.call();
+        assertThrows(GeoToolsOpException.class, list::call);
     }
 
     @Test
@@ -47,8 +42,8 @@ public class ListOpTest {
         ListOp list = new ListOp();
         list.setDataStore(TestHelper.createFactoryWithGetNamesException()
                 .createDataStore(Collections.emptyMap()));
-        exception.expect(GeoToolsOpException.class);
-        list.call();
+
+        assertThrows(GeoToolsOpException.class, list::call);
     }
 
     @Test

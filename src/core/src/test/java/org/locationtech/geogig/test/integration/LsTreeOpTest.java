@@ -9,12 +9,15 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.LsTreeOp;
@@ -24,9 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 public class LsTreeOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         boolean onecComitPerFeature = false;

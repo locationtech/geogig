@@ -9,11 +9,16 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
@@ -27,9 +32,6 @@ import org.locationtech.geogig.porcelain.TagRemoveOp;
 
 public class TagTest extends RepositoryTestCase {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     protected @Override void setUpInternal() throws Exception {
         repo.command(ConfigOp.class).setAction(ConfigAction.CONFIG_SET).setName("user.name")
                 .setValue("groldan").call();
@@ -42,9 +44,10 @@ public class TagTest extends RepositoryTestCase {
         insertAndAdd(points1);
         RevCommit commit = repo.command(CommitOp.class).call();
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        repo.command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1").call();
+        Exception e = assertThrows(IllegalArgumentException.class, () -> repo
+                .command(TagCreateOp.class).setCommitId(commit.getId()).setName("Tag..1").call());
+        assertThat(e.getMessage(),
+                containsString("Component of ref cannot have two consecutive dots (..) anywhere."));
     }
 
     @Test

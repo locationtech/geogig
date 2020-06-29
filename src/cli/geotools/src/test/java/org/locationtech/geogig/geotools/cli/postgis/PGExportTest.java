@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.geotools.cli.postgis;
 
+import static org.junit.Assert.assertThrows;
+
 import java.util.Arrays;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -26,9 +26,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class PGExportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -71,17 +68,15 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("Points", "Points");
         exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test
     public void testNoArgs() throws Exception {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList();
-        exception.expect(CommandFailedException.class);
         exportCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -89,8 +84,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("Points", "table1");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -110,8 +104,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("invalidType", "invalidTable");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -119,8 +112,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("Points", null);
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -128,8 +120,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList(null, "invalidTable");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -137,8 +128,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("", "invalidTable");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -146,8 +136,7 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("Points", "");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -155,7 +144,6 @@ public class PGExportTest extends RepositoryTestCase {
         PGExport exportCommand = new PGExport();
         exportCommand.args = Arrays.asList("Points/Points.1", "invalidTable");
         exportCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 }

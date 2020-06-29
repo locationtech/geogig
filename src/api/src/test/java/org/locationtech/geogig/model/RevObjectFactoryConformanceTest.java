@@ -11,8 +11,11 @@ package org.locationtech.geogig.model;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -33,9 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runners.MethodSorters;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
@@ -86,8 +87,6 @@ public abstract class RevObjectFactoryConformanceTest {
 
     private RevObjectFactory factory;
 
-    public @Rule ExpectedException ex = ExpectedException.none();
-
     public @Before void setUp() throws Exception {
         factory = newFactory();
     }
@@ -133,46 +132,47 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createCommitNullId() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
-        testCommit(null, id2, emptyList(), person1, person2, "message");
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(null, id2, emptyList(), person1, person2, "message"));
+        assertThat(npe.getMessage(), containsString("id"));
     }
 
     public @Test final void createCommitNullTreeId() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("treeId");
-        testCommit(id1, null, emptyList(), person1, person2, "message");
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, null, emptyList(), person1, person2, "message"));
+        assertThat(npe.getMessage(), containsString("treeId"));
     }
 
     public @Test final void createCommitNullParents() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("parents");
-        testCommit(id1, id2, null, person1, person2, "message");
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, id2, null, person1, person2, "message"));
+        assertThat(npe.getMessage(), containsString("parents"));
     }
 
     public @Test final void createCommitNullElementInParentsList() throws IOException {
         List<ObjectId> parents = newArrayList(id3, null, id4);
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("null parent at index");
-        testCommit(id1, id2, parents, person1, person2, "message");
+
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, id2, parents, person1, person2, "message"));
+        assertThat(npe.getMessage(), containsString("null parent at index"));
     }
 
     public @Test final void createCommitNullAuthor() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("author");
-        testCommit(id1, id2, emptyList(), null, person2, "message");
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, id2, emptyList(), null, person2, "message"));
+        assertThat(npe.getMessage(), containsString("author"));
     }
 
     public @Test final void createCommitNullCommitter() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("committer");
-        testCommit(id1, id2, emptyList(), person1, null, "message");
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, id2, emptyList(), person1, null, "message"));
+        assertThat(npe.getMessage(), containsString("committer"));
     }
 
     public @Test final void createCommitNullMessage() throws IOException {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("message");
-        testCommit(id1, id2, emptyList(), person1, person2, null);
+        NullPointerException npe = assertThrows(NullPointerException.class,
+                () -> testCommit(id1, id2, emptyList(), person1, person2, null));
+        assertThat(npe.getMessage(), containsString("message"));
     }
 
     private Bucket testCreateBucket(ObjectId bucketTree, int bucketIndex, double x1, double x2,
@@ -207,15 +207,15 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createBucketNegativeIndex() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("negative index");
-        testCreateBucket(id1, -1, null);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateBucket(id1, -1, null));
+        assertThat(e.getMessage(), containsString("negative index"));
     }
 
     public @Test final void createBucketNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("bucketTree");
-        testCreateBucket(null, 1, null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateBucket(null, 1, null));
+        assertThat(e.getMessage(), containsString("bucketTree"));
     }
 
     public void testCreateNode(String name, ObjectId oid, ObjectId metadataId, TYPE type,
@@ -252,35 +252,35 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test void createNodeNullName() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("name");
-        testCreateNode(null, id1, id2, TYPE.FEATURE, null, null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateNode(null, id1, id2, TYPE.FEATURE, null, null));
+        assertThat(e.getMessage(), containsString("name"));
     }
 
     public @Test void createNodeNullObjectId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("objectId");
-        testCreateNode("id", null, id2, TYPE.FEATURE, null, null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateNode("id", null, id2, TYPE.FEATURE, null, null));
+        assertThat(e.getMessage(), containsString("objectId"));
     }
 
     public @Test void createNodeNullMetadataId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("metadataId");
-        testCreateNode("id", id1, null, TYPE.FEATURE, null, null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateNode("id", id2, null, TYPE.FEATURE, null, null));
+        assertThat(e.getMessage(), containsString("metadataId"));
     }
 
     public @Test void createNodeNullType() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("type");
         TYPE type = null;
-        testCreateNode("id", id1, id2, type, null, null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateNode("id", id1, id2, type, null, null));
+        assertThat(e.getMessage(), containsString("type"));
     }
 
     public @Test void createNodeIllegalType() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("Invalid object type");
         TYPE type = TYPE.COMMIT;
-        testCreateNode("id", id1, id2, type, null, null);
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateNode("id", id1, id2, type, null, null));
+        assertThat(e.getMessage(), containsString("Invalid object type"));
     }
 
     private RevTree testCreateLeafTree(@NonNull ObjectId id, long size, @NonNull List<Node> trees,
@@ -346,59 +346,61 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafNegativeSize() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("negative size");
-        testCreateLeafTree(id1, -1, emptyList(), emptyList());
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateLeafTree(id1, -1, emptyList(), emptyList()));
+        assertThat(e.getMessage(), containsString("negative size"));
     }
 
     public @Test final void createTreeLeafNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
-        testCreateLeafTree(null, 0, emptyList(), emptyList());
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateLeafTree(null, 0, emptyList(), emptyList()));
+        assertThat(e.getMessage(), containsString("id"));
     }
 
     public @Test final void createTreeLeafNullTrees() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("trees");
-        testCreateLeafTree(id1, 0, null, emptyList());
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateLeafTree(id1, 0, null, emptyList()));
+        assertThat(e.getMessage(), containsString("trees"));
     }
 
     public @Test final void createTreeLeafNullFeatures() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("features");
-        testCreateLeafTree(id1, 0, emptyList(), null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateLeafTree(id1, 0, emptyList(), null));
+        assertThat(e.getMessage(), containsString("features"));
     }
 
     public @Test final void createTreeLeafNullElementInTrees() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("null node in trees at index 1");
         List<Node> trees = newArrayList(treeNode("t1", id1, id5), null, treeNode("t2", id2, id5));
-        testCreateLeafTree(id1, 0, trees, emptyList());
+
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateLeafTree(id1, 0, trees, emptyList()));
+        assertThat(e.getMessage(), containsString("null node in trees at index 1"));
     }
 
     public @Test final void createTreeLeafNullElementInFeatures() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("null node in features at index 1");
         List<Node> features = newArrayList(featureNode("f1", id1), null, featureNode("f2", id2));
-        testCreateLeafTree(id1, 0, emptyList(), features);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateLeafTree(id1, 0, emptyList(), features));
+        assertThat(e.getMessage(), containsString("null node in features at index 1"));
+
     }
 
     public @Test final void createTreeLeafFeatureNodeInTrees() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("trees contains FEATURE node at index 2");
         List<Node> trees = newArrayList(treeNode("t1", id1, id5), treeNode("t2", id2, id5), //
                 featureNode("f1", id3)// WRONG
         );
-        testCreateLeafTree(id1, 0, trees, emptyList());
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateLeafTree(id1, 0, trees, emptyList()));
+        assertThat(e.getMessage(), containsString("trees contains FEATURE node at index 2"));
     }
 
     public @Test final void createTreeLeafTreeNodeInFeatures() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("features contains TREE node at index 2");
         List<Node> features = newArrayList(featureNode("f1", id1), featureNode("f2", id2), //
                 treeNode("t1", id3, id5)// WRONG
         );
-        testCreateLeafTree(id1, 0, emptyList(), features);
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateLeafTree(id1, 0, emptyList(), features));
+        assertThat(e.getMessage(), containsString("features contains TREE node at index 2"));
     }
 
     public @Test final void createTreeLeaf() {
@@ -467,16 +469,16 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeBucketsNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
+        Exception e = assertThrows(NullPointerException.class, () -> //
         testCreateTree(null, 1000, 11, bucket(id4, 4), bucket(id3, 3), bucket(id2, 2),
-                bucket(id1, 1));
+                bucket(id1, 1)));
+        assertThat(e.getMessage(), containsString("id"));
     }
 
     public @Test final void createTreeBucketsNullBuckets() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("buckets");
-        testCreateTree(id5, 1000, 11, (SortedSet<Bucket>) null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTree(id5, 1000, 11, (SortedSet<Bucket>) null));
+        assertThat(e.getMessage(), containsString("buckets"));
     }
 
     public @Test final void createTreeBucketsNullElementInBuckets() {
@@ -486,22 +488,23 @@ public abstract class RevObjectFactoryConformanceTest {
         SortedSet<Bucket> spied = Mockito.spy(buckets);
         Mockito.doReturn(Iterators.concat(buckets.iterator(), Iterators.singletonIterator(null)))
                 .when(spied).iterator();
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("null bucket");
-        testCreateTree(id5, 1000, 11, spied);
+
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTree(id5, 1000, 11, spied));
+        assertThat(e.getMessage(), containsString("null bucket"));
     }
 
     public @Test final void createTreeBucketsNegativeSize() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("negative size");
-        testCreateTree(id5, -1, 11, bucket(id4, 4), bucket(id3, 3), bucket(id2, 2), bucket(id1, 1));
+
+        Exception e = assertThrows(IllegalArgumentException.class, () -> testCreateTree(id5, -1, 11,
+                bucket(id4, 4), bucket(id3, 3), bucket(id2, 2), bucket(id1, 1)));
+        assertThat(e.getMessage(), containsString("negative size"));
     }
 
     public @Test final void createTreeBucketsNegativeChildTreeCount() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("negative child tree count");
-        testCreateTree(id5, 1000, -1, bucket(id4, 4), bucket(id3, 3), bucket(id2, 2),
-                bucket(id1, 1));
+        Exception e = assertThrows(IllegalArgumentException.class, () -> testCreateTree(id5, 1000,
+                -1, bucket(id4, 4), bucket(id3, 3), bucket(id2, 2), bucket(id1, 1)));
+        assertThat(e.getMessage(), containsString("negative child tree count"));
     }
 
     public RevTag testCreateTag(ObjectId id, String name, ObjectId commitId, String message,
@@ -525,33 +528,33 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTagNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
-        testCreateTag(null, "v1.0", id2, "some version message", person1);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTag(null, "v1.0", id2, "some version message", person1));
+        assertThat(e.getMessage(), containsString("id"));
     }
 
     public @Test final void createTagNullCommitId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("commitId");
-        testCreateTag(id1, "v1.0", null, "some version message", person1);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTag(id1, "v1.0", null, "some version message", person1));
+        assertThat(e.getMessage(), containsString("commitId"));
     }
 
     public @Test final void createTagNullName() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("name");
-        testCreateTag(id1, null, id2, "some version message", person1);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTag(id1, null, id2, "some version message", person1));
+        assertThat(e.getMessage(), containsString("name"));
     }
 
     public @Test final void createTagNullMessage() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("message");
-        testCreateTag(id1, "v1.0", id2, null, person1);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTag(id1, "v1.0", id2, null, person1));
+        assertThat(e.getMessage(), containsString("message"));
     }
 
     public @Test final void createTagNullAuthor() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("tagger");
-        testCreateTag(id1, "v1.0", id2, "some version message", null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateTag(id1, "v1.0", id2, "some version message", null));
+        assertThat(e.getMessage(), containsString("tagger"));
     }
 
     private final RevFeatureType testCreateFeatureType(ObjectId id, List<String> typeSpec) {
@@ -577,15 +580,15 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createFeatureTypeNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
-        testCreateFeatureType(null, "sp:String", "ip:Integer", "pp:Point:srid=4326");
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateFeatureType(null, "sp:String", "ip:Integer", "pp:Point:srid=4326"));
+        assertThat(e.getMessage(), containsString("id"));
     }
 
     public @Test final void createFeatureTypeNullFeatureType() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("type");
-        testCreateFeatureType(id1, (FeatureType) null);
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateFeatureType(id1, (FeatureType) null));
+        assertThat(e.getMessage(), containsString("type"));
     }
 
     public @Test final void createFeatureType() {
@@ -614,9 +617,11 @@ public abstract class RevObjectFactoryConformanceTest {
 
     public @Test final void createFeatureTypeUnsupportedAttributeType() {
         Class<?> unsupportedBinding = TimeZone.class;
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("unsupported type: " + unsupportedBinding.getName());
-        testCreateFeatureType(id1, "prop:" + unsupportedBinding.getName());
+
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> testCreateFeatureType(id1, "prop:" + unsupportedBinding.getName()));
+        assertThat(e.getMessage(),
+                containsString("unsupported type: " + unsupportedBinding.getName()));
     }
 
     public @Test final void createFeatureTypeCardinality() {
@@ -735,15 +740,15 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createFeatureNullId() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("id");
-        testCreateFeature(null, emptyList());
+        Exception e = assertThrows(NullPointerException.class,
+                () -> testCreateFeature(null, emptyList()));
+        assertThat(e.getMessage(), containsString("id"));
     }
 
     public @Test final void createFeatureNullValues() {
-        ex.expect(NullPointerException.class);
-        ex.expectMessage("values");
-        testCreateFeature(id1, null);
+        Exception e = assertThrows(NullPointerException.class, () -> testCreateFeature(id1, null));
+        assertThat(e.getMessage(), containsString("values"));
+
     }
 
     public @Test final void createFeatureEmptyValues() {

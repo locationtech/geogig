@@ -10,12 +10,13 @@
 package org.locationtech.geogig.storage.postgresql.config;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -29,14 +30,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
 import com.google.common.collect.ImmutableList;
 
 public class DataSourceManagerTest {
-
-    public @Rule ExpectedException expected = ExpectedException.none();
 
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName());
@@ -109,8 +107,9 @@ public class DataSourceManagerTest {
         doReturn(9).when(dsm).getDriverMajorVersion();
         doReturn(11).when(dsm).getDriverMinorVersion();
 
-        expected.expect(IllegalStateException.class);
-        expected.expectMessage("PostgreSQL JDBC Driver version not supported by GeoGig: 9.11");
-        dsm.acquire(testConfig.getEnvironment().getConnectionConfig().getKey());
+        Exception e = assertThrows(IllegalStateException.class,
+                () -> dsm.acquire(testConfig.getEnvironment().getConnectionConfig().getKey()));
+        assertThat(e.getMessage(),
+                containsString("PostgreSQL JDBC Driver version not supported by GeoGig: 9.11"));
     }
 }

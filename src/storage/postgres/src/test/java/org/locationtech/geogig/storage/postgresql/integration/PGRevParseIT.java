@@ -11,11 +11,11 @@ package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.locationtech.geogig.plumbing.RevParseTest;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
-import org.locationtech.geogig.test.integration.CommitOpTest;
 
-public class PGCommitOpTest extends CommitOpTest {
+public class PGRevParseIT extends RevParseTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 
@@ -25,5 +25,4 @@ public class PGCommitOpTest extends CommitOpTest {
     protected @Override void beforeSetup() {
         testConfig.init(testRepository);
     }
-
 }

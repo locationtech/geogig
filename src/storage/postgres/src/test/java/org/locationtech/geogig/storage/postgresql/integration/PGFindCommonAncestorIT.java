@@ -11,26 +11,18 @@ package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.repository.Platform;
-import org.locationtech.geogig.storage.GraphDatabase;
-import org.locationtech.geogig.storage.impl.GraphDatabaseTest;
-import org.locationtech.geogig.storage.postgresql.config.Environment;
-import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
-import org.locationtech.geogig.storage.postgresql.v9.PGGraphDatabase;
 
-public class PGGraphDatabaseTest extends GraphDatabaseTest {
+public class PGFindCommonAncestorIT
+        extends org.locationtech.geogig.test.integration.FindCommonAncestorTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName(), ds);
 
-    protected @Override GraphDatabase createDatabase(Platform platform) throws Exception {
-        Environment env = testConfig.getEnvironment();
-        PGStorage.createNewRepo(env);
-        return new PGGraphDatabase(env);
+    protected @Override void beforeSetup() {
+        testConfig.init(testRepository);
     }
-
 }

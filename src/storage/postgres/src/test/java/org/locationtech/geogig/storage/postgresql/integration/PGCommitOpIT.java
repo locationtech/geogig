@@ -13,9 +13,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
-import org.locationtech.geogig.test.integration.RebaseOpTest;
+import org.locationtech.geogig.test.integration.CommitOpTest;
 
-public class PGRebaseOpTest extends RebaseOpTest {
+public class PGCommitOpIT extends CommitOpTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 
@@ -25,4 +25,5 @@ public class PGRebaseOpTest extends RebaseOpTest {
     protected @Override void beforeSetup() {
         testConfig.init(testRepository);
     }
+
 }

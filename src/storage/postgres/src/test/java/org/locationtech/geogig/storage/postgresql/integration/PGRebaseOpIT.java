@@ -13,9 +13,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
+import org.locationtech.geogig.test.integration.RebaseOpTest;
 
-public class PGFindCommonAncestorTest
-        extends org.locationtech.geogig.test.integration.FindCommonAncestorTest {
+public class PGRebaseOpIT extends RebaseOpTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

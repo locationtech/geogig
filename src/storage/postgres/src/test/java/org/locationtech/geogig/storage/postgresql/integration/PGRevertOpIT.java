@@ -13,9 +13,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
-import org.locationtech.geogig.test.integration.DiffOpTest;
+import org.locationtech.geogig.test.integration.RevertOpTest;
 
-public class PGDiffOpTest extends DiffOpTest {
+public class PGRevertOpIT extends RevertOpTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

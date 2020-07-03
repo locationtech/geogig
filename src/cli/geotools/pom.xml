@@ -47,6 +47,15 @@
     </plugins>
   </build>
 
+  <profiles>
+    <profile>
+      <id>postgres</id>
+      <properties>
+        <failsafe.exclude.pattern></failsafe.exclude.pattern>
+      </properties>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>

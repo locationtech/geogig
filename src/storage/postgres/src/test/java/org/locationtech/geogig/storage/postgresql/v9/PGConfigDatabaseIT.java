@@ -23,7 +23,7 @@ import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
-public class PGConfigDatabaseTest extends ConfigDatabaseTest<PGConfigDatabase> {
+public class PGConfigDatabaseIT extends ConfigDatabaseTest<PGConfigDatabase> {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

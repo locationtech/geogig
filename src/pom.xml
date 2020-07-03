@@ -16,11 +16,8 @@
     <test.maxHeapSize>512M</test.maxHeapSize>
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
-    <online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
-    <postgresOnline.skip.pattern>org/locationtech/geogig/storage/postgresql/**</postgresOnline.skip.pattern>
-    <postgresWebFunctional.skip.pattern>org/geogig/web/postgresql/functional/**</postgresWebFunctional.skip.pattern>
-    <allow.test.skip>true</allow.test.skip>
     <argLine>-Xms256m -Xmx512m</argLine>
+    <failsafe.exclude.pattern>**/*OnlineIT</failsafe.exclude.pattern>
     <!-- or fmt.action 'validate' -->
     <fmt.action>format</fmt.action>
     <fmt.skip>false</fmt.skip>
@@ -202,6 +199,7 @@
           <inherited>true</inherited>
           <configuration>
             <skip>${skip.it}</skip>
+            <excludes>${failsafe.exclude.pattern}</excludes>
           </configuration>
         </plugin>
         <plugin>
@@ -310,11 +308,6 @@
           <includes>
             <include>**/*Test.java</include>
           </includes>
-          <excludes>
-            <exclude>${online.skip.pattern}</exclude>
-            <exclude>${postgresOnline.skip.pattern}</exclude>
-            <exclude>${postgresWebFunctional.skip.pattern}</exclude>
-          </excludes>
           <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
           <reuseForks>true</reuseForks>
         </configuration>
@@ -374,35 +367,6 @@
       </modules>
     </profile>
     <profile>
-      <id>online</id>
-      <properties>
-        <online.skip.pattern>disabled</online.skip.pattern>
-      </properties>
-    </profile>
-    <profile>
-      <id>postgres</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <includes>
-                <include>**/*Test.java</include>
-              </includes>
-              <excludes>
-                <exclude>${online.skip.pattern}</exclude>
-                <!--exclude>${postgresOnline.skip.pattern}</exclude -->
-                <!--exclude>${postgresWebFunctional.skip.pattern}</exclude -->
-              </excludes>
-              <forkCount>1C</forkCount> <!-- i.e. 1 x # of processor cores -->
-              <reuseForks>true</reuseForks>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
       <id>performance</id>
       <build>
         <plugins>
@@ -413,8 +377,6 @@
               <systemPropertyVariables>
                 <geogig.runPerformanceTests>true</geogig.runPerformanceTests>
               </systemPropertyVariables>
-              <!--excludes> <exclude>${online.skip.pattern}</exclude> <exclude>${postgresOnline.skip.pattern}</exclude> <exclude>${postgresWebFunctional.skip.pattern}</exclude> 
-                </excludes -->
               <includes>
                 <include>**/*StressTest.java</include>
                 <include>**/*PerformanceTest.java</include>

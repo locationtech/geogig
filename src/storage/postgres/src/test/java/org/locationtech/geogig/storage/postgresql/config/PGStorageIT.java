@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class PGStorageTest {
+public class PGStorageIT {
 
     @Rule
     public PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(getClass().getSimpleName());

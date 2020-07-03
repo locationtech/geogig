@@ -34,7 +34,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.google.common.collect.ImmutableList;
 
-public class DataSourceManagerTest {
+public class DataSourceManagerIT {
 
     public @Rule PGTemporaryTestConfig testConfig = new PGTemporaryTestConfig(
             getClass().getSimpleName());

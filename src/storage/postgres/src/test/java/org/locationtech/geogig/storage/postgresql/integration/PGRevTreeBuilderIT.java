@@ -24,7 +24,7 @@ import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvide
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 
-public class PGRevTreeBuilderTest extends CanonicalTreeBuilderTest {
+public class PGRevTreeBuilderIT extends CanonicalTreeBuilderTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

@@ -13,9 +13,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
+import org.locationtech.geogig.test.integration.LogOpTest;
 
-public class PGCheckSparsePathTest
-        extends org.locationtech.geogig.test.integration.CheckSparsePathTest {
+public class PGLogOpIT extends LogOpTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 
@@ -25,4 +25,5 @@ public class PGCheckSparsePathTest
     protected @Override void beforeSetup() {
         testConfig.init(testRepository);
     }
+
 }

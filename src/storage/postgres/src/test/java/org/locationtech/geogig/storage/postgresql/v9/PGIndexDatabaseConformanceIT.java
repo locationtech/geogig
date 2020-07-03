@@ -25,7 +25,7 @@ import org.locationtech.geogig.storage.postgresql.config.PGStorage;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
 
-public class PGIndexDatabaseConformanceTest extends IndexDatabaseConformanceTest {
+public class PGIndexDatabaseConformanceIT extends IndexDatabaseConformanceTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

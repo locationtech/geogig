@@ -37,13 +37,13 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Complements {@link PGConflictsDatabaseConformanceTest} with tests specific to this implementation
- * that can use mock objects so {@link PGConflictsDatabaseConformanceTest} can run faster for cases
+ * Complements {@link PGConflictsDatabaseConformanceIT} with tests specific to this implementation
+ * that can use mock objects so {@link PGConflictsDatabaseConformanceIT} can run faster for cases
  * where the actual connection to the database is not needed.
  *
  */
 @RunWith(MockitoJUnitRunner.class)
-public class PGConflictsDatabaseTest {
+public class PGConflictsDatabaseIT {
 
     private static final Conflict c1 = new Conflict("Rivers/1", NULL,
             RevObjectTestSupport.hashString("ours"), RevObjectTestSupport.hashString("theirs"));

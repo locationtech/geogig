@@ -11,11 +11,11 @@ package org.locationtech.geogig.storage.postgresql.integration;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.locationtech.geogig.plumbing.RevParseTest;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
+import org.locationtech.geogig.test.integration.DiffOpTest;
 
-public class PGRevParseTest extends RevParseTest {
+public class PGDiffOpIT extends DiffOpTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

@@ -35,7 +35,7 @@ import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvide
 
 import com.google.common.collect.Lists;
 
-public class PGObjectStoreConformanceTest extends ObjectStoreConformanceTest {
+public class PGObjectStoreConformanceIT extends ObjectStoreConformanceTest {
 
     public static @ClassRule PGTestDataSourceProvider ds = new PGTestDataSourceProvider();
 

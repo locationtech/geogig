@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.geotools.cli.geojson;
 
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -26,9 +27,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class GeoJsonExportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -74,8 +72,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
         String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList(null, geoJsonFileName);
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -84,8 +81,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
         String geoJsonFileName = new File(testRepository.getPlatform().pwd(), "TestPoints.geojson")
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", geoJsonFileName);
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -112,8 +108,7 @@ public class GeoJsonExportTest extends RepositoryTestCase {
     public void testExportWithNoArgs() throws Exception {
         GeoJsonExport exportCommand = new GeoJsonExport();
         exportCommand.args = Arrays.asList();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test

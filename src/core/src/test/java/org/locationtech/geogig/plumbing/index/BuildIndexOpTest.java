@@ -1,5 +1,9 @@
 package org.locationtech.geogig.plumbing.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.getTreeNodes;
 
 import java.util.ArrayList;

@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Arrays;
@@ -16,9 +21,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.dsl.TreeWorker;
 import org.locationtech.geogig.feature.Feature;
@@ -45,8 +48,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RemoveOp;
 
 public class CheckoutOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private Feature points1ModifiedB;
 
@@ -198,8 +199,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
         insertAndAdd(points2);
         insert(points1_modified);
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(CheckoutOp.class).addPath("Points/Points.1").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(CheckoutOp.class).addPath("Points/Points.1")::call);
 
     }
 
@@ -261,8 +262,7 @@ public class CheckoutOpTest extends RepositoryTestCase {
 
     @Test
     public void testCheckoutNoParametersSet() {
-        exception.expect(IllegalStateException.class);
-        repo.command(CheckoutOp.class).call();
+        assertThrows(IllegalStateException.class, repo.command(CheckoutOp.class)::call);
     }
 
     @Test
@@ -271,8 +271,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
         insertAndAdd(points2);
-        exception.expect(CheckoutException.class);
-        repo.command(CheckoutOp.class).setSource("branch1").call();
+        assertThrows(CheckoutException.class,
+                repo.command(CheckoutOp.class).setSource("branch1")::call);
     }
 
     @Test
@@ -281,8 +281,8 @@ public class CheckoutOpTest extends RepositoryTestCase {
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
         repo.command(BranchCreateOp.class).setName("branch1").call();
         insert(points2);
-        exception.expect(CheckoutException.class);
-        repo.command(CheckoutOp.class).setSource("branch1").call();
+        assertThrows(CheckoutException.class,
+                repo.command(CheckoutOp.class).setSource("branch1")::call);
     }
 
     @Test

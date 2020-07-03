@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.cli.postgis;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -17,9 +18,7 @@ import java.io.IOException;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -32,9 +31,6 @@ import org.mockito.exceptions.base.MockitoException;
  *
  */
 public class PGDescribeTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -68,32 +64,28 @@ public class PGDescribeTest extends RepositoryTestCase {
     public void testInvalidDatabaseParams() throws Exception {
         describeCommand.commonArgs.host = "nonexistent";
         describeCommand.table = "table1";
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
     public void testDescribeNonexistentTable() throws Exception {
         describeCommand.table = "nonexistent";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
     public void testNoTable() throws Exception {
         describeCommand.table = "";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
     public void testNullDataStore() throws Exception {
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -101,8 +93,7 @@ public class PGDescribeTest extends RepositoryTestCase {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(MockitoException.class);
-        describeCommand.run(cli);
+        assertThrows(MockitoException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -110,7 +101,6 @@ public class PGDescribeTest extends RepositoryTestCase {
         doThrow(new IOException("Exception")).when(consoleReader).flush();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(Exception.class);
-        describeCommand.run(cli);
+        assertThrows(RuntimeException.class, () -> describeCommand.run(cli));
     }
 }

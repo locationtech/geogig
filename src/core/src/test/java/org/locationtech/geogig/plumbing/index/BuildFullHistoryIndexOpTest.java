@@ -9,6 +9,13 @@
  */
 package org.locationtech.geogig.plumbing.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,9 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -44,9 +49,6 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
     private Node worldPointsLayer;
 
     private IndexInfo indexInfo;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
@@ -174,42 +176,39 @@ public class BuildFullHistoryIndexOpTest extends RepositoryTestCase {
     @Test
     public void testBuildFullHistoryNoTreeName() {
         indexInfo = createIndex();
-
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Tree ref spec not provided");
-        repo.command(BuildFullHistoryIndexOp.class).call();
+        assertThat(
+                assertThrows(IllegalArgumentException.class,
+                        repo.command(BuildFullHistoryIndexOp.class)::call).getMessage(),
+                containsString("Tree ref spec not provided"));
     }
 
     @Test
     public void testBuildFullHistoryNoIndex() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("A matching index could not be found.");
-        repo.command(BuildFullHistoryIndexOp.class)//
-                .setTreeRefSpec(worldPointsLayer.getName())//
-                .call();
+        assertThat(assertThrows(IllegalStateException.class,
+                repo.command(BuildFullHistoryIndexOp.class)//
+                        .setTreeRefSpec(worldPointsLayer.getName())//
+                ::call).getMessage(), containsString("A matching index could not be found."));
     }
 
     @Test
     public void testBuildFullHistoryNoMatchingIndex() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("A matching index could not be found.");
-        repo.command(BuildFullHistoryIndexOp.class)//
-                .setTreeRefSpec(worldPointsLayer.getName())//
-                .setAttributeName("y")//
-                .call();
+        assertThat(assertThrows(IllegalStateException.class,
+                repo.command(BuildFullHistoryIndexOp.class)//
+                        .setTreeRefSpec(worldPointsLayer.getName())//
+                        .setAttributeName("y")//
+                ::call).getMessage(), containsString("A matching index could not be found."));
     }
 
     @Test
     public void testBuildFullHistoryMultipleMatchingIndexes() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
         indexdb.createIndexInfo(worldPointsLayer.getName(), "y", IndexType.QUADTREE, null);
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                "Multiple indexes were found for the specified tree, please specify the attribute.");
-        repo.command(BuildFullHistoryIndexOp.class)//
-                .setTreeRefSpec(worldPointsLayer.getName())//
-                .call();
+        assertThat(assertThrows(IllegalStateException.class,
+                repo.command(BuildFullHistoryIndexOp.class)//
+                        .setTreeRefSpec(worldPointsLayer.getName())//
+                ::call).getMessage(), containsString(
+                        "Multiple indexes were found for the specified tree, please specify the attribute."));
     }
 
     @Test

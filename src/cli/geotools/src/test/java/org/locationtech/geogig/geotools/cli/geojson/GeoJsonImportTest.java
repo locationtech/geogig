@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.geotools.cli.geojson;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -17,9 +20,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.cli.InvalidParameterException;
@@ -42,9 +43,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class GeoJsonImportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -145,16 +143,14 @@ public class GeoJsonImportTest extends RepositoryTestCase {
     @Test
     public void testImportNullGeoJSONList() throws Exception {
         GeoJsonImport importCommand = new GeoJsonImport();
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
     @Test
     public void testImportEmptyGeoJSONList() throws Exception {
         GeoJsonImport importCommand = new GeoJsonImport();
         importCommand.geoJSONList = new ArrayList<String>();
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -164,8 +160,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         importCommand.geoJSONList.add(GeoJsonImport.class.getResource("sample.geojson").getFile());
         importCommand.geomName = "the_geom";
         importCommand.geomNameAuto = true;
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -174,7 +169,6 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         GeoJsonImport importCommand = new GeoJsonImport();
         importCommand.geoJSONList = new ArrayList<String>();
         importCommand.geoJSONList.add(GeoJsonImport.class.getResource("sample.geojson").getFile());
-        exception.expect(MockitoException.class);
-        importCommand.run(cli);
+        assertThrows(MockitoException.class, () -> importCommand.run(cli));
     }
 }

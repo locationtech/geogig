@@ -9,19 +9,19 @@
  */
 package org.locationtech.geogig.ql.cli;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.ql.porcelain.QLUpdate;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class QLUpdatetIntegrationTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Override
     public void setUpInternal() throws Exception {
@@ -66,17 +66,15 @@ public class QLUpdatetIntegrationTest extends RepositoryTestCase {
     @Test
     public void updateGeometryFieldWithNonGeometryValue() {
         String st = "update Points set pp = 1200 where @id = 'Points.1'";
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Unable to convert value");
-        update(st);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> update(st));
+        assertThat(e.getMessage(), containsString("Unable to convert value"));
     }
 
     @Test
     @Ignore // REVISIT
     public void updateGeometryWrongType() {
         String st = "update Points set pp = 'LINESTRING(1 1, 2 2)' where @id = 'Points.1'";
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("is not assignable to");
-        update(st);
+        Exception e = assertThrows(IllegalArgumentException.class, () -> update(st));
+        assertThat(e.getMessage(), containsString("is not assignable to"));
     }
 }

@@ -12,12 +12,11 @@ package org.locationtech.geogig.repository;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -29,16 +28,13 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.jts.geom.Envelope;
 
 public class DiffEntryTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testChangeTypes() {
         assertEquals(ChangeType.ADDED, ChangeType.valueOf(ChangeType.ADDED.value()));
         assertEquals(ChangeType.REMOVED, ChangeType.valueOf(ChangeType.REMOVED.value()));
         assertEquals(ChangeType.MODIFIED, ChangeType.valueOf(ChangeType.MODIFIED.value()));
-        exception.expect(ArrayIndexOutOfBoundsException.class);
-        ChangeType.valueOf(3);
+        assertThrows(ArrayIndexOutOfBoundsException.class, () -> ChangeType.valueOf(3));
     }
 
     @Test

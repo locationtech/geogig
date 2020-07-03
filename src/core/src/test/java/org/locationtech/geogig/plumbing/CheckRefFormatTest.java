@@ -9,15 +9,16 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import org.junit.Rule;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class CheckRefFormatTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
     }
@@ -47,7 +48,7 @@ public class CheckRefFormatTest extends RepositoryTestCase {
                 "Ref must contain at least one slash (/) unless explicitly allowed.");
         testRefException("mast..er",
                 "Component of ref cannot have two consecutive dots (..) anywhere.");
-        testRefException("refs/heads//master", "Component of cannot be empty.");
+        testRefException("refs/heads//master", "Component of ref cannot be empty.");
         testRefException(".master", "Component of ref cannot begin or end with a dot (.).");
         testRefException("master.lock", "Component of ref cannot end with .lock.");
         testRefException("master.", "Component of ref cannot begin or end with a dot (.).");
@@ -63,10 +64,10 @@ public class CheckRefFormatTest extends RepositoryTestCase {
     }
 
     private void testRefException(String ref, boolean allowOneLevel, String expectedMessage) {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(expectedMessage);
-        repo.command(CheckRefFormat.class).setThrowsException(true).setAllowOneLevel(allowOneLevel)
-                .setRef(ref).call();
+        Exception t = assertThrows(IllegalArgumentException.class,
+                () -> repo.command(CheckRefFormat.class).setThrowsException(true)
+                        .setAllowOneLevel(allowOneLevel).setRef(ref).call());
+        assertThat(t.getMessage(), containsString(expectedMessage));
     }
 
     private boolean testRef(String ref) {

@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+
 import java.io.File;
 import java.sql.Connection;
 import java.util.Arrays;
@@ -26,9 +30,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.jdbc.JDBCDataStore;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -49,9 +51,6 @@ import com.google.common.collect.Maps;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class GeoPkgExportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -110,8 +109,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         String geoPkgFileName = support.newFile().getAbsolutePath();
         exportCommand.args = Arrays.asList(null, "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -120,8 +118,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
         String geoPkgFileName = support.newFile().getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", "Points");
         exportCommand.commonArgs.database = geoPkgFileName;
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -154,8 +151,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
     public void testExportWithNoArgs() throws Exception {
         GeopkgExport exportCommand = new GeopkgExport();
         exportCommand.args = Arrays.asList();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test

@@ -9,6 +9,10 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.createCommits;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -21,9 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -40,9 +42,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
  *
  */
 public class RevParseTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private ObjectId poId1;
 
@@ -97,8 +96,7 @@ public class RevParseTest extends RepositoryTestCase {
 
     @Test
     public void testRevParseWithNoRefSpec() {
-        exception.expect(IllegalStateException.class);
-        repo.command(RevParse.class).call();
+        assertThrows(IllegalStateException.class, repo.command(RevParse.class)::call);
     }
 
     @Test
@@ -179,14 +177,14 @@ public class RevParseTest extends RepositoryTestCase {
 
     @Test
     public void testRevParseWithFeatureObjectIdAndDelimiter() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevParse.class).setRefSpec(loId1.toString() + "^").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(RevParse.class).setRefSpec(loId1.toString() + "^")::call);
     }
 
     @Test
     public void testRevParseWithFeatureCheckIfCommit() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevParse.class).setRefSpec(loId1.toString() + "^0").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(RevParse.class).setRefSpec(loId1.toString() + "^0")::call);
     }
 
     @Test
@@ -198,14 +196,14 @@ public class RevParseTest extends RepositoryTestCase {
 
     @Test
     public void testRevParseVerifyToWrongType() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{commit}").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{commit}")::call);
     }
 
     @Test
     public void testRevParseVerifyWithInvalidType() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{blah}").call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(RevParse.class).setRefSpec(poId1.toString() + "^{blah}")::call);
     }
 
     @Test
@@ -228,9 +226,8 @@ public class RevParseTest extends RepositoryTestCase {
         RevParse command = new RevParse();
         command.setContext(mockCommands);
 
-        exception.expect(IllegalArgumentException.class);
-        command.setRefSpec(commitId1.toString().substring(0, commitId1.toString().length() - 2))
-                .call();
+        assertThrows(IllegalArgumentException.class, command.setRefSpec(
+                commitId1.toString().substring(0, commitId1.toString().length() - 2))::call);
     }
 
     public @Test void testLargeCommitList() {

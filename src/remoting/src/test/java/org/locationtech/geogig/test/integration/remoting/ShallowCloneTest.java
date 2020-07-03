@@ -21,9 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -48,8 +46,6 @@ import com.google.common.collect.Lists;
  *
  */
 public class ShallowCloneTest extends RemoteRepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     LinkedList<RevCommit> expectedMaster;
 

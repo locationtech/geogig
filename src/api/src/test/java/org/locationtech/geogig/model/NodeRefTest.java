@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.allPathsTo;
@@ -22,18 +23,13 @@ import static org.locationtech.geogig.model.NodeRef.parentPath;
 
 import java.util.Collections;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.ImmutableList;
 
 public class NodeRefTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     /**
      * Test method for {@link org.locationtech.geogig.model.Node#parentPath(java.lang.String)}.
@@ -120,20 +116,17 @@ public class NodeRefTest {
 
     @Test
     public void testCheckValidPathNull() {
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.checkValidPath(null);
+        assertThrows(IllegalArgumentException.class, () -> NodeRef.checkValidPath(null));
     }
 
     @Test
     public void testCheckValidPathEmptyString() {
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.checkValidPath("");
+        assertThrows(IllegalArgumentException.class, () -> NodeRef.checkValidPath(""));
     }
 
     @Test
     public void testCheckValidPathPathEndingWithSeperator() {
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.checkValidPath("Points/");
+        assertThrows(IllegalArgumentException.class, () -> NodeRef.checkValidPath("Points/"));
     }
 
     @Test
@@ -162,8 +155,7 @@ public class NodeRefTest {
         fullString = NodeRef.appendChild("", "refs");
         assertEquals("refs", fullString);
         assertEquals("", NodeRef.appendChild(null, ""));
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.appendChild(null, "someValue");
+        assertThrows(IllegalArgumentException.class, () -> NodeRef.appendChild(null, "someValue"));
     }
 
     @Test
@@ -181,8 +173,7 @@ public class NodeRefTest {
         assertEquals("Points", nodeRef.getParentPath());
         assertEquals("Points/Points.1", nodeRef.path());
 
-        exception.expect(IllegalArgumentException.class);
-        new NodeRef(node, null, ObjectId.NULL);
+        assertThrows(IllegalArgumentException.class, () -> new NodeRef(node, null, ObjectId.NULL));
     }
 
     @Test
@@ -259,8 +250,7 @@ public class NodeRefTest {
         Node node2 = RevObjectFactory.defaultInstance().createNode("nonRootPath",
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null, null);
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.createRoot(node2);
+        assertThrows(IllegalArgumentException.class, () -> NodeRef.createRoot(node2));
 
     }
 
@@ -270,8 +260,7 @@ public class NodeRefTest {
                 NodeRef.split("Points/sub/points.1"));
         assertEquals(Collections.emptyList(), NodeRef.split(""));
 
-        exception.expect(NullPointerException.class);
-        NodeRef.split(null);
+        assertThrows(NullPointerException.class, () -> NodeRef.split(null));
     }
 
     @Test
@@ -286,8 +275,8 @@ public class NodeRefTest {
     public void testRemoveParent() {
         assertEquals("sub/points.1", NodeRef.removeParent("Points", "Points/sub/points.1"));
         assertEquals("points.1", NodeRef.removeParent("Points", "Points/points.1"));
-        exception.expect(IllegalArgumentException.class);
-        NodeRef.removeParent("Lines", "Points/points.1");
+        assertThrows(IllegalArgumentException.class,
+                () -> NodeRef.removeParent("Lines", "Points/points.1"));
     }
 
     @Test

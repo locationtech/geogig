@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.locationtech.geogig.feature.Feature;
@@ -58,7 +60,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
-public abstract class RepositoryTestCase extends Assert {
+public abstract class RepositoryTestCase {
 
     public static final String idL1 = "Lines.1";
 

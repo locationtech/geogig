@@ -12,7 +12,9 @@
   <artifactId>geogig-postgres</artifactId>
   <packaging>jar</packaging>
   <name>PostgreSQL Storage Backend</name>
-
+  <properties>
+    <failsafe.exclude.pattern>**/*IT</failsafe.exclude.pattern>
+  </properties>
   <build>
     <plugins>
       <plugin>
@@ -105,4 +107,12 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>postgres</id>
+      <properties>
+        <failsafe.exclude.pattern></failsafe.exclude.pattern>
+      </properties>
+    </profile>
+  </profiles>
 </project>

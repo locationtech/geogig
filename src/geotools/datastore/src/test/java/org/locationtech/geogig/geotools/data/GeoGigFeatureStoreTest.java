@@ -9,6 +9,16 @@
  */
 package org.locationtech.geogig.geotools.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,12 +32,10 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.util.factory.Hints;
+import org.hamcrest.Matchers;
 import org.hamcrest.core.IsInstanceOf;
-import org.hamcrest.core.StringContains;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.ObjectId;
@@ -50,9 +58,6 @@ import org.opengis.filter.identity.ResourceId;
 public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
     protected static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-
-    @Rule
-    public ExpectedException expected = ExpectedException.none();
 
     protected GeoGigDataStore dataStore;
 
@@ -303,9 +308,9 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
         Id filter = ff.id(Collections.singleton(ff.featureId(idP1)));
 
-        expected.expect(IOException.class);
-        expected.expectMessage("Unable to convert value for attribute pp from");
-        points.modifyFeatures("pp", "LINESTRING(1 1, 2 2)", filter);
+        Exception e = assertThrows(IOException.class,
+                () -> points.modifyFeatures("pp", "LINESTRING(1 1, 2 2)", filter));
+        assertThat(e.getMessage(), containsString("Unable to convert value for attribute pp from"));
     }
 
     @Test
@@ -319,7 +324,7 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
             points.modifyFeatures("pp", "1200", filter);
             fail("Expected IOException");
         } catch (IOException e) {
-            assertThat(e.getMessage(), StringContains.containsString("Unable to convert"));
+            assertThat(e.getMessage(), Matchers.containsString("Unable to convert"));
             assertThat(e.getCause(), IsInstanceOf.instanceOf(IllegalAttributeException.class));
         }
     }
@@ -436,9 +441,10 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
         SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
-        expected.expect(IOException.class);
-        expected.expectMessage("Tried to insert features of type 'someType' into 'Points'");
-        points.addFeatures(collection);
+        Exception e = assertThrows(IOException.class, () -> points.addFeatures(collection));
+        assertThat(e.getMessage(),
+                containsString("Tried to insert features of type 'someType' into 'Points'"));
+
     }
 
     public @Test void testAddFeaturesSubType() throws Exception {
@@ -475,9 +481,8 @@ public class GeoGigFeatureStoreTest extends RepositoryTestCase {
 
         SimpleFeatureCollection collection = collection(points1, points2, newFeature);
 
-        expected.expect(IOException.class);
-        expected.expectMessage("Attribute 'notInOriginalProp' does not exist");
-        points.addFeatures(collection);
+        Exception e = assertThrows(IOException.class, () -> points.addFeatures(collection));
+        assertThat(e.getMessage(), containsString("Attribute 'notInOriginalProp' does not exist"));
 
     }
 }

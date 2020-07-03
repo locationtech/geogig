@@ -11,6 +11,7 @@ package org.locationtech.geogig.test.integration.remoting;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -18,9 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -44,8 +43,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 
 public class PullOpTest extends RemoteRepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private LinkedList<RevCommit> expectedMaster;
 
@@ -322,8 +319,7 @@ public class PullOpTest extends RemoteRepositoryTestCase {
         // Pull the commit
         PullOp pull = pullOp();
         pull.addRefSpec("master:newbranch:newbranch2");
-        exception.expect(IllegalArgumentException.class);
-        pull.setRebase(true).call();
+        assertThrows(IllegalArgumentException.class, pull.setRebase(true)::call);
     }
 
     @Test

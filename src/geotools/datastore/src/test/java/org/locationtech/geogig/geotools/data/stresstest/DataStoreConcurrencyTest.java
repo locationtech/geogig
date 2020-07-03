@@ -10,6 +10,9 @@
 package org.locationtech.geogig.geotools.data.stresstest;
 
 import static com.google.common.collect.ImmutableList.copyOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;

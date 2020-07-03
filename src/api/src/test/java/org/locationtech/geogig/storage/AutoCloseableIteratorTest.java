@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
@@ -18,18 +19,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 public class AutoCloseableIteratorTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     static class TestAutoCloseableIterator implements AutoCloseableIterator<String> {
 
@@ -107,8 +103,7 @@ public class AutoCloseableIteratorTest {
             assertEquals("item1", filtered.next());
             assertEquals("item11", filtered.next());
             assertFalse(filtered.hasNext());
-            exception.expect(NoSuchElementException.class);
-            filtered.next();
+            assertThrows(NoSuchElementException.class, filtered::next);
 
         }
         assertTrue(closed.get());

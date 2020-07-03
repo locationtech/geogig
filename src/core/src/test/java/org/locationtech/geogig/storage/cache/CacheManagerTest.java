@@ -9,11 +9,14 @@
  */
 package org.locationtech.geogig.storage.cache;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doReturn;
@@ -29,18 +32,13 @@ import javax.management.ObjectName;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 
 import lombok.Getter;
 import lombok.Setter;
 
 public class CacheManagerTest {
-
-    @Rule
-    public ExpectedException ex = ExpectedException.none();
 
     private CacheManager cacheManager;
 
@@ -97,21 +95,21 @@ public class CacheManagerTest {
         assertNotSame(cache, cacheManager._SHARED_CACHE);
 
         doReturn(10_000L).when(cacheManager).getAbsoluteMaximumSize();
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("Cache max size must be between 0 and");
-        cacheManager.setMaximumSize(10_001);
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> cacheManager.setMaximumSize(10_001));
+        assertThat(e.getMessage(), containsString("Cache max size must be between 0 and"));
     }
 
     public @Test void getCacheSizePercentNegative() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("between zero and 90%");
-        cacheManager.getCacheSizePercent(-1);
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> cacheManager.getCacheSizePercent(-1));
+        assertThat(e.getMessage(), containsString("between zero and 90%"));
     }
 
     public @Test void getCacheSizePercentExceedsMaximumAllowed() {
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("between zero and 90%");
-        cacheManager.getCacheSizePercent(0.91);
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> cacheManager.getCacheSizePercent(0.91));
+        assertThat(e.getMessage(), containsString("between zero and 90%"));
     }
 
     public @Test void getCacheSizePercent() {
@@ -324,8 +322,8 @@ public class CacheManagerTest {
         cacheManager.setMaximumSizePercent(0.9);
         assertEquals(maxHeapSize * 0.9, cacheManager.getMaximumSize(), 1e-9);
 
-        ex.expect(IllegalArgumentException.class);
-        cacheManager.setMaximumSizePercent(0.91);
+        assertThrows(IllegalArgumentException.class,
+                () -> cacheManager.setMaximumSizePercent(0.91));
     }
 
     public @Test void acquire() {

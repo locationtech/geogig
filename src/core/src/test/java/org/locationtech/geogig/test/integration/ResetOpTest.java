@@ -9,13 +9,16 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -36,8 +39,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Suppliers;
 
 public class ResetOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
@@ -262,8 +263,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
                 .get().getObjectId());
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT).call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(ResetOp.class).addPattern(pointsName).setMode(ResetMode.SOFT)::call);
     }
 
     @Test
@@ -285,8 +286,8 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
                 .get().getObjectId());
 
-        exception.expect(UnsupportedOperationException.class);
-        repo.command(ResetOp.class).setMode(ResetMode.MERGE).call();
+        assertThrows(UnsupportedOperationException.class,
+                repo.command(ResetOp.class).setMode(ResetMode.MERGE)::call);
 
     }
 
@@ -309,15 +310,14 @@ public class ResetOpTest extends RepositoryTestCase {
         assertEquals(oId3, repo.context().stagingArea().findStaged(appendChild(pointsName, idP3))
                 .get().getObjectId());
 
-        exception.expect(UnsupportedOperationException.class);
-        repo.command(ResetOp.class).setCommit((ObjectId) null).setMode(ResetMode.KEEP).call();
+        assertThrows(UnsupportedOperationException.class, repo.command(ResetOp.class)
+                .setCommit((ObjectId) null).setMode(ResetMode.KEEP)::call);
 
     }
 
     @Test
     public void testResetNoCommits() throws Exception {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(ResetOp.class).call();
+        assertThrows(IllegalArgumentException.class, repo.command(ResetOp.class)::call);
     }
 
     @Test

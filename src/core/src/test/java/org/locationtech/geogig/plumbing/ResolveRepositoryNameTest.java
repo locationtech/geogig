@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 

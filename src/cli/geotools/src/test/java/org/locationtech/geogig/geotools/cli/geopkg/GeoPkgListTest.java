@@ -9,14 +9,13 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -29,9 +28,6 @@ import org.mockito.exceptions.base.MockitoException;
  *
  */
 public class GeoPkgListTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -66,32 +62,28 @@ public class GeoPkgListTest extends RepositoryTestCase {
     @Test
     public void testInvalidDatabaseParams() throws Exception {
         listCommand.commonArgs.database = "nonexistent.gpkg";
-        exception.expect(IllegalArgumentException.class);
-        listCommand.run(cli);
+        assertThrows(IllegalArgumentException.class, () -> listCommand.run(cli));
     }
 
     @Test
     public void testNullDataStore() throws Exception {
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
-        exception.expect(CommandFailedException.class);
-        listCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> listCommand.run(cli));
     }
 
     @Test
     public void testEmptyDataStore() throws Exception {
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createEmptyTestFactory();
-        exception.expect(CommandFailedException.class);
-        listCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> listCommand.run(cli));
     }
 
     @Test
     public void testGetNamesException() throws Exception {
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
-        exception.expect(CommandFailedException.class);
-        listCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> listCommand.run(cli));
     }
 
     @Test
@@ -99,7 +91,6 @@ public class GeoPkgListTest extends RepositoryTestCase {
         when(cli.getConsole()).thenThrow(new MockitoException("Exception"));
         listCommand.commonArgs.database = support.newFile().getAbsolutePath();
         listCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(MockitoException.class);
-        listCommand.run(cli);
+        assertThrows(MockitoException.class, () -> listCommand.run(cli));
     }
 }

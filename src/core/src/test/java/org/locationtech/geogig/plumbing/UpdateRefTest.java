@@ -9,11 +9,13 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -21,8 +23,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class UpdateRefTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         repo.context().configDatabase().put("user.name", "groldan");
@@ -47,14 +47,13 @@ public class UpdateRefTest extends RepositoryTestCase {
 
     @Test
     public void testNoName() {
-        exception.expect(IllegalStateException.class);
-        repo.command(UpdateRef.class).call();
+        assertThrows(IllegalStateException.class, repo.command(UpdateRef.class)::call);
     }
 
     @Test
     public void testNoValue() {
-        exception.expect(IllegalStateException.class);
-        repo.command(UpdateRef.class).setName(Ref.MASTER).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(UpdateRef.class).setName(Ref.MASTER)::call);
     }
 
     @Test

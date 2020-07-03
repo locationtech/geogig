@@ -14,6 +14,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -27,9 +28,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
@@ -106,9 +105,6 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
     protected Feature road2;
 
     protected Feature road3;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         citiesType = FeatureTypes.createType(citiesTypeName.toString(), citiesTypeSpec.split(","));
@@ -655,8 +651,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         createFilterFile(filter);
 
         CloneOp clone = cloneOp();
-        exception.expect(IllegalArgumentException.class);
-        clone.setRemoteURI(originRepo.getLocation()).call();
+        assertThrows(IllegalArgumentException.class,
+                clone.setRemoteURI(originRepo.getLocation())::call);
     }
 
     @Test
@@ -667,8 +663,8 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
 
         CloneOp clone = cloneOp();
         clone.setDepth(3).setBranch("master");
-        exception.expect(IllegalStateException.class);
-        clone.setRemoteURI(originRepo.getLocation()).call();
+        assertThrows(IllegalStateException.class,
+                clone.setRemoteURI(originRepo.getLocation())::call);
     }
 
     private void setupSparseClone() throws Exception {

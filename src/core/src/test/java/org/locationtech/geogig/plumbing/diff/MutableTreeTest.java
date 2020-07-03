@@ -9,15 +9,21 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.ROOT;
 import static org.locationtech.geogig.model.ObjectId.NULL;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -29,14 +35,11 @@ import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
-public class MutableTreeTest extends Assert {
+public class MutableTreeTest {
 
     ObjectStore store;
 
     MutableTree root;
-
-    @Rule
-    public ExpectedException ex = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -98,9 +101,8 @@ public class MutableTreeTest extends Assert {
         assertNotNull(root.getChild("roads"));
         assertNull(root.removeChild("nonExistent"));
         assertNotNull(root.removeChild("roads"));
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("No child named roads exists");
-        root.getChild("roads");
+        Exception e = assertThrows(IllegalArgumentException.class, () -> root.getChild("roads"));
+        assertThat(e.getMessage(), containsString("No child named roads exists"));
     }
 
     @Test
@@ -114,10 +116,9 @@ public class MutableTreeTest extends Assert {
         assertNotNull(root.getChild("roads"));
         assertNotNull(root.getChild("roads/highways"));
 
-        ex.expect(IllegalArgumentException.class);
-        ex.expectMessage("No child named streets exists");
-        root.getChild("roads/streets");
-
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> root.getChild("roads/streets"));
+        assertThat(e.getMessage(), containsString("No child named streets exists"));
     }
 
     @Test

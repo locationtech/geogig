@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;

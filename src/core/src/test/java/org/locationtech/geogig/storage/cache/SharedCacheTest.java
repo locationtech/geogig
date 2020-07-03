@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -22,9 +23,7 @@ import java.util.concurrent.Future;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
@@ -40,9 +39,6 @@ public abstract class SharedCacheTest {
     private CacheIdentifier repo1Id, repo2Id;
 
     private ObjectStore store;
-
-    @Rule
-    public ExpectedException ex = ExpectedException.none();
 
     private RevTree obj;
 
@@ -64,8 +60,7 @@ public abstract class SharedCacheTest {
     }
 
     public @Test void testBuildPrecondition() {
-        ex.expect(IllegalArgumentException.class);
-        createCache(10, -1);
+        assertThrows(IllegalArgumentException.class, () -> createCache(10, -1));
     }
 
     public @Test void testCacheDisabled() {

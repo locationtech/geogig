@@ -9,6 +9,14 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.appendChild;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -19,9 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
@@ -60,8 +66,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public class MergeOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private static final String COMMITTER_NAME = "groldan";
 
@@ -620,8 +624,8 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
         repo.command(MergeOp.class).addCommit(branch1.getObjectId()).call();
 
-        exception.expect(NothingToCommitException.class);
-        repo.command(MergeOp.class).addCommit(branch1.getObjectId()).call();
+        assertThrows(NothingToCommitException.class,
+                repo.command(MergeOp.class).addCommit(branch1.getObjectId())::call);
     }
 
     @Test
@@ -755,8 +759,7 @@ public class MergeOpTest extends RepositoryTestCase {
         Ref branch = repo.command(RefParse.class).setName("TestBranch").call().get();
         MergeOp mergeOp = repo.command(MergeOp.class).addCommit(branch.getObjectId());
         mergeOp.setFastForwardOnly(true);
-        exception.expect(IllegalStateException.class);
-        mergeOp.call();
+        assertThrows(IllegalStateException.class, mergeOp::call);
     }
 
     @Test
@@ -829,14 +832,13 @@ public class MergeOpTest extends RepositoryTestCase {
 
     @Test
     public void testMergeNoCommits() throws Exception {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(MergeOp.class).call();
+        assertThrows(IllegalArgumentException.class, repo.command(MergeOp.class)::call);
     }
 
     @Test
     public void testMergeNullCommit() throws Exception {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(MergeOp.class).addCommit(ObjectId.NULL).call();
+        assertThrows(IllegalArgumentException.class,
+                repo.command(MergeOp.class).addCommit(ObjectId.NULL)::call);
     }
 
     @Test
@@ -1198,9 +1200,9 @@ public class MergeOpTest extends RepositoryTestCase {
         repo.command(CheckoutOp.class).setSource("master").call();
         Ref branch = repo.command(RefParse.class).setName("TestBranch").call().get();
 
-        exception.expect(MergeConflictsException.class);
-        exception.expectMessage("Merge conflict in polygons/polyId");
-        repo.command(MergeOp.class).addCommit(branch.getObjectId()).call();
+        MergeConflictsException e = assertThrows(MergeConflictsException.class,
+                repo.command(MergeOp.class).addCommit(branch.getObjectId())::call);
+        assertThat(e.getMessage(), containsString("Merge conflict in polygons/polyId"));
     }
 
     @Test

@@ -9,6 +9,14 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -20,9 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -47,9 +53,6 @@ public class CreateIndexOpTest extends RepositoryTestCase {
     private Node worldPointsLayer;
 
     private RevTree worldPointsTree;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
@@ -255,61 +258,56 @@ public class CreateIndexOpTest extends RepositoryTestCase {
 
     @Test
     public void testCreateIndexNoTreeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("treeName not provided");
-        repo.command(CreateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(CreateIndexOp.class)//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setAttributeName("geom")//
                 .setIndexType(IndexType.QUADTREE)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("treeName not provided"));
     }
 
     @Test
     public void testCreateIndexNoCanonicalTypeTree() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("canonicalTypeTree not provided");
-        repo.command(CreateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setAttributeName("geom")//
                 .setIndexType(IndexType.QUADTREE)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("canonicalTypeTree not provided"));
     }
 
     @Test
     public void testCreateIndexNoFeatureTypeId() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("featureTypeId not provided");
-        repo.command(CreateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setAttributeName("geom")//
                 .setIndexType(IndexType.QUADTREE)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("featureTypeId not provided"));
     }
 
     @Test
     public void testCreateIndexNoAttributeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("attributeName not provided");
-        repo.command(CreateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setIndexType(IndexType.QUADTREE)//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("attributeName not provided"));
     }
 
     @Test
     public void testCreateIndexNoIndexType() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("indexType not provided");
-        repo.command(CreateIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(CreateIndexOp.class)//
                 .setTreeName(worldPointsLayer.getName())//
                 .setCanonicalTypeTree(worldPointsTree)//
                 .setFeatureTypeId(worldPointsLayer.getMetadataId().get())//
                 .setAttributeName("geom")//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("indexType not provided"));
     }
 }

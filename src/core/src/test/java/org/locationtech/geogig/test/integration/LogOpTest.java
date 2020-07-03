@@ -10,6 +10,13 @@
 package org.locationtech.geogig.test.integration;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.locationtech.geogig.porcelain.CheckoutResult.Results.CHECKOUT_LOCAL_BRANCH;
 
 import java.util.ArrayList;
@@ -23,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.MatcherAssert;
-import org.hamcrest.core.StringContains;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.locationtech.geogig.dsl.Commands;
 import org.locationtech.geogig.dsl.Geogig;
@@ -407,7 +414,7 @@ public class LogOpTest extends RepositoryTestCase {
             logOp.setSince(null).setUntil(oid2_2).call();
             fail("Expected ISE as until is not a commit");
         } catch (IllegalArgumentException e) {
-            assertThat(e.getMessage(), StringContains.containsString("until"));
+            assertThat(e.getMessage(), Matchers.containsString("until"));
         }
 
         List<RevCommit> logs;

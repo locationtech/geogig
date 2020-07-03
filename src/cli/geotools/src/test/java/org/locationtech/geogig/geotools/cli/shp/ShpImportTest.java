@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.geotools.cli.shp;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -16,9 +17,7 @@ import java.util.ArrayList;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -32,9 +31,6 @@ import org.mockito.exceptions.base.MockitoException;
  *
  */
 public class ShpImportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -71,16 +67,14 @@ public class ShpImportTest extends RepositoryTestCase {
     @Test
     public void testImportNullShapefileList() throws Exception {
         ShpImport importCommand = new ShpImport();
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
     @Test
     public void testImportEmptyShapefileList() throws Exception {
         ShpImport importCommand = new ShpImport();
         importCommand.files = new ArrayList<String>();
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -89,8 +83,7 @@ public class ShpImportTest extends RepositoryTestCase {
         ShpImport importCommand = new ShpImport();
         importCommand.files = new ArrayList<String>();
         importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
-        exception.expect(MockitoException.class);
-        importCommand.run(cli);
+        assertThrows(MockitoException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -99,8 +92,7 @@ public class ShpImportTest extends RepositoryTestCase {
         importCommand.files = new ArrayList<String>();
         importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createFactoryWithGetNamesException();
-        exception.expect(CommandFailedException.class);
-        importCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -109,8 +101,7 @@ public class ShpImportTest extends RepositoryTestCase {
         importCommand.files = new ArrayList<String>();
         importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createFactoryWithGetFeatureSourceException();
-        exception.expect(CommandFailedException.class);
-        importCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> importCommand.run(cli));
     }
 
     @Test
@@ -138,8 +129,7 @@ public class ShpImportTest extends RepositoryTestCase {
         importCommand.files.add(ShpImport.class.getResource("shape.shp").getFile());
         importCommand.dataStoreFactory = TestHelper.createTestFactory();
         importCommand.fidAttribute = "wrong";
-        exception.expect(InvalidParameterException.class);
-        importCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> importCommand.run(cli));
     }
 
 }

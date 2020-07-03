@@ -9,6 +9,11 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -19,9 +24,7 @@ import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
@@ -32,8 +35,6 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 // TODO: Not sure if this belongs in porcelain or integration
 
 public class ConfigOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Before
     public final void setUpInternal() {
@@ -136,10 +137,8 @@ public class ConfigOpTest extends RepositoryTestCase {
         when(database.getAll()).thenThrow(new ConfigException(StatusCode.INVALID_LOCATION));
         ConfigOp config = new ConfigOp(database);
 
-        exception.expect(ConfigException.class);
-
-        config.setScope(ConfigScope.LOCAL).setAction(ConfigAction.CONFIG_LIST).setName(null)
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.LOCAL)
+                .setAction(ConfigAction.CONFIG_LIST).setName(null).setValue(null)::call);
     }
 
     @Test
@@ -148,90 +147,81 @@ public class ConfigOpTest extends RepositoryTestCase {
         when(database.get(anyString())).thenThrow(new ConfigException(StatusCode.INVALID_LOCATION));
         ConfigOp config = new ConfigOp(database);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.LOCAL).setAction(ConfigAction.CONFIG_GET).setName("section.key")
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.LOCAL)
+                .setAction(ConfigAction.CONFIG_GET).setName("section.key").setValue(null)::call);
     }
 
     @Test
     public void testNullNameValuePairForGet() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_GET).setName(null)
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_GET).setName(null).setValue(null)::call);
     }
 
     @Test
     public void testEmptyNameAndValueForGet() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_GET).setName("")
-                .setValue("").call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_GET).setName("").setValue("")::call);
     }
 
     @Test
     public void testEmptyNameAndValueForSet() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_SET).setName("")
-                .setValue("").call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_SET).setName("").setValue("")::call);
     }
 
     @Test
     public void testEmptyNameForUnset() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_UNSET).setName("")
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_UNSET).setName("").setValue(null)::call);
     }
 
     @Test
     public void testEmptyNameForRemoveSection() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_REMOVE_SECTION)
-                .setName("").call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_REMOVE_SECTION).setName("")::call);
     }
 
     @Test
     public void testNoNameForSet() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_SET).setName(null)
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_SET).setName(null).setValue(null)::call);
     }
 
     @Test
     public void testNoNameForUnset() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_UNSET).setName(null)
-                .setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_UNSET).setName(null).setValue(null)::call);
     }
 
     @Test
     public void testNoNameForRemoveSection() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_REMOVE_SECTION)
-                .setName(null).setValue(null).call();
+        assertThrows(ConfigException.class, config.setScope(ConfigScope.GLOBAL)
+                .setAction(ConfigAction.CONFIG_REMOVE_SECTION).setName(null).setValue(null)::call);
     }
 
     @Test
     public void testRemovingMissingSection() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_REMOVE_SECTION)
-                .setName("unusedsectionname").setValue(null).call();
+        assertThrows(ConfigException.class,
+                config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_REMOVE_SECTION)
+                        .setName("unusedsectionname").setValue(null)::call);
     }
 
     @Test
@@ -246,9 +236,9 @@ public class ConfigOpTest extends RepositoryTestCase {
     public void testTooManyArguments() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_GET).setName("too.many")
-                .setValue("arguments").call();
+        assertThrows(ConfigException.class,
+                config.setScope(ConfigScope.GLOBAL).setAction(ConfigAction.CONFIG_GET)
+                        .setName("too.many").setValue("arguments")::call);
     }
 
     @Test
@@ -261,9 +251,8 @@ public class ConfigOpTest extends RepositoryTestCase {
     public void testNoAction() {
         final ConfigOp config = repo.command(ConfigOp.class);
 
-        exception.expect(ConfigException.class);
-        config.setAction(ConfigAction.CONFIG_NO_ACTION).setName("section.key").setValue(null)
-                .call();
+        assertThrows(ConfigException.class, config.setAction(ConfigAction.CONFIG_NO_ACTION)
+                .setName("section.key").setValue(null)::call);
     }
 
     @Test

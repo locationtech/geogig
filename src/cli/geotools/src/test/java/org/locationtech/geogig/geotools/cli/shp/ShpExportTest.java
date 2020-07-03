@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.geotools.cli.shp;
 
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.util.Arrays;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -27,9 +28,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class ShpExportTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     private GeogigCLI cli;
 
@@ -67,8 +65,7 @@ public class ShpExportTest extends RepositoryTestCase {
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("Points", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
 
         deleteShapeFile(shapeFileName);
     }
@@ -78,8 +75,7 @@ public class ShpExportTest extends RepositoryTestCase {
         ShpExport exportCommand = new ShpExport();
         exportCommand.args = Arrays.asList();
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -87,8 +83,7 @@ public class ShpExportTest extends RepositoryTestCase {
         ShpExport exportCommand = new ShpExport();
         exportCommand.args = Arrays.asList("TestPoints.shp");
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -110,8 +105,7 @@ public class ShpExportTest extends RepositoryTestCase {
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList(null, shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -121,8 +115,7 @@ public class ShpExportTest extends RepositoryTestCase {
                 .getAbsolutePath();
         exportCommand.args = Arrays.asList("invalidType", shapeFileName);
         exportCommand.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(InvalidParameterException.class);
-        exportCommand.run(cli);
+        assertThrows(InvalidParameterException.class, () -> exportCommand.run(cli));
     }
 
     @Test
@@ -168,8 +161,7 @@ public class ShpExportTest extends RepositoryTestCase {
         ShpExport exportCommand = new ShpExport();
         exportCommand.args = Arrays.asList();
         exportCommand.dataStoreFactory = TestHelper.createNullTestFactory();
-        exception.expect(CommandFailedException.class);
-        exportCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> exportCommand.run(cli));
     }
 
     @Test

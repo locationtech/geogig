@@ -11,28 +11,23 @@ package org.locationtech.geogig.geotools.plumbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.geotools.TestHelper;
 
 public class DescribeOpTest {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testNullDataStore() throws Exception {
         DescribeOp describe = new DescribeOp();
         describe.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        describe.call();
+        assertThrows(GeoToolsOpException.class, describe::call);
     }
 
     @Test
@@ -40,8 +35,7 @@ public class DescribeOpTest {
         DescribeOp describe = new DescribeOp();
         describe.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
-        exception.expect(GeoToolsOpException.class);
-        describe.call();
+        assertThrows(GeoToolsOpException.class, describe::call);
     }
 
     @Test
@@ -50,8 +44,7 @@ public class DescribeOpTest {
         describe.setTable("");
         describe.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
-        exception.expect(GeoToolsOpException.class);
-        describe.call();
+        assertThrows(GeoToolsOpException.class, describe::call);
     }
 
     @Test
@@ -70,8 +63,7 @@ public class DescribeOpTest {
         describe.setDataStore(TestHelper.createFactoryWithGetNamesException()
                 .createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        describe.call();
+        assertThrows(GeoToolsOpException.class, describe::call);
     }
 
     @Test
@@ -80,8 +72,7 @@ public class DescribeOpTest {
         describe.setDataStore(TestHelper.createFactoryWithGetFeatureSourceException()
                 .createDataStore(Collections.emptyMap()));
         describe.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        describe.call();
+        assertThrows(GeoToolsOpException.class, describe::call);
     }
 
     @Test

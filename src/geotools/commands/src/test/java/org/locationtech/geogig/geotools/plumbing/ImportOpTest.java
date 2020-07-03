@@ -9,6 +9,12 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -26,9 +32,7 @@ import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.TestHelper;
 import org.locationtech.geogig.geotools.adapt.GT;
@@ -63,15 +67,11 @@ import lombok.NonNull;
 
 public class ImportOpTest extends RepositoryTestCase {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Test
     public void testNullDataStore() throws Exception {
         ImportOp importOp = repo.command(ImportOp.class);
         importOp.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -80,8 +80,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -91,8 +90,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setAll(false);
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -112,8 +110,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setAll(true);
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -123,8 +120,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
         importOp.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -133,8 +129,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDataStore(
                 TestHelper.createEmptyTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -144,8 +139,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
         importOp.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -155,8 +149,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .createDataStore(Collections.emptyMap()));
         importOp.setAll(false);
         importOp.setTable("table1");
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test
@@ -400,8 +393,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.setDataStore(
                 TestHelper.createTestFactory().createDataStore(Collections.emptyMap()));
         importOp.setAll(true);
-        exception.expect(GeoToolsOpException.class);
-        importOp.call();
+        assertThrows(GeoToolsOpException.class, importOp::call);
     }
 
     @Test

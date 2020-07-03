@@ -22,7 +22,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
@@ -35,10 +34,6 @@ import org.mockito.exceptions.base.MockitoException;
  *
  */
 public class GeoPkgDescribeTest extends Assert {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
@@ -77,8 +72,7 @@ public class GeoPkgDescribeTest extends Assert {
     public void testInvalidDatabaseParams() throws Exception {
         describeCommand.commonArgs.database = "nonexistent.gpkg";
         describeCommand.table = "table1";
-        exception.expect(IllegalArgumentException.class);
-        describeCommand.run(cli);
+        assertThrows(IllegalArgumentException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -86,8 +80,7 @@ public class GeoPkgDescribeTest extends Assert {
         describeCommand.commonArgs.database = support.createDefaultTestData().getAbsolutePath();
         describeCommand.table = "nonexistent";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -95,8 +88,7 @@ public class GeoPkgDescribeTest extends Assert {
         describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -104,8 +96,7 @@ public class GeoPkgDescribeTest extends Assert {
         describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createNullTestFactory();
-        exception.expect(CommandFailedException.class);
-        describeCommand.run(cli);
+        assertThrows(CommandFailedException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -114,8 +105,7 @@ public class GeoPkgDescribeTest extends Assert {
         describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(MockitoException.class);
-        describeCommand.run(cli);
+        assertThrows(MockitoException.class, () -> describeCommand.run(cli));
     }
 
     @Test
@@ -124,8 +114,7 @@ public class GeoPkgDescribeTest extends Assert {
         describeCommand.commonArgs.database = support.newFile().getAbsolutePath();
         describeCommand.table = "table1";
         describeCommand.support.dataStoreFactory = TestHelper.createTestFactory();
-        exception.expect(Exception.class);
-        describeCommand.run(cli);
+        assertThrows(RuntimeException.class, () -> describeCommand.run(cli));
     }
 
     private void setUpGeogig(GeogigCLI cli) throws Exception {

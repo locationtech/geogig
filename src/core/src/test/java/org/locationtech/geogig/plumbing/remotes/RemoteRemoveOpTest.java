@@ -9,12 +9,14 @@
  */
 package org.locationtech.geogig.plumbing.remotes;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+
 import java.util.Optional;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -26,9 +28,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class RemoteRemoveOpTest extends RepositoryTestCase {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Before
     public final void setUpInternal() {
     }
@@ -36,25 +35,19 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
     @Test
     public void testNullName() {
         final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
-
-        exception.expect(RemoteException.class);
-        remoteRemove.setName(null).call();
+        assertThrows(RemoteException.class, remoteRemove.setName(null)::call);
     }
 
     @Test
     public void testEmptyName() {
         final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
-
-        exception.expect(RemoteException.class);
-        remoteRemove.setName("").call();
+        assertThrows(RemoteException.class, remoteRemove.setName("")::call);
     }
 
     @Test
     public void testRemoveNoRemotes() {
         final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
-
-        exception.expect(RemoteException.class);
-        remoteRemove.setName("remote").call();
+        assertThrows(RemoteException.class, remoteRemove.setName("remote")::call);
     }
 
     @Test
@@ -73,8 +66,7 @@ public class RemoteRemoveOpTest extends RepositoryTestCase {
 
         final RemoteRemoveOp remoteRemove = repo.command(RemoteRemoveOp.class);
 
-        exception.expect(RemoteException.class);
-        remoteRemove.setName("nonexistent").call();
+        assertThrows(RemoteException.class, remoteRemove.setName("nonexistent")::call);
     }
 
     @Test

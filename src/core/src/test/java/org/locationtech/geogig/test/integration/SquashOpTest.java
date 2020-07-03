@@ -9,14 +9,17 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -33,9 +36,6 @@ import org.locationtech.geogig.porcelain.SquashOp;
 import com.google.common.collect.Lists;
 
 public class SquashOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testSquash() throws Exception {
@@ -170,8 +170,8 @@ public class SquashOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insert(points2);
-        exception.expect(IllegalStateException.class);
-        repo.command(SquashOp.class).setSince(c1).setUntil(c1).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(SquashOp.class).setSince(c1).setUntil(c1)::call);
     }
 
     @Test
@@ -180,8 +180,8 @@ public class SquashOpTest extends RepositoryTestCase {
         RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         insertAndAdd(points2);
-        exception.expect(IllegalStateException.class);
-        repo.command(SquashOp.class).setSince(c1).setUntil(c1).call();
+        assertThrows(IllegalStateException.class,
+                repo.command(SquashOp.class).setSince(c1).setUntil(c1)::call);
     }
 
     @Test

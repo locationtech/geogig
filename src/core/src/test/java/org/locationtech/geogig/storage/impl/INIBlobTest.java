@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.storage.impl;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.Map;
 

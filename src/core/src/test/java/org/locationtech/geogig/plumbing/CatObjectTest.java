@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.FieldType;

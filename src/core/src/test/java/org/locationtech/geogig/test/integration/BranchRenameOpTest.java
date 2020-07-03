@@ -9,11 +9,16 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Optional;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -26,9 +31,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 
 public class BranchRenameOpTest extends RepositoryTestCase {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     protected @Override void setUpInternal() throws Exception {
         repo.context().configDatabase().put("user.name", "groldan");
         repo.context().configDatabase().put("user.email", "groldan@test.com");
@@ -36,21 +38,21 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
     @Test
     public void NoBranchNameTest() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchRenameOp.class).call();
+        assertThrows(IllegalArgumentException.class, repo.command(BranchRenameOp.class)::call);
     }
 
     @Test
     public void InvalidBranchNameTest() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Component of ref cannot have two consecutive dots (..) anywhere.");
-        repo.command(BranchRenameOp.class).setNewName("ma..er").call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                repo.command(BranchRenameOp.class).setNewName("ma..er")::call);
+        assertThat(e.getMessage(),
+                containsString("Component of ref cannot have two consecutive dots (..) anywhere."));
     }
 
     @Test
     public void SameNameTest() {
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchRenameOp.class).setNewName("master").setOldName("master").call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                repo.command(BranchRenameOp.class).setNewName("master").setOldName("master")::call);
     }
 
     @Test
@@ -180,7 +182,7 @@ public class BranchRenameOpTest extends RepositoryTestCase {
 
         assertEquals(TestBranch1.getObjectId(), SuperTestBranch.getObjectId());
 
-        exception.expect(IllegalArgumentException.class);
-        repo.command(BranchRenameOp.class).setNewName("master").call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                repo.command(BranchRenameOp.class).setNewName("master")::call);
     }
 }

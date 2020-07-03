@@ -9,14 +9,20 @@
  */
 package org.locationtech.geogig.porcelain.index;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,9 +45,6 @@ public class DropIndexOpTest extends RepositoryTestCase {
     private Node worldPointsLayer;
 
     private RevTree worldPointsTree;
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         Repository repository = getRepository();
@@ -119,40 +122,38 @@ public class DropIndexOpTest extends RepositoryTestCase {
 
     @Test
     public void testDropIndexNoTreeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Tree ref spec not provided.");
-        repo.command(DropIndexOp.class).call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                repo.command(DropIndexOp.class)::call);
+        assertThat(e.getMessage(), containsString("Tree ref spec not provided."));
     }
 
     @Test
     public void testDropIndexWrongTreeName() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't find feature tree 'nonexistent'");
-        repo.command(DropIndexOp.class)//
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(DropIndexOp.class)//
                 .setTreeRefSpec("nonexistent")//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("Can't find feature tree 'nonexistent'"));
     }
 
     @Test
     public void testDropIndexWrongAttributeName() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("A matching index could not be found.");
-        repo.command(DropIndexOp.class)//
+        Exception e = assertThrows(IllegalStateException.class, repo.command(DropIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setAttributeName("xystr")//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString("A matching index could not be found."));
     }
 
     @Test
     public void testDropMultipleMatchingIndexes() {
         indexdb.createIndexInfo(worldPointsLayer.getName(), "x", IndexType.QUADTREE, null);
         indexdb.createIndexInfo(worldPointsLayer.getName(), "y", IndexType.QUADTREE, null);
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(
-                "Multiple indexes were found for the specified tree, please specify the attribute.");
-        repo.command(DropIndexOp.class)//
+
+        Exception e = assertThrows(IllegalStateException.class, repo.command(DropIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .call();
+        ::call);
+        assertThat(e.getMessage(), containsString(
+                "Multiple indexes were found for the specified tree, please specify the attribute."));
     }
 
 }

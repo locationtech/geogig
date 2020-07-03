@@ -14,14 +14,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.ObjectId;
 
 public class ConflictTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testConstructorAndAccessors() {

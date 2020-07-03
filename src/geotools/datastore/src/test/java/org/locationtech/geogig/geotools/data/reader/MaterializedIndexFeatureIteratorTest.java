@@ -9,6 +9,9 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;

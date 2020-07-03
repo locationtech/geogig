@@ -10,15 +10,18 @@
 package org.locationtech.geogig.plumbing;
 
 import static com.google.common.collect.Lists.newCopyOnWriteArrayList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -71,33 +74,29 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         }
     };
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     protected @Override void setUpInternal() throws Exception {
         // do nothing, call populate() where needed
     }
 
     @Test
     public void testListenerNotProvided() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Listener not provided");
-        repo.command(WalkGraphOp.class).setReference("HEAD").call();
+        Exception e = assertThrows(IllegalStateException.class,
+                repo.command(WalkGraphOp.class).setReference("HEAD")::call);
+        assertThat(e.getMessage(), containsString("Listener not provided"));
     }
 
     @Test
     public void testRefNotProvided() {
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Reference not provided");
-        repo.command(WalkGraphOp.class).setListener(new AccumulatingListener()).call();
+        Exception e = assertThrows(IllegalStateException.class,
+                repo.command(WalkGraphOp.class).setListener(new AccumulatingListener())::call);
+        assertThat(e.getMessage(), containsString("Reference not provided"));
     }
 
     @Test
     public void testInvalidReference() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Can't resolve reference ");
-        repo.command(WalkGraphOp.class).setListener(new AccumulatingListener())
-                .setReference("bad_ref").call();
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(WalkGraphOp.class)
+                .setListener(new AccumulatingListener()).setReference("bad_ref")::call);
+        assertThat(e.getMessage(), containsString("Can't resolve reference "));
     }
 
     @Test
@@ -111,18 +110,16 @@ public class WalkGraphOpTest extends RepositoryTestCase {
             notATreeRef = featureRef.get().toString();
         }
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("can't be resolved to a tree");
-        repo.command(WalkGraphOp.class).setListener(new AccumulatingListener())
-                .setReference(notATreeRef).call();
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(WalkGraphOp.class)
+                .setListener(new AccumulatingListener()).setReference(notATreeRef)::call);
+        assertThat(e.getMessage(), containsString("can't be resolved to a tree"));
     }
 
     @Test
     public void testEmptyHead() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("does not exist");
-        repo.command(WalkGraphOp.class).setListener(new AccumulatingListener()).setReference("HEAD")
-                .call();
+        Exception e = assertThrows(IllegalArgumentException.class, repo.command(WalkGraphOp.class)
+                .setListener(new AccumulatingListener()).setReference("HEAD")::call);
+        assertThat(e.getMessage(), containsString("does not exist"));
     }
 
     @Test
@@ -163,11 +160,11 @@ public class WalkGraphOpTest extends RepositoryTestCase {
         ObjectId oid = point1Oid.get();
         repo.context().objectDatabase().delete(oid);
 
-        String expected = "Object NodeRef[Points/Points.1 -> " + oid + "] not found.";
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(expected);
-
         AccumulatingListener listener = new AccumulatingListener();
-        repo.command(WalkGraphOp.class).setReference("HEAD").setListener(listener).call();
+        Exception e = assertThrows(IllegalStateException.class,
+                repo.command(WalkGraphOp.class).setReference("HEAD").setListener(listener)::call);
+
+        String expected = "Object NodeRef[Points/Points.1 -> " + oid + "] not found.";
+        assertThat(e.getMessage(), containsString(expected));
     }
 }

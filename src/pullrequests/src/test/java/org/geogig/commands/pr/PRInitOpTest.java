@@ -9,11 +9,14 @@
  */
 package org.geogig.commands.pr;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
@@ -22,7 +25,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -35,8 +37,6 @@ import org.locationtech.geogig.transaction.TransactionResolve;
 import com.google.common.collect.Iterators;
 
 public class PRInitOpTest {
-
-    public @Rule ExpectedException ex = ExpectedException.none();
 
     public @Rule PullRequestsTestSupport testSupport = new PullRequestsTestSupport();
 
@@ -250,8 +250,10 @@ public class PRInitOpTest {
         PRStatus status = repo.command(PRMergeOp.class).setId(request.getId()).call();
         assertTrue(status.isMerged());
 
-        ex.expect(IllegalStateException.class);
-        ex.expectMessage("already merged");
-        repo.command(PRInitOp.class).setId(request.getId()).call();
+        assertThat(
+                assertThrows(IllegalStateException.class,
+                        repo.command(PRInitOp.class).setId(request.getId())::call).getMessage(),
+                containsString("already merged"));
+
     }
 }

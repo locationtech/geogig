@@ -9,13 +9,18 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.Optional;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -39,8 +44,6 @@ import org.locationtech.geogig.porcelain.NothingToCommitException;
 import com.google.common.base.Suppliers;
 
 public class CherryPickOpTest extends RepositoryTestCase {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
         // These values should be used during a commit to set author/committer
@@ -217,8 +220,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
     public void testCherryPickInvalidCommit() throws Exception {
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
         cherryPick.setCommit(Suppliers.ofInstance(ObjectId.NULL));
-        exception.expect(IllegalArgumentException.class);
-        cherryPick.call();
+        assertThrows(IllegalArgumentException.class, cherryPick::call);
     }
 
     @Test
@@ -237,8 +239,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
         cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
-        exception.expect(IllegalStateException.class);
-        cherryPick.call();
+        assertThrows(IllegalStateException.class, cherryPick::call);
     }
 
     @Test
@@ -257,8 +258,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
         cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
-        exception.expect(IllegalStateException.class);
-        cherryPick.call();
+        assertThrows(IllegalStateException.class, cherryPick::call);
     }
 
     @Ignore
@@ -298,7 +298,6 @@ public class CherryPickOpTest extends RepositoryTestCase {
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
         cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
-        exception.expect(NothingToCommitException.class);
-        cherryPick.call();
+        assertThrows(NothingToCommitException.class, cherryPick::call);
     }
 }

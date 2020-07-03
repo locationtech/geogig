@@ -11,19 +11,16 @@ package org.locationtech.geogig.model;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.RevObject.TYPE;
 
 import com.google.common.primitives.UnsignedLong;
 
 public class CanonicalNodeOrderTest {
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Test
     public void testNodeOrder() {
@@ -64,8 +61,8 @@ public class CanonicalNodeOrderTest {
             assertTrue(e instanceof IllegalArgumentException);
         }
 
-        exception.expect(IllegalArgumentException.class);
-        CanonicalNodeOrder.INSTANCE.bucket(node, -1);
+        assertThrows(IllegalArgumentException.class,
+                () -> CanonicalNodeOrder.INSTANCE.bucket(node, -1));
     }
 
     @Test
@@ -79,8 +76,8 @@ public class CanonicalNodeOrderTest {
         assertEquals(256, CanonicalNodeNameOrder.normalizedSizeLimit(6));
         assertEquals(256, CanonicalNodeNameOrder.normalizedSizeLimit(7));
 
-        exception.expect(IllegalArgumentException.class);
-        CanonicalNodeNameOrder.normalizedSizeLimit(-1);
+        assertThrows(IllegalArgumentException.class,
+                () -> CanonicalNodeNameOrder.normalizedSizeLimit(-1));
     }
 
     @Test
@@ -135,7 +132,7 @@ public class CanonicalNodeOrderTest {
         assertEquals(2, CanonicalNodeNameOrder.maxBucketsForLevel(9));
         assertEquals(2, CanonicalNodeNameOrder.maxBucketsForLevel(10));
 
-        exception.expect(IllegalArgumentException.class);
-        CanonicalNodeNameOrder.maxBucketsForLevel(-1);
+        assertThrows(IllegalArgumentException.class,
+                () -> CanonicalNodeNameOrder.maxBucketsForLevel(-1));
     }
 }

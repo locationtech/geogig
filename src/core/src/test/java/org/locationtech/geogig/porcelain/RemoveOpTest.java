@@ -9,14 +9,21 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
@@ -33,9 +40,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 public class RemoveOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
     }
@@ -187,28 +191,29 @@ public class RemoveOpTest extends RepositoryTestCase {
 
     @Test
     public void testPathsPrecondition() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("No paths to remove were indicated");
-        repo.command(RemoveOp.class).call();
+        assertThat(assertThrows(IllegalArgumentException.class, repo.command(RemoveOp.class)::call)
+                .getMessage(), containsString("No paths to remove were indicated"));
     }
 
     @Test
     public void testTruncateAndRecursivePrecondition() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("recursive and truncate arguments are mutually exclusive");
-        repo.command(RemoveOp.class).addPathToRemove("tree").setRecursive(true).setTruncate(true)
-                .call();
+        assertThat(
+                assertThrows(IllegalArgumentException.class,
+                        repo.command(RemoveOp.class).addPathToRemove("tree").setRecursive(true)
+                                .setTruncate(true)::call).getMessage(),
+                containsString("recursive and truncate arguments are mutually exclusive"));
     }
 
     @Test
     public void testTruncateOrRecursivePrecondition() throws Exception {
         insertAndAdd(points1);
 
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage(
-                "Cannot remove tree " + pointsName + " if recursive or truncate is not specified");
-        repo.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(false)
-                .setTruncate(false).call();
+        assertThat(
+                assertThrows(IllegalArgumentException.class,
+                        repo.command(RemoveOp.class).addPathToRemove(pointsName).setRecursive(false)
+                                .setTruncate(false)::call).getMessage(),
+                containsString("Cannot remove tree " + pointsName
+                        + " if recursive or truncate is not specified"));
     }
 
     @Test

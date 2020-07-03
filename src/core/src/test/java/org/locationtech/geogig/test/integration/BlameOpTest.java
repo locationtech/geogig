@@ -9,12 +9,14 @@
  */
 package org.locationtech.geogig.test.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.util.Collection;
 import java.util.Map;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevCommit;
@@ -26,9 +28,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ValueAndCommit;
 
 public class BlameOpTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     protected @Override void setUpInternal() throws Exception {
 

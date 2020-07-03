@@ -10,14 +10,17 @@
 package org.locationtech.geogig.plumbing;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureTypes;
 import org.locationtech.geogig.model.DiffEntry;
@@ -44,11 +47,9 @@ import com.google.common.collect.Iterators;
 /**
  *
  */
-public class DiffTreeTest extends Assert {
+public class DiffTreeTest {
 
     public @Rule TestRepository testRepo = new TestRepository();
-
-    public @Rule ExpectedException exception = ExpectedException.none();
 
     private DiffTree diffTree;
 
@@ -71,28 +72,27 @@ public class DiffTreeTest extends Assert {
 
     @Test
     public void testNoOldVersionSet() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("old version");
-        diffTree.call();
+        Exception e = assertThrows(IllegalArgumentException.class, () -> diffTree.call());
+        assertThat(e.getMessage(), containsString("old version"));
     }
 
     @Test
     public void testNoNewVersionSet() {
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("new version");
-        diffTree.setOldVersion(Ref.HEAD).call();
+        Exception e = assertThrows(IllegalArgumentException.class,
+                () -> diffTree.setOldVersion(Ref.HEAD).call());
+        assertThat(e.getMessage(), containsString("new version"));
     }
 
     @Test
     public void testInvalidOldVersion() {
-        exception.expect(IllegalArgumentException.class);
-        diffTree.setOldVersion("abcdef0123").setNewVersion(Ref.HEAD).call();
+        assertThrows(IllegalArgumentException.class,
+                () -> diffTree.setOldVersion("abcdef0123").setNewVersion(Ref.HEAD).call());
     }
 
     @Test
     public void testInvalidNewVersion() {
-        exception.expect(IllegalArgumentException.class);
-        diffTree.setOldVersion(Ref.HEAD).setNewVersion("abcdef0123").call();
+        assertThrows(IllegalArgumentException.class,
+                () -> diffTree.setOldVersion(Ref.HEAD).setNewVersion("abcdef0123").call());
     }
 
     @Test

@@ -9,6 +9,13 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,7 +30,6 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.Console;
@@ -44,9 +50,6 @@ import com.google.common.collect.Lists;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class GeoPkgPullTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -253,18 +256,17 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         pullCommand.commonArgs.database = geoPkgFileName;
         pullCommand.commitMessage = "Imported from geopackage.";
         pullCommand.table = "Points";
-        exception.expect(CommandFailedException.class);
-        exception.expectMessage("CONFLICT: Merge conflict");
-        pullCommand.run(cli);
+        CommandFailedException t = assertThrows(CommandFailedException.class,
+                () -> pullCommand.run(cli));
+        assertThat(t.getMessage(), containsString("CONFLICT: Merge conflict"));
     }
 
     @Test
     public void testPullFileNotExist() throws Exception {
         GeopkgPull pullCommand = new GeopkgPull();
         pullCommand.commonArgs.database = "file://nonexistent.gpkg";
-        exception.expect(IllegalArgumentException.class);
-        exception.expectMessage("Database file not found.");
-        pullCommand.run(cli);
+        Exception t = assertThrows(IllegalArgumentException.class, () -> pullCommand.run(cli));
+        assertThat(t.getMessage(), containsString("Database file not found"));
     }
 
     private DataStore store(File result) throws InterruptedException, ExecutionException {

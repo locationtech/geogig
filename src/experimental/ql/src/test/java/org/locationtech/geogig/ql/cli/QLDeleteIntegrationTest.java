@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.ql.cli;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
@@ -29,9 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class QLDeleteIntegrationTest extends RepositoryTestCase {
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
 
     @Override
     public void setUpInternal() throws Exception {

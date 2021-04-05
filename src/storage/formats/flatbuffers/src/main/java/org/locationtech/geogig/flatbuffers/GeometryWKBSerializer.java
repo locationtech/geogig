@@ -50,8 +50,18 @@ final @UtilityClass class GeometryWKBSerializer {
     private static @RequiredArgsConstructor class ByteBufferInStream implements InStream {
         private final ByteBuffer bb;
 
-        public @Override void read(byte[] buf) throws IOException {
-            bb.get(buf);
+        public @Override int read(byte[] buf) throws IOException {
+            if (bb.hasRemaining()) {
+                final int remaining = bb.remaining();
+                if (remaining < buf.length) {
+                    bb.get(buf, 0, remaining);
+                    return remaining;
+                } else {
+                    bb.get(buf);
+                    return buf.length;
+                }
+            }
+            return -1;
         }
     }
 }

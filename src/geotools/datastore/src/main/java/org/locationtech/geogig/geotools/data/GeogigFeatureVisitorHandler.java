@@ -144,9 +144,9 @@ class GeogigFeatureVisitorHandler {
             ((MaxVisitor) visitor).setValue(highest);
         } else if (NearestVisitor.class.isInstance(visitor)) {
             NearestVisitor ne = (NearestVisitor) visitor;
-            Object valueToMatch = ne.getValueToMatch();
-            Object maxBelow = uniqueValues.floor(valueToMatch);
-            Object minAbove = uniqueValues.ceiling(valueToMatch);
+            Comparable<?> valueToMatch = (Comparable<?>) ne.getValueToMatch();
+            Comparable<?> maxBelow = (Comparable<?>) uniqueValues.floor(valueToMatch);
+            Comparable<?> minAbove = (Comparable<?>) uniqueValues.ceiling(valueToMatch);
             ne.setValue(maxBelow, minAbove);
         }
 

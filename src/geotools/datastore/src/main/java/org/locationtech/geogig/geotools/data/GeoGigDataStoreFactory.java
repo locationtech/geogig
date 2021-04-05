@@ -108,7 +108,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         return repoUri;
     }
 
-    public @Override boolean canProcess(Map<String, Serializable> params) {
+    public @Override boolean canProcess(Map<String, ?> params) {
         try {
             final String repoParam = (String) REPOSITORY.lookUp(params);
 
@@ -141,8 +141,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
         return Collections.emptyMap();
     }
 
-    public @Override GeoGigDataStore createDataStore(Map<String, Serializable> params)
-            throws IOException {
+    public @Override GeoGigDataStore createDataStore(Map<String, ?> params) throws IOException {
 
         final String repositoryLocation = (String) REPOSITORY.lookUp(params);
 
@@ -180,8 +179,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     /**
      * @see org.geotools.data.DataStoreFactorySpi#createNewDataStore(java.util.Map)
      */
-    public @Override GeoGigDataStore createNewDataStore(Map<String, Serializable> params)
-            throws IOException {
+    public @Override GeoGigDataStore createNewDataStore(Map<String, ?> params) throws IOException {
         String defaultNamespace = (String) DEFAULT_NAMESPACE.lookUp(params);
 
         URI repositoryRoot = resolveURI((String) REPOSITORY.lookUp(params));

@@ -8,7 +8,7 @@ jobs:
     timeout-minutes: 60
     strategy:
       matrix:
-        java: [ 8, 14 ]
+        java: [ 8, 11 ]
 
     # env:
 
@@ -40,8 +40,9 @@ jobs:
       - name: Build without tests
         run: mvn -ntp -DskipTests -T1C -Dfmt.action=validate install -Pexperimental
 
+      - name: Build CRS metadata
+        run: mvn -ntp -f src/metadata -Dfmt.skip clean install
+
       - name: Verify
-        run: |
-                mvn -ntp -f src/metadata -Dfmt.skip clean install
-                mvn -ntp -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
+        run: mvn -ntp -T1C -Dfmt.skip verify -Pexperimental -rf :geogig-api
 

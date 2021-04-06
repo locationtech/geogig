@@ -1,5 +1,7 @@
 package org.locationtech.geogig.crs;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -14,6 +16,7 @@ import java.util.stream.Stream;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.wkt.Formattable;
 import org.junit.Test;
@@ -34,34 +37,36 @@ import lombok.Value;
 
 public class GenerateCrsMetadataTest {
 
-    private static CoordinateReferenceSystem wgs84 = DefaultGeographicCRS.WGS84;
-
     private @Value @Builder static class CrsInfo {
         private @NonNull String authorityCode;
 
+        private Crs crs;
+
+        private Crs crsLongFirst;
+
+        private String error;
+    }
+
+    private @Value @Builder static class Crs {
         private @NonNull String wkt;
 
         private Envelope areaOfValidity;
 
-        private Envelope areaOfValidityLongFirst;
-
         private Envelope geographicBoundingBox;
-
-        private String wktLongFirst;
-
-        private String error;
     }
 
     public Stream<CrsInfo> generateCrsMetadata() {
         Set<String> authorityCodes;
         try {
-            authorityCodes = CRS.getAuthorityFactory(false)
+            final boolean longitudeFirst = false;
+            authorityCodes = CRS.getAuthorityFactory(longitudeFirst)
                     .getAuthorityCodes(org.opengis.referencing.crs.CoordinateReferenceSystem.class);
         } catch (FactoryException e) {
             throw new RuntimeException(e);
         }
 
-        return authorityCodes.stream().map(this::convert).filter(c -> c != null);
+        Stream<String> stream = authorityCodes.stream();
+        return stream.map(this::convert).filter(c -> c != null);
 
     }
 
@@ -69,37 +74,53 @@ public class GenerateCrsMetadataTest {
         if (authorityCode.startsWith("CRS:")) {
             return null;
         }
+        Crs crsmeta = null;
+        Crs crsmetaLongFirst = null;
         String error = null;
-        final String wkt;
-        String wktLongFirst = null;
-        Envelope geographicBoundingBox = null;
-        Envelope areaOfValidity = null;
-        Envelope areaOfValidityLongFirst = null;
         try {
             CoordinateReferenceSystem crs = CRS.decode(authorityCode, false);
+            crsmeta = crsMetadata(crs);
+
             CoordinateReferenceSystem crsLongFirst = CRS.decode(authorityCode, true);
-            wkt = toWKT(crs);
-            geographicBoundingBox = getGeographicBoundingBox(crs);
-            areaOfValidity = getProjectedBoundingBox(crs, geographicBoundingBox);
             if (!CRS.equalsIgnoreMetadata(crs, crsLongFirst)) {
-                wktLongFirst = toWKT(crsLongFirst);
-                areaOfValidityLongFirst = getProjectedBoundingBox(crsLongFirst,
-                        geographicBoundingBox);
+                String wkt = toWKT(crsLongFirst);
+                Envelope geographicBoundingBox = crsmeta.getGeographicBoundingBox();
+                Envelope aov = crsmeta.getAreaOfValidity();
+                Envelope areaOfValidity = new Envelope(aov.getMinY(), aov.getMaxY(), aov.getMinX(),
+                        aov.getMaxX());
+                crsmetaLongFirst = Crs.builder()//
+                        .wkt(wkt)//
+                        .geographicBoundingBox(geographicBoundingBox)//
+                        .areaOfValidity(areaOfValidity)//
+                        .build();
             }
-            return CrsInfo.builder().authorityCode(authorityCode).wkt(wkt)
-                    .wktLongFirst(wktLongFirst).geographicBoundingBox(geographicBoundingBox)
-                    .areaOfValidity(areaOfValidity).areaOfValidityLongFirst(areaOfValidityLongFirst)
-                    .error(error).build();
         } catch (Exception e) {
-            // error = e.getMessage();
-            // if (error == null) {
-            // error = "Unknown error";
-            // e.printStackTrace();
-            // } else {
-            // error = error.replaceAll("[\\r\\n]+", "");
-            // }
-            return null;
+            error = e.getMessage();
+            if (error == null) {
+                error = "Unknown error";
+            } else {
+                error = error.replaceAll("[\\r\\n]+", "");
+            }
         }
+        return CrsInfo.builder()//
+                .authorityCode(authorityCode)//
+                .crs(crsmeta)//
+                .crsLongFirst(crsmetaLongFirst)//
+                .error(error)//
+                .build();
+    }
+
+    private Crs crsMetadata(CoordinateReferenceSystem crs) throws Exception {
+
+        String wkt = toWKT(crs);
+        Envelope geographicBoundingBox = getGeographicBoundingBox(crs);
+        Envelope areaOfValidity = getProjectedBoundingBox(crs, geographicBoundingBox);
+        Crs crsmeta = Crs.builder()//
+                .wkt(wkt)//
+                .geographicBoundingBox(geographicBoundingBox)//
+                .areaOfValidity(areaOfValidity)//
+                .build();
+        return crsmeta;
     }
 
     private String toWKT(CoordinateReferenceSystem crs) {
@@ -113,36 +134,34 @@ public class GenerateCrsMetadataTest {
         return wkt;
     }
 
-    public static Envelope getExtents(org.opengis.referencing.crs.CoordinateReferenceSystem crs)
-            throws OperationNotFoundException, FactoryException, TransformException {
-
-        Envelope geographicBoundingBox = getGeographicBoundingBox(crs);
-
-        return getProjectedBoundingBox(crs, geographicBoundingBox);
-    }
-
     private static Envelope getProjectedBoundingBox(
-            org.opengis.referencing.crs.CoordinateReferenceSystem crs,
-            Envelope geographicBoundingBox)
+            org.opengis.referencing.crs.CoordinateReferenceSystem crs, Envelope gbbox)
             throws OperationNotFoundException, FactoryException, TransformException {
-        if (geographicBoundingBox == null) {
+        if (gbbox == null) {
             return null;
         }
-        double minx = geographicBoundingBox.getMinX();
-        double miny = geographicBoundingBox.getMinY();
-        double maxx = geographicBoundingBox.getMaxX();
-        double maxy = geographicBoundingBox.getMaxY();
 
-        CoordinateOperationFactory coordOpFactory = CRS.getCoordinateOperationFactory(true);
+        final CoordinateReferenceSystem wgs84 = DefaultGeographicCRS.WGS84;
+        final boolean longFirst = CRS.getAxisOrder(wgs84) == AxisOrder.EAST_NORTH;
+        assertTrue(longFirst);
+
+        double minx = gbbox.getMinX();
+        double maxx = gbbox.getMaxX();
+
+        double miny = gbbox.getMinY();
+        double maxy = gbbox.getMaxY();
+
+        final boolean lenient = true;
+        CoordinateOperationFactory coordOpFactory = CRS.getCoordinateOperationFactory(lenient);
         CoordinateOperation op = coordOpFactory.createOperation(wgs84, crs);
 
         ReferencedEnvelope refEnvelope = new ReferencedEnvelope(minx, maxx, miny, maxy, wgs84);
         GeneralEnvelope genEnvelope = CRS.transform(op, refEnvelope);
 
-        double xmax = genEnvelope.getMaximum(0);
-        double ymax = genEnvelope.getMaximum(1);
         double xmin = genEnvelope.getMinimum(0);
+        double xmax = genEnvelope.getMaximum(0);
         double ymin = genEnvelope.getMinimum(1);
+        double ymax = genEnvelope.getMaximum(1);
 
         return new Envelope(xmin, xmax, ymin, ymax);
     }
@@ -167,8 +186,9 @@ public class GenerateCrsMetadataTest {
         GeographicBoundingBox geographicBoundingBox = (GeographicBoundingBox) geographicExtent;
 
         double minx = geographicBoundingBox.getWestBoundLongitude();
-        double miny = geographicBoundingBox.getSouthBoundLatitude();
         double maxx = geographicBoundingBox.getEastBoundLongitude();
+
+        double miny = geographicBoundingBox.getSouthBoundLatitude();
         double maxy = geographicBoundingBox.getNorthBoundLatitude();
 
         return new Envelope(minx, maxx, miny, maxy);
@@ -178,12 +198,12 @@ public class GenerateCrsMetadataTest {
         System.err.println("Generating reosurces for all EPSG CRS's, this may take a while...");
         List<CrsInfo> md = generateCrsMetadata().collect(Collectors.toList());
 
-        Stream<CharSequence> epsgWktLines = md.stream().filter(c -> c.getWkt() != null)
-                .map(c -> String.format("%s=%s", parseCode(c.getAuthorityCode()), c.getWkt()));
+        Stream<CharSequence> epsgWktLines = md.stream().filter(c -> c.getCrs() != null).map(
+                c -> String.format("%s=%s", parseCode(c.getAuthorityCode()), c.getCrs().getWkt()));
 
         Stream<CharSequence> epsgLonLatWktLines = md.stream()
-                .filter(c -> c.getWktLongFirst() != null).map(c -> String.format("%d=%s",
-                        parseCode(c.getAuthorityCode()), c.getWktLongFirst()));
+                .filter(c -> c.getCrsLongFirst() != null).map(c -> String.format("%d=%s",
+                        parseCode(c.getAuthorityCode()), c.getCrsLongFirst().getWkt()));
 
         Path targetDir = Paths.get("target/generated-resources/org/locationtech/geogig/crs");
         Path epsgPropertiesFile = targetDir.resolve("epsg.properties");
@@ -196,19 +216,22 @@ public class GenerateCrsMetadataTest {
         Path mdFile = targetDir.resolve("epsg.metadata.properties");
         Path mdLonLatFile = targetDir.resolve("epsg_force_long_lat.metadata.properties");
 
-        Stream<CharSequence> epsgMdLines = md.stream()
-                .filter(c -> c.getGeographicBoundingBox() != null).map(c -> toMdLine(c, false));
-        Stream<CharSequence> epsgLonLatMdLines = md.stream()
-                .filter(c -> c.getGeographicBoundingBox() != null).map(c -> toMdLine(c, true));
+        Stream<CharSequence> epsgMdLines = md.stream()//
+                .filter(c -> c.getCrs() != null)//
+                .map(c -> toMdLine(c.getAuthorityCode(), c.getCrs()));
+
+        Stream<CharSequence> epsgLonLatMdLines = md.stream()//
+                .filter(c -> c.getCrsLongFirst() != null)//
+                .map(c -> toMdLine(c.getAuthorityCode(), c.getCrsLongFirst()));
+
         Files.write(mdFile, () -> epsgMdLines.iterator(), StandardCharsets.UTF_8);
         Files.write(mdLonLatFile, () -> epsgLonLatMdLines.iterator());
     }
 
-    private String toMdLine(CrsInfo i, boolean longFirst) {
-        int code = parseCode(i.getAuthorityCode());
+    private String toMdLine(String authorityCode, Crs i) {
+        int code = parseCode(authorityCode);
         CrsMetadata md = CrsMetadata.builder().geographicExtent(i.getGeographicBoundingBox())
-                .areaOfValidity(longFirst ? i.getAreaOfValidityLongFirst() : i.getAreaOfValidity())
-                .build();
+                .areaOfValidity(i.getAreaOfValidity()).build();
         return String.format("%d=%s", code, CrsMetadata.encode(md));
     }
 

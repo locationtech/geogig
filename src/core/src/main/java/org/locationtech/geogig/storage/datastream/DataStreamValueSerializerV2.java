@@ -92,13 +92,15 @@ public class DataStreamValueSerializerV2 extends DataStreamValueSerializerV1 {
 
         }
 
-        public @Override void read(byte[] buf) throws IOException {
-            read += buf.length;
+        public @Override int read(byte[] buf) throws IOException {
+            int read = this.read + buf.length;
             if (read > limit) {
                 throw new EOFException(
                         String.format("Trying to read %,d bytes, limit is %,d", read, limit));
             }
             this.in.readFully(buf);
+            this.read = read;
+            return buf.length;
         }
 
     }

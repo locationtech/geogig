@@ -8,7 +8,6 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -121,7 +120,7 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
 
     public abstract Feature createCopy(@NonNull String newId);
 
-    protected Object validate(int index, Object value) {
+    protected Object validate(final int index, final Object value) {
         final FeatureType featureType = getType();
         final PropertyDescriptor descriptor = featureType.getDescriptor(index);
 
@@ -132,18 +131,21 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
                         String.format("Property %s is not nullable", descriptor.getLocalName()));
             }
         } else if (!binding.isAssignableFrom(value.getClass())) {
-            String str = FieldType.forValue(value).toString(value);
-            try {
-                value = FieldType.forBinding(binding).unmarshall(str);
-            } catch (IllegalArgumentException e) {
-                throw e;
-            } catch (RuntimeException e) {
-                throw new IllegalArgumentException(
-                        String.format("Unable to convert value for attribute %s from %s to %s",
-                                descriptor.getLocalName(), value.getClass().getName(),
-                                binding.getName()),
-                        e);
-            }
+            throw new IllegalArgumentException(String.format(
+                    "Invalid object type for attribute %d, expected %s, got %s", index,
+                    value.getClass().getCanonicalName(), binding.getCanonicalName()));
+            // String str = FieldType.forValue(value).toString(value);
+            // try {
+            // value = FieldType.forBinding(binding).unmarshall(str);
+            // } catch (IllegalArgumentException e) {
+            // throw e;
+            // } catch (RuntimeException e) {
+            // throw new IllegalArgumentException(
+            // String.format("Unable to convert value for attribute %s from %s to %s",
+            // descriptor.getLocalName(), value.getClass().getName(),
+            // binding.getName()),
+            // e);
+            // }
         }
 
         return value;

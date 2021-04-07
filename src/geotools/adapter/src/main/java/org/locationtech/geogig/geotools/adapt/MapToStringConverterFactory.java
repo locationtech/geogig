@@ -18,6 +18,7 @@ import org.geotools.util.ConverterFactory;
 import org.geotools.util.Converters;
 import org.geotools.util.factory.Hints;
 import org.locationtech.geogig.model.FieldType;
+import org.locationtech.geogig.storage.text.Marshallers;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.google.common.base.Preconditions;
@@ -55,7 +56,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
 
     private static Converter TO_STRING = new Converter() {
         public @Override <T> T convert(Object source, Class<T> target) throws Exception {
-            return target.cast(FieldType.marshall(source));
+            return target.cast(Marshallers.marshall(source));
         }
     };
 
@@ -63,7 +64,7 @@ public class MapToStringConverterFactory implements ConverterFactory {
         public @Override <T> T convert(Object source, Class<T> target) throws Exception {
             Preconditions.checkArgument(source == null || source.getClass().equals(String.class));
             Preconditions.checkArgument(Map.class.isAssignableFrom(target));
-            return target.cast(FieldType.unmarshall((String) source, Map.class));
+            return target.cast(Marshallers.unmarshall((String) source, Map.class));
         }
 
     };

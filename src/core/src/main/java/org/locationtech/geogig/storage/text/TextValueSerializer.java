@@ -49,7 +49,7 @@ public class TextValueSerializer {
     static abstract class ArraySerializer implements ValueSerializer {
         public @Override String toString(Object value) {
             if (value.getClass().getComponentType().isPrimitive()) {
-                return FieldType.marshall(value);
+                return Marshallers.marshall(value);
             }
             return "[" + Joiner.on(" ").join((Object[]) value) + "]";
         }
@@ -258,11 +258,11 @@ public class TextValueSerializer {
         serializers.put(FieldType.MAP, new ValueSerializer() {
 
             public @Override String toString(Object value) {
-                return FieldType.marshall(value);
+                return Marshallers.marshall(value);
             }
 
             public @Override Object fromString(String in) throws ParseException {
-                return FieldType.unmarshall(in, Map.class);
+                return Marshallers.unmarshall(in, FieldType.MAP);
             }
         });
     }

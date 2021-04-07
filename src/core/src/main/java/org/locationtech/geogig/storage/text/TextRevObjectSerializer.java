@@ -194,7 +194,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             writeBBox(w, node, envHelper);
             Map<String, Object> extraData = node.getExtraData();
             if (!extraData.isEmpty()) {
-                String extraDataAsString = FieldType.MAP.toString(extraData);
+                String extraDataAsString = Marshallers.marshall(extraData);
                 print(w, "\t");
                 print(w, extraDataAsString);
             }
@@ -481,7 +481,6 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
 
         protected abstract T read(ObjectId id, BufferedReader reader, TYPE type) throws IOException;
 
-        @SuppressWarnings("unchecked")
         protected Node parseNodeLine(String line) {
             List<String> tokens = newArrayList(Splitter.on('\t').split(line));
             final int numTokens = tokens.size();
@@ -496,7 +495,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             Map<String, Object> extraData = null;
             if (numTokens == 7) {
                 String extraDataAsString = tokens.get(6);
-                extraData = FieldType.unmarshall(extraDataAsString, Map.class);
+                extraData = Marshallers.unmarshall(extraDataAsString, FieldType.MAP);
             }
 
             return org.locationtech.geogig.model.RevObjectFactory.defaultInstance().createNode(name,

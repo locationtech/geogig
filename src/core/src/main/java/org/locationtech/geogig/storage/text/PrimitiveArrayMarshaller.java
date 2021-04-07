@@ -7,7 +7,7 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model.internal;
+package org.locationtech.geogig.storage.text;
 
 import java.lang.reflect.Array;
 import java.util.List;
@@ -27,6 +27,19 @@ import lombok.NonNull;
  */
 class PrimitiveArrayMarshaller implements Marshaller {
 
+    private final Class<?> target;
+
+    private final FieldType arrayType;
+
+    PrimitiveArrayMarshaller(Class<?> target) {
+        Preconditions.checkArgument(target.isArray());
+        Preconditions.checkArgument(target.getComponentType().isPrimitive()
+                || char[].class.equals(target.getComponentType()));
+        this.target = target;
+        this.arrayType = FieldType.forBinding(target);
+        Preconditions.checkState(arrayType.getBinding().isArray());
+    }
+
     public @Override @NonNull String marshall(@NonNull Object val) {
         Preconditions.checkArgument(val.getClass().isArray());
         final int length = Array.getLength(val);
@@ -43,15 +56,10 @@ class PrimitiveArrayMarshaller implements Marshaller {
 
     }
 
-    public Object unmarshall(@NonNull String source, @NonNull Class<?> target) {
-        Preconditions.checkArgument(target.isArray());
-        Preconditions.checkArgument(target.getComponentType().isPrimitive()
-                || char[].class.equals(target.getComponentType()));
-
-        final FieldType arrayType = FieldType.forBinding(target);
-        Preconditions.checkState(arrayType.getBinding().isArray());
-
-        String string = (String) source;
+    public Object unmarshall(String string) {
+        if (string == null) {
+            return null;
+        }
         if (!string.startsWith("[") && !string.endsWith("]")) {
             return null;
         }

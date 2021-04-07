@@ -7,8 +7,9 @@
  * Contributors:
  * Gabriel Roldan (Boundless) - initial implementation
  */
-package org.locationtech.geogig.model.impl;
+package org.locationtech.geogig.storage.text;
 
+import static org.locationtech.geogig.storage.text.Marshallers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,16 +34,16 @@ public class MapMarshallerTest {
 
     @Test
     public void nullTest() {
-        assertNull(FieldType.unmarshall(null, Map.class));
-        assertNull(FieldType.unmarshall("", Map.class));
-        assertNull(FieldType.unmarshall("    ", Map.class));
+        assertNull(unmarshall(null, Map.class));
+        assertNull(unmarshall("", Map.class));
+        assertNull(unmarshall("    ", Map.class));
     }
 
     @Test
     public void emptyTest() {
-        assertEquals(Collections.emptyMap(), FieldType.unmarshall("{}", Map.class));
-        assertEquals(Collections.emptyMap(), FieldType.unmarshall(" {} ", Map.class));
-        assertEquals(Collections.emptyMap(), FieldType.unmarshall(" {  } ", Map.class));
+        assertEquals(Collections.emptyMap(), unmarshall("{}", Map.class));
+        assertEquals(Collections.emptyMap(), unmarshall(" {} ", Map.class));
+        assertEquals(Collections.emptyMap(), unmarshall(" {  } ", Map.class));
     }
 
     @Test
@@ -58,11 +59,11 @@ public class MapMarshallerTest {
 
         // assertNull(StringConverters.marshall(map, Integer.class));
 
-        String converted = FieldType.marshall(map);
+        String converted = marshall(map);
         assertNotNull(converted);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> roundTripped = FieldType.unmarshall(converted, Map.class);
+        Map<String, Object> roundTripped = unmarshall(converted, Map.class);
         assertNotNull(roundTripped);
 
         assertEquals(map.size(), roundTripped.size());

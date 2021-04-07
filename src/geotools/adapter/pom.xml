@@ -31,7 +31,7 @@
   <dependencies>
     <dependency>
       <groupId>org.locationtech.geogig</groupId>
-      <artifactId>geogig-api</artifactId>
+      <artifactId>geogig-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.geotools</groupId>

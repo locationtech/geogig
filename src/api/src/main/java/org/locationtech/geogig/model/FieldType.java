@@ -17,8 +17,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.internal.Marshaller;
-import org.locationtech.geogig.model.internal.Marshallers;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -29,7 +27,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
 import lombok.NonNull;
@@ -119,53 +116,46 @@ import lombok.NonNull;
  */
 public enum FieldType implements Cloneable {
     NULL(0x00, Void.class, n -> null), //
-    BOOLEAN(0x01, Boolean.class, Boolean::valueOf), //
-    BYTE(0x02, Byte.class, Byte::valueOf), //
-    SHORT(0x03, Short.class, Short::valueOf), //
-    INTEGER(0x04, Integer.class, Integer::valueOf), //
-    LONG(0x05, Long.class, Long::valueOf), //
-    FLOAT(0x06, Float.class, Float::valueOf), //
-    DOUBLE(0x07, Double.class, Double::valueOf), //
-    STRING(0x08, String.class, s -> s), //
-    BOOLEAN_ARRAY(0x09, boolean[].class, v -> ((boolean[]) v).clone(),
-            Marshallers.primitiveArray()), //
-    BYTE_ARRAY(0x0A, byte[].class, v -> ((byte[]) v).clone(), Marshallers.primitiveArray()), //
-    SHORT_ARRAY(0x0B, short[].class, v -> ((short[]) v).clone(), Marshallers.primitiveArray()), //
-    INTEGER_ARRAY(0x0C, int[].class, v -> ((int[]) v).clone(), Marshallers.primitiveArray()), //
-    LONG_ARRAY(0x0D, long[].class, v -> ((long[]) v).clone(), Marshallers.primitiveArray()), //
-    FLOAT_ARRAY(0x0E, float[].class, v -> ((float[]) v).clone(), Marshallers.primitiveArray()), //
-    DOUBLE_ARRAY(0x0F, double[].class, v -> ((double[]) v).clone(), Marshallers.primitiveArray()), //
-    STRING_ARRAY(0x10, String[].class, v -> ((String[]) v).clone(), Marshallers.stringArray()), //
-    POINT(0x11, Point.class, v -> GeometryCloner.clone((Geometry) v), Marshallers.geometry()), //
-    LINESTRING(0x12, LineString.class, v -> GeometryCloner.clone((Geometry) v),
-            Marshallers.geometry()), //
-    POLYGON(0x13, Polygon.class, v -> GeometryCloner.clone((Geometry) v), Marshallers.geometry()), //
-    MULTIPOINT(0x14, MultiPoint.class, v -> GeometryCloner.clone((Geometry) v),
-            Marshallers.geometry()), //
-    MULTILINESTRING(0x15, MultiLineString.class, v -> GeometryCloner.clone((Geometry) v),
-            Marshallers.geometry()), //
-    MULTIPOLYGON(0x16, MultiPolygon.class, v -> GeometryCloner.clone((Geometry) v),
-            Marshallers.geometry()), //
-    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone((Geometry) v),
-            Marshallers.geometry()), //
+    BOOLEAN(0x01, Boolean.class), //
+    BYTE(0x02, Byte.class), //
+    SHORT(0x03, Short.class), //
+    INTEGER(0x04, Integer.class), //
+    LONG(0x05, Long.class), //
+    FLOAT(0x06, Float.class), //
+    DOUBLE(0x07, Double.class), //
+    STRING(0x08, String.class), //
+    BOOLEAN_ARRAY(0x09, boolean[].class, v -> ((boolean[]) v).clone()), //
+    BYTE_ARRAY(0x0A, byte[].class, v -> ((byte[]) v).clone()), //
+    SHORT_ARRAY(0x0B, short[].class, v -> ((short[]) v).clone()), //
+    INTEGER_ARRAY(0x0C, int[].class, v -> ((int[]) v).clone()), //
+    LONG_ARRAY(0x0D, long[].class, v -> ((long[]) v).clone()), //
+    FLOAT_ARRAY(0x0E, float[].class, v -> ((float[]) v).clone()), //
+    DOUBLE_ARRAY(0x0F, double[].class, v -> ((double[]) v).clone()), //
+    STRING_ARRAY(0x10, String[].class, v -> ((String[]) v).clone()), //
+    POINT(0x11, Point.class, v -> GeometryCloner.clone((Geometry) v)), //
+    LINESTRING(0x12, LineString.class, v -> GeometryCloner.clone((Geometry) v)), //
+    POLYGON(0x13, Polygon.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTIPOINT(0x14, MultiPoint.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTILINESTRING(0x15, MultiLineString.class, v -> GeometryCloner.clone((Geometry) v)), //
+    MULTIPOLYGON(0x16, MultiPolygon.class, v -> GeometryCloner.clone((Geometry) v)), //
+    GEOMETRYCOLLECTION(0x17, GeometryCollection.class, v -> GeometryCloner.clone((Geometry) v)), //
     /**
      * a geometry object of an unspecified type
      */
-    GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone((Geometry) v), Marshallers.geometry()), //
-    UUID(0x19, java.util.UUID.class, java.util.UUID::fromString), //
-    BIG_INTEGER(0x1A, BigInteger.class, BigInteger::new), //
-    BIG_DECIMAL(0x1B, BigDecimal.class, BigDecimal::new), //
-    DATETIME(0x1C, java.util.Date.class, Marshallers.dateTime()), //
-    DATE(0x1D, java.sql.Date.class, Marshallers.date()), //
-    TIME(0x1E, java.sql.Time.class, Marshallers.time()), //
-    TIMESTAMP(0x1F, java.sql.Timestamp.class, Marshallers.timestamp()), //
-    MAP(0x20, java.util.Map.class, v -> recursiveSafeCopy((Map<?, ?>) v), Marshallers.map()), //
-    CHAR(0x21, Character.class, s -> s.charAt(0)), //
-    CHAR_ARRAY(0x22, char[].class, Marshallers.primitiveArray()), //
-    ENVELOPE_2D(0x23, Envelope.class, v -> new Envelope((Envelope) v), Marshallers.envelope()), //
-    UNKNOWN(-1, Object.class, v -> {
-        throw new UnsupportedOperationException("UNKNOWN FieldType does not support marshalling");
-    });
+    GEOMETRY(0x18, Geometry.class, v -> GeometryCloner.clone((Geometry) v)), //
+    UUID(0x19, java.util.UUID.class), //
+    BIG_INTEGER(0x1A, BigInteger.class), //
+    BIG_DECIMAL(0x1B, BigDecimal.class), //
+    DATETIME(0x1C, java.util.Date.class, d -> new java.util.Date(((java.util.Date) d).getTime())), //
+    DATE(0x1D, java.sql.Date.class, d -> new java.sql.Date(((java.sql.Date) d).getTime())), //
+    TIME(0x1E, java.sql.Time.class, d -> new java.sql.Time(((java.sql.Time) d).getTime())), //
+    TIMESTAMP(0x1F, java.sql.Timestamp.class,
+            d -> new java.sql.Timestamp(((java.sql.Timestamp) d).getTime())), //
+    MAP(0x20, java.util.Map.class, v -> recursiveSafeCopy((Map<?, ?>) v)), //
+    CHAR(0x21, Character.class), //
+    CHAR_ARRAY(0x22, char[].class, v -> ((char[]) v).clone()), //
+    ENVELOPE_2D(0x23, Envelope.class, e -> new Envelope((Envelope) e)), //
+    UNKNOWN(-1, Object.class);
 
     private final byte tagValue;
 
@@ -177,8 +167,6 @@ public enum FieldType implements Cloneable {
      */
     private final Function<Object, Object> safeCopyBuilder;
 
-    private final Marshaller marshaller;
-
     private static final Map<Class<?>, FieldType> BINDING_MAPPING = Maps.newHashMap();
     static {
         for (FieldType t : FieldType.values()) {
@@ -186,28 +174,28 @@ public enum FieldType implements Cloneable {
         }
     }
 
-    private FieldType(int tagValue, @NonNull Class<?> binding,
-            @NonNull Function<String, Object> unmarshaller) {
-        this(tagValue, binding, val -> val, Marshallers.toString(unmarshaller));
+    /**
+     * Constructor for immutable value types
+     */
+    private FieldType(int tagValue, @NonNull Class<?> binding) {
+        this(tagValue, binding, Function.identity());
     }
 
-    private FieldType(int tagValue, @NonNull Class<?> binding, @NonNull Marshaller marshaller) {
-        this(tagValue, binding, val -> val, marshaller);
+    /**
+     * Constructor for mutable value types, receives a function to create an immutable copy of a
+     * value of this type
+     */
+    private FieldType(int tagValue, @NonNull Class<?> binding,
+            @NonNull Function<Object, Object> immutableCopyBuilder) {
+        this.tagValue = (byte) tagValue;
+        this.binding = binding;
+        this.safeCopyBuilder = immutableCopyBuilder;
     }
 
     private static Map<Object, Object> recursiveSafeCopy(Map<?, ?> m) {
         Map<Object, Object> copy = new HashMap<>(m.size());
         m.forEach((k, v) -> copy.put(k, FieldType.forValue(v).safeCopy(v)));
         return copy;
-    }
-
-    private FieldType(int tagValue, @NonNull Class<?> binding,
-            @NonNull Function<Object, Object> immutableCopyBuilder,
-            @NonNull Marshaller marshaller) {
-        this.tagValue = (byte) tagValue;
-        this.binding = binding;
-        this.safeCopyBuilder = immutableCopyBuilder;
-        this.marshaller = marshaller;
     }
 
     public Class<?> getBinding() {
@@ -295,41 +283,5 @@ public enum FieldType implements Cloneable {
     @Nullable
     public Object safeCopy(@Nullable Object value) {
         return safeCopyBuilder.apply(value);
-    }
-
-    public @Nullable Object unmarshall(@Nullable String value) {
-        if (value == null) {
-            return null;
-        }
-        return this.marshaller.unmarshall(value, this.binding);
-    }
-
-    public String toString(Object value) {
-        Preconditions.checkArgument(value == null || binding.isAssignableFrom(value.getClass()));
-        if (value == null) {
-            return null;
-        }
-        return this.marshaller.marshall(value);
-    }
-
-    @SuppressWarnings("unchecked")
-    public static @Nullable <T> T unmarshall(@Nullable String value,
-            @NonNull Class<T> targetValueClass) {
-        FieldType fieldType = forBinding(targetValueClass);
-        if (FieldType.UNKNOWN.equals(fieldType)) {
-            throw new IllegalArgumentException(String
-                    .format("Type is not a recognized FieldType: %s", targetValueClass.getName()));
-        }
-        return (T) fieldType.unmarshall(value);
-    }
-
-    public static @Nullable String marshall(@Nullable Object value) {
-        FieldType fieldType = forValue(value);
-        if (FieldType.UNKNOWN.equals(fieldType)) {
-            // value.getClass() is NPE safe at this point
-            throw new IllegalArgumentException(
-                    "Unable to infer FieldType for value of type " + value.getClass().getName());
-        }
-        return fieldType.toString(value);
     }
 }

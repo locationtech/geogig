@@ -38,6 +38,7 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConfigStore;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.Version;
+import org.locationtech.geogig.storage.text.Marshallers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,13 +149,13 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
     }
 
     <T> T convert(String value, Class<T> clazz) {
-        Object v = FieldType.unmarshall(value, clazz);
+        Object v = Marshallers.unmarshall(value, clazz);
         checkArgument(v != null, "Can't convert %s to %s", value, clazz.getName());
         return clazz.cast(v);
     }
 
     void put(Entry entry, Object value, final int repositoryPK) {
-        put(entry, FieldType.marshall(value), repositoryPK);
+        put(entry, Marshallers.marshall(value), repositoryPK);
     }
 
     protected static class Entry {

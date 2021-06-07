@@ -29,7 +29,7 @@
     <picocli.version>4.3.2</picocli.version>
     <jdt-annotation.version>2.2.400</jdt-annotation.version>
     <junit.version>4.13</junit.version>
-    <logback.version>1.1.2</logback.version>
+    <logback.version>1.2.0</logback.version>
     <mockito.version>3.3.3</mockito.version>
     <hamcrest.version>2.2</hamcrest.version>
     <slf4j.version>1.7.5</slf4j.version>

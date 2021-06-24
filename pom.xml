@@ -5,7 +5,7 @@
 
   <groupId>org.locationtech.geogig</groupId>
   <artifactId>geogig-bom</artifactId>
-  <version>2.0-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
   <name>GeoGig Root BOM</name>
   <description>Root pom providing dependency and plugin management for all geogig modules</description>
@@ -15,6 +15,7 @@
   </modules>
 
   <properties>
+    <revision>2.0-SNAPSHOT</revision>
     <lombok.version>1.18.12</lombok.version>
     <flatbuffers-java.version>1.12.0</flatbuffers-java.version>
     <flatbuffers-compiler.version>1.12.0.1</flatbuffers-compiler.version>

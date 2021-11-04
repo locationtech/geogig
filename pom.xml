@@ -39,17 +39,17 @@
     <rocksdb.version>6.25.3</rocksdb.version>
     <postgresql.version>42.3.1</postgresql.version>
     <appassembler.plugin.version>2.1.0</appassembler.plugin.version>
-    <dependency.plugin.version>3.1.1</dependency.plugin.version>
-    <surefire.plugin.version>3.0.0-M3</surefire.plugin.version>
-    <assembly.plugin.version>3.1.1</assembly.plugin.version>
+    <dependency.plugin.version>3.2.0</dependency.plugin.version>
+    <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
+    <assembly.plugin.version>3.3.0</assembly.plugin.version>
     <maven-jar-plugin-version>3.2.0</maven-jar-plugin-version>
-    <git-commit-id-plugin-version>3.0.0</git-commit-id-plugin-version>
+    <git-commit-id-plugin-version>4.0.0</git-commit-id-plugin-version>
     <maven-compiler-plugin-version>3.8.1</maven-compiler-plugin-version>
-    <maven-resources-plugin-version>3.1.0</maven-resources-plugin-version>
-    <maven-source-plugin-version>3.1.0</maven-source-plugin-version>
-    <maven-surefire-report-plugin-version>3.0.0-M3</maven-surefire-report-plugin-version>
-    <maven-javadoc-plugin-vesion>3.1.0</maven-javadoc-plugin-vesion>
-    <formatter-maven-plugin.version>2.9.0</formatter-maven-plugin.version>
+    <maven-resources-plugin-version>3.2.0</maven-resources-plugin-version>
+    <maven-source-plugin-version>3.2.1</maven-source-plugin-version>
+    <maven-surefire-report-plugin-version>3.0.0-M5</maven-surefire-report-plugin-version>
+    <maven-javadoc-plugin-vesion>3.3.1</maven-javadoc-plugin-vesion>
+    <formatter-maven-plugin.version>2.11.0</formatter-maven-plugin.version>
     <maven-failsafe-plugin.version>3.0.0-M3</maven-failsafe-plugin.version>
   </properties>
 

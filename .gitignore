@@ -16,3 +16,5 @@ nb-configuration.xml
 hs_err_pid*
 #KDE
 .directory
+
+.attach_pid*

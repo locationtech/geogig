@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.fusesource.jansi.WindowsAnsiOutputStream;
+import org.fusesource.jansi.io.WindowsAnsiProcessor;
 
 /**
  * Represents the console (i.e. operating system terminal) from where the program is being executed,
@@ -110,7 +110,7 @@ public class Console {
 
         if (osName.startsWith("windows") && osName.endsWith("10")) {
             try {
-                new WindowsAnsiOutputStream(out);
+                new WindowsAnsiProcessor(out);
             } catch (IOException e) {
                 return false;
             }

@@ -14,6 +14,7 @@ import static java.lang.String.format;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -36,7 +37,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Supplier;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;

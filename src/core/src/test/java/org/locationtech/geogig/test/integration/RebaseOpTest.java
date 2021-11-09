@@ -44,7 +44,6 @@ import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.Conflict;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class RebaseOpTest extends RepositoryTestCase {
@@ -100,8 +99,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         // o - branch2 - HEAD - Lines 1 added
 
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
-                .call();
+        repo.command(RebaseOp.class).setUpstream(branch1::getObjectId).call();
 
         CheckoutResult result;
         result = repo.command(CheckoutOp.class).setSource("branch1").call();
@@ -201,7 +199,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+        repo.command(RebaseOp.class).setUpstream(branch1::getObjectId)
                 .setSquashMessage("squashed commit").call();
 
         CheckoutResult result;
@@ -322,8 +320,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         Ref branch2 = repo.command(RefParse.class).setName("branch2").call().get();
         Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
-                .setOnto(Suppliers.ofInstance(master.get().getObjectId())).call();
+        repo.command(RebaseOp.class).setUpstream(branch1::getObjectId)
+                .setOnto(master.get()::getObjectId).call();
 
         CheckoutResult result;
         result = repo.command(CheckoutOp.class).setSource("branch1").call();
@@ -381,8 +379,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
 
         repo.command(CheckoutOp.class).setSource("branch1").call();
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(master.get().getObjectId()))
-                .call();
+        repo.command(RebaseOp.class).setUpstream(master.get()::getObjectId).call();
 
         Iterator<RevCommit> log = repo.command(LogOp.class).call();
         assertEquals(c2.getMessage(), log.next().getMessage());
@@ -398,8 +395,8 @@ public class RebaseOpTest extends RepositoryTestCase {
     @Test
     public void testRebaseNoCommits() throws Exception {
         Optional<Ref> master = repo.command(RefParse.class).setName("master").call();
-        assertThrows(IllegalStateException.class, repo.command(RebaseOp.class)
-                .setUpstream(Suppliers.ofInstance(master.get().getObjectId()))::call);
+        assertThrows(IllegalStateException.class,
+                repo.command(RebaseOp.class).setUpstream(master.get()::getObjectId)::call);
     }
 
     @Test
@@ -409,8 +406,8 @@ public class RebaseOpTest extends RepositoryTestCase {
         insertAndAdd(points1);
         repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
-        assertThrows(IllegalStateException.class, repo.command(RebaseOp.class)
-                .setUpstream(Suppliers.ofInstance(master.get().getObjectId()))::call);
+        assertThrows(IllegalStateException.class,
+                repo.command(RebaseOp.class).setUpstream(master.get()::getObjectId)::call);
     }
 
     @Test
@@ -450,8 +447,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
-                    .call();
+            repo.command(RebaseOp.class).setUpstream(branch1::getObjectId).call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -547,7 +543,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
+            repo.command(RebaseOp.class).setUpstream(branch1::getObjectId)
                     .setSquashMessage("squashed commit").call();
             fail();
         } catch (RebaseConflictsException e) {
@@ -671,8 +667,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
-                    .call();
+            repo.command(RebaseOp.class).setUpstream(branch1::getObjectId).call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));
@@ -761,8 +756,7 @@ public class RebaseOpTest extends RepositoryTestCase {
         Ref branch1 = repo.command(RefParse.class).setName("branch1").call().get();
 
         try {
-            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(branch1.getObjectId()))
-                    .call();
+            repo.command(RebaseOp.class).setUpstream(branch1::getObjectId).call();
             fail();
         } catch (RebaseConflictsException e) {
             assertTrue(e.getMessage().contains("conflict"));

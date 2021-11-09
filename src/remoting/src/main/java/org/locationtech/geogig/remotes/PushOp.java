@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.Ref;
@@ -28,8 +29,6 @@ import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
-
-import com.google.common.base.Predicate;
 
 import lombok.NonNull;
 
@@ -208,13 +207,10 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     private Set<Ref> getLocalRefs() {
-        Predicate<Ref> filter = new Predicate<Ref>() {
-            final String prefix = Ref.HEADS_PREFIX;
+        final String prefix = Ref.HEADS_PREFIX;
+        Predicate<Ref> filter = input -> !(input instanceof SymRef)
+                && input.getName().startsWith(prefix);
 
-            public @Override boolean apply(Ref input) {
-                return !(input instanceof SymRef) && input.getName().startsWith(prefix);
-            }
-        };
         Set<Ref> localRefs = command(ForEachRef.class).setFilter(filter).call();
         return localRefs;
     }

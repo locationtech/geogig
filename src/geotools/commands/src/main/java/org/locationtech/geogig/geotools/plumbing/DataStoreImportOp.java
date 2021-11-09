@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.plumbing;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.Feature;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
 
 /**
  * Imports feature tress (layers) into a repository from a GeoTools {@link DataStore}. This
@@ -34,8 +34,8 @@ import com.google.common.base.Supplier;
 public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
 
     /**
-     * Extends the {@link com.google.common.base.Supplier} interface to provide for a way to request
-     * resource cleanup, if applicable to the {@link org.geotools.data.DataStore DataStore}.
+     * Extends the {@link Supplier} interface to provide for a way to request resource cleanup, if
+     * applicable to the {@link org.geotools.data.DataStore DataStore}.
      */
     public static interface DataStoreSupplier extends Supplier<DataStore> {
         /**
@@ -81,8 +81,8 @@ public abstract class DataStoreImportOp<T> extends AbstractGeoGigOp<T> {
     /**
      * Set the source {@link DataStore DataStore}, from which features should be imported.
      *
-     * @param dataStore A {@link com.google.common.base.Supplier Supplier} for the source
-     *        {@link DataStore DataStore} containing features to import into the repository.
+     * @param dataStore A {@link Supplier Supplier} for the source {@link DataStore DataStore}
+     *        containing features to import into the repository.
      * @return A reference to this Operation.
      */
     public DataStoreImportOp<T> setDataStore(DataStoreSupplier dataStore) {

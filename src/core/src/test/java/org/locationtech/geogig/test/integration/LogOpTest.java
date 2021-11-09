@@ -51,7 +51,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
@@ -106,7 +105,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         checkout("master");
         repo.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+                .setCommit(merge2_left.getMergeCommit()::getId).call();
 
         checkout("branch1");
 
@@ -119,7 +118,7 @@ public class LogOpTest extends RepositoryTestCase {
 
         checkout("branch1");
         repo.command(ResetOp.class).setMode(ResetOp.ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+                .setCommit(merge2_right.getMergeCommit()::getId).call();
 
         checkout("master");
 

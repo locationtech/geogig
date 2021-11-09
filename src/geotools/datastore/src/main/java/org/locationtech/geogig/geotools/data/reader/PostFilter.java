@@ -9,11 +9,10 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.function.Predicate;
+
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 
 /**
  * Adapts a GeoTools {@link Filter} to a {@link Predicate} to be applied
@@ -26,14 +25,11 @@ final class PostFilter implements Predicate<SimpleFeature> {
         this.filter = filter;
     }
 
-    public @Override boolean apply(SimpleFeature feature) {
+    public @Override boolean test(SimpleFeature feature) {
         return filter.evaluate(feature);
     }
 
     public static Predicate<SimpleFeature> forFilter(Filter postFilter) {
-        if (Filter.INCLUDE.equals(postFilter)) {
-            return Predicates.alwaysTrue();
-        }
         return new PostFilter(postFilter);
     }
 }

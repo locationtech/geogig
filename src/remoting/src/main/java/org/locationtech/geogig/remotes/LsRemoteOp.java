@@ -13,6 +13,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
@@ -22,9 +24,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -52,7 +51,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<Set<Ref>> {
      * Constructs a new {@code LsRemote}.
      */
     public LsRemoteOp() {
-        this.remote = Suppliers.ofInstance(Optional.empty());
+        this.remote = () -> Optional.empty();
         this.getBranches = true;
         this.getTags = true;
     }
@@ -68,7 +67,7 @@ public class LsRemoteOp extends AbstractGeoGigOp<Set<Ref>> {
     }
 
     public LsRemoteOp setRemote(Remote remote) {
-        this.remote = Suppliers.ofInstance(Optional.of(remote));
+        this.remote = () -> Optional.of(remote);
         this.remoteRepo = null;
         return this;
     }
@@ -185,10 +184,8 @@ public class LsRemoteOp extends AbstractGeoGigOp<Set<Ref>> {
      */
     private Set<Ref> locallyKnownRefs(final Remote remoteConfig) {
 
-        Predicate<Ref> filter = input -> {
-            java.util.Optional<String> remoteRef = remoteConfig.mapToRemote(input.getName());
-            return remoteRef.isPresent();
-        };
+        Predicate<Ref> filter = input -> remoteConfig.mapToRemote(input.getName()).isPresent();
+
         return command(ForEachRef.class).setFilter(filter).call();
     }
 

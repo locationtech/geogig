@@ -25,8 +25,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.locationtech.geogig.storage.datastream.DataStreamRevObjectSerializerV1;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -73,8 +71,7 @@ public class Cat extends AbstractCommand {
             RevObjectSerializer factory = DataStreamRevObjectSerializerV1.INSTANCE;
             factory.write(obj.get(), System.out);
         } else {
-            CharSequence s = geogig.command(CatObject.class)
-                    .setObject(Suppliers.ofInstance(obj.get())).call();
+            CharSequence s = geogig.command(CatObject.class).setObject(obj::get).call();
             console.println(s);
         }
     }

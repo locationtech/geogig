@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -42,7 +43,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.BlobStore;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 
 import lombok.Cleanup;

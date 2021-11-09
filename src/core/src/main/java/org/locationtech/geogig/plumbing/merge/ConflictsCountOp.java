@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
-import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
+import java.util.function.Supplier;
 
-import com.google.common.base.Supplier;
+import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 /**
  * Internal command to return an the number of conflicts in the operation's namespace (i.e.

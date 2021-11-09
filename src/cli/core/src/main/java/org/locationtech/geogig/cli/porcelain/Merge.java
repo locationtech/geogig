@@ -38,8 +38,6 @@ import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -105,8 +103,8 @@ public class Merge extends AbstractCommand implements CLICommand {
                         true);
             }
 
-            geogig.command(ResetOp.class).setMode(ResetMode.HARD)
-                    .setCommit(Suppliers.ofInstance(ref.get().getObjectId())).call();
+            geogig.command(ResetOp.class).setMode(ResetMode.HARD).setCommit(ref.get().getObjectId())
+                    .call();
             console.println("Merge aborted successfully.");
             return;
         }

@@ -45,7 +45,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
@@ -194,7 +193,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
         checkout(localRepo, "master");
         localRepo.command(ResetOp.class).setMode(ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+                .setCommit(merge2_left.getMergeCommit()::getId).call();
 
         checkout(localRepo, "master_alt");
 
@@ -208,7 +207,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
 
         checkout(localRepo, "master_alt");
         localRepo.command(ResetOp.class).setMode(ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+                .setCommit(merge2_right.getMergeCommit()::getId).call();
 
         checkout(localRepo, "master");
 

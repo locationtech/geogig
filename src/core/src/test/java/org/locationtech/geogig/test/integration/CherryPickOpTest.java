@@ -41,8 +41,6 @@ import org.locationtech.geogig.porcelain.ConflictsException;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.porcelain.NothingToCommitException;
 
-import com.google.common.base.Suppliers;
-
 public class CherryPickOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -98,7 +96,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         // switch back to master
         repo.command(CheckoutOp.class).setSource("master").call();
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(c5.getId()));
+        cherryPick.setCommit(c5::getId);
         RevCommit commit2 = cherryPick.call();
 
         assertEquals(c5.getAuthor(), commit2.getAuthor());
@@ -107,7 +105,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         assertFalse(c5.getCommitter().getTimestamp() == commit2.getCommitter().getTimestamp());
         assertFalse(c5.getTreeId().equals(commit2.getTreeId()));
 
-        cherryPick.setCommit(Suppliers.ofInstance(c3.getId()));
+        cherryPick.setCommit(c3::getId);
         RevCommit commit3 = cherryPick.call();
 
         assertEquals(c3.getAuthor(), commit3.getAuthor());
@@ -116,7 +114,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         assertFalse(c3.getCommitter().getTimestamp() == commit3.getCommitter().getTimestamp());
         assertFalse(c3.getTreeId().equals(commit3.getTreeId()));
 
-        cherryPick.setCommit(Suppliers.ofInstance(c2.getId()));
+        cherryPick.setCommit(c2::getId);
         RevCommit commit4 = cherryPick.call();
 
         assertEquals(c2.getAuthor(), commit4.getAuthor());
@@ -182,8 +180,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).call();
         repo.command(CommitOp.class).call();
         try {
-            repo.command(CherryPickOp.class).setCommit(Suppliers.ofInstance(branchCommit.getId()))
-                    .call();
+            repo.command(CherryPickOp.class).setCommit(branchCommit::getId).call();
             fail("Expected ConflictsException");
         } catch (ConflictsException e) {
             assertTrue(e.getMessage().contains("conflict in Points/Points.1"));
@@ -219,7 +216,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
     @Test
     public void testCherryPickInvalidCommit() throws Exception {
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(ObjectId.NULL));
+        cherryPick.setCommit(() -> ObjectId.NULL);
         assertThrows(IllegalArgumentException.class, cherryPick::call);
     }
 
@@ -238,7 +235,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         insert(points3);
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
+        cherryPick.setCommit(c1::getId);
         assertThrows(IllegalStateException.class, cherryPick::call);
     }
 
@@ -257,7 +254,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         insertAndAdd(points3);
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
+        cherryPick.setCommit(c1::getId);
         assertThrows(IllegalStateException.class, cherryPick::call);
     }
 
@@ -269,7 +266,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
+        cherryPick.setCommit(c1::getId);
         cherryPick.call();
 
         Iterator<RevCommit> log = repo.command(LogOp.class).call();
@@ -297,7 +294,7 @@ public class CherryPickOpTest extends RepositoryTestCase {
         final RevCommit c1 = repo.command(CommitOp.class).setMessage("commit for " + idP1).call();
 
         CherryPickOp cherryPick = repo.command(CherryPickOp.class);
-        cherryPick.setCommit(Suppliers.ofInstance(c1.getId()));
+        cherryPick.setCommit(c1::getId);
         assertThrows(NothingToCommitException.class, cherryPick::call);
     }
 }

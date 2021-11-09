@@ -22,7 +22,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -40,9 +39,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -182,11 +178,9 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
             }
         }
 
-        ObjectId newHead;
         // rewind the head
-        newHead = since.getParentIds().get(0);
-        command(ResetOp.class).setCommit(Suppliers.ofInstance(newHead)).setMode(ResetMode.HARD)
-                .call();
+        ObjectId newHead = since.getParentIds().get(0);
+        command(ResetOp.class).setCommit(newHead).setMode(ResetMode.HARD).call();
 
         // add the current HEAD as first parent of the resulting commit
         // parents.add(0, newHead);
@@ -197,15 +191,10 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         parents.addAll(secondaryParents);
         ObjectId endTree = until.getTreeId();
         RevCommitBuilder builder = RevCommit.builder().platform(this.platform()).init(until);
-        Collection<ObjectId> filteredParents = Collections2.filter(parents,
-                new Predicate<ObjectId>() {
-                    public @Override boolean apply(@Nullable ObjectId id) {
-                        return !squashedIds.contains(id);
-                    }
 
-                });
-
-        builder.parentIds(Lists.newArrayList(filteredParents));
+        List<ObjectId> filteredParents = parents.stream().filter(id -> !squashedIds.contains(id))
+                .collect(Collectors.toList());
+        builder.parentIds(filteredParents);
         builder.treeId(endTree);
         if (message == null) {
             message = since.getMessage();

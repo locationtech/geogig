@@ -44,8 +44,6 @@ import org.locationtech.geogig.plumbing.diff.GeometryAttributeDiff;
 import org.locationtech.geogig.plumbing.diff.LCSGeometryDiffImpl;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.google.common.base.Suppliers;
-
 interface DiffPrinter {
 
     /**
@@ -136,8 +134,8 @@ class FullDiffPrinter implements DiffPrinter {
 
         if (diffEntry.changeType() == ChangeType.MODIFIED) {
             FeatureDiff diff = geogig.command(DiffFeature.class)
-                    .setNewVersion(Suppliers.ofInstance(diffEntry.getNewObject()))
-                    .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject())).call();
+                    .setNewVersion(diffEntry.getNewObject()).setOldVersion(diffEntry.getOldObject())
+                    .call();
 
             Map<PropertyDescriptor, AttributeDiff> diffs = diff.getDiffs();
 

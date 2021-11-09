@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -19,9 +20,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Finds the subtree of the given tree named after the indicated path, or creates a new one. If a
@@ -52,7 +50,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
     }
 
     public FindOrCreateSubtree setParent(RevTree parent) {
-        this.parentSupplier = Suppliers.ofInstance(Optional.of(parent));
+        this.parentSupplier = () -> Optional.of(parent);
         return this;
     }
 
@@ -89,7 +87,7 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
             RevTree parent = parentSupplier.get().get();
 
             Optional<NodeRef> treeChildRef = command(FindTreeChild.class).setParentPath(parentPath)
-                    .setChildPath(childPath).setParent(Suppliers.ofInstance(parent)).call();
+                    .setChildPath(childPath).setParent(() -> parent).call();
 
             if (treeChildRef.isPresent()) {
                 NodeRef treeRef = treeChildRef.get();

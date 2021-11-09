@@ -18,11 +18,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
@@ -59,11 +61,10 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import lombok.NonNull;
@@ -364,21 +365,11 @@ public class WorkingTreeImpl implements WorkingTree {
             return feature;
         };
 
-        Iterator<RevFeature> features = Iterators.transform(featureInfos,
-                treeBuildingTransformer::apply);
-        features = Iterators.filter(features, Predicates.notNull());
-
-        // (f) -> !progress.isCanceled()
-        Predicate<RevFeature> fn = new Predicate<RevFeature>() {
-            public @Override boolean apply(RevFeature f) {
-                return !progress.isCanceled();
-            }
-        };
-
-        features = Iterators.filter(features, fn);
+        Stream<RevFeature> features = Streams.stream(featureInfos).map(treeBuildingTransformer)
+                .filter(Objects::nonNull).filter(f -> !progress.isCanceled());
 
         Stopwatch insertTime = Stopwatch.createStarted();
-        indexDatabase.putAll(features);
+        indexDatabase.putAll(features.iterator());
         insertTime.stop();
         if (progress.isCanceled()) {
             return currentWorkHead.getId();

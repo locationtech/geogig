@@ -36,8 +36,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Suppliers;
 
 import lombok.NonNull;
 
@@ -160,7 +158,7 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                 ObjectStore objectDatabase = local.context().objectDatabase();
                 graphDatabase.put(commit.getId(), commit.getParentIds());
 
-                RevTree rootTree = RevTree.EMPTY;
+                final RevTree rootTree;
 
                 if (commit.getParentIds().size() > 0) {
                     // Map this commit to the last "sparse" commit in my ancestry
@@ -170,24 +168,18 @@ public abstract class AbstractMappedRemoteRepo implements IRemoteRepo {
                             .setTreeish(mappedCommit).call();
                     if (treeId.isPresent()) {
                         rootTree = local.context().objectDatabase().getTree(treeId.get());
+                    } else {
+                        rootTree = RevTree.EMPTY;
                     }
-
                 } else {
+                    rootTree = RevTree.EMPTY;
                     graphDatabase.map(commit.getId(), ObjectId.NULL);
                 }
 
-                AutoCloseableIterator<DiffEntry> it = AutoCloseableIterator.filter(changes,
-                        new Predicate<DiffEntry>() {
-                            public @Override boolean apply(DiffEntry e) {
-                                return true;
-                            }
-                        });
-
-                if (it.hasNext()) {
+                if (changes.hasNext()) {
                     // Create new commit
-                    WriteTree writeTree = local.command(WriteTree.class)
-                            .setOldRoot(Suppliers.ofInstance(rootTree)).setDiffSupplier(
-                                    Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) it));
+                    WriteTree writeTree = local.command(WriteTree.class).setOldRoot(() -> rootTree)
+                            .setDiffSupplier(() -> (AutoCloseableIterator<DiffEntry>) changes);
 
                     ObjectId newTreeId = writeTree.call();
 

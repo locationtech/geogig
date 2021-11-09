@@ -27,7 +27,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 /**
@@ -105,14 +104,12 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
                 .getUnstaged(pathFilter)) {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
             if (updateOnly) {
-                updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
-                    public @Override boolean apply(@Nullable DiffEntry input) {
-                        // HACK: avoid reporting changed trees
-                        if (input.isChange() && input.getOldObject().getType().equals(TYPE.TREE)) {
-                            return false;
-                        }
-                        return input.getOldObject() != null;
+                updatedIterator = Iterators.filter(updatedIterator, input -> {
+                    // HACK: avoid reporting changed trees
+                    if (input.isChange() && input.getOldObject().getType().equals(TYPE.TREE)) {
+                        return false;
                     }
+                    return input.getOldObject() != null;
                 });
             }
 

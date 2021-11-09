@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
@@ -68,15 +70,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 /**
  * Internal operation for creating a FeatureCollection from a tree content.
@@ -289,31 +289,25 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
     private Iterator<SimpleFeature> force(Iterator<SimpleFeature> plainFeatures,
             final ObjectId forceMetadataId) {
 
-        return Iterators.filter(plainFeatures, new Predicate<SimpleFeature>() {
-            public @Override boolean apply(SimpleFeature input) {
-                RevFeatureType type;
-                type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
-                ObjectId metadataId = type.getId();
-                if (!forceMetadataId.equals(metadataId)) {
-                    throw new GeoToolsOpException(StatusCode.MIXED_FEATURE_TYPES);
-                }
-                return true;
+        return Iterators.filter(plainFeatures, input -> {
+            RevFeatureType type;
+            type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
+            ObjectId metadataId = type.getId();
+            if (!forceMetadataId.equals(metadataId)) {
+                throw new GeoToolsOpException(StatusCode.MIXED_FEATURE_TYPES);
             }
+            return true;
         });
     }
 
     private Iterator<SimpleFeature> filter(Iterator<SimpleFeature> plainFeatures,
             final ObjectId filterFeatureTypeId) {
 
-        return Iterators.filter(plainFeatures, new Predicate<SimpleFeature>() {
-            public @Override boolean apply(SimpleFeature input) {
-                RevFeatureType type;
-                type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
-                ObjectId metadataId = type.getId();
-                boolean applies = filterFeatureTypeId.equals(metadataId);
-                return applies;
-            }
-        });
+        return Streams.stream(plainFeatures).filter(input -> {
+            RevFeatureType type = (RevFeatureType) input.getUserData().get(RevFeatureType.class);
+            ObjectId metadataId = type.getId();
+            return filterFeatureTypeId.equals(metadataId);
+        }).iterator();
     }
 
     private Iterator<SimpleFeature> alter(Iterator<SimpleFeature> plainFeatures,
@@ -415,7 +409,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
      * @return
      */
     public ExportOp setFeatureStore(SimpleFeatureStore featureStore) {
-        this.targetStoreProvider = Suppliers.ofInstance(featureStore);
+        this.targetStoreProvider = () -> featureStore;
         return this;
     }
 
@@ -526,7 +520,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             this.defaultMetadataId = defaultMetadataId;
         }
 
-        public @Override boolean apply(Bounded input) {
+        public @Override boolean test(Bounded input) {
             final ObjectId metadataId = getMetadataId(input);
             Envelope projectedFilter = getProjectedFilter(metadataId);
             boolean applies = input.intersects(projectedFilter);

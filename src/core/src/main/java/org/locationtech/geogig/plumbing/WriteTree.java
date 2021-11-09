@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -31,8 +32,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -268,7 +267,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
     }
 
     private void deepCopy(Node ref) {
-        Supplier<Node> objectRef = Suppliers.ofInstance(ref);
+        Supplier<Node> objectRef = () -> ref;
         command(DeepCopy.class).setObjectRef(objectRef).setFrom(fromDb).call();
     }
 

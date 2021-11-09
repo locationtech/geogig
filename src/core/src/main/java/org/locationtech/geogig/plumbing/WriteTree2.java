@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
@@ -42,9 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -336,16 +334,14 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
             if (!strippedPathFilters.isEmpty()) {
                 final Set<String> expected = Sets.newHashSet(strippedPathFilters);
-                updatedIterator = Iterators.filter(updatedIterator, new Predicate<DiffEntry>() {
-                    public @Override boolean apply(DiffEntry input) {
-                        boolean applies;
-                        if (input.isDelete()) {
-                            applies = expected.contains(input.oldName());
-                        } else {
-                            applies = expected.contains(input.newName());
-                        }
-                        return applies;
+                updatedIterator = Iterators.filter(updatedIterator, input -> {
+                    boolean applies;
+                    if (input.isDelete()) {
+                        applies = expected.contains(input.oldName());
+                    } else {
+                        applies = expected.contains(input.newName());
                     }
+                    return applies;
                 });
             }
 
@@ -468,8 +464,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         final Supplier<Iterator<NodeRef>> leftTreeRefs;
         final Supplier<Iterator<NodeRef>> rightTreeRefs;
         if (rootTreeId.isNull()) {
-            Iterator<NodeRef> empty = Collections.emptyIterator();
-            leftTreeRefs = Suppliers.ofInstance(empty);
+            leftTreeRefs = () -> Collections.emptyIterator();
         } else {
             leftTreeRefs = command(LsTreeOp.class).setReference(rootTreeId.toString())
                     .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES);

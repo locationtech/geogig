@@ -15,14 +15,12 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.transaction.TransactionBlobStore;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 public class HeapBlobStore implements TransactionBlobStore {
@@ -86,14 +84,9 @@ public class HeapBlobStore implements TransactionBlobStore {
     }
 
     public @Override void removeBlobs(final String namespace) {
-        Set<String> all = ImmutableSet.copyOf(blobs.keySet());
-        Set<String> filtered = Sets.filter(all, new Predicate<String>() {
-            final String prefix = namespace + "/";
-
-            public @Override boolean apply(String key) {
-                return key.startsWith(prefix);
-            }
-        });
+        final String prefix = namespace + "/";
+        Set<String> filtered = blobs.keySet().stream().filter(key -> key.startsWith(prefix))
+                .collect(Collectors.toSet());
         for (String k : filtered) {
             blobs.remove(k);
         }

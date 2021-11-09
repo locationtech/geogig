@@ -45,7 +45,6 @@ import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.locationtech.geogig.transaction.TransactionBegin;
 import org.locationtech.geogig.transaction.TransactionEnd;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 public class UpdateIndexesOpTest extends RepositoryTestCase {
@@ -359,7 +358,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
                 "xystr");
 
         // rebase branch1 onto master
-        repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId())).call();
+        repo.command(RebaseOp.class).setUpstream(masterCommit::getId).call();
 
         // verify that both rebased commits were indexed
         featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
@@ -442,8 +441,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         // rebase branch1 onto master
         try {
-            repo.command(RebaseOp.class).setUpstream(Suppliers.ofInstance(masterCommit.getId()))
-                    .call();
+            repo.command(RebaseOp.class).setUpstream(masterCommit::getId).call();
             fail();
         } catch (RebaseConflictsException e) {
             // expected
@@ -521,8 +519,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
 
         checkout("master");
 
-        RevCommit cherryPicked = repo.command(CherryPickOp.class)
-                .setCommit(Suppliers.ofInstance(commit2.getId())).call();
+        RevCommit cherryPicked = repo.command(CherryPickOp.class).setCommit(commit2::getId).call();
         featureTree = IndexUtils.resolveTypeTreeRef(repo.context(),
                 cherryPicked.getId() + ":" + worldPointsLayer.getName());
 

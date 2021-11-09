@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.dsl.Geogig;
@@ -40,7 +41,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;

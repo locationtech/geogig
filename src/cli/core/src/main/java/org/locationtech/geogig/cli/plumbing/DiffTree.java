@@ -38,7 +38,6 @@ import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -99,9 +98,8 @@ public class DiffTree extends AbstractCommand implements CLICommand {
 
                     if (diffEntry.changeType() == ChangeType.MODIFIED) {
                         FeatureDiff featureDiff = geogig.command(DiffFeature.class)
-                                .setNewVersion(Suppliers.ofInstance(diffEntry.getNewObject()))
-                                .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject()))
-                                .call();
+                                .setNewVersion(diffEntry.getNewObject())
+                                .setOldVersion(diffEntry.getOldObject()).call();
                         Map<PropertyDescriptor, AttributeDiff> diffs = featureDiff.getDiffs();
                         HashSet<PropertyDescriptor> diffDescriptors = Sets
                                 .newHashSet(diffs.keySet());

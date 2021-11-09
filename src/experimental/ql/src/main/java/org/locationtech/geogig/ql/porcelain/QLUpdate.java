@@ -15,6 +15,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.filter.Filter;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 
@@ -119,7 +118,8 @@ public @CanRunDuringConflict class QLUpdate extends AbstractGeoGigOp<Supplier<Di
         final DiffCount count = command(DiffCount.class).setOldTree(initialFeatureTreeId)
                 .setNewTree(resultFeatureTreeId);
 
-        return Suppliers.memoize(() -> count.call());
+        DiffObjectCount res = count.call();
+        return () -> res;
     }
 
     private Object[] parsePropertyValues(Update update) {

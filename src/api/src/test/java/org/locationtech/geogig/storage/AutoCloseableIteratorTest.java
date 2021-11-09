@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -93,11 +92,7 @@ public class AutoCloseableIteratorTest {
         AtomicBoolean closed = new AtomicBoolean(false);
         TestAutoCloseableIterator testIter = new TestAutoCloseableIterator(closed);
         try (AutoCloseableIterator<String> filtered = AutoCloseableIterator.filter(testIter,
-                new Predicate<String>() {
-                    public @Override boolean apply(String input) {
-                        return input.contains("1");
-                    }
-                })) {
+                input -> input.contains("1"))) {
             assertTrue(filtered.hasNext());
             assertTrue(filtered.hasNext());
             assertEquals("item1", filtered.next());

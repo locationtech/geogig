@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,12 +32,12 @@ import org.locationtech.geogig.plumbing.FindTreeChild;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 import lombok.NonNull;
 
@@ -268,7 +269,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
         }
         LogFilter filter = new LogFilter(geogig, oldestCommitId, timeRange, paths, author,
                 commiter);
-        Iterator<RevCommit> filteredCommits = Iterators.filter(history, filter);
+        Iterator<RevCommit> filteredCommits = Streams.stream(history).filter(filter).iterator();
         if (skip != null) {
             Iterators.advance(filteredCommits, skip.intValue());
         }
@@ -556,9 +557,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
         /**
          * @return {@code true} if the commit satisfies the filter criteria set to this op
-         * @see com.google.common.base.Predicate#apply(java.lang.Object)
          */
-        public @Override boolean apply(final RevCommit commit) {
+        public @Override boolean test(final RevCommit commit) {
             if (toReached) {
                 return false;
             }

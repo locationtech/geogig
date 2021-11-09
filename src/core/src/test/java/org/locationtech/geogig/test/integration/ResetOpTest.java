@@ -36,8 +36,6 @@ import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Suppliers;
-
 public class ResetOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -225,8 +223,8 @@ public class ResetOpTest extends RepositoryTestCase {
 
         final Optional<Ref> currHead = repo.command(RefParse.class).setName(Ref.HEAD).call();
 
-        repo.command(ResetOp.class).setCommit(Suppliers.ofInstance(currHead.get().getObjectId()))
-                .setMode(ResetMode.SOFT).call();
+        repo.command(ResetOp.class).setCommit(currHead.get()::getObjectId).setMode(ResetMode.SOFT)
+                .call();
 
         assertEquals(oId1_modified, repo.context().stagingArea()
                 .findStaged(appendChild(pointsName, idP1)).get().getObjectId());
@@ -352,8 +350,7 @@ public class ResetOpTest extends RepositoryTestCase {
             assertTrue(e.getMessage().contains("conflict"));
         }
 
-        repo.command(ResetOp.class).setMode(ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
+        repo.command(ResetOp.class).setMode(ResetMode.HARD).setCommit(resetCommit::getId).call();
         Repository repository = repo;
         assertEquals(0, repository.context().conflictsDatabase().getCountByPrefix(null, null));
         Optional<Ref> ref = repo.command(RefParse.class).setName(Ref.MERGE_HEAD).call();
@@ -390,7 +387,7 @@ public class ResetOpTest extends RepositoryTestCase {
         }
 
         repo.command(ResetOp.class).addPattern(pointsName + "/" + idP1)
-                .setCommit(Suppliers.ofInstance(resetCommit.getId())).call();
+                .setCommit(resetCommit::getId).call();
         Repository repository = repo;
         ConflictsDatabase conflicts = repository.context().conflictsDatabase();
         assertEquals(0, conflicts.getCountByPrefix(null, null));

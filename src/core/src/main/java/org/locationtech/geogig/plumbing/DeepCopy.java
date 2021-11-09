@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -29,8 +30,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Streams;
@@ -177,7 +176,7 @@ public class DeepCopy extends AbstractGeoGigOp<ObjectId> {
 
         Iterator<Node> ns = Streams.stream(refs.get()).map(NodeRef::getNode).iterator();
 
-        Supplier<Iterator<Node>> nodes = Suppliers.ofInstance(ns);
+        Supplier<Iterator<Node>> nodes = () -> ns;
 
         // move all features, recursively as given by the LsTreeOp strategy
         copyObjects(from, to, nodes, metadataIds);

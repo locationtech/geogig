@@ -27,7 +27,6 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
@@ -97,15 +96,9 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
             checkNotNull(mappedBranch);
             final String mappedBranchName = Ref.localName(mappedBranch);
 
-            // (name) -> Ref.localName(name).equals(mappedBranchName)
-            Predicate<String> fn = new Predicate<String>() {
-                public @Override boolean apply(String name) {
-                    return Ref.localName(name).equals(mappedBranchName);
-                }
-            };
-
-            remotes = Maps.filterKeys(remotes, fn);
-            locals = Maps.filterKeys(locals, fn);
+            remotes = Maps.filterKeys(remotes,
+                    name -> Ref.localName(name).equals(mappedBranchName));
+            locals = Maps.filterKeys(locals, name -> Ref.localName(name).equals(mappedBranchName));
         }
         MapDifference<String, Ref> difference = Maps.difference(remotes, locals);
 

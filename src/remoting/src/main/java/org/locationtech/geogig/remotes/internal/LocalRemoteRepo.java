@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
@@ -55,7 +56,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
@@ -120,17 +120,15 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
 
     public @Override Set<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
-        Predicate<Ref> filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref input) {
-                boolean keep = false;
-                if (getHeads) {
-                    keep = input.getName().startsWith(Ref.HEADS_PREFIX);
-                }
-                if (getTags) {
-                    keep = keep || input.getName().startsWith(Ref.TAGS_PREFIX);
-                }
-                return keep;
+        Predicate<Ref> filter = input -> {
+            boolean keep = false;
+            if (getHeads) {
+                keep = input.getName().startsWith(Ref.HEADS_PREFIX);
             }
+            if (getTags) {
+                keep = keep || input.getName().startsWith(Ref.TAGS_PREFIX);
+            }
+            return keep;
         };
         checkNotNull(remoteRepository);
         return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
@@ -260,29 +258,25 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
 
         // This filter further refines the post order diff walk by making it ignore trees/buckets
         // that are already present in the target db
-        Predicate<Bounded> filter = new Predicate<Bounded>() {
+        Predicate<Bounded> filter = b -> {
+            if (b == null) {
+                return false;
+            }
 
-            public @Override boolean apply(@Nullable Bounded b) {
-                if (b == null) {
-                    return false;
-                }
+            if (b instanceof NodeRef && FEATURE.equals(((NodeRef) b).getType())) {
+                // check of existence of trees only. For features the diff filtering is good
+                // enough and checking for existence on each feature would be killer
+                // performance wise
+                return true;
+            }
 
-                if (b instanceof NodeRef && FEATURE.equals(((NodeRef) b).getType())) {
-                    // check of existence of trees only. For features the diff filtering is good
-                    // enough and checking for existence on each feature would be killer
-                    // performance wise
-                    return true;
-                }
-
-                final ObjectId id = b.getObjectId();
-                lock.readLock().lock();
-                try {
-                    boolean exists = !progress.isCanceled()
-                            && (ids.contains(id) || toDb.exists(id));
-                    return !exists;
-                } finally {
-                    lock.readLock().unlock();
-                }
+            final ObjectId id = b.getObjectId();
+            lock.readLock().lock();
+            try {
+                boolean exists = !progress.isCanceled() && (ids.contains(id) || toDb.exists(id));
+                return !exists;
+            } finally {
+                lock.readLock().unlock();
             }
         };
 

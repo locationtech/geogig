@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.geotools.data.util.ScreenMap;
@@ -19,8 +20,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.referencing.operation.TransformException;
-
-import com.google.common.base.Predicate;
 
 class DiffFeatureScreenMapPredicate implements Predicate<org.locationtech.geogig.feature.Feature> {
 
@@ -38,7 +37,7 @@ class DiffFeatureScreenMapPredicate implements Predicate<org.locationtech.geogig
     /**
      * Filter out small features (<pixel) where that pixel already has a small feature in it.
      */
-    public @Override boolean apply(Feature feature) {
+    public @Override boolean test(Feature feature) {
         List<String> geometryAttributes = this.geometryAttributes;
         boolean apply = false;
         for (int i = 0; i < geometryAttributes.size(); i++) {

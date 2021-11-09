@@ -11,13 +11,12 @@ package org.locationtech.geogig.plumbing.remotes;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.plumbing.remotes.RemoteException.StatusCode;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
-
-import com.google.common.base.Supplier;
 
 /**
  * Finds a remote

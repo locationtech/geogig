@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.function.Predicate;
+
 import org.geotools.data.util.ScreenMap;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.operation.TransformException;
-
-import com.google.common.base.Predicate;
 
 /**
  * This is a simple class that is very much like the ScreenMapPredicate class. This works on
@@ -31,7 +31,7 @@ class FeatureScreenMapPredicate implements Predicate<SimpleFeature> {
     /**
      * Filter out small features (<pixel) where that pixel already has a small feature in it.
      */
-    public @Override boolean apply(SimpleFeature feature) {
+    public @Override boolean test(SimpleFeature feature) {
         Envelope e = ((Geometry) feature.getDefaultGeometry()).getEnvelopeInternal();
         // only do work if its a small geometry
         if (screenMap.canSimplify(e)) {

@@ -49,8 +49,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
@@ -66,8 +68,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-
-import com.google.gson.Gson;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -163,18 +163,61 @@ public class Marshallers {
     }
 
     private static class StringArrayMarshaller implements Marshaller {
-        private Gson gson = new Gson();
-
         public @Override @NonNull String marshall(@NonNull Object value) {
-            String json = gson.toJson(value);
-            return json;
+            String[] array = (String[]) value;
+            String contents = Arrays.stream(array).map(this::jsonescape)
+                    .collect(Collectors.joining(","));
+            return "[" + contents + "]";
         }
 
-        public @Override @NonNull Object unmarshall(@NonNull String source) {
-            Object fromJson = gson.fromJson(source, String[].class);
-            return fromJson;
+        public @Override @NonNull Object unmarshall(@NonNull final String source) {
+            if (source.charAt(0) != '[' || source.charAt(source.length() - 1) != ']') {
+                throw new IllegalArgumentException();
+            }
+            String s = source.substring(1);
+            s = s.substring(0, s.length() - 1);
+            String[] split = s.split("\",\"");
+            if (split.length == 1 && split[0].isEmpty()) {
+                return new String[] {};
+            }
+            for (int i = 0; i < split.length; i++) {
+                if (i == 0)
+                    split[0] = split[0].substring(1);
+                if (i == split.length - 1)
+                    split[i] = split[i].substring(0, split[i].length() - 1);
+                split[i] = jsonunscape(split[i]);
+            }
+            return split;
         }
 
+        private String jsonescape(String s) {
+            StringBuilder sb = new StringBuilder("\"");
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == '"') {
+                    sb.append("\\\"");
+                } else if (c == '\\') {
+                    sb.append("\\\\");
+                } else {
+                    sb.append(c);
+                }
+            }
+            sb.append("\"");
+            return sb.toString();
+        }
+
+        private String jsonunscape(final String s) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (c == '\\') {
+                    sb.append(s.charAt(++i));
+                } else {
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
+        }
     }
 
     private static class ToStringMarshaller implements Marshaller {

@@ -38,7 +38,6 @@ The following third-party content is included:
  GeoTools under Lesser General Public License (LGPL)
  Google Guice Core Library under The Apache Software License, Version 2.0
  Google Guice Extensions - MultiBindings under The Apache Software License, Version 2.0
- Gson under The Apache Software License, Version 2.0
  Guava: Google Core Libraries for Java under The Apache Software License, Version 2.0
  HikariCP under The Apache Software License, Version 2.0
  HTTP server connector under CDDL license or GPL license

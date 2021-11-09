@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
+import java.nio.charset.StandardCharsets;
+
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
-
-import com.google.common.base.Charsets;
 
 public class SaveMergeCommitMessageOp extends AbstractGeoGigOp<Void> {
 
@@ -26,7 +26,7 @@ public class SaveMergeCommitMessageOp extends AbstractGeoGigOp<Void> {
 
     protected @Override Void _call() {
         BlobStore blobStore = context().blobStore();
-        byte[] blob = message.getBytes(Charsets.UTF_8);
+        byte[] blob = message.getBytes(StandardCharsets.UTF_8);
         blobStore.putBlob(MergeOp.MERGE_MSG, blob);
         return null;
     }

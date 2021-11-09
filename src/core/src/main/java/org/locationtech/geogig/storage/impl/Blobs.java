@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.storage.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.storage.BlobStore;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 
 /**
@@ -26,7 +26,7 @@ public class Blobs {
     public static String SPARSE_FILTER_BLOB_KEY = "sparse_filter";
 
     public static void putBlob(BlobStore blobStore, String blobName, CharSequence contents) {
-        byte[] blob = contents.toString().getBytes(Charsets.UTF_8);
+        byte[] blob = contents.toString().getBytes(StandardCharsets.UTF_8);
         blobStore.putBlob(blobName, blob);
     }
 
@@ -34,7 +34,7 @@ public class Blobs {
         Optional<byte[]> blob = getBlob(blobStore, blobName);
         Optional<String> str = Optional.empty();
         if (blob.isPresent()) {
-            str = Optional.of(new String(blob.get(), Charsets.UTF_8));
+            str = Optional.of(new String(blob.get(), StandardCharsets.UTF_8));
         }
         return str;
     }
@@ -47,7 +47,7 @@ public class Blobs {
     public static List<String> readLines(Optional<byte[]> blob) {
         List<String> lines = Collections.emptyList();
         if (blob.isPresent()) {
-            String contents = new String(blob.get(), Charsets.UTF_8);
+            String contents = new String(blob.get(), StandardCharsets.UTF_8);
             lines = Splitter.on("\n").splitToList(contents);
         }
         return lines;

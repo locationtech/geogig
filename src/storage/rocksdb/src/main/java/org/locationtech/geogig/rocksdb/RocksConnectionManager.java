@@ -10,6 +10,7 @@
 package org.locationtech.geogig.rocksdb;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,6 @@ import org.rocksdb.RocksDBException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
@@ -74,7 +74,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         try {
             Function<byte[], String> fn = new Function<byte[], String>() {
                 public @Override String apply(byte[] ba) {
-                    return new String(ba, Charsets.UTF_8);
+                    return new String(ba, StandardCharsets.UTF_8);
                 }
             };
             List<byte[]> columnFamilies = RocksDB.listColumnFamilies(new Options(), path);
@@ -94,7 +94,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
         try {
             List<ColumnFamilyDescriptor> colDescriptors = new ArrayList<>();
             for (String name : colFamilyNames) {
-                byte[] colFamilyName = name.getBytes(Charsets.UTF_8);
+                byte[] colFamilyName = name.getBytes(StandardCharsets.UTF_8);
                 ColumnFamilyOptions colFamilyOptions = newColFamilyOptions();
                 colDescriptors.add(new ColumnFamilyDescriptor(colFamilyName, colFamilyOptions));
             }
@@ -178,7 +178,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
     private ColumnFamilyDescriptor newColDescriptor(String name) {
         ColumnFamilyOptions options = newColFamilyOptions();
         ColumnFamilyDescriptor descriptor = new ColumnFamilyDescriptor(
-                name.getBytes(Charsets.UTF_8), options);
+                name.getBytes(StandardCharsets.UTF_8), options);
         return descriptor;
     }
 

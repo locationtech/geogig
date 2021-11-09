@@ -19,6 +19,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -35,7 +36,6 @@ import java.util.zip.GZIPOutputStream;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.storage.datastream.Varint;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -311,7 +311,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
                 Varint.writeSignedVarInt(-1, out);
                 return;
             }
-            byte[] bytes = value.getBytes(Charsets.UTF_8);
+            byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
             int length = bytes.length;
             Varint.writeSignedVarInt(length, out);
             out.write(bytes);
@@ -327,7 +327,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             try {
                 ensureCapacity(length);
                 in.readFully(buffer, 0, length);
-                String s = new String(buffer, 0, length, Charsets.UTF_8);
+                String s = new String(buffer, 0, length, StandardCharsets.UTF_8);
                 return s;
             } finally {
                 lock.unlock();

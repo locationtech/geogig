@@ -15,6 +15,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +41,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
@@ -153,7 +153,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
     }
 
     private byte[] key(String path) {
-        return path.getBytes(Charsets.UTF_8);
+        return path.getBytes(StandardCharsets.UTF_8);
     }
 
     @Nullable

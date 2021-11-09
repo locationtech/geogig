@@ -17,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,6 @@ import org.locationtech.geogig.plumbing.diff.VerifyPatchResults;
 import org.locationtech.geogig.porcelain.ApplyPatchOp;
 import org.locationtech.geogig.porcelain.CannotApplyPatchException;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
 
@@ -138,7 +138,7 @@ public class Apply extends AbstractCommand {
                         sb.append("Patch applied only partially.\n");
                         sb.append(Integer.toString(accepted) + " changes were applied.\n");
                         sb.append(Integer.toString(rejected.count()) + " changes were rejected.\n");
-                        BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
+                        BufferedWriter writer = Files.newWriter(file, StandardCharsets.UTF_8);
                         PatchSerializer.write(writer, patch);
                         writer.flush();
                         writer.close();

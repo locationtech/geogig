@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.Test;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 
 public class PatchSerializationTest extends RepositoryTestCase {
@@ -137,7 +137,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
 
     private void testPatch(Patch patch) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
+        OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
         PatchSerializer.write(writer, patch);
         ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
         BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));

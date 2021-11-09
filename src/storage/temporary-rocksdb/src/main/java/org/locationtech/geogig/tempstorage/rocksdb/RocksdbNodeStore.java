@@ -12,6 +12,7 @@ package org.locationtech.geogig.tempstorage.rocksdb;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,6 @@ import org.rocksdb.RocksObject;
 import org.rocksdb.WriteBatchWithIndex;
 import org.rocksdb.WriteOptions;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
@@ -182,7 +182,7 @@ class RocksdbNodeStore {
     }
 
     private byte[] toKey(NodeId nodeId) {
-        byte[] key = nodeId.name().getBytes(Charsets.UTF_8);
+        byte[] key = nodeId.name().getBytes(StandardCharsets.UTF_8);
         return key;
     }
 

@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.merge;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.BlobStore;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.io.CharStreams;
 
@@ -33,7 +33,8 @@ public class ReadMergeCommitMessageOp extends AbstractGeoGigOp<String> {
             return "";
         }
         try (InputStream in = blobAsStream.get()) {
-            List<String> lines = CharStreams.readLines(new InputStreamReader(in, Charsets.UTF_8));
+            List<String> lines = CharStreams
+                    .readLines(new InputStreamReader(in, StandardCharsets.UTF_8));
             return Joiner.on("\n").join(lines);
         } catch (IOException e) {
             throw new RuntimeException(e);

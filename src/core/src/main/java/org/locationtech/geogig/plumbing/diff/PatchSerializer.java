@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -95,7 +95,7 @@ public class PatchSerializer {
             } else {// feature
                 String element = Joiner.on("\n").join(lines.subList(1, lines.size()));
                 ByteArrayInputStream stream;
-                stream = new ByteArrayInputStream(element.getBytes(Charsets.UTF_8));
+                stream = new ByteArrayInputStream(element.getBytes(StandardCharsets.UTF_8));
                 String operation = headerTokens[0].trim();
                 if (operation.equals("M")) {
                     String fullPath = headerTokens[1].trim();
@@ -130,7 +130,7 @@ public class PatchSerializer {
         } else if (headerTokens.length == 1) {// feature type definition
             String element = Joiner.on("\n").join(lines);
             ByteArrayInputStream stream = new ByteArrayInputStream(
-                    element.getBytes(Charsets.UTF_8));
+                    element.getBytes(StandardCharsets.UTF_8));
             RevFeatureType featureType = (RevFeatureType) serializer.read(null, stream);
             featureTypes.put(featureType.getId().toString(), featureType);
         } else {

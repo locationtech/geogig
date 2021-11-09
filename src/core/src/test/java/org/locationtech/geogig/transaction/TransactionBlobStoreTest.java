@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.Before;
@@ -25,7 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 
 public abstract class TransactionBlobStoreTest {
@@ -53,17 +53,18 @@ public abstract class TransactionBlobStoreTest {
 
     @Test
     public void testPutGetBlob() {
-        blobStore.putBlob("MERGE_HEAD", "some contents\nsecond line".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("MERGE_HEAD",
+                "some contents\nsecond line".getBytes(StandardCharsets.UTF_8));
         Optional<byte[]> blob = blobStore.getBlob("MERGE_HEAD");
         assertNotNull(blob);
         assertTrue(blob.isPresent());
-        assertEquals("some contents\nsecond line", new String(blob.get(), Charsets.UTF_8));
+        assertEquals("some contents\nsecond line", new String(blob.get(), StandardCharsets.UTF_8));
     }
 
     @Test
     public void testPutGetBlobAsStream() throws IOException {
         InputStream blobArg = new ByteArrayInputStream(
-                "some contents\nsecond line".getBytes(Charsets.UTF_8));
+                "some contents\nsecond line".getBytes(StandardCharsets.UTF_8));
         blobStore.putBlob("MERGE_HEAD", blobArg);
 
         Optional<InputStream> blob = blobStore.getBlobAsStream("MERGE_HEAD");
@@ -73,7 +74,7 @@ public abstract class TransactionBlobStoreTest {
         try (InputStream in = blob.get()) {
             bytes = ByteStreams.toByteArray(in);
         }
-        assertEquals("some contents\nsecond line", new String(bytes, Charsets.UTF_8));
+        assertEquals("some contents\nsecond line", new String(bytes, StandardCharsets.UTF_8));
     }
 
     @Test
@@ -85,7 +86,7 @@ public abstract class TransactionBlobStoreTest {
     }
 
     private void testPutGetNamespace(String namespace, String path, String contents) {
-        byte[] blobArg = contents.getBytes(Charsets.UTF_8);
+        byte[] blobArg = contents.getBytes(StandardCharsets.UTF_8);
         blobStore.putBlob(namespace, path, blobArg);
 
         Optional<byte[]> blob = blobStore.getBlob(namespace, path);
@@ -94,7 +95,7 @@ public abstract class TransactionBlobStoreTest {
 
         byte[] bytes = blob.get();
 
-        assertEquals(contents, new String(bytes, Charsets.UTF_8));
+        assertEquals(contents, new String(bytes, StandardCharsets.UTF_8));
     }
 
     @Test
@@ -107,7 +108,7 @@ public abstract class TransactionBlobStoreTest {
 
     private void testPutGetAsStreamNamespace(String namespace, String path, String contents)
             throws IOException {
-        InputStream blobArg = new ByteArrayInputStream(contents.getBytes(Charsets.UTF_8));
+        InputStream blobArg = new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8));
 
         blobStore.putBlob(namespace, path, blobArg);
 
@@ -119,22 +120,23 @@ public abstract class TransactionBlobStoreTest {
         try (InputStream in = blob.get()) {
             bytes = ByteStreams.toByteArray(in);
         }
-        assertEquals(contents, new String(bytes, Charsets.UTF_8));
+        assertEquals(contents, new String(bytes, StandardCharsets.UTF_8));
     }
 
     @Test
     public void testRemove() {
-        blobStore.putBlob("MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("MERGE_HEAD", "some contents".getBytes(StandardCharsets.UTF_8));
         assertTrue(blobStore.getBlob("MERGE_HEAD").isPresent());
         blobStore.removeBlob("MERGE_HEAD");
         assertFalse(blobStore.getBlob("MERGE_HEAD").isPresent());
 
-        blobStore.putBlob("tx1", "MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("tx1", "MERGE_HEAD", "some contents".getBytes(StandardCharsets.UTF_8));
         assertTrue(blobStore.getBlob("tx1", "MERGE_HEAD").isPresent());
         blobStore.removeBlob("tx1", "MERGE_HEAD");
         assertFalse(blobStore.getBlob("tx1", "MERGE_HEAD").isPresent());
 
-        blobStore.putBlob("tx1", "osm/MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("tx1", "osm/MERGE_HEAD",
+                "some contents".getBytes(StandardCharsets.UTF_8));
         assertTrue(blobStore.getBlob("tx1", "osm/MERGE_HEAD").isPresent());
         blobStore.removeBlob("tx1", "osm/MERGE_HEAD");
         assertFalse(blobStore.getBlob("tx1", "osm/MERGE_HEAD").isPresent());
@@ -142,12 +144,14 @@ public abstract class TransactionBlobStoreTest {
 
     @Test
     public void testRemoveBlobs() {
-        blobStore.putBlob("MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
-        blobStore.putBlob("tx1", "MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
-        blobStore.putBlob("tx1", "osm/MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("MERGE_HEAD", "some contents".getBytes(StandardCharsets.UTF_8));
+        blobStore.putBlob("tx1", "MERGE_HEAD", "some contents".getBytes(StandardCharsets.UTF_8));
+        blobStore.putBlob("tx1", "osm/MERGE_HEAD",
+                "some contents".getBytes(StandardCharsets.UTF_8));
 
-        blobStore.putBlob("tx2", "MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
-        blobStore.putBlob("tx2", "osm/MERGE_HEAD", "some contents".getBytes(Charsets.UTF_8));
+        blobStore.putBlob("tx2", "MERGE_HEAD", "some contents".getBytes(StandardCharsets.UTF_8));
+        blobStore.putBlob("tx2", "osm/MERGE_HEAD",
+                "some contents".getBytes(StandardCharsets.UTF_8));
 
         assertTrue(blobStore.getBlob("MERGE_HEAD").isPresent());
         assertTrue(blobStore.getBlob("tx1", "MERGE_HEAD").isPresent());

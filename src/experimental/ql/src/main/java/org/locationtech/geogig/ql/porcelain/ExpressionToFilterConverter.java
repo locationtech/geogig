@@ -15,14 +15,15 @@ import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.opengis.filter.Filter;
 
-import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
+import net.sf.jsqlparser.expression.ArrayConstructor;
 import net.sf.jsqlparser.expression.ArrayExpression;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.CaseExpression;
 import net.sf.jsqlparser.expression.CastExpression;
 import net.sf.jsqlparser.expression.CollateExpression;
+import net.sf.jsqlparser.expression.ConnectByRootOperator;
 import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import net.sf.jsqlparser.expression.DateValue;
 import net.sf.jsqlparser.expression.DoubleValue;
@@ -34,7 +35,9 @@ import net.sf.jsqlparser.expression.HexValue;
 import net.sf.jsqlparser.expression.IntervalExpression;
 import net.sf.jsqlparser.expression.JdbcNamedParameter;
 import net.sf.jsqlparser.expression.JdbcParameter;
+import net.sf.jsqlparser.expression.JsonAggregateFunction;
 import net.sf.jsqlparser.expression.JsonExpression;
+import net.sf.jsqlparser.expression.JsonFunction;
 import net.sf.jsqlparser.expression.KeepExpression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.MySQLGroupConcat;
@@ -44,16 +47,21 @@ import net.sf.jsqlparser.expression.NullValue;
 import net.sf.jsqlparser.expression.NumericBind;
 import net.sf.jsqlparser.expression.OracleHierarchicalExpression;
 import net.sf.jsqlparser.expression.OracleHint;
+import net.sf.jsqlparser.expression.OracleNamedFunctionParameter;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.RowConstructor;
+import net.sf.jsqlparser.expression.RowGetExpression;
 import net.sf.jsqlparser.expression.SignedExpression;
 import net.sf.jsqlparser.expression.StringValue;
 import net.sf.jsqlparser.expression.TimeKeyExpression;
 import net.sf.jsqlparser.expression.TimeValue;
 import net.sf.jsqlparser.expression.TimestampValue;
+import net.sf.jsqlparser.expression.TimezoneExpression;
 import net.sf.jsqlparser.expression.UserVariable;
 import net.sf.jsqlparser.expression.ValueListExpression;
+import net.sf.jsqlparser.expression.VariableAssignment;
 import net.sf.jsqlparser.expression.WhenClause;
+import net.sf.jsqlparser.expression.XMLSerializeExpr;
 import net.sf.jsqlparser.expression.operators.arithmetic.Addition;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseAnd;
 import net.sf.jsqlparser.expression.operators.arithmetic.BitwiseLeftShift;
@@ -68,7 +76,9 @@ import net.sf.jsqlparser.expression.operators.arithmetic.Multiplication;
 import net.sf.jsqlparser.expression.operators.arithmetic.Subtraction;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
+import net.sf.jsqlparser.expression.operators.conditional.XorExpression;
 import net.sf.jsqlparser.expression.operators.relational.Between;
+import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.EqualsTo;
 import net.sf.jsqlparser.expression.operators.relational.ExistsExpression;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -197,6 +207,43 @@ class ExpressionToFilterConverter implements ExpressionVisitor {
     }
 
     @Override
+    public void visit(VariableAssignment assignment) {
+        final UserVariable variable = assignment.getVariable();
+        if (!"ID".equalsIgnoreCase(variable.getName())) {
+            unsupported(assignment);
+        }
+
+        final String operation = assignment.getOperation();
+        final Expression expression = assignment.getExpression();
+        ComparisonOperator op;
+        switch (operation) {
+        case "=":
+            op = new EqualsTo();
+            break;
+        case "<>":
+            op = new NotEqualsTo();
+            break;
+        case ">":
+            op = new GreaterThan();
+            break;
+        case ">=":
+            op = new GreaterThanEquals();
+            break;
+        case "<":
+            op = new MinorThan();
+            break;
+        case "<=":
+            op = new MinorThanEquals();
+            break;
+        default:
+            throw unsupported(assignment);
+        }
+        op.setLeftExpression(variable);
+        op.setRightExpression(expression);
+        op.accept(this);
+    }
+
+    @Override
     public void visit(EqualsTo equalsTo) {
         Expression leftExpression = equalsTo.getLeftExpression();
 
@@ -304,7 +351,7 @@ class ExpressionToFilterConverter implements ExpressionVisitor {
 
     //////////////////////////// UNSUPPORTED EXPRESSIONS /////////////////////
 
-    private void unsupported(Expression e) {
+    private IllegalArgumentException unsupported(Expression e) {
         throw new IllegalArgumentException("not supported: " + e);
     }
 
@@ -356,11 +403,6 @@ class ExpressionToFilterConverter implements ExpressionVisitor {
     @Override
     public void visit(ExistsExpression existsExpression) {
         unsupported(existsExpression);
-    }
-
-    @Override
-    public void visit(AllComparisonExpression allComparisonExpression) {
-        unsupported(allComparisonExpression);
     }
 
     @Override
@@ -543,6 +585,51 @@ class ExpressionToFilterConverter implements ExpressionVisitor {
     @Override
     public void visit(ArrayExpression aThis) {
         throw new UnsupportedOperationException("Implement me");
+    }
+
+    @Override
+    public void visit(XorExpression orExpression) {
+        unsupported(orExpression);
+    }
+
+    @Override
+    public void visit(RowGetExpression rowGetExpression) {
+        unsupported(rowGetExpression);
+    }
+
+    @Override
+    public void visit(ArrayConstructor aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(XMLSerializeExpr aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(TimezoneExpression aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(JsonAggregateFunction aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(JsonFunction aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(ConnectByRootOperator aThis) {
+        unsupported(aThis);
+    }
+
+    @Override
+    public void visit(OracleNamedFunctionParameter aThis) {
+        unsupported(aThis);
     }
 
 }

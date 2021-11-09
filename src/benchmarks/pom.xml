@@ -14,7 +14,7 @@
   <name>Benchmarks</name>
 
   <properties>
-    <jmh.version>1.23</jmh.version>
+    <jmh.version>1.33</jmh.version>
     <jmh.report.format>csv</jmh.report.format> <!-- `org.openjdk.jmh.Main -rf`'s param, one of text, csv, scsv, json, latex -->
     <jmh.report.name>target/jmh-report-${git.commit.id.abbrev}.${jmh.report.format}</jmh.report.name>
     <git.commitid.skip>false</git.commitid.skip>
@@ -47,7 +47,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.2</version>
+          <version>3.2.4</version>
           <inherited>true</inherited>
           <executions>
             <execution>

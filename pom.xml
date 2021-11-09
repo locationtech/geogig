@@ -23,7 +23,6 @@
     <caffeine-version>3.0.4</caffeine-version>
     <compress-lzf.version>1.1</compress-lzf.version>
     <cucumber-java.version>1.2.6</cucumber-java.version>
-    <gson.version>2.8.9</gson.version>
     <gt.version>26.0</gt.version>
     <jts.version>1.18.2</jts.version>
     <guava.version>31.0.1-jre</guava.version>
@@ -382,11 +381,6 @@
         <artifactId>cucumber-junit</artifactId>
         <version>${cucumber-java.version}</version>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.google.code.gson</groupId>
-        <artifactId>gson</artifactId>
-        <version>${gson.version}</version>
       </dependency>
 
       <dependency>

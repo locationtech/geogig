@@ -13,6 +13,7 @@ import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureFor
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +53,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
@@ -149,7 +149,7 @@ public class ObjectCacheStressTest {
     private static void printResults(String testName, String cacheImpl, int putAndGetThreads,
             List<TestResult> results) {
 
-        TableWriter w = new TableWriter(new OutputStreamWriter(System.err, Charsets.UTF_8));
+        TableWriter w = new TableWriter(new OutputStreamWriter(System.err, StandardCharsets.UTF_8));
         w.setMultiLinesCells(false);
         w.nextLine(TableWriter.DOUBLE_HORIZONTAL_LINE);
         writeColumn(w, testName, cacheImpl, String.format("Threads: %d", putAndGetThreads));

@@ -11,6 +11,7 @@ package org.locationtech.geogig.rocksdb;
 
 import java.io.DataInput;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,6 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -70,7 +70,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         if (attributeName != null) {
             sb.append(attributeName);
         }
-        return sb.toString().getBytes(Charsets.UTF_8);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     public @Override IndexInfo createIndexInfo(String treeName, String attributeName,
@@ -226,7 +226,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     }
 
     private static ObjectId parseTreeIdFromKey(byte[] key) {
-        String stringKey = new String(key, Charsets.UTF_8);
+        String stringKey = new String(key, StandardCharsets.UTF_8);
         String stringId = stringKey.substring(stringKey.indexOf('.') + 1);
         return ObjectId.valueOf(stringId);
     }
@@ -236,7 +236,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
         if (treeId != null) {
             sb.append(treeId.toString());
         }
-        return sb.toString().getBytes(Charsets.UTF_8);
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     private static byte[] computeIndexTreePrefixLookupKey(ObjectId indexId) {

@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.plumbing;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -37,7 +38,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -68,7 +68,7 @@ public class Insert extends AbstractCommand implements CLICommand {
         if (filepath != null) {
             File file = new File(filepath);
             checkParameter(file.exists(), "Insert file cannot be found");
-            lines = Files.readLines(file, Charsets.UTF_8);
+            lines = Files.readLines(file, StandardCharsets.UTF_8);
         } else {
             String featuresText = Joiner.on("\n").join(inputs);
             lines = Splitter.on("\n").split(featuresText);

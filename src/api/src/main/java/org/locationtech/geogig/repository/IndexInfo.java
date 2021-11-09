@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.repository;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -20,7 +21,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -132,8 +132,8 @@ public @ToString final class IndexInfo {
 
     public static ObjectId getIndexId(String treeName, String attributeName) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
-        hasher.putBytes(treeName.getBytes(Charsets.UTF_8));
-        hasher.putBytes(attributeName.getBytes(Charsets.UTF_8));
+        hasher.putBytes(treeName.getBytes(StandardCharsets.UTF_8));
+        hasher.putBytes(attributeName.getBytes(StandardCharsets.UTF_8));
         return ObjectId.create(hasher.hash().asBytes());
     }
 

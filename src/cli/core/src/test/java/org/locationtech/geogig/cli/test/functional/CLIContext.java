@@ -21,6 +21,7 @@ import static org.locationtech.geogig.cli.test.functional.TestFeatures.points3;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +47,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -126,7 +126,7 @@ public class CLIContext {
 
     public List<String> runAndParseCommand(boolean failFast, String... command) throws Exception {
         runCommand(failFast, command);
-        CharSource reader = CharSource.wrap(stdOut.toString(Charsets.UTF_8.name()));
+        CharSource reader = CharSource.wrap(stdOut.toString(StandardCharsets.UTF_8.name()));
         ImmutableList<String> lines = reader.readLines();
         return lines;
     }

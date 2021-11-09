@@ -14,6 +14,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -22,7 +23,6 @@ import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
@@ -69,7 +69,7 @@ class RocksdbBlobStore implements TransactionBlobStore, Closeable {
 
     private byte[] key(String namespace, String path) {
         String key = namespace + "." + path;
-        return key.getBytes(Charsets.UTF_8);
+        return key.getBytes(StandardCharsets.UTF_8);
     }
 
     public @Override Optional<byte[]> getBlob(String path) {

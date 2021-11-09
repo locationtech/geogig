@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -53,7 +54,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -302,7 +302,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
             this.targetSchema = targetSchema;
             this.nativeTypeName = targetSchema.getName().getLocalPart();
             Hasher hasher = Hashing.murmur3_32().newHasher();
-            hasher.putString(targetSchema.getName().getLocalPart(), Charsets.UTF_8);
+            hasher.putString(targetSchema.getName().getLocalPart(), StandardCharsets.UTF_8);
             hasher.putLong(System.currentTimeMillis());
             hasher.putLong(System.nanoTime());
             baseId = hasher.hash().toString();

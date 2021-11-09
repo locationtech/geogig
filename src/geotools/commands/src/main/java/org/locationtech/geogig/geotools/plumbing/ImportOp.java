@@ -14,6 +14,7 @@ import static org.geotools.data.DataUtilities.attributeNames;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,7 +77,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -162,7 +162,8 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
 
         for (int i = 0; i < typeNames.length; i++) {
             try {
-                typeNames[i] = URLDecoder.decode(typeNames[i], Charsets.UTF_8.displayName());
+                typeNames[i] = URLDecoder.decode(typeNames[i],
+                        StandardCharsets.UTF_8.displayName());
             } catch (UnsupportedEncodingException e) {
                 // shouldn't reach here.
             }

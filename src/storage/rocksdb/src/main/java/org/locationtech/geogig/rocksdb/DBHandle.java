@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.rocksdb;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,7 +19,6 @@ import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
@@ -120,8 +120,8 @@ class DBHandle {
         Preconditions.checkState(!config.isReadOnly(), "db is read only");
         Preconditions.checkNotNull(metadata);
 
-        byte[] k = key.getBytes(Charsets.UTF_8);
-        byte[] v = value.getBytes(Charsets.UTF_8);
+        byte[] k = key.getBytes(StandardCharsets.UTF_8);
+        byte[] v = value.getBytes(StandardCharsets.UTF_8);
         try (RocksDBReference dbRef = getReference()) {
             dbRef.db().put(metadata, k, v);
         } catch (RocksDBException e) {
@@ -133,9 +133,9 @@ class DBHandle {
         String value = null;
         if (metadata != null) {
             try (RocksDBReference dbRef = getReference()) {
-                byte[] val = dbRef.db().get(metadata, key.getBytes(Charsets.UTF_8));
+                byte[] val = dbRef.db().get(metadata, key.getBytes(StandardCharsets.UTF_8));
                 if (val != null) {
-                    value = new String(val, Charsets.UTF_8);
+                    value = new String(val, StandardCharsets.UTF_8);
                 }
             } catch (RocksDBException e) {
                 throw new RuntimeException(e);

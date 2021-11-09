@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.geopkg;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +23,6 @@ import org.rocksdb.RocksIterator;
 import org.rocksdb.WriteBatch;
 import org.rocksdb.WriteOptions;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 /**
@@ -96,16 +96,16 @@ public class RocksdbMap implements Map<String, String> {
     public @Override String get(Object key) {
         byte[] val;
         try {
-            val = db.get(((String) key).getBytes(Charsets.UTF_8));
+            val = db.get(((String) key).getBytes(StandardCharsets.UTF_8));
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }
-        return val == null ? null : new String(val, Charsets.UTF_8);
+        return val == null ? null : new String(val, StandardCharsets.UTF_8);
     }
 
     public @Override String put(String key, String value) {
-        byte[] keybytes = key.getBytes(Charsets.UTF_8);
-        byte[] valuebytes = value.getBytes(Charsets.UTF_8);
+        byte[] keybytes = key.getBytes(StandardCharsets.UTF_8);
+        byte[] valuebytes = value.getBytes(StandardCharsets.UTF_8);
         try {
             db.put(writeOptions, keybytes, valuebytes);
         } catch (RocksDBException e) {
@@ -118,7 +118,7 @@ public class RocksdbMap implements Map<String, String> {
         final String value = get(key);
         if (value != null) {
             try {
-                db.delete(writeOptions, ((String) key).getBytes(Charsets.UTF_8));
+                db.delete(writeOptions, ((String) key).getBytes(StandardCharsets.UTF_8));
             } catch (RocksDBException e) {
                 throw new RuntimeException(e);
             }
@@ -169,8 +169,8 @@ public class RocksdbMap implements Map<String, String> {
 
                 byte[] keybytes = it.key();
                 byte[] valuebytes = it.value();
-                final String key = new String(keybytes, Charsets.UTF_8);
-                final String value = new String(valuebytes, Charsets.UTF_8);
+                final String key = new String(keybytes, StandardCharsets.UTF_8);
+                final String value = new String(valuebytes, StandardCharsets.UTF_8);
                 it.next();
 
                 return new Entry<String, String>() {

@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -79,7 +80,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;
@@ -391,7 +391,7 @@ public class DefaultStepDefinitions {
                 + "msg = params.get(\"message\");\n" + "if (msg.length() < 5){\n"
                 + "\tthrow new exception(\"Commit messages must have at least 5 letters\");\n"
                 + "}\n" + "params.put(\"message\", msg.toLowerCase());";
-        Files.asCharSink(hook, Charsets.UTF_8).write(script);
+        Files.asCharSink(hook, StandardCharsets.UTF_8).write(script);
     }
 
     @Given("^I clone a remote repository$")
@@ -661,7 +661,7 @@ public class DefaultStepDefinitions {
                 RevFeatureType.builder().type(pointsType).build());
         patch.addModifiedFeature(feaureDiff);
         File file = new File(localRepo.platform.pwd(), "test.patch");
-        BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
+        BufferedWriter writer = Files.newWriter(file, StandardCharsets.UTF_8);
         PatchSerializer.write(writer, patch);
         writer.flush();
         writer.close();
@@ -670,7 +670,7 @@ public class DefaultStepDefinitions {
     @Given("^I have an insert file$")
     public void I_have_an_insert_file() throws Throwable {
         File file = new File(localRepo.platform.pwd(), "insert");
-        BufferedWriter writer = Files.newWriter(file, Charsets.UTF_8);
+        BufferedWriter writer = Files.newWriter(file, StandardCharsets.UTF_8);
         writer.write("Points/Points.1\n");
         writer.write("sp\tNew_String\n");
         writer.write("ip\t1001\n");

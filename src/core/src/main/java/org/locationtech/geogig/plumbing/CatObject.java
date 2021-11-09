@@ -12,13 +12,13 @@ package org.locationtech.geogig.plumbing;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
@@ -46,7 +46,7 @@ public class CatObject extends AbstractGeoGigOp<CharSequence> {
         TextRevObjectSerializer serializer = TextRevObjectSerializer.INSTANCE;
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         String s = "id\t" + revObject.getId().toString() + "\n";
-        OutputStreamWriter streamWriter = new OutputStreamWriter(output, Charsets.UTF_8);
+        OutputStreamWriter streamWriter = new OutputStreamWriter(output, StandardCharsets.UTF_8);
         try {
             streamWriter.write(s);
             streamWriter.flush();

@@ -41,7 +41,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -52,7 +51,7 @@ public class RemotesIndexTestSupport {
 
     public static Map<Ref, List<Index>> createIndexes(Repository repo) {
         Map<Ref, List<Index>> indexes = new HashMap<>();
-        ImmutableList<Ref> branches = repo.command(BranchListOp.class).call();
+        List<Ref> branches = repo.command(BranchListOp.class).call();
         branches.forEach(ref -> indexes.put(ref, createIndexes(repo, ref)));
         return indexes;
     }

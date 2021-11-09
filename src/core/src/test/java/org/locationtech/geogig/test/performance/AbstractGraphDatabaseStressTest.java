@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * Abstract test suite for {@link GraphDatabase} implementations.
@@ -106,7 +105,7 @@ public abstract class AbstractGraphDatabaseStressTest {
                 for (int i = 0; i < 100; i++) {
                     ObjectId root = RevObjectTestSupport.hashString(key + "_commit_" + i);
                     ObjectId commit = RevObjectTestSupport.hashString(key + "_commit_" + (i + 1));
-                    database.put(commit, ImmutableList.of(root));
+                    database.put(commit, Arrays.asList(root));
                 }
             } catch (Exception e) {
                 errorLog.offer(e.toString());

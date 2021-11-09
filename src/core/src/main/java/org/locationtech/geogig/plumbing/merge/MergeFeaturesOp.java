@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.merge;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -86,7 +86,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
         final ObjectId ancestorFeatureId = ancestorRef.getObjectId();
         final ObjectId featureAId = nodeRefA.getObjectId();
         final ObjectId featureBId = nodeRefB.getObjectId();
-        Iterable<ObjectId> ids = ImmutableList.of(metadataId, ancestorFeatureId, featureAId,
+        Iterable<ObjectId> ids = Arrays.asList(metadataId, ancestorFeatureId, featureAId,
                 featureBId);
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
         ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);

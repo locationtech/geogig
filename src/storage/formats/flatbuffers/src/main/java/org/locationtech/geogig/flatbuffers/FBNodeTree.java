@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -18,8 +20,6 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -49,16 +49,16 @@ final class FBNodeTree extends FBRevObject<NodeTree> implements RevTree {
         return 0;
     }
 
-    public @Override ImmutableList<Node> trees() {
-        return ImmutableList.of();
+    public @Override List<Node> trees() {
+        return Collections.emptyList();
     }
 
     public @Override int featuresSize() {
         return 0;
     }
 
-    public @Override ImmutableList<Node> features() {
-        return ImmutableList.of();
+    public @Override List<Node> features() {
+        return Collections.emptyList();
     }
 
     public @Override int bucketsSize() {

@@ -13,6 +13,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -23,8 +25,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.storage.GraphDatabase;
-
-import com.google.common.collect.ImmutableList;
 
 public class RebuildGraphOpTest extends RepositoryTestCase {
 
@@ -74,7 +74,7 @@ public class RebuildGraphOpTest extends RepositoryTestCase {
         database.open();
 
         // Rebuild the graph
-        ImmutableList<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
+        List<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
         assertEquals(4, updated.size());
         assertTrue(updated.contains(c1.getId()));
         assertTrue(updated.contains(c2.getId()));
@@ -115,7 +115,7 @@ public class RebuildGraphOpTest extends RepositoryTestCase {
         final RevCommit c4 = repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // Rebuild the graph
-        ImmutableList<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
+        List<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
         assertEquals(2, updated.size());
         assertTrue(updated.contains(c1.getId()));
         assertTrue(updated.contains(c2.getId()));
@@ -151,7 +151,7 @@ public class RebuildGraphOpTest extends RepositoryTestCase {
         repo.command(CommitOp.class).setMessage("commit for " + idL1).call();
 
         // Rebuild the graph
-        ImmutableList<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
+        List<ObjectId> updated = repo.command(RebuildGraphOp.class).call();
         assertEquals(0, updated.size());
     }
 }

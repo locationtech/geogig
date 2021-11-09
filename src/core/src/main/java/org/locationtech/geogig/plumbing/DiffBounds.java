@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -85,7 +85,7 @@ public class DiffBounds extends AbstractGeoGigOp<DiffSummary<Envelope, Envelope>
         if (null == pathFilters) {
             this.pathFilters = Collections.emptyList();
         } else {
-            this.pathFilters = ImmutableList.copyOf(pathFilters);
+            this.pathFilters = new ArrayList<>(pathFilters);
         }
         return this;
     }

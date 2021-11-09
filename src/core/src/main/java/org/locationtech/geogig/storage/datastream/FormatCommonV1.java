@@ -44,9 +44,6 @@ import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-
 import lombok.Value;
 
 public class FormatCommonV1 {
@@ -121,14 +118,14 @@ public class FormatCommonV1 {
         }
 
         final ObjectId treeId = ObjectId.readFrom(in);
-        final Builder<ObjectId> parentListBuilder = ImmutableList.builder();
+        final List<ObjectId> parentList = new ArrayList<>();
 
         while (true) {
             tag = in.readByte();
             if (tag != COMMIT_PARENT_REF) {
                 break;
             } else {
-                parentListBuilder.add(ObjectId.readFrom(in));
+                parentList.add(ObjectId.readFrom(in));
             }
         }
 
@@ -149,8 +146,8 @@ public class FormatCommonV1 {
 
         final String message = in.readUTF();
 
-        return RevObjectFactory.defaultInstance().createCommit(id, treeId,
-                parentListBuilder.build(), author, committer, message);
+        return RevObjectFactory.defaultInstance().createCommit(id, treeId, parentList, author,
+                committer, message);
     }
 
     public static final RevPerson readRevPerson(DataInput in) throws IOException {
@@ -172,8 +169,8 @@ public class FormatCommonV1 {
     public static RevTree readTree(@Nullable ObjectId id, DataInput in) throws IOException {
         final long size = in.readLong();
         final int treeCount = in.readInt();
-        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<>();
-        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<>();
+        final List<Node> features = new ArrayList<>();
+        final List<Node> trees = new ArrayList<>();
         final SortedSet<Bucket> buckets = new TreeSet<>();
 
         final int nFeatures = in.readInt();
@@ -182,7 +179,7 @@ public class FormatCommonV1 {
             if (n.getType() != RevObject.TYPE.FEATURE) {
                 throw new IllegalStateException("Non-feature node in tree's feature list.");
             }
-            featuresBuilder.add(n);
+            features.add(n);
         }
 
         final int nTrees = in.readInt();
@@ -191,7 +188,7 @@ public class FormatCommonV1 {
             if (n.getType() != RevObject.TYPE.TREE) {
                 throw new IllegalStateException("Non-tree node in tree's subtree list.");
             }
-            treesBuilder.add(n);
+            trees.add(n);
         }
 
         final int nBuckets = in.readInt();
@@ -200,10 +197,6 @@ public class FormatCommonV1 {
             Bucket bucket = readBucket(index, in);
             buckets.add(bucket);
         }
-
-        ImmutableList<Node> trees = treesBuilder.build();
-        ImmutableList<Node> features = featuresBuilder.build();
-
         if (null == id) {
             id = HashObject.hashTree(trees, features, buckets);
         }

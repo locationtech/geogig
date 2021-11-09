@@ -17,21 +17,19 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * Return a list of all of the remotes from the local config database.
  * 
  * @see ConfigDatabase
  */
-public class RemoteListOp extends AbstractGeoGigOp<ImmutableList<Remote>> {
+public class RemoteListOp extends AbstractGeoGigOp<List<Remote>> {
 
     /**
      * Executes the remote-list operation.
      * 
      * @return {@code List<Remote>} of all remotes found in the config database, may be empty.
      */
-    protected @Override ImmutableList<Remote> _call() {
+    protected @Override List<Remote> _call() {
         ConfigDatabase config = configDatabase();
         List<String> remotes = config.getAllSubsections("remote");
         List<Remote> allRemotes = new ArrayList<Remote>();
@@ -52,6 +50,6 @@ public class RemoteListOp extends AbstractGeoGigOp<ImmutableList<Remote>> {
                         remotePassword.orElse(null)));
             }
         }
-        return ImmutableList.copyOf(allRemotes);
+        return allRemotes;
     }
 }

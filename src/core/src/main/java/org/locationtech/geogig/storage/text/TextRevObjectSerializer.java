@@ -58,8 +58,6 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 
 /**
@@ -741,8 +739,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         protected @Override RevTree read(ObjectId id, BufferedReader reader, TYPE type)
                 throws IOException {
             Preconditions.checkArgument(TYPE.TREE.equals(type), "Wrong type: %s", type.name());
-            Builder<Node> features = ImmutableList.builder();
-            Builder<Node> trees = ImmutableList.builder();
+            List<Node> features = new ArrayList<>();
+            List<Node> trees = new ArrayList<>();
             TreeSet<Bucket> subtrees = new TreeSet<>();
             long size = Long.parseLong(parseLine(requireLine(reader), "size"));
             int numTrees = Integer.parseInt(parseLine(requireLine(reader), "numtrees"));
@@ -773,8 +771,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
 
             }
             if (subtrees.isEmpty()) {
-                return RevObjectFactory.defaultInstance().createTree(id, size, trees.build(),
-                        features.build());
+                return RevObjectFactory.defaultInstance().createTree(id, size, trees, features);
             }
             return RevObjectFactory.defaultInstance().createTree(id, size, numTrees, subtrees);
         }

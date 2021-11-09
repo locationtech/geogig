@@ -9,14 +9,13 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.Getter;
 
@@ -28,7 +27,7 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
 
     private @Getter ObjectId treeId;
 
-    private @Getter ImmutableList<ObjectId> parentIds;
+    private @Getter List<ObjectId> parentIds;
 
     private @Getter RevPerson author;
 
@@ -50,8 +49,8 @@ class RevCommitImpl extends AbstractRevObject implements RevCommit {
      * @param committer the committer of this commit
      * @param message the message for this commit
      */
-    RevCommitImpl(final ObjectId id, ObjectId treeId, ImmutableList<ObjectId> parentIds,
-            RevPerson author, RevPerson committer, String message) {
+    RevCommitImpl(final ObjectId id, ObjectId treeId, List<ObjectId> parentIds, RevPerson author,
+            RevPerson committer, String message) {
         super(id);
         this.treeId = treeId;
         this.parentIds = parentIds;

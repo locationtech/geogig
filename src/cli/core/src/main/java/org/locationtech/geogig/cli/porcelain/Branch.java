@@ -32,7 +32,6 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.BranchRenameOp;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -178,7 +177,7 @@ public class Branch extends AbstractCommand implements CLICommand {
         boolean local = all || !(remotes);
         boolean remote = all || remotes;
 
-        ImmutableList<Ref> branches = geogig.command(BranchListOp.class).setLocal(local)
+        final List<Ref> branches = geogig.command(BranchListOp.class).setLocal(local)
                 .setRemotes(remote).call();
 
         final Ref currentHead = geogig.command(RefParse.class).setName(Ref.HEAD).call().get();
@@ -238,7 +237,7 @@ public class Branch extends AbstractCommand implements CLICommand {
      * @param branches
      * @return
      */
-    private int largestLenght(ImmutableList<Ref> branches) {
+    private int largestLenght(List<Ref> branches) {
         int len = 0;
         for (Ref ref : branches) {
             len = Math.max(len, refDisplayString(ref).length());

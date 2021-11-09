@@ -21,13 +21,12 @@ import static org.locationtech.geogig.model.NodeRef.isChild;
 import static org.locationtech.geogig.model.NodeRef.isDirectChild;
 import static org.locationtech.geogig.model.NodeRef.parentPath;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.collect.ImmutableList;
 
 public class NodeRefTest {
 
@@ -61,10 +60,9 @@ public class NodeRefTest {
             assertTrue(true);
         }
 
-        assertEquals(ImmutableList.of("path"), allPathsTo("path"));
-        assertEquals(ImmutableList.of("path", "path/to"), allPathsTo("path/to"));
-        assertEquals(ImmutableList.of("path", "path/to", "path/to/node"),
-                allPathsTo("path/to/node"));
+        assertEquals(Arrays.asList("path"), allPathsTo("path"));
+        assertEquals(Arrays.asList("path", "path/to"), allPathsTo("path/to"));
+        assertEquals(Arrays.asList("path", "path/to", "path/to/node"), allPathsTo("path/to/node"));
     }
 
     /**
@@ -256,7 +254,7 @@ public class NodeRefTest {
 
     @Test
     public void testSplit() {
-        assertEquals(ImmutableList.of("Points", "sub", "points.1"),
+        assertEquals(Arrays.asList("Points", "sub", "points.1"),
                 NodeRef.split("Points/sub/points.1"));
         assertEquals(Collections.emptyList(), NodeRef.split(""));
 

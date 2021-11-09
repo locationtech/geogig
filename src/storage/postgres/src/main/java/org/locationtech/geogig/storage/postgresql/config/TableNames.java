@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.storage.postgresql.config;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -154,7 +154,7 @@ public class TableNames implements Cloneable {
     }
 
     public List<String> all() {
-        return ImmutableList.of(metadata(), repositories(), config(), refs(), conflicts(),
+        return Arrays.asList(metadata(), repositories(), config(), refs(), conflicts(),
                 objects(), index(), indexMappings(), indexObjects(), commits(), features(),
                 featureTypes(), trees(), graphEdges(), graphMappings(), graphProperties(), blobs());
     }

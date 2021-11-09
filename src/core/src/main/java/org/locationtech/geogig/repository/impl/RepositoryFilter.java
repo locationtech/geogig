@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.repository.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 import lombok.Value;
@@ -97,8 +97,8 @@ public class RepositoryFilter {
     /**
      * @return an immutable copy of the filter descriptions
      */
-    public ImmutableList<FilterDescription> getFilterDescriptions() {
-        return ImmutableList.copyOf(filterDescriptions);
+    public List<FilterDescription> getFilterDescriptions() {
+        return new ArrayList<>(filterDescriptions);
     }
 
     /**

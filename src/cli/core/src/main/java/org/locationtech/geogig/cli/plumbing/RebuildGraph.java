@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.plumbing;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -17,8 +18,6 @@ import org.locationtech.geogig.cli.Console;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.plumbing.RebuildGraphOp;
-
-import com.google.common.collect.ImmutableList;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -35,8 +34,7 @@ public class RebuildGraph extends AbstractCommand implements CLICommand {
     private boolean quiet = false;
 
     public @Override void runInternal(GeogigCLI cli) throws IOException {
-        ImmutableList<ObjectId> updatedObjects = cli.getGeogig().command(RebuildGraphOp.class)
-                .call();
+        List<ObjectId> updatedObjects = cli.getGeogig().command(RebuildGraphOp.class).call();
 
         final Console console = cli.getConsole();
         if (updatedObjects.size() > 0) {

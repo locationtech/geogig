@@ -21,6 +21,9 @@ import static org.junit.Assert.fail;
 import static org.locationtech.geogig.model.NodeRef.ROOT;
 import static org.locationtech.geogig.model.ObjectId.NULL;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +36,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 
 public class MutableTreeTest {
 
@@ -65,7 +67,7 @@ public class MutableTreeTest {
         NodeRef r21 = tree("buildings/stores", t5, md3);
         NodeRef r22 = tree("buildings/unknown", t6, md4);
 
-        ImmutableList<NodeRef> refs = ImmutableList.of(r1, r11, r12, r2, r21, r22);
+        List<NodeRef> refs = Arrays.asList(r1, r11, r12, r2, r21, r22);
         root = MutableTree.createFromRefs(id("abc"), refs.iterator());
         assertNotNull(root);
     }

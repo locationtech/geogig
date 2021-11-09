@@ -47,7 +47,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
@@ -226,8 +225,8 @@ public class Log extends AbstractCommand implements CLICommand {
             op.setTimeRange(Range.closed(since, until));
         }
         if (!this.sinceUntilPaths.isEmpty()) {
-            List<String> sinceUntil = ImmutableList
-                    .copyOf((Splitter.on("..").split(this.sinceUntilPaths.get(0))));
+            final List<String> sinceUntil = Splitter.on("..")
+                    .splitToList(this.sinceUntilPaths.get(0));
             checkParameter(sinceUntil.size() == 1 || sinceUntil.size() == 2,
                     "Invalid refSpec format, expected [<until>]|[<since>..<until>]: %s",
                     this.sinceUntilPaths.get(0));

@@ -17,7 +17,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -25,7 +24,7 @@ import com.google.common.collect.Lists;
  * tree-ish was specified.
  * <p>
  */
-public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
+public class BranchListOp extends AbstractGeoGigOp<List<Ref>> {
 
     private boolean remotes;
 
@@ -46,7 +45,7 @@ public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
         return this;
     }
 
-    protected ImmutableList<Ref> _call() {
+    protected List<Ref> _call() {
 
         final Predicate<Ref> filter = input -> {
 
@@ -61,7 +60,7 @@ public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
 
         List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
         Collections.sort(refs);
-        return ImmutableList.copyOf(refs);
+        return refs;
     }
 
 }

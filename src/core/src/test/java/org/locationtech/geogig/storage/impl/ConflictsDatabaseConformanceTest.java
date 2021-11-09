@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.locationtech.geogig.model.ObjectId.NULL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -136,7 +136,7 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
     @Test
     public void testAddConflicts() {
         final String ns = null;
-        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3, b1, b2, b3);
+        Iterable<Conflict> list = Arrays.asList(c1, c2, c3, b1, b2, b3);
         conflicts.addConflicts(ns, list);
         assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
         assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
@@ -149,7 +149,7 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
     @Test
     public void testAddConflictsNS() {
         final String ns = UUID.randomUUID().toString();
-        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        Iterable<Conflict> list = Arrays.asList(c1, c2, c3);
         conflicts.addConflicts(ns, list);
         assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
         assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
@@ -295,7 +295,7 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
         add(ns, c1, c2, c3);
         add(null, c1, c2, c3);
 
-        conflicts.removeConflicts(ns, ImmutableList.of(c3.getPath(), c2.getPath()));
+        conflicts.removeConflicts(ns, Arrays.asList(c3.getPath(), c2.getPath()));
         assertTrue(conflicts.getConflict(ns, c1.getPath()).isPresent());
         assertFalse(conflicts.getConflict(ns, c2.getPath()).isPresent());
         assertFalse(conflicts.getConflict(ns, c3.getPath()).isPresent());
@@ -309,7 +309,7 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
         add(ns, c1, c2, c3);
         add(null, c1, c2, c3);
 
-        conflicts.removeConflicts(null, ImmutableList.of(c3.getPath(), c2.getPath()));
+        conflicts.removeConflicts(null, Arrays.asList(c3.getPath(), c2.getPath()));
 
         assertTrue(conflicts.getConflict(null, c1.getPath()).isPresent());
         assertFalse(conflicts.getConflict(null, c2.getPath()).isPresent());

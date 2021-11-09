@@ -29,6 +29,7 @@ import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -73,13 +74,13 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 /**
  * Base class to check an {@link ObjectStore}'s implementation conformance to the interface contract
@@ -166,7 +167,7 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testDeleteAll() {
-        ImmutableList<RevObject> objs = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> objs = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null));
 
         for (RevObject o : objs) {
@@ -187,7 +188,7 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testDeleteAllWithListener() {
-        ImmutableList<RevObject> objs = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> objs = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null));
 
         for (RevObject o : objs) {
@@ -262,7 +263,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> expected = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -275,7 +276,7 @@ public abstract class ObjectStoreConformanceTest {
         Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
 
         Iterator<RevObject> iterator = db.getAll(ids);
-        List<RevObject> actual = ImmutableList.copyOf(iterator);
+        List<RevObject> actual = Streams.stream(iterator).collect(Collectors.toList());
 
         assertEquals(Sets.newHashSet(ids),
                 Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
@@ -285,7 +286,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testGetAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> expected = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -299,12 +300,12 @@ public abstract class ObjectStoreConformanceTest {
 
         CountingListener listener = BulkOpListener.newCountingListener();
 
-        Iterable<ObjectId> notFound = ImmutableList.of(RevObjectTestSupport.hashString("notfound1"),
+        Iterable<ObjectId> notFound = Arrays.asList(RevObjectTestSupport.hashString("notfound1"),
                 RevObjectTestSupport.hashString("notfound2"));
 
         Iterator<RevObject> result = db.getAll(Iterables.concat(notFound, ids), listener);
 
-        List<RevObject> actual = ImmutableList.copyOf(result);
+        List<RevObject> actual = Streams.stream(result).collect(Collectors.toList());
 
         assertEquals(Sets.newHashSet(ids),
                 Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
@@ -322,10 +323,10 @@ public abstract class ObjectStoreConformanceTest {
         final RevTree t2 = RevObjectTestSupport.INSTANCE.createFeaturesTree(db, "t", 10);
         final RevTree t3 = RevObjectTestSupport.INSTANCE.createFeaturesTree(db, "t", 100);
 
-        db.putAll(ImmutableList.of(f1, f2, f3, t1, t2, t3).iterator());
+        db.putAll(Arrays.asList(f1, f2, f3, t1, t2, t3).iterator());
 
-        Iterable<ObjectId> queryIds = ImmutableList.of(f1.getId(), f3.getId(), t1.getId(),
-                t2.getId(), t3.getId());
+        Iterable<ObjectId> queryIds = Arrays.asList(f1.getId(), f3.getId(), t1.getId(), t2.getId(),
+                t3.getId());
 
         CountingListener listener;
 
@@ -354,7 +355,7 @@ public abstract class ObjectStoreConformanceTest {
 
     @Test
     public void testGetIfPresent() {
-        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> expected = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -453,7 +454,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAll() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> expected = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 
@@ -466,7 +467,7 @@ public abstract class ObjectStoreConformanceTest {
     @Test
     public void testPutAllWithListener() {
 
-        ImmutableList<RevObject> expected = ImmutableList.of(feature(0, null, "some value"),
+        List<RevObject> expected = Arrays.asList(feature(0, null, "some value"),
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 

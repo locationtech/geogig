@@ -14,6 +14,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.porcelain.BranchCreateOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.InitOp;
-
-import com.google.common.collect.ImmutableList;
 
 public class RevParseIntegrationTest extends RepositoryTestCase {
 
@@ -74,7 +73,7 @@ public class RevParseIntegrationTest extends RepositoryTestCase {
         // fake a merge until we have the merge op in place
 
         RevCommitBuilder cb = RevCommit.builder();
-        cb.parentIds(ImmutableList.of(masterCommit3.getId(), branchCommit2.getId()));
+        cb.parentIds(Arrays.asList(masterCommit3.getId(), branchCommit2.getId()));
         cb.message("mergeCommit");
         cb.author("groldan");
         cb.committer("groldan");

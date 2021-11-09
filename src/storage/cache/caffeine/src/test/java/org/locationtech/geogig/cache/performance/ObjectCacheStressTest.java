@@ -54,7 +54,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 
 import lombok.Value;
 
@@ -85,7 +84,7 @@ public class ObjectCacheStressTest {
 
     private SharedCache sharedCache;
 
-    private static final List<RevObjectSerializer> encoders = ImmutableList.of(//
+    private static final List<RevObjectSerializer> encoders = Arrays.asList(//
             // raw encoders
             // DataStreamSerializationFactoryV1.INSTANCE //
             // , DataStreamSerializationFactoryV2.INSTANCE //
@@ -314,8 +313,7 @@ public class ObjectCacheStressTest {
         List<Node> nodes = IntStream.range(0, numNodes).mapToObj(this::createNode)
                 .collect(Collectors.toList());
         ObjectId id = ObjectId.create(i, i * i, i * i * i);
-        RevTree tree = objectFactory.createTree(id, numNodes, Collections.emptyList(),
-                ImmutableList.copyOf(nodes));
+        RevTree tree = objectFactory.createTree(id, numNodes, Collections.emptyList(), nodes);
         return tree;
     }
 

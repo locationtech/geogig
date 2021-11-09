@@ -15,31 +15,32 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
 final @Slf4j class CommandHookChain {
 
-    private static final ImmutableList<CommandHook> classPathHooks;
+    private static final List<CommandHook> classPathHooks;
     static {
-        classPathHooks = loadClasspathHooks();
+        classPathHooks = Collections.unmodifiableList(loadClasspathHooks());
     }
 
     private AbstractGeoGigOp<?> target;
 
     private List<CommandHook> hooks;
 
-    static ImmutableList<CommandHook> loadClasspathHooks() {
+    static List<CommandHook> loadClasspathHooks() {
         ServiceLoader<CommandHook> loader = ServiceLoader.load(CommandHook.class,
                 CommandHook.class.getClassLoader());
-        return ImmutableList.copyOf(loader.iterator());
+        return loader.stream().map(Provider::get).collect(Collectors.toList());
     }
 
     static boolean hasClasspathHooks(Class<? extends AbstractGeoGigOp<?>> commandClass) {

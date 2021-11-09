@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.remoting;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -19,8 +20,6 @@ import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.storage.ConfigException;
-
-import com.google.common.collect.ImmutableList;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -52,7 +51,7 @@ public class RemoteList extends AbstractCommand implements CLICommand {
      */
     public @Override void runInternal(GeogigCLI cli) throws IOException {
 
-        final ImmutableList<Remote> remoteList;
+        final List<Remote> remoteList;
         try {
             remoteList = cli.getGeogig().command(RemoteListOp.class).call();
         } catch (ConfigException e) {

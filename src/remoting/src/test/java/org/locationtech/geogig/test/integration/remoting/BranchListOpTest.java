@@ -11,6 +11,8 @@ package org.locationtech.geogig.test.integration.remoting;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.porcelain.BranchCreateOp;
@@ -18,8 +20,6 @@ import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.remotes.CloneOp;
-
-import com.google.common.collect.ImmutableList;
 
 public class BranchListOpTest extends RemoteRepositoryTestCase {
 
@@ -56,8 +56,8 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testBranchListOp() throws Exception {
 
-        ImmutableList<Ref> branches = originRepo.command(BranchListOp.class).setLocal(true)
-                .setRemotes(false).call();
+        List<Ref> branches = originRepo.command(BranchListOp.class).setLocal(true).setRemotes(false)
+                .call();
 
         assertEquals(Ref.HEADS_PREFIX + "Branch1", branches.get(0).getName());
         assertEquals(Ref.HEADS_PREFIX + "master", branches.get(1).getName());
@@ -66,8 +66,8 @@ public class BranchListOpTest extends RemoteRepositoryTestCase {
     @Test
     public void testRemoteListing() throws Exception {
 
-        ImmutableList<Ref> branches = localRepo.command(BranchListOp.class).setLocal(true)
-                .setRemotes(true).call();
+        List<Ref> branches = localRepo.command(BranchListOp.class).setLocal(true).setRemotes(true)
+                .call();
 
         assertEquals(Ref.HEADS_PREFIX + "Branch1", branches.get(0).getName());
         assertEquals(Ref.HEADS_PREFIX + "master", branches.get(1).getName());

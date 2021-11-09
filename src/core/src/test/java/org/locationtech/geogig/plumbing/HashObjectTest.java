@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class HashObjectTest extends RepositoryTestCase {
@@ -101,7 +101,7 @@ public class HashObjectTest extends RepositoryTestCase {
 
         ObjectId parentId1 = RevObjectTestSupport.hashString("fake parent content 1");
         ObjectId parentId2 = RevObjectTestSupport.hashString("fake parent content 2");
-        List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
+        List<ObjectId> parentIds = Arrays.asList(parentId1, parentId2);
         b.parentIds(parentIds);
 
         commit1 = b.build();
@@ -112,7 +112,7 @@ public class HashObjectTest extends RepositoryTestCase {
         b.authorEmail(null);
         b.committerTimestamp(-1000L);
         b.committerTimeZoneOffset(-5);
-        b.parentIds(ImmutableList.of(parentId1, ObjectId.NULL));
+        b.parentIds(Arrays.asList(parentId1, ObjectId.NULL));
 
         commit2 = b.build();
 

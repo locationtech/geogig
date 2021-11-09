@@ -50,7 +50,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -111,7 +110,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
     }
 
     private void verifyBranchConfig(Repository remote, Repository clone) {
-        ImmutableList<Ref> remoteBranches = remote.command(BranchListOp.class).call();
+        List<Ref> remoteBranches = remote.command(BranchListOp.class).call();
         for (Ref remoteBranch : remoteBranches) {
             BranchConfig config = clone.command(BranchConfigOp.class)
                     .setName(remoteBranch.localName()).get();
@@ -400,7 +399,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         assertEquals(expected, logged);
 
         // Make sure the remote has all of the tags
-        ImmutableList<RevTag> remoteTags = remoteRepo.command(TagListOp.class).call();
+        List<RevTag> remoteTags = remoteRepo.command(TagListOp.class).call();
         assertEquals(tags.size(), remoteTags.size());
         for (RevTag tag : tags) {
             assertTrue(remoteTags.contains(tag));
@@ -425,7 +424,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         // Make sure the local repository got all of the tags
 
-        ImmutableList<RevTag> localTags = cloneRepo.command(TagListOp.class).call();
+        List<RevTag> localTags = cloneRepo.command(TagListOp.class).call();
 
         assertEquals(tags.size(), localTags.size());
 

@@ -12,6 +12,8 @@ package org.locationtech.geogig.test.integration.remoting;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.locationtech.geogig.plumbing.remotes.RemoteAddOp;
@@ -20,8 +22,6 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.remotes.RemoteListOp;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import com.google.common.collect.ImmutableList;
 
 public class RemoteListOpTest extends RepositoryTestCase {
 
@@ -33,7 +33,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
     public void testListNoRemotes() {
         final RemoteListOp remoteList = repo.command(RemoteListOp.class);
 
-        ImmutableList<Remote> allRemotes = remoteList.call();
+        List<Remote> allRemotes = remoteList.call();
 
         assertTrue(allRemotes.isEmpty());
     }
@@ -66,7 +66,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
 
         final RemoteListOp remoteList = repo.command(RemoteListOp.class);
 
-        ImmutableList<Remote> allRemotes = remoteList.call();
+        List<Remote> allRemotes = remoteList.call();
 
         assertEquals(2, allRemotes.size());
 
@@ -111,7 +111,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
 
         final RemoteListOp remoteList = repo.command(RemoteListOp.class);
 
-        ImmutableList<Remote> allRemotes = remoteList.call();
+        List<Remote> allRemotes = remoteList.call();
 
         assertTrue(allRemotes.isEmpty());
     }
@@ -136,7 +136,7 @@ public class RemoteListOpTest extends RepositoryTestCase {
 
         final RemoteListOp remoteList = repo.command(RemoteListOp.class);
 
-        ImmutableList<Remote> allRemotes = remoteList.call();
+        List<Remote> allRemotes = remoteList.call();
 
         assertTrue(allRemotes.isEmpty());
     }

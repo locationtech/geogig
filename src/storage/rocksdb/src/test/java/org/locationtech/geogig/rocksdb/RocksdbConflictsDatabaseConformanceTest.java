@@ -12,13 +12,13 @@ package org.locationtech.geogig.rocksdb;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.Arrays;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.impl.ConflictsDatabaseConformanceTest;
-
-import com.google.common.collect.ImmutableList;
 
 public class RocksdbConflictsDatabaseConformanceTest
         extends ConflictsDatabaseConformanceTest<RocksdbConflictsDatabase> {
@@ -37,7 +37,7 @@ public class RocksdbConflictsDatabaseConformanceTest
     @Test
     public void testDatabaseConflictsPersist() throws Exception {
         final String ns = null;
-        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        Iterable<Conflict> list = Arrays.asList(c1, c2, c3);
         conflicts.addConflicts(ns, list);
         assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
         assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());
@@ -54,7 +54,7 @@ public class RocksdbConflictsDatabaseConformanceTest
     @Test
     public void testRemoveByNullPrefix() throws Exception {
         final String ns = null;
-        Iterable<Conflict> list = ImmutableList.of(c1, c2, c3);
+        Iterable<Conflict> list = Arrays.asList(c1, c2, c3);
         conflicts.addConflicts(ns, list);
         assertEquals(c1, conflicts.getConflict(ns, c1.getPath()).get());
         assertEquals(c2, conflicts.getConflict(ns, c2.getPath()).get());

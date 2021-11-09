@@ -21,6 +21,7 @@ import static org.locationtech.geogig.model.internal.Quadrant.NW;
 import static org.locationtech.geogig.model.internal.Quadrant.SE;
 import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +38,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Test suite for {@link QuadTreeClusteringStrategy} own methods
@@ -535,9 +535,9 @@ public class QuadTreeClusteringStrategyTest {
         final QuadTreeClusteringStrategy orig = support.newStrategy();
         final int maxDepth = orig.getMaxDepth();
 
-        final List<Quadrant> level4Path = ImmutableList.of(SW, NE, SW, NW);
-        final List<Quadrant> level7Path = ImmutableList.of(SW, NE, SW, NW, SE, SE, NE);
-        final List<Quadrant> level11Path = ImmutableList.of(SW, NE, SW, NW, SE, SE, NE, SW, NE, NW,
+        final List<Quadrant> level4Path = Arrays.asList(SW, NE, SW, NW);
+        final List<Quadrant> level7Path = Arrays.asList(SW, NE, SW, NW, SE, SE, NE);
+        final List<Quadrant> level11Path = Arrays.asList(SW, NE, SW, NW, SE, SE, NE, SW, NE, NW,
                 SW);
 
         final int splitSize = 1 + orig.normalizedSizeLimit();

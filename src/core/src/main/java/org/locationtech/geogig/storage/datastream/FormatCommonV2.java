@@ -56,8 +56,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.math.DoubleMath;
 
 import lombok.Value;
@@ -138,17 +136,16 @@ public class FormatCommonV2 {
     public RevCommit readCommit(@Nullable ObjectId id, DataInput in) throws IOException {
         final ObjectId treeId = readObjectId(in);
         final int nParents = readUnsignedVarInt(in);
-        final Builder<ObjectId> parentListBuilder = ImmutableList.builder();
+        final List<ObjectId> parents = new ArrayList<>();
 
         for (int i = 0; i < nParents; i++) {
             ObjectId parentId = readObjectId(in);
-            parentListBuilder.add(parentId);
+            parents.add(parentId);
         }
         final RevPerson author = readRevPerson(in);
         final RevPerson committer = readRevPerson(in);
         final String message = in.readUTF();
 
-        final List<ObjectId> parents = parentListBuilder.build();
         RevCommit commit;
         if (id == null) {
             commit = RevCommit.builder().build(treeId, parents, author, committer, message);
@@ -205,15 +202,15 @@ public class FormatCommonV2 {
         final long size = readUnsignedVarLong(in);
         final int treeCount = readUnsignedVarInt(in);
 
-        final ImmutableList.Builder<Node> featuresBuilder = new ImmutableList.Builder<>();
-        final ImmutableList.Builder<Node> treesBuilder = new ImmutableList.Builder<>();
+        final List<Node> features = new ArrayList<>();
+        final List<Node> trees = new ArrayList<>();
 
         final int nFeatures = readUnsignedVarInt(in);
         for (int i = 0; i < nFeatures; i++) {
             Node n = readNode(in);
             checkState(RevObject.TYPE.FEATURE.equals(n.getType()),
                     "Non-feature node in tree's feature list.");
-            featuresBuilder.add(n);
+            features.add(n);
         }
 
         final int nTrees = readUnsignedVarInt(in);
@@ -222,7 +219,7 @@ public class FormatCommonV2 {
             checkState(RevObject.TYPE.TREE.equals(n.getType()),
                     "Non-tree node in tree's subtree list %s->%s.", n.getType(), n);
 
-            treesBuilder.add(n);
+            trees.add(n);
         }
 
         final int nBuckets = readUnsignedVarInt(in);
@@ -235,8 +232,6 @@ public class FormatCommonV2 {
         }
         checkState(nBuckets == buckets.size(), "expected %s buckets, got %s", nBuckets,
                 buckets.size());
-        List<Node> trees = treesBuilder.build();
-        List<Node> features = featuresBuilder.build();
 
         if (id == null) {
             id = HashObject.hashTree(trees, features, buckets);

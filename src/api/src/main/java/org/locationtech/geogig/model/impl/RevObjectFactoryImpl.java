@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.model.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,8 +37,6 @@ import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.geogig.model.impl.RevTreeImpl.LeafTree;
 import org.locationtech.geogig.model.impl.RevTreeImpl.NodeTree;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -67,8 +67,9 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         if (parents.indexOf(null) > -1) {
             throw new NullPointerException("null parent at index " + parents.indexOf(null));
         }
-        return new RevCommitImpl(id, treeId, ImmutableList.copyOf(parents), author, committer,
-                message);
+        return new RevCommitImpl(id, treeId, //
+                Collections.unmodifiableList(new ArrayList<>(parents)), //
+                author, committer, message);
     }
 
     public @Override @NonNull RevTree createTree(final @NonNull ObjectId id, final long size,

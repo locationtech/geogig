@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -19,8 +21,6 @@ import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -38,10 +38,10 @@ final class FBFeature extends FBRevObject<Feature> implements RevFeature {
         return RevObjects.toString(this);
     }
 
-    public @Override ImmutableList<Optional<Object>> getValues() {
-        ImmutableList.Builder<Optional<Object>> builder = ImmutableList.builder();
-        forEach(o -> builder.add(Optional.ofNullable(o)));
-        return builder.build();
+    public @Override List<Optional<Object>> getValues() {
+        List<Optional<Object>> values = new ArrayList<>();
+        forEach(o -> values.add(Optional.ofNullable(o)));
+        return values;
     }
 
     public @Override int size() {

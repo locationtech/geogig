@@ -11,6 +11,7 @@ package org.locationtech.geogig.model.impl;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -311,7 +312,7 @@ public class RevObjectTestSupport {
         for (int i = 1; i <= numCommits; i++) {
             ++timeStamp;
             builder.authorTimestamp(timeStamp).committerTimestamp(timeStamp);
-            List<ObjectId> parents = parent == null ? null : ImmutableList.of(parent);
+            List<ObjectId> parents = parent == null ? null : Arrays.asList(parent);
             RevCommit commit = builder.parentIds(parents).message("commit " + i).build();
             commits.addFirst(commit);
             parent = commit.getId();

@@ -23,27 +23,25 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Rebuilds the {@link GraphDatabase} and returns a list of {@link ObjectId}s that were found to be
  * missing or incomplete.
  */
-public class RebuildGraphOp extends AbstractGeoGigOp<ImmutableList<ObjectId>> {
+public class RebuildGraphOp extends AbstractGeoGigOp<List<ObjectId>> {
 
     /**
      * Executes the {@code RebuildGraphOp} operation.
      * 
      * @return a list of {@link ObjectId}s that were found to be missing or incomplete
      */
-    protected @Override ImmutableList<ObjectId> _call() {
+    protected @Override List<ObjectId> _call() {
         Repository repository = repository();
         Preconditions.checkState(!repository.isSparse(),
                 "Cannot rebuild the graph of a sparse repository.");
 
         List<ObjectId> updated = new LinkedList<ObjectId>();
-        ImmutableList<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true)
-                .call();
+        List<Ref> branches = command(BranchListOp.class).setLocal(true).setRemotes(true).call();
 
         GraphDatabase graphDb = repository.context().graphDatabase();
 
@@ -57,6 +55,6 @@ public class RebuildGraphOp extends AbstractGeoGigOp<ImmutableList<ObjectId>> {
             }
         }
 
-        return ImmutableList.copyOf(updated);
+        return updated;
     }
 }

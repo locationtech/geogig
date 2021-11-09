@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +41,7 @@ import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
 import org.locationtech.geogig.test.TestPlatform;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Streams;
 
 /**
  * Abstract test suite for {@link GraphDatabase} implementations.
@@ -81,10 +83,10 @@ public abstract class GraphDatabaseTest {
         List<ObjectId> parents = Collections.emptyList();
         database.put(rootId, parents);
         ObjectId commit1 = RevObjectTestSupport.hashString("c1");
-        parents = ImmutableList.of(rootId);
+        parents = Arrays.asList(rootId);
         database.put(commit1, parents);
         ObjectId commit2 = RevObjectTestSupport.hashString("c2");
-        parents = ImmutableList.of(commit1);
+        parents = Arrays.asList(commit1);
         database.put(commit2, parents);
 
         List<ObjectId> children = database.getChildren(commit2);
@@ -112,7 +114,7 @@ public abstract class GraphDatabaseTest {
     public void testMapNode() throws IOException {
         ObjectId commitId = RevObjectTestSupport.hashString("commitId");
         ObjectId mappedId = RevObjectTestSupport.hashString("mapped");
-        database.put(commitId, new ImmutableList.Builder<ObjectId>().build());
+        database.put(commitId, Collections.emptyList());
         database.map(mappedId, commitId);
         ObjectId mapping = database.getMapping(mappedId);
         assertEquals(commitId + " : " + mappedId + " : " + mapping, commitId, mapping);
@@ -154,37 +156,37 @@ public abstract class GraphDatabaseTest {
         List<ObjectId> parents = Collections.emptyList();
         database.put(rootId, parents);
         ObjectId commit1 = RevObjectTestSupport.hashString("commit1");
-        parents = ImmutableList.of(rootId);
+        parents = Arrays.asList(rootId);
         database.put(commit1, parents);
         ObjectId commit2 = RevObjectTestSupport.hashString("commit2");
-        parents = ImmutableList.of(commit1);
+        parents = Arrays.asList(commit1);
         database.put(commit2, parents);
         ObjectId commit3 = RevObjectTestSupport.hashString("commit3");
-        parents = ImmutableList.of(commit2);
+        parents = Arrays.asList(commit2);
         database.put(commit3, parents);
         ObjectId commit4 = RevObjectTestSupport.hashString("commit4");
-        parents = ImmutableList.of(commit3);
+        parents = Arrays.asList(commit3);
         database.put(commit4, parents);
         ObjectId commit5 = RevObjectTestSupport.hashString("commit5");
-        parents = ImmutableList.of(commit3);
+        parents = Arrays.asList(commit3);
         database.put(commit5, parents);
         ObjectId commit6 = RevObjectTestSupport.hashString("commit6");
-        parents = ImmutableList.of(commit5, commit4);
+        parents = Arrays.asList(commit5, commit4);
         database.put(commit6, parents);
         ObjectId commit7 = RevObjectTestSupport.hashString("commit7");
-        parents = ImmutableList.of(rootId);
+        parents = Arrays.asList(rootId);
         database.put(commit7, parents);
         ObjectId commit8 = RevObjectTestSupport.hashString("commit8");
-        parents = ImmutableList.of(commit2);
+        parents = Arrays.asList(commit2);
         database.put(commit8, parents);
         ObjectId commit9 = RevObjectTestSupport.hashString("commit9");
-        parents = ImmutableList.of(commit7, commit8);
+        parents = Arrays.asList(commit7, commit8);
         database.put(commit9, parents);
         ObjectId commit10 = RevObjectTestSupport.hashString("commit10");
         parents = Collections.emptyList();
         database.put(commit10, parents);
         ObjectId commit11 = RevObjectTestSupport.hashString("commit11");
-        parents = ImmutableList.of(commit10);
+        parents = Arrays.asList(commit10);
         database.put(commit11, parents);
 
         assertEquals(0, database.getDepth(rootId));
@@ -210,9 +212,9 @@ public abstract class GraphDatabaseTest {
         ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, Collections.emptyList());
         ObjectId commit1 = RevObjectTestSupport.hashString("c1");
-        database.put(commit1, ImmutableList.of(rootId));
+        database.put(commit1, Arrays.asList(rootId));
         ObjectId commit2 = RevObjectTestSupport.hashString("c2");
-        database.put(commit2, ImmutableList.of(commit1, rootId));
+        database.put(commit2, Arrays.asList(commit1, rootId));
 
         GraphNode node;
         List<GraphEdge> edges;
@@ -220,10 +222,10 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit2);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertTrue(edges.isEmpty());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(2, edges.size());
         assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
         assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
@@ -231,12 +233,16 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit1);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertEquals(1, edges.size());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(1, edges.size());
 
+    }
+
+    private <T> List<T> toList(Iterator<T> edges) {
+        return Streams.stream(edges).collect(Collectors.toList());
     }
 
     @Test
@@ -244,9 +250,9 @@ public abstract class GraphDatabaseTest {
         ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, Collections.emptyList());
         ObjectId commit1 = RevObjectTestSupport.hashString("c1");
-        database.put(commit1, ImmutableList.of(rootId));
+        database.put(commit1, Arrays.asList(rootId));
         ObjectId commit2 = RevObjectTestSupport.hashString("c2");
-        database.put(commit2, ImmutableList.of(commit1, rootId));
+        database.put(commit2, Arrays.asList(commit1, rootId));
 
         assertTrue(database.exists(rootId));
         assertTrue(database.exists(commit1));
@@ -276,9 +282,9 @@ public abstract class GraphDatabaseTest {
         ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, Collections.emptyList());
         ObjectId commit1 = RevObjectTestSupport.hashString("c1");
-        database.put(commit1, ImmutableList.of(rootId));
+        database.put(commit1, Arrays.asList(rootId));
         ObjectId commit2 = RevObjectTestSupport.hashString("c2");
-        database.put(commit2, ImmutableList.of(commit1, rootId));
+        database.put(commit2, Arrays.asList(commit1, rootId));
 
         List<ObjectId> children = database.getChildren(rootId);
         assertEquals(2, children.size());
@@ -301,9 +307,9 @@ public abstract class GraphDatabaseTest {
         ObjectId rootId = RevObjectTestSupport.hashString("root");
         database.put(rootId, Collections.emptyList());
         ObjectId commit1 = RevObjectTestSupport.hashString("c1");
-        database.put(commit1, ImmutableList.of(rootId));
+        database.put(commit1, Arrays.asList(rootId));
         ObjectId commit2 = RevObjectTestSupport.hashString("c2");
-        database.put(commit2, ImmutableList.of(commit1, rootId));
+        database.put(commit2, Arrays.asList(commit1, rootId));
 
         List<ObjectId> parents = database.getParents(rootId);
         assertEquals(0, parents.size());
@@ -331,7 +337,7 @@ public abstract class GraphDatabaseTest {
         GraphNode node = database.getNode(nodeId);
         assertFalse(node.getEdges(Direction.BOTH).hasNext());
 
-        updated = database.put(nodeId, ImmutableList.of(nodeParent));
+        updated = database.put(nodeId, Arrays.asList(nodeParent));
         assertTrue(updated);
         node = database.getNode(nodeId);
         Iterator<GraphEdge> edges = node.getEdges(Direction.BOTH);
@@ -340,7 +346,7 @@ public abstract class GraphDatabaseTest {
         assertEquals(nodeId, edge.getFromNode().getIdentifier());
         assertEquals(nodeParent, edge.getToNode().getIdentifier());
 
-        updated = database.put(nodeId, ImmutableList.of(nodeParent));
+        updated = database.put(nodeId, Arrays.asList(nodeParent));
         assertFalse(updated);
     }
 
@@ -379,8 +385,8 @@ public abstract class GraphDatabaseTest {
             Future<?> future = executor.submit(new Runnable() {
                 public @Override void run() {
                     database.put(rootId, Collections.emptyList());
-                    database.put(commit1, ImmutableList.of(rootId));
-                    database.put(commit2, ImmutableList.of(commit1, rootId));
+                    database.put(commit1, Arrays.asList(rootId));
+                    database.put(commit2, Arrays.asList(commit1, rootId));
                 }
             });
             futures.add(future);
@@ -396,10 +402,10 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit2);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertTrue(edges.isEmpty());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(2, edges.size());
         assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
         assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
@@ -407,19 +413,19 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit1);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertEquals(1, edges.size());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(1, edges.size());
 
         node = database.getNode(rootId);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertEquals(2, edges.size());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertTrue(edges.isEmpty());
     }
 
@@ -443,8 +449,8 @@ public abstract class GraphDatabaseTest {
             Future<?> future = executor.submit(new Runnable() {
                 public @Override void run() {
                     database.put(rootId, Collections.emptyList());
-                    database.put(commit1, ImmutableList.of(rootId));
-                    database.put(commit2, ImmutableList.of(commit1, rootId));
+                    database.put(commit1, Arrays.asList(rootId));
+                    database.put(commit2, Arrays.asList(commit1, rootId));
                 }
             });
             futures.add(future);
@@ -460,10 +466,10 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit2);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertTrue(edges.isEmpty());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(2, edges.size());
         assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
         assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
@@ -471,19 +477,19 @@ public abstract class GraphDatabaseTest {
         node = database.getNode(commit1);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertEquals(1, edges.size());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertEquals(1, edges.size());
 
         node = database.getNode(rootId);
         assertNotNull(node);
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.IN));
+        edges = toList(node.getEdges(Direction.IN));
         assertEquals(2, edges.size());
 
-        edges = ImmutableList.copyOf(node.getEdges(Direction.OUT));
+        edges = toList(node.getEdges(Direction.OUT));
         assertTrue(edges.isEmpty());
     }
 
@@ -500,8 +506,8 @@ public abstract class GraphDatabaseTest {
         final ObjectId commit2 = RevObjectTestSupport.hashString("c2");
 
         database.put(rootId, Collections.emptyList());
-        database.put(commit1, ImmutableList.of(rootId));
-        database.put(commit2, ImmutableList.of(commit1, rootId));
+        database.put(commit1, Arrays.asList(rootId));
+        database.put(commit2, Arrays.asList(commit1, rootId));
 
         for (int t = 0; t < taskCount; t++) {
             Future<?> future = executor.submit(new Runnable() {
@@ -515,24 +521,24 @@ public abstract class GraphDatabaseTest {
                     assertNotNull(commit1Node);
                     assertNotNull(rootNode);
 
-                    edges = ImmutableList.copyOf(commit2Node.getEdges(Direction.IN));
+                    edges = toList(commit2Node.getEdges(Direction.IN));
                     assertTrue(edges.isEmpty());
 
-                    edges = ImmutableList.copyOf(commit2Node.getEdges(Direction.OUT));
+                    edges = toList(commit2Node.getEdges(Direction.OUT));
                     assertEquals(2, edges.size());
                     assertEquals(commit1, edges.get(0).getToNode().getIdentifier());
                     assertEquals(rootId, edges.get(1).getToNode().getIdentifier());
 
-                    edges = ImmutableList.copyOf(commit1Node.getEdges(Direction.IN));
+                    edges = toList(commit1Node.getEdges(Direction.IN));
                     assertEquals(1, edges.size());
 
-                    edges = ImmutableList.copyOf(commit1Node.getEdges(Direction.OUT));
+                    edges = toList(commit1Node.getEdges(Direction.OUT));
                     assertEquals(1, edges.size());
 
-                    edges = ImmutableList.copyOf(rootNode.getEdges(Direction.IN));
+                    edges = toList(rootNode.getEdges(Direction.IN));
                     assertEquals(2, edges.size());
 
-                    edges = ImmutableList.copyOf(rootNode.getEdges(Direction.OUT));
+                    edges = toList(rootNode.getEdges(Direction.OUT));
                     assertTrue(edges.isEmpty());
                 }
             });

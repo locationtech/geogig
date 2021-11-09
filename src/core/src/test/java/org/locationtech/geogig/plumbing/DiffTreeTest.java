@@ -16,7 +16,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,8 +43,8 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.TestRepository;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Streams;
 
 /**
  *
@@ -115,20 +117,20 @@ public class DiffTreeTest {
         RevTree tree2 = tree(50, db);
         RevTree root = createRoot(db, tree1, tree2);
 
-        List<String> pathFilters = ImmutableList.of("tree1");
+        List<String> pathFilters = Arrays.asList("tree1");
         diffTree.setOldTree(ObjectId.NULL).setNewTree(root.getId()).setPathFilter(pathFilters);
-        List<DiffEntry> diffs = ImmutableList.copyOf(diffTree.call());
+        List<DiffEntry> diffs = Streams.stream(diffTree.call()).collect(Collectors.toList());
         assertEquals(tree1.size(), diffs.size());
 
-        pathFilters = ImmutableList.of("tree2");
+        pathFilters = Arrays.asList("tree2");
         diffTree.setOldTree(ObjectId.NULL).setNewTree(root.getId()).setPathFilter(pathFilters);
-        diffs = ImmutableList.copyOf(diffTree.call());
+        diffs = Streams.stream(diffTree.call()).collect(Collectors.toList());
         assertEquals(tree2.size(), diffs.size());
 
-        pathFilters = ImmutableList.of("tree1/1", "tree1/2", "tree1/3", "tree1/4", "tree2/2",
+        pathFilters = Arrays.asList("tree1/1", "tree1/2", "tree1/3", "tree1/4", "tree2/2",
                 "tree2/3", "tree2/10");
         diffTree.setOldTree(ObjectId.NULL).setNewTree(root.getId()).setPathFilter(pathFilters);
-        diffs = ImmutableList.copyOf(diffTree.call());
+        diffs = Streams.stream(diffTree.call()).collect(Collectors.toList());
         assertEquals(pathFilters.size(), diffs.size());
     }
 
@@ -143,7 +145,7 @@ public class DiffTreeTest {
 
         Envelope filter = new Envelope(50, 51, 50, 51);
         diffTree.setBoundsFilter(filter);
-        ImmutableList<DiffEntry> diffs = ImmutableList.copyOf(diffTree.call());
+        List<DiffEntry> diffs = Streams.stream(diffTree.call()).collect(Collectors.toList());
         assertEquals(2, diffs.size());
     }
 
@@ -235,7 +237,7 @@ public class DiffTreeTest {
 
         // odd feature ids from 0 to 18 were removed from tree2
         // tree2/0 and tree2/12 match path filter but don't match bounds filter
-        diffTree.setPathFilter(ImmutableList.of("tree2/0", "tree2/2", "tree2/4", "tree2/12"));
+        diffTree.setPathFilter(Arrays.asList("tree2/0", "tree2/2", "tree2/4", "tree2/12"));
 
         diffTree.setBoundsFilter(null);
         assertChangeTypeFilter(rootId1, rootId2, 0, 4, 0);

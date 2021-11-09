@@ -16,6 +16,8 @@ import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -39,7 +41,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
@@ -56,7 +57,7 @@ public class HashObjectFunnelsTest {
 
     @Test
     public void testCommitFunnel() {
-        ImmutableList<ObjectId> parents = ImmutableList.of(oid3, oid4);
+        List<ObjectId> parents = Arrays.asList(oid3, oid4);
         RevCommit testCommit = new RevCommit() {
             public @Override TYPE getType() {
                 return RevObject.TYPE.COMMIT;
@@ -169,11 +170,11 @@ public class HashObjectFunnelsTest {
             }
 
             public @Override List<Node> trees() {
-                return ImmutableList.copyOf(trees);
+                return new ArrayList<>(trees);
             }
 
             public @Override List<Node> features() {
-                return ImmutableList.copyOf(features);
+                return new ArrayList<>(features);
             }
 
             public @Override Iterable<Bucket> getBuckets() {
@@ -228,7 +229,7 @@ public class HashObjectFunnelsTest {
             }
 
             public @Override List<Optional<Object>> getValues() {
-                return ImmutableList.copyOf(values);
+                return new ArrayList<>(values);
             }
 
             public @Override int size() {
@@ -416,7 +417,7 @@ public class HashObjectFunnelsTest {
             }
 
             public @Override List<PropertyDescriptor> descriptors() {
-                return ImmutableList.copyOf(featureType.getDescriptors());
+                return new ArrayList<>(featureType.getDescriptors());
             }
 
             public @Override Name getName() {

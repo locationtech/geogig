@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.geogig.flatbuffers.generated.v1.Commit;
@@ -16,9 +18,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevPerson;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import lombok.NonNull;
 
@@ -36,13 +35,13 @@ final class FBCommit extends FBRevObject<Commit> implements RevCommit {
         return FBAdapters.toId(getTable().treeId());
     }
 
-    public @Override ImmutableList<ObjectId> getParentIds() {
-        Builder<ObjectId> builder = ImmutableList.builder();
+    public @Override List<ObjectId> getParentIds() {
+        List<ObjectId> parents = new ArrayList<>();
         int parentIdsLength = getTable().parentIdsLength();
         for (int i = 0; i < parentIdsLength; i++) {
-            builder.add(FBAdapters.toId(getTable().parentIds(i)));
+            parents.add(FBAdapters.toId(getTable().parentIds(i)));
         }
-        return builder.build();
+        return parents;
     }
 
     public @Override Optional<ObjectId> parentN(int parentIndex) {

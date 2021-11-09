@@ -59,7 +59,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -113,7 +112,7 @@ public class GeoPackageTestSupport {
         return dataStore;
     }
 
-    public void exportToFile(File file, String tableName, ImmutableList<Feature> features)
+    public void exportToFile(File file, String tableName, List<Feature> features)
             throws Exception {
         MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
         memStore.addFeatures(features);

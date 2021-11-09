@@ -22,6 +22,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -31,8 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-
-import com.google.common.collect.ImmutableList;
 
 public class DataSourceManagerIT {
 
@@ -83,7 +82,7 @@ public class DataSourceManagerIT {
         doReturn(9).when(dsm).getDriverMajorVersion();
         doReturn(11).when(dsm).getDriverMinorVersion();
 
-        List<String> mockjars = ImmutableList.of("/usr/local/lib/postgres911.jar",
+        List<String> mockjars = Arrays.asList("/usr/local/lib/postgres911.jar",
                 "postgres42.jar");
         doReturn(mockjars).when(dsm).getPostgresJars();
 

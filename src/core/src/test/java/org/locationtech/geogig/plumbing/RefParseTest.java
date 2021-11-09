@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,9 +32,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.memory.HeapRefDatabase;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 /**
  *
@@ -50,18 +48,16 @@ public class RefParseTest {
         refDb = new HeapRefDatabase();
         refDb.open();
 
-        Builder<Ref> builder = ImmutableList.builder();
-        List<Ref> allRefs = builder//
-                .add(testRef("refs/heads/master"))//
-                .add(testRef("refs/heads/branch1"))//
-                .add(testRef("refs/heads/v1.1"))//
-                .add(testRef("refs/tags/tag1"))//
-                .add(testRef("refs/tags/v1.1"))//
-                .add(testRef("refs/remotes/origin/master"))//
-                .add(testRef("refs/remotes/origin/branch1"))//
-                .add(testRef("refs/remotes/juan/master"))//
-                .add(testRef("refs/remotes/juan/v1.1"))//
-                .build();
+        List<Ref> allRefs = Arrays.asList(//
+                testRef("refs/heads/master"), //
+                testRef("refs/heads/branch1"), //
+                testRef("refs/heads/v1.1"), //
+                testRef("refs/tags/tag1"), //
+                testRef("refs/tags/v1.1"), //
+                testRef("refs/remotes/origin/master"), //
+                testRef("refs/remotes/origin/branch1"), //
+                testRef("refs/remotes/juan/master"), //
+                testRef("refs/remotes/juan/v1.1"));
 
         refDb.putAll(allRefs);
 

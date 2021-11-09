@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing.diff;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 /**
@@ -76,7 +76,7 @@ public class Patch {
      * @return
      */
     public List<FeatureDiff> getModifiedFeatures() {
-        return ImmutableList.copyOf(modifiedFeatures);
+        return new ArrayList<>(modifiedFeatures);
     }
 
     /**
@@ -85,7 +85,7 @@ public class Patch {
      * @return
      */
     public List<FeatureInfo> getAddedFeatures() {
-        return ImmutableList.copyOf(addedFeatures);
+        return new ArrayList<>(addedFeatures);
     }
 
     /**
@@ -94,7 +94,7 @@ public class Patch {
      * @return
      */
     public List<FeatureInfo> getRemovedFeatures() {
-        return ImmutableList.copyOf(removedFeatures);
+        return new ArrayList<>(removedFeatures);
     }
 
     /**
@@ -138,7 +138,7 @@ public class Patch {
      * @return
      */
     public List<RevFeatureType> getFeatureTypes() {
-        return ImmutableList.copyOf(featureTypes.values());
+        return new ArrayList<>(featureTypes.values());
     }
 
     public Map<ObjectId, RevFeatureType> featureTypes() {
@@ -162,7 +162,7 @@ public class Patch {
      * @return
      */
     public List<FeatureTypeDiff> getAlteredTrees() {
-        return ImmutableList.copyOf(alteredTrees);
+        return new ArrayList<>(alteredTrees);
     }
 
     public void addAlteredTree(DiffEntry diff) {

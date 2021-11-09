@@ -27,8 +27,6 @@ import org.locationtech.geogig.porcelain.TagCreateOp;
 import org.locationtech.geogig.porcelain.TagListOp;
 import org.locationtech.geogig.porcelain.TagRemoveOp;
 
-import com.google.common.collect.ImmutableList;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -93,7 +91,7 @@ public class Tag extends AbstractCommand implements CLICommand {
     private void listTags(GeogigCLI cli) {
 
         Geogig geogig = cli.getGeogig();
-        ImmutableList<RevTag> tags = geogig.command(TagListOp.class).call();
+        List<RevTag> tags = geogig.command(TagListOp.class).call();
         for (RevTag tag : tags) {
             try {
                 cli.getConsole().println(tag.getName());

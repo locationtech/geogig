@@ -68,7 +68,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
@@ -155,21 +154,20 @@ public abstract class RevObjectSerializerConformanceTest {
                 UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
         featureType = FeatureTypes.createType(namespace + "#" + typeName, typeSpec.split(","));
 
-        ImmutableList<Node> features = ImmutableList.of(RevObjectFactory.defaultInstance()
-                .createNode("foo", RevObjectTestSupport.hashString("nodeid"),
-                        RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE, null,
-                        null));
-        ImmutableList<Node> spatialFeatures = ImmutableList.of(RevObjectFactory.defaultInstance()
-                .createNode("foo", RevObjectTestSupport.hashString("nodeid"),
-                        RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE,
-                        new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002), null));
-        ImmutableList<Node> trees = ImmutableList.of(RevObjectFactory.defaultInstance().createNode(
-                "bar", RevObjectTestSupport.hashString("barnodeid"),
+        List<Node> features = Arrays.asList(RevObjectFactory.defaultInstance().createNode("foo",
+                RevObjectTestSupport.hashString("nodeid"),
+                RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE, null, null));
+        List<Node> spatialFeatures = Arrays.asList(RevObjectFactory.defaultInstance().createNode(
+                "foo", RevObjectTestSupport.hashString("nodeid"),
+                RevObjectTestSupport.hashString("metadataid"), RevObject.TYPE.FEATURE,
+                new Envelope(0.0000001, 0.0000002, 0.0000001, 0.0000002), null));
+        List<Node> trees = Arrays.asList(RevObjectFactory.defaultInstance().createNode("bar",
+                RevObjectTestSupport.hashString("barnodeid"),
                 RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE, null, null));
-        ImmutableList<Node> spatialTrees = ImmutableList.of(RevObjectFactory.defaultInstance()
-                .createNode("bar", RevObjectTestSupport.hashString("barnodeid"),
-                        RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE,
-                        new Envelope(1, 2, 1, 2), null));
+        List<Node> spatialTrees = Arrays.asList(RevObjectFactory.defaultInstance().createNode("bar",
+                RevObjectTestSupport.hashString("barnodeid"),
+                RevObjectTestSupport.hashString("barmetadataid"), RevObject.TYPE.TREE,
+                new Envelope(1, 2, 1, 2), null));
 
         SortedSet<Bucket> spatialBuckets = ImmutableSortedSet.of(RevObjectFactory.defaultInstance()
                 .createBucket(RevObjectTestSupport.hashString("buckettree"), 1, new Envelope()));
@@ -237,7 +235,7 @@ public abstract class RevObjectSerializerConformanceTest {
 
     @Test
     public void testCommitSerializationMultipleParents() throws IOException {
-        testCommit.parentIds(ImmutableList.of(RevObjectTestSupport.hashString("parent1"),
+        testCommit.parentIds(Arrays.asList(RevObjectTestSupport.hashString("parent1"),
                 RevObjectTestSupport.hashString("parent2"),
                 RevObjectTestSupport.hashString("parent3"),
                 RevObjectTestSupport.hashString("parent4")));
@@ -477,8 +475,7 @@ public abstract class RevObjectSerializerConformanceTest {
                 RevObjectTestSupport.hashString("id"), ObjectId.NULL, TYPE.FEATURE, null,
                 extraData);
 
-        RevTree tree = RevTreeBuilder.build(1, 0, null, ImmutableList.of(n),
-                (SortedSet<Bucket>) null);
+        RevTree tree = RevTreeBuilder.build(1, 0, null, Arrays.asList(n), (SortedSet<Bucket>) null);
 
         RevObject roundTripped = read(tree.getId(), write(tree));
 
@@ -653,7 +650,7 @@ public abstract class RevObjectSerializerConformanceTest {
                 closed.set(true);
             }
         };
-        List<RevObject> objects = ImmutableList.of(//
+        List<RevObject> objects = Arrays.asList(//
                 testCommit.build(), //
                 tree1_leaves, //
                 tree2_internal, //

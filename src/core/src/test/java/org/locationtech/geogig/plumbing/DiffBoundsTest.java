@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
 public class DiffBoundsTest extends RepositoryTestCase {
@@ -109,7 +109,7 @@ public class DiffBoundsTest extends RepositoryTestCase {
     private void testPathFiltering(String oldVersion, String newVersion,
             @Nullable Envelope expected, @Nullable String... pathFilters) {
 
-        List<String> filter = ImmutableList.<String> copyOf(pathFilters);
+        List<String> filter = Arrays.asList(pathFilters);
 
         DiffSummary<Envelope, Envelope> result = repo.command(DiffBounds.class)//
                 .setOldVersion(oldVersion)//

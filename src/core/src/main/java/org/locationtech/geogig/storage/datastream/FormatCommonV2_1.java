@@ -31,7 +31,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -188,13 +187,13 @@ public class FormatCommonV2_1 extends FormatCommonV2 {
             return TYPE.FEATURE;
         }
 
-        public @Override ImmutableList<Optional<Object>> getValues() {
-            ImmutableList.Builder<Optional<Object>> b = ImmutableList.builder();
+        public @Override List<Optional<Object>> getValues() {
+            List<Optional<Object>> v = new ArrayList<>();
             final int size = size();
             for (int i = 0; i < size; i++) {
-                b.add(get(i));
+                v.add(get(i));
             }
-            return b.build();
+            return v;
         }
 
         List<Object> values() {

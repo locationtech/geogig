@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -97,7 +96,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
     public @Override List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
-            return ImmutableList.copyOf(node.outgoing);
+            return new ArrayList<>(node.outgoing);
         }
         return Collections.emptyList();
     }
@@ -105,7 +104,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
     public @Override List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
         NodeData node = getNodeInternal(commitId, false);
         if (node != null) {
-            return ImmutableList.copyOf(node.incoming);
+            return new ArrayList<>(node.incoming);
         }
         return Collections.emptyList();
     }
@@ -492,7 +491,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         public ObjectId mappedTo;
 
         public NodeData(ObjectId id, List<ObjectId> parents) {
-            this(id, ObjectId.NULL, new ArrayList<ObjectId>(parents), new ArrayList<ObjectId>(2),
+            this(id, ObjectId.NULL, parents, new ArrayList<ObjectId>(2),
                     new HashMap<String, String>());
         }
 
@@ -500,13 +499,13 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
                 Map<String, String> properties) {
             this.id = id;
             this.mappedTo = mappedTo;
-            this.outgoing = parents;
-            this.incoming = children;
+            this.outgoing = new ArrayList<>(parents);
+            this.incoming = new ArrayList<>(children);
             this.properties = properties;
         }
 
         public NodeData(ObjectId id) {
-            this(id, ImmutableList.<ObjectId> of());
+            this(id, Collections.emptyList());
         }
 
         public boolean isSparse() {

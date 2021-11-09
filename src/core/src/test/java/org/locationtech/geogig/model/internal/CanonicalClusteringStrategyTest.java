@@ -53,7 +53,6 @@ import org.mockito.Mockito;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -484,8 +483,8 @@ public abstract class CanonicalClusteringStrategyTest {
 
         long size = numNodes;
         int childTreeCount = 0;
-        ImmutableList<Node> trees = null;
-        ImmutableList<Node> features = null;
+        List<Node> trees = null;
+        List<Node> features = null;
 
         RevTree tree = RevTreeBuilder.build(size, childTreeCount, trees, features, buckets);
         return tree;
@@ -494,19 +493,18 @@ public abstract class CanonicalClusteringStrategyTest {
     private RevTree manuallyCreateLeafTree(final int nodeCount) {
         Preconditions.checkArgument(nodeCount <= CanonicalNodeNameOrder.normalizedSizeLimit(0));
 
-        ImmutableList.Builder<Node> nodes = ImmutableList.builder();
+        List<Node> nodes = new ArrayList<>();
         for (int i = 0; i < nodeCount; i++) {
             nodes.add(featureNode("f", i));
         }
-        return createLeafTree(nodes.build());
+        return createLeafTree(nodes);
     }
 
     private RevTree createLeafTree(Collection<Node> featureNodes) {
         int childTreeCount = 0;
-        ImmutableList<Node> trees = null;
-        List<Node> sorted = new ArrayList<Node>(featureNodes);
-        Collections.sort(sorted, CanonicalNodeOrder.INSTANCE);
-        ImmutableList<Node> features = ImmutableList.copyOf(sorted);
+        List<Node> trees = null;
+        List<Node> features = new ArrayList<Node>(featureNodes);
+        Collections.sort(features, CanonicalNodeOrder.INSTANCE);
         SortedSet<Bucket> buckets = null;
         int size = features.size();
         RevTree tree = RevTreeBuilder.build(size, childTreeCount, trees, features, buckets);

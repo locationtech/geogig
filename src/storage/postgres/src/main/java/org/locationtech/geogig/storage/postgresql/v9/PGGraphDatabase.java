@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
@@ -120,12 +119,12 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
 
     public @Override List<ObjectId> getParents(ObjectId commitId) throws IllegalArgumentException {
         final PGId node = PGId.valueOf(commitId);
-        return ImmutableList.copyOf(Iterables.transform(outgoing(node), PGId::toObjectId));
+        return outgoing(node).stream().map(PGId::toObjectId).collect(Collectors.toList());
     }
 
     public @Override List<ObjectId> getChildren(ObjectId commitId) throws IllegalArgumentException {
-        return ImmutableList
-                .copyOf(Iterables.transform(incoming(PGId.valueOf(commitId)), PGId::toObjectId));
+        final PGId node = PGId.valueOf(commitId);
+        return incoming(node).stream().map(PGId::toObjectId).collect(Collectors.toList());
     }
 
     public @Override boolean put(ObjectId commitId, List<ObjectId> parentIds) {
@@ -475,7 +474,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
         }
     }
 
-    Iterable<PGId> outgoing(final PGId node) {
+    List<PGId> outgoing(final PGId node) {
         try (Connection cx = env.getConnection()) {
             return outgoing(node, cx);
         } catch (SQLException e) {
@@ -487,7 +486,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
      * Returns all nodes connected to the specified node through a relationship in which the
      * specified node is the "source" of the relationship.
      */
-    Iterable<PGId> outgoing(final PGId node, final Connection cx) throws SQLException {
+    List<PGId> outgoing(final PGId node, final Connection cx) throws SQLException {
         final String sql = format(
                 "SELECT ((dst).h1), ((dst).h2),((dst).h3), dstindex FROM %s WHERE src = CAST(ROW(?,?,?) AS OBJECTID) ORDER BY dstindex",
                 EDGES);
@@ -514,7 +513,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
      * Returns all nodes connected to the specified node through a relationship in which the
      * specified node is the "destination" of the relationship.
      */
-    Iterable<PGId> incoming(final PGId node) {
+    List<PGId> incoming(final PGId node) {
         final String sql = format(
                 "SELECT ((src).h1), ((src).h2),((src).h3) FROM %s WHERE dst = CAST(ROW(?,?,?) AS OBJECTID)",
                 EDGES);

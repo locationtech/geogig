@@ -14,10 +14,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
@@ -48,7 +50,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -725,10 +726,10 @@ public class WriteTree2Test extends RepositoryTestCase {
         return ObjectId.valueOf(partialHash);
     }
 
-    private ImmutableSet<String> set(String... contents) {
+    private Set<String> set(String... contents) {
         if (contents == null) {
-            return ImmutableSet.of();
+            return Collections.emptySet();
         }
-        return ImmutableSet.copyOf(Sets.newTreeSet(ImmutableList.copyOf(contents)));
+        return new TreeSet<>(Arrays.asList(contents));
     }
 }

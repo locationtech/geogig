@@ -49,7 +49,6 @@ import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.CharSource;
@@ -127,8 +126,7 @@ public class CLIContext {
     public List<String> runAndParseCommand(boolean failFast, String... command) throws Exception {
         runCommand(failFast, command);
         CharSource reader = CharSource.wrap(stdOut.toString(StandardCharsets.UTF_8.name()));
-        ImmutableList<String> lines = reader.readLines();
-        return lines;
+        return reader.readLines();
     }
 
     /**

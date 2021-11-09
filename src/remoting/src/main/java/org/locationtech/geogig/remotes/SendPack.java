@@ -31,8 +31,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-
 import lombok.NonNull;
 
 @Hookable(name = "send-pack")
@@ -100,8 +98,8 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
         return this;
     }
 
-    public ImmutableList<TransferableRef> getRefs() {
-        return ImmutableList.copyOf(refsToPush);
+    public List<TransferableRef> getRefs() {
+        return new ArrayList<>(refsToPush);
     }
 
     public SendPack setRemote(@NonNull Remote remote) {

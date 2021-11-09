@@ -10,6 +10,8 @@
 package org.locationtech.geogig.flatbuffers;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
@@ -18,8 +20,6 @@ import org.locationtech.geogig.flatbuffers.generated.v1.QualifiedName;
 import org.locationtech.geogig.flatbuffers.generated.v1.SimpleFeatureType;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.model.RevObjects;
-
-import com.google.common.collect.ImmutableList;
 
 import lombok.NonNull;
 
@@ -53,8 +53,8 @@ final class FBSimpleFeatureType extends FBRevObject<SimpleFeatureType> implement
         return type;
     }
 
-    public @Override ImmutableList<PropertyDescriptor> descriptors() {
-        return ImmutableList.copyOf(type().getDescriptors());
+    public @Override List<PropertyDescriptor> descriptors() {
+        return new ArrayList<>(type().getDescriptors());
     }
 
 }

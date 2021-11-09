@@ -10,11 +10,11 @@
 package org.locationtech.geogig.model;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.hash.HashCode;
 
 import junit.framework.TestCase;
@@ -54,7 +54,7 @@ public class RevCommitBuilderTest extends TestCase {
 
         ObjectId parentId1 = hashString("fake parent content 1");
         ObjectId parentId2 = hashString("fake parent content 2");
-        List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
+        List<ObjectId> parentIds = Arrays.asList(parentId1, parentId2);
         b.parentIds(parentIds);
 
         RevCommit build = b.build();
@@ -89,7 +89,7 @@ public class RevCommitBuilderTest extends TestCase {
 
         b.parentIds(null);
 
-        assertEquals(ImmutableList.of(), b.build().getParentIds());
+        assertEquals(Arrays.asList(), b.build().getParentIds());
     }
 
     @Test
@@ -108,7 +108,7 @@ public class RevCommitBuilderTest extends TestCase {
 
         ObjectId parentId1 = hashString("fake parent content 1");
         ObjectId parentId2 = hashString("fake parent content 2");
-        List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
+        List<ObjectId> parentIds = Arrays.asList(parentId1, parentId2);
         b.parentIds(parentIds);
 
         assertEquals(null, b.message());
@@ -147,7 +147,7 @@ public class RevCommitBuilderTest extends TestCase {
 
         ObjectId parentId1 = hashString("fake parent content 1");
         ObjectId parentId2 = hashString("fake parent content 2");
-        List<ObjectId> parentIds = ImmutableList.of(parentId1, parentId2);
+        List<ObjectId> parentIds = Arrays.asList(parentId1, parentId2);
         b.parentIds(parentIds);
 
         RevCommit commit1 = b.build();

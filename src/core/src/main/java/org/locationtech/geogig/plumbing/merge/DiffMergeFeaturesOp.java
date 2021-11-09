@@ -39,7 +39,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Geometry;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -214,8 +213,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         Map<PropertyDescriptor, AttributeDiff> leftDiffs = mergeIntoDiff.getDiffs();
         Map<PropertyDescriptor, AttributeDiff> rightDiffs = toMergeDiff.getDiffs();
 
-        ImmutableList<PropertyDescriptor> descriptors;
-        descriptors = ImmutableList.copyOf(featureType.type().getDescriptors());
+        List<PropertyDescriptor> descriptors = new ArrayList<>(featureType.type().getDescriptors());
 
         final List<Object> ancestorValues;
         ancestorValues = getAncestorValues(mergeIntoDiff, toMergeDiff, descriptors);
@@ -255,7 +253,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
     }
 
     private static List<Object> getAncestorValues(FeatureDiff mergeIntoDiff,
-            FeatureDiff toMergeDiff, ImmutableList<PropertyDescriptor> descriptors) {
+            FeatureDiff toMergeDiff, List<PropertyDescriptor> descriptors) {
         final List<Object> ancestorValues;
         {
             RevFeature ancestor = mergeIntoDiff.getOldFeature() == null

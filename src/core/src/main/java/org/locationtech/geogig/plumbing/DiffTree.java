@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -198,7 +198,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
         if (path == null) {
             setPathFilter((List<String>) null);
         } else {
-            setPathFilter(ImmutableList.of(path));
+            setPathFilter(Arrays.asList(path));
         }
         return this;
     }

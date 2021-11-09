@@ -9,7 +9,9 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -18,9 +20,6 @@ import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 import lombok.NonNull;
 
@@ -50,13 +49,13 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
         return getTable().numDirectTreeNodes();
     }
 
-    public @Override ImmutableList<Node> trees() {
+    public @Override List<Node> trees() {
         if (0 == treesSize()) {
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
-        Builder<Node> builder = ImmutableList.builder();
-        forEachTree(builder::add);
-        return builder.build();
+        List<Node> trees = new ArrayList<>();
+        forEachTree(trees::add);
+        return trees;
     }
 
     public @Override int featuresSize() {
@@ -65,14 +64,14 @@ final class FBLeafTree extends FBRevObject<LeafTree> implements RevTree {
         return numNodes - numTreeNodes;
     }
 
-    public @Override ImmutableList<Node> features() {
+    public @Override List<Node> features() {
         final int featuresSize = featuresSize();
         if (0 == featuresSize) {
-            return ImmutableList.of();
+            return Collections.emptyList();
         }
-        Builder<Node> builder = ImmutableList.builder();
-        forEachFeature(builder::add);
-        return builder.build();
+        List<Node> features = new ArrayList<>();
+        forEachFeature(features::add);
+        return features;
     }
 
     public @Override Node getFeature(int index) {

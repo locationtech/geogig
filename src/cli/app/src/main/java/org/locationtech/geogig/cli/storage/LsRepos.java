@@ -46,7 +46,6 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
 import picocli.CommandLine.Command;
@@ -216,7 +215,7 @@ public class LsRepos extends AbstractCommand implements CLICommand {
     private RepoInfo toRepoInfo(String name, Repository repo) {
         RepoInfo info = new RepoInfo();
         info.name = name;
-        ImmutableList<Ref> branches = repo.command(BranchListOp.class).call();
+        List<Ref> branches = repo.command(BranchListOp.class).call();
         info.numBranches = branches.size();
         final Set<ObjectId> uniqueCommits = Sets.newConcurrentHashSet();
         final Set<String> layerNames = Sets.newConcurrentHashSet();

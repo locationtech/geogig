@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -23,7 +24,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 
 /**
  * Compares the features in the {@link WorkingTree working tree} and the {@link StagingArea index}
@@ -89,7 +89,7 @@ public class DiffWorkTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEnt
                 .setOldTree(oldTree.getId()).setNewTree(newTree.getId()).setMaxDiffs(limit)
                 .setPreserveIterationOrder(preserveIterationOrder);
         if (this.pathFilter != null) {
-            diff.setPathFilter(ImmutableList.of(pathFilter));
+            diff.setPathFilter(Arrays.asList(pathFilter));
         }
         return diff.call();
     }

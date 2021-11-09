@@ -33,7 +33,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 
 import picocli.CommandLine.Command;
@@ -109,7 +108,7 @@ public class RevList extends AbstractCommand implements CLICommand {
             if (commit.contains("..")) {
                 checkParameter(this.commits.size() == 1,
                         "Only one value accepted when using <since>..<until> syntax");
-                List<String> sinceUntil = ImmutableList.copyOf((Splitter.on("..").split(commit)));
+                final List<String> sinceUntil = Splitter.on("..").splitToList(commit);
                 checkParameter(sinceUntil.size() == 2 || sinceUntil.size() == 1,
                         "Invalid refSpec format, expected [<commit> ...]|[<since>..<until>]: %s",
                         commit);

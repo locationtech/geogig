@@ -27,8 +27,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.RebaseConflictsException;
 import org.locationtech.geogig.porcelain.RebaseOp;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -122,13 +120,13 @@ public class Rebase extends AbstractCommand implements CLICommand {
                     .call();
             checkParameter(upstreamRef.isPresent(),
                     "The upstream reference could not be resolved.");
-            rebase.setUpstream(Suppliers.ofInstance(upstreamRef.get().getObjectId()));
+            rebase.setUpstream(upstreamRef.get()::getObjectId);
         }
 
         if (onto != null) {
             Optional<ObjectId> ontoId = geogig.command(RevParse.class).setRefSpec(onto).call();
             checkParameter(ontoId.isPresent(), "The onto reference could not be resolved.");
-            rebase.setOnto(Suppliers.ofInstance(ontoId.get()));
+            rebase.setOnto(ontoId::get);
         }
 
         try {

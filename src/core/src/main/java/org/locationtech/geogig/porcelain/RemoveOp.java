@@ -21,6 +21,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
@@ -42,8 +43,6 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -255,10 +254,13 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
 
         ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, NodeRef::path);
 
-        Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
+        final Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
                 new HashSet<>(pathsToRemove));
-        Predicate<String> keyPredicate = Predicates.in(requestedTrees);
-        Map<String, NodeRef> requestedTreesMap = Maps.filterKeys(treesByPath, keyPredicate);
+
+        Map<String, NodeRef> requestedTreesMap = treesByPath.entrySet().stream()
+                .filter(e -> requestedTrees.contains(e.getKey()))
+                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+
         return requestedTreesMap;
     }
 

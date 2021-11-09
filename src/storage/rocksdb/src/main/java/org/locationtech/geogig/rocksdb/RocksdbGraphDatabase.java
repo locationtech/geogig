@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -353,18 +352,16 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
 
             final GraphNode myNode = this;
 
-            return Iterators.filter(edges.iterator(), new Predicate<GraphEdge>() {
-                public @Override boolean apply(GraphEdge input) {
-                    switch (direction) {
-                    case OUT:
-                        return input.getFromNode() == myNode;
-                    case IN:
-                        return input.getToNode() == myNode;
-                    default:
-                        break;
-                    }
-                    return true;
+            return Iterators.filter(edges.iterator(), input -> {
+                switch (direction) {
+                case OUT:
+                    return input.getFromNode() == myNode;
+                case IN:
+                    return input.getToNode() == myNode;
+                default:
+                    break;
                 }
+                return true;
             });
         }
 

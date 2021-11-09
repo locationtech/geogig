@@ -15,7 +15,6 @@ import static com.google.common.collect.Iterators.transform;
 import java.util.Iterator;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -28,7 +27,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 
 /**
  * Removes untracked features from the working tree
@@ -59,12 +57,8 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
 
         try (final AutoCloseableIterator<DiffEntry> unstaged = command(DiffWorkTree.class)
                 .setFilter(path).call()) {
-            final Iterator<DiffEntry> added = filter(unstaged, new Predicate<DiffEntry>() {
-
-                public @Override boolean apply(@Nullable DiffEntry input) {
-                    return input.changeType().equals(ChangeType.ADDED);
-                }
-            });
+            final Iterator<DiffEntry> added = filter(unstaged,
+                    input -> input.changeType().equals(ChangeType.ADDED));
             workingTree().delete(transform(added, DiffEntry::newPath), getProgressListener());
         }
 

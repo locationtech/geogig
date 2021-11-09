@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
@@ -24,9 +25,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-
 /**
  * Provides a means to "walk" the differences between two {@link RevTree trees} in depth-first order
  * and emit diff events to a {@link Consumer}.
@@ -35,7 +33,7 @@ import com.google.common.base.Predicates;
  * will be evaluated for each pair of tree {@link Node nodes} or {@link Bucket buckets}.
  */
 public class PostOrderDiffWalk {
-    private static final Predicate<Bounded> ACEPT_ALL = Predicates.alwaysTrue();
+    private static final Predicate<Bounded> ACEPT_ALL = b -> true;
 
     private PreOrderDiffWalk inOrder;
 
@@ -134,7 +132,7 @@ public class PostOrderDiffWalk {
         }
 
         public @Override boolean feature(NodeRef left, NodeRef right) {
-            boolean accept = filter.apply(left) || filter.apply(right);
+            boolean accept = filter.test(left) || filter.test(right);
             if (accept) {
                 consumer.feature(left, right);
             }
@@ -142,7 +140,7 @@ public class PostOrderDiffWalk {
         }
 
         public @Override boolean tree(NodeRef left, NodeRef right) {
-            boolean accept = filter.apply(left) || filter.apply(right);
+            boolean accept = filter.test(left) || filter.test(right);
             Entry entry = Entry.tree(left, right, accept);
             String path = treePath(left, right);
 
@@ -160,7 +158,7 @@ public class PostOrderDiffWalk {
 
         public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
                 BucketIndex bucketIndex, Bucket left, Bucket right) {
-            final boolean accept = filter.apply(left) || filter.apply(right);
+            final boolean accept = filter.test(left) || filter.test(right);
 
             final String path = bucketPath(leftParent, rightParent, bucketIndex);
 

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -40,8 +41,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -321,7 +320,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public FetchOp addRemotes(List<Remote> remotes) {
-        remotes.forEach((r) -> addRemote(Suppliers.ofInstance(Optional.of(r))));
+        remotes.forEach((r) -> addRemote(() -> Optional.of(r)));
         return this;
     }
 

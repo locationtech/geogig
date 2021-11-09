@@ -24,8 +24,6 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.RevertConflictsException;
 import org.locationtech.geogig.porcelain.RevertOp;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -74,7 +72,7 @@ public class Revert extends AbstractCommand implements CLICommand {
             Optional<ObjectId> commitId = geogig.command(RevParse.class).setRefSpec(st).call();
             checkParameter(commitId.isPresent(),
                     "Couldn't resolve '" + st + "' to a commit, aborting revert.");
-            revert.addCommit(Suppliers.ofInstance(commitId.get()));
+            revert.addCommit(commitId.get());
         }
         try {
             revert.setCreateCommit(!noCommit).setAbort(abort).setContinue(continueRevert).call();

@@ -12,6 +12,7 @@ package org.locationtech.geogig.porcelain;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.impl.PersistedIterable;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 
 import lombok.Cleanup;

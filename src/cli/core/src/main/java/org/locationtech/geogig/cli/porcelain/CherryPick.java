@@ -23,8 +23,6 @@ import org.locationtech.geogig.plumbing.RevParse;
 import org.locationtech.geogig.porcelain.CherryPickOp;
 import org.locationtech.geogig.porcelain.ConflictsException;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
@@ -57,7 +55,7 @@ public class CherryPick extends AbstractCommand implements CLICommand {
         Optional<ObjectId> commitId;
         commitId = geogig.command(RevParse.class).setRefSpec(commits.get(0)).call();
         checkParameter(commitId.isPresent(), "Commit not found '%s'", commits.get(0));
-        cherryPick.setCommit(Suppliers.ofInstance(commitId.get()));
+        cherryPick.setCommit(commitId::get);
 
         try {
             cherryPick.call();

@@ -19,8 +19,6 @@ import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.porcelain.FeatureNodeRefFromRefspec;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Suppliers;
-
 public class DiffFeatureTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -34,9 +32,8 @@ public class DiffFeatureTest extends RepositoryTestCase {
                 .setRefspec("HEAD:" + NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         NodeRef newRef = repo.command(FeatureNodeRefFromRefspec.class)
                 .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
-        FeatureDiff diff = repo.command(DiffFeature.class)
-                .setOldVersion(Suppliers.ofInstance(oldRef))
-                .setNewVersion(Suppliers.ofInstance(newRef)).call();
+        FeatureDiff diff = repo.command(DiffFeature.class).setOldVersion(oldRef)
+                .setNewVersion(newRef).call();
         assertTrue(diff.hasDifferences());
         System.out.println(diff);
     }
@@ -47,9 +44,8 @@ public class DiffFeatureTest extends RepositoryTestCase {
                 .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
         NodeRef newRef = repo.command(FeatureNodeRefFromRefspec.class)
                 .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
-        FeatureDiff diff = repo.command(DiffFeature.class)
-                .setOldVersion(Suppliers.ofInstance(oldRef))
-                .setNewVersion(Suppliers.ofInstance(newRef)).call();
+        FeatureDiff diff = repo.command(DiffFeature.class).setOldVersion(oldRef)
+                .setNewVersion(newRef).call();
         assertFalse(diff.hasDifferences());
         System.out.println(diff);
     }
@@ -61,8 +57,7 @@ public class DiffFeatureTest extends RepositoryTestCase {
                     .setRefspec(NodeRef.appendChild(pointsName, "Points.100")).call().orElse(null);
             NodeRef newRef = repo.command(FeatureNodeRefFromRefspec.class)
                     .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
-            repo.command(DiffFeature.class).setOldVersion(Suppliers.ofInstance(oldRef))
-                    .setNewVersion(Suppliers.ofInstance(newRef)).call();
+            repo.command(DiffFeature.class).setOldVersion(oldRef).setNewVersion(newRef).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(true);
@@ -76,8 +71,7 @@ public class DiffFeatureTest extends RepositoryTestCase {
                     .call().orElse(null);
             NodeRef newRef = repo.command(FeatureNodeRefFromRefspec.class)
                     .setRefspec(NodeRef.appendChild(pointsName, idP1)).call().orElse(null);
-            repo.command(DiffFeature.class).setOldVersion(Suppliers.ofInstance(oldRef))
-                    .setNewVersion(Suppliers.ofInstance(newRef)).call();
+            repo.command(DiffFeature.class).setOldVersion(oldRef).setNewVersion(newRef).call();
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(true);

@@ -9,6 +9,8 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
+import java.util.function.Predicate;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.filter.expression.PropertyAccessorFactory;
 import org.locationtech.geogig.model.Bounded;
@@ -20,7 +22,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.spatial.BinarySpatialOperator;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicate;
 
 /**
  * Adapts a GeoTools {@link Filter} to a {@link Predicate} to be applied over a {@link Bounded}
@@ -47,7 +48,7 @@ final class PreFilter implements Predicate<Bounded> {
         this.filter = filter;
     }
 
-    public @Override boolean apply(@Nullable Bounded bounded) {
+    public @Override boolean test(@Nullable Bounded bounded) {
         if (Filter.INCLUDE == filter) {
             return true;
         }

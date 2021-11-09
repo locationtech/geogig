@@ -26,7 +26,6 @@ import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Maps;
 
 /**
@@ -58,8 +57,8 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                         .setObjectId(diffEntry.newObjectId()).call().get();
                 if (revObject instanceof RevFeature) {
                     FeatureDiff diff = command(DiffFeature.class)
-                            .setNewVersion(Suppliers.ofInstance(diffEntry.getNewObject()))
-                            .setOldVersion(Suppliers.ofInstance(diffEntry.getOldObject())).call();
+                            .setNewVersion(diffEntry.getNewObject())
+                            .setOldVersion(diffEntry.getOldObject()).call();
                     patch.addModifiedFeature(diff);
                 } else if (revObject instanceof RevTree) {
                     RevFeatureType oldFeatureType = command(RevObjectParse.class)

@@ -36,6 +36,7 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -60,7 +61,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
@@ -1330,28 +1330,28 @@ public class PreOrderDiffWalk {
         }
 
         public @Override boolean feature(NodeRef left, NodeRef right) {
-            if (predicate.apply(left) || predicate.apply(right)) {
+            if (predicate.test(left) || predicate.test(right)) {
                 super.feature(left, right);
             }
             return true;
         }
 
         public @Override boolean tree(NodeRef left, NodeRef right) {
-            if (predicate.apply(left) || predicate.apply(right)) {
+            if (predicate.test(left) || predicate.test(right)) {
                 return super.tree(left, right);
             }
             return false;
         }
 
         public @Override void endTree(NodeRef left, NodeRef right) {
-            if (predicate.apply(left) || predicate.apply(right)) {
+            if (predicate.test(left) || predicate.test(right)) {
                 super.endTree(left, right);
             }
         }
 
         public @Override boolean bucket(NodeRef leftParent, NodeRef rightParent,
                 BucketIndex bucketIndex, Bucket left, Bucket right) {
-            if (predicate.apply(left) || predicate.apply(right)) {
+            if (predicate.test(left) || predicate.test(right)) {
                 return super.bucket(leftParent, rightParent, bucketIndex, left, right);
             }
             return false;
@@ -1359,7 +1359,7 @@ public class PreOrderDiffWalk {
 
         public @Override void endBucket(NodeRef leftParent, NodeRef rightParent,
                 BucketIndex bucketIndex, Bucket left, Bucket right) {
-            if (predicate.apply(left) || predicate.apply(right)) {
+            if (predicate.test(left) || predicate.test(right)) {
                 super.endBucket(leftParent, rightParent, bucketIndex, left, right);
             }
         }

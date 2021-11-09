@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -37,9 +38,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -218,7 +216,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public FetchOp addRemote(final @NonNull Remote remote) {
-        return addRemote(Suppliers.ofInstance(Optional.of(remote)));
+        return addRemote(() -> Optional.of(remote));
     }
 
     public List<String> getRemoteNames() {
@@ -334,14 +332,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
                 prune(remoteRemoteRefs, localRemoteRefs, needUpdate);
             }
 
-            // (r) -> r.getType() != REMOVED_REF
-            Predicate<RefDiff> fn = new Predicate<RefDiff>() {
-                public @Override boolean apply(RefDiff r) {
-                    return r.getType() != REMOVED_REF;
-                }
-            };
-
-            for (RefDiff ref : filter(needUpdate, fn)) {
+            for (RefDiff ref : filter(needUpdate, r -> r.getType() != REMOVED_REF)) {
                 final Optional<Integer> repoDepth = repository.getDepth();
                 final boolean isShallow = repoDepth.isPresent();
 
@@ -412,7 +403,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         final Set<Ref> localRemoteRefs;
         localRemoteRefs = command(LsRemoteOp.class)//
                 .retrieveLocalRefs(true)//
-                .setRemote(Suppliers.ofInstance(Optional.of(remote)))//
+                .setRemote(() -> Optional.of(remote))//
                 .call();
         return localRemoteRefs;
     }

@@ -11,12 +11,11 @@ package org.locationtech.geogig.plumbing.merge;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Supplier;
 
 /**
  * Internal command to return an iterator of conflicts in the operation's namespace (i.e.

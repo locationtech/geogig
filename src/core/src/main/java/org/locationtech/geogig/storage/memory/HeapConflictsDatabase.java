@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConflictsDatabase;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
@@ -120,19 +119,18 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
             @Nullable String prefixFilter) {
 
         ConcurrentHashMap<String, Conflict> map = get(namespace);
-        Predicate<String> filter;
-        filter = prefixFilter == null ? Predicates.alwaysTrue() : new PathFilter(prefixFilter);
+        Predicate<String> filter = prefixFilter == null ? x -> true : new PathFilter(prefixFilter);
 
-        return Maps.filterKeys(map, filter).values().iterator();
+        return map.entrySet().stream().filter(e -> filter.test(e.getKey())).map(Map.Entry::getValue)
+                .collect(Collectors.toList()).iterator();
     }
 
     public @Override long getCountByPrefix(@Nullable String namespace, @Nullable String treePath) {
         ConcurrentHashMap<String, Conflict> map = get(namespace);
-        Predicate<String> filter;
-        filter = treePath == null ? Predicates.alwaysTrue() : new PathFilter(treePath);
 
-        int count = Maps.filterKeys(map, filter).size();
-        return count;
+        Predicate<String> filter = treePath == null ? x -> true : new PathFilter(treePath);
+
+        return map.keySet().stream().filter(filter).count();
     }
 
     private static class PathFilter implements Predicate<String> {
@@ -146,7 +144,7 @@ public class HeapConflictsDatabase extends AbstractStore implements ConflictsDat
             this.treePath = treePath;
         }
 
-        public @Override boolean apply(String path) {
+        public @Override boolean test(String path) {
             boolean matches = treePath.equals(path) || path.startsWith(prefix);
             return matches;
         }

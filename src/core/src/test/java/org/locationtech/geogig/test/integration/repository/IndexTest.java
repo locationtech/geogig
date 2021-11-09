@@ -19,6 +19,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.dsl.Geogig;
@@ -40,11 +43,6 @@ import org.locationtech.geogig.porcelain.AddOp;
 import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.Collections2;
 
 public class IndexTest extends RepositoryTestCase {
 
@@ -95,7 +93,7 @@ public class IndexTest extends RepositoryTestCase {
             this.treePath = treePath;
         }
 
-        public @Override boolean apply(NodeRef ref) {
+        public @Override boolean test(NodeRef ref) {
             TYPE type = ref.getType();
             String path = ref.path();
             return TYPE.TREE.equals(type) && treePath.equals(path);
@@ -111,8 +109,8 @@ public class IndexTest extends RepositoryTestCase {
                 .setReference(Ref.WORK_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, workHead.size());
-        Collection<NodeRef> filtered = Collections2.filter(workHead,
-                new TreeNameFilter(pointsName));
+        Collection<NodeRef> filtered = workHead.stream().filter(new TreeNameFilter(pointsName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
 
         repo.commands().command(AddOp.class).call();
@@ -121,7 +119,8 @@ public class IndexTest extends RepositoryTestCase {
                 .setReference(Ref.STAGE_HEAD).setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(3, indexHead.size());
-        filtered = Collections2.filter(indexHead, new TreeNameFilter(pointsName));
+        filtered = indexHead.stream().filter(new TreeNameFilter(pointsName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
     }
 
@@ -136,10 +135,12 @@ public class IndexTest extends RepositoryTestCase {
         assertEquals(2, workHead.size());
 
         Collection<NodeRef> filtered;
-        filtered = Collections2.filter(workHead, new TreeNameFilter(pointsName));
+        filtered = workHead.stream().filter(new TreeNameFilter(pointsName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
 
-        filtered = Collections2.filter(workHead, new TreeNameFilter(linesName));
+        filtered = workHead.stream().filter(new TreeNameFilter(linesName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
 
         repo.commands().command(AddOp.class).addPattern(pointsName).call();
@@ -149,7 +150,8 @@ public class IndexTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(1, indexHead.size());
-        filtered = Collections2.filter(indexHead, new TreeNameFilter(pointsName));
+        filtered = indexHead.stream().filter(new TreeNameFilter(pointsName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
 
         repo.commands().command(AddOp.class).addPattern(linesName).call();
@@ -157,7 +159,8 @@ public class IndexTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST).call());
 
         assertEquals(2, indexHead.size());// Points and Lines
-        filtered = Collections2.filter(indexHead, new TreeNameFilter(linesName));
+        filtered = indexHead.stream().filter(new TreeNameFilter(linesName))
+                .collect(Collectors.toList());
         assertEquals(1, filtered.size());
     }
 
@@ -212,7 +215,8 @@ public class IndexTest extends RepositoryTestCase {
                         .call(RevTree.class).get();
             }
         };
-        return Suppliers.memoize(delegate);
+        // return Suppliers.memoize(delegate);
+        return delegate;
     }
 
     @Test

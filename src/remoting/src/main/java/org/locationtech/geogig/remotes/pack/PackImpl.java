@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -38,9 +39,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
-import com.google.common.base.Supplier;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -143,18 +142,10 @@ class PackImpl implements Pack {
                 Iterator<RevCommit> commitsIterator;
                 missingContents = sourceStore.getAll(() -> missingContentIds);
 
-                // (c) -> {
-                // objectReport.addCommit();
-                // return true;
-                // }
-                Predicate<RevCommit> fn = new Predicate<RevCommit>() {
-                    public @Override boolean apply(RevCommit c) {
-                        objectReport.addCommit();
-                        return true;
-                    }
-                };
-
-                commitsIterator = Iterators.filter(commits.iterator(), fn);
+                commitsIterator = Iterators.filter(commits.iterator(), c -> {
+                    objectReport.addCommit();
+                    return true;
+                });
 
                 allObjects = Iterators.concat(missingContents, commitsIterator);
             }
@@ -199,12 +190,8 @@ class PackImpl implements Pack {
             }
             for (ObjectId parentId : parentIds) {
 
-                // () -> source.getCommit(parentId)
-                Supplier<RevCommit> fn = new Supplier<RevCommit>() {
-                    public @Override RevCommit get() {
-                        return source.context().objectDatabase().getCommit(parentId);
-                    }
-                };
+                Supplier<RevCommit> fn = () -> source.context().objectDatabase()
+                        .getCommit(parentId);
 
                 final @Nullable RevCommit parent = parentId.isNull() ? null
                         : Optional.ofNullable((RevCommit) rootsById.get(parentId)).orElseGet(fn);

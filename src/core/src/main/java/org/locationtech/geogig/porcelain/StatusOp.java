@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 @CanRunDuringConflict
 public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
@@ -37,8 +36,8 @@ public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {
 
         private static final Supplier<Iterator<Conflict>> no_conflicts;
         static {
-            empty = Suppliers.ofInstance(AutoCloseableIterator.emptyIterator());
-            no_conflicts = Suppliers.ofInstance(Collections.emptyIterator());
+            empty = () -> AutoCloseableIterator.emptyIterator();
+            no_conflicts = () -> Collections.emptyIterator();
         }
 
         private Supplier<Iterator<Conflict>> conflicts = no_conflicts;

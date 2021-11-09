@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -46,8 +47,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicate;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -107,17 +106,15 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      */
     public @Override ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
-        Predicate<Ref> filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref input) {
-                boolean keep = false;
-                if (getHeads) {
-                    keep = input.getName().startsWith(Ref.HEADS_PREFIX);
-                }
-                if (getTags) {
-                    keep = keep || input.getName().startsWith(Ref.TAGS_PREFIX);
-                }
-                return keep;
+        Predicate<Ref> filter = input -> {
+            boolean keep = false;
+            if (getHeads) {
+                keep = input.getName().startsWith(Ref.HEADS_PREFIX);
             }
+            if (getTags) {
+                keep = keep || input.getName().startsWith(Ref.TAGS_PREFIX);
+            }
+            return keep;
         };
 
         Set<Ref> remoteRefs = remoteRepo.command(ForEachRef.class).setFilter(filter).call();
@@ -230,8 +227,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
                 LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
 
-                RevTree rootTree = RevTree.EMPTY;
-
+                final RevTree rootTree;
                 if (newParents.size() > 0) {
                     ObjectId mappedCommit = newParents.get(0);
 
@@ -239,15 +235,16 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                             .setTreeish(mappedCommit).call();
                     if (treeId.isPresent()) {
                         rootTree = to.context().objectDatabase().getTree(treeId.get());
+                    } else {
+                        rootTree = RevTree.EMPTY;
                     }
+                } else {
+                    rootTree = RevTree.EMPTY;
                 }
 
                 // Create new commit
-                ObjectId newTreeId = to.command(WriteTree.class)
-                        .setOldRoot(Suppliers.ofInstance(rootTree))
-                        .setDiffSupplier(
-                                Suppliers.ofInstance((AutoCloseableIterator<DiffEntry>) changes))
-                        .call();
+                ObjectId newTreeId = to.command(WriteTree.class).setOldRoot(() -> rootTree)
+                        .setDiffSupplier(() -> (AutoCloseableIterator<DiffEntry>) changes).call();
 
                 RevCommitBuilder builder = RevCommit.builder().init(commit);
                 builder.parentIds(newParents);

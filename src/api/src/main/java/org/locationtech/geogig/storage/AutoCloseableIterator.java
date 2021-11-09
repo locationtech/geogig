@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 /**
@@ -174,7 +174,7 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
             private T computeNext() {
                 while (source.hasNext()) {
                     T sourceNext = source.next();
-                    if (filterFunction.apply(sourceNext)) {
+                    if (filterFunction.test(sourceNext)) {
                         return sourceNext;
                     }
                 }

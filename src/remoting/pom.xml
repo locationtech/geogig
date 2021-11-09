@@ -46,7 +46,6 @@
       <artifactId>geogig-core</artifactId>
     </dependency>
     <dependency>
-      <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>

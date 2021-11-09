@@ -14,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.ql.porcelain.QLDelete;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 

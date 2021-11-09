@@ -10,7 +10,6 @@
 package org.locationtech.geogig.geotools.data.reader;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.base.Predicates.notNull;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.util.ArrayList;
@@ -18,9 +17,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -84,8 +85,6 @@ import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -879,7 +878,14 @@ public class FeatureReaderBuilder {
             }
             predicates.add(screenMapFilter);
         }
-        return Predicates.and(predicates);
+        if (predicates.isEmpty())
+            return b -> true;
+
+        Predicate<Bounded> p = predicates.get(0);
+        for (int i = 1; i < predicates.size(); i++) {
+            p = p.and(predicates.get(i));
+        }
+        return p;
     }
 
     /**
@@ -909,8 +915,8 @@ public class FeatureReaderBuilder {
         List<String> pathFilters = Collections.emptyList();
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();
-            Iterator<FeatureId> featureIds = Iterators
-                    .filter(Iterators.filter(identifiers.iterator(), FeatureId.class), notNull());
+            Iterator<FeatureId> featureIds = Iterators.filter(
+                    Iterators.filter(identifiers.iterator(), FeatureId.class), Objects::nonNull);
             Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
 
             pathFilters = Lists.newArrayList(Iterators.transform(featureIds, FeatureId::getID));

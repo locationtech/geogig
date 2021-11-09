@@ -50,7 +50,6 @@ import org.locationtech.geogig.repository.DefaultProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -178,7 +177,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         checkout(remoteRepo, "master");
         remoteRepo.command(ResetOp.class).setMode(ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_left.getMergeCommit().getId())).call();
+                .setCommit(merge2_left.getMergeCommit()::getId).call();
 
         checkout(remoteRepo, "branch1");
 
@@ -191,7 +190,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
 
         checkout(remoteRepo, "branch1");
         remoteRepo.command(ResetOp.class).setMode(ResetMode.HARD)
-                .setCommit(Suppliers.ofInstance(merge2_right.getMergeCommit().getId())).call();
+                .setCommit(merge2_right.getMergeCommit()::getId).call();
 
         checkout(remoteRepo, "master");
 

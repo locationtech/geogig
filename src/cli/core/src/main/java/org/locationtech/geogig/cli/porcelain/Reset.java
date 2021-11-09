@@ -28,8 +28,6 @@ import org.locationtech.geogig.porcelain.ResetOp;
 import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Suppliers;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -110,7 +108,7 @@ public class Reset extends AbstractCommand implements CLICommand {
                 Optional<ObjectId> commitId = geogig.command(RevParse.class)
                         .setRefSpec(commit.get(0)).call();
                 checkParameter(commitId.isPresent(), "Commit could not be resolved.");
-                reset.setCommit(Suppliers.ofInstance(commitId.get()));
+                reset.setCommit(commitId.get());
             }
 
             reset.setMode(mode);

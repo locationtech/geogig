@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -40,11 +40,10 @@ public class TestSupport {
 
         Map<String, Ref> copyRefs = new TreeMap<>();
         Predicate<Ref> filter = (r) -> !r.getName().startsWith(Ref.REMOTES_PREFIX);
+        Set<Ref> refs = copy.command(ForEachRef.class).setFilter(filter).call();
         copyRefs.putAll(//
                 Maps.uniqueIndex(//
-                        copy.command(ForEachRef.class)//
-                                .setFilter(filter).call(),
-                        (r) -> r.getName())//
+                        refs, (r) -> r.getName())//
         );
 
         sourceRefs.remove(Ref.STAGE_HEAD);

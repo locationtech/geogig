@@ -11,13 +11,13 @@ package org.locationtech.geogig.remotes.internal;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Supplier;
 import com.google.common.io.CountingOutputStream;
 
 public class ObjectFunnels {

@@ -40,7 +40,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 
 import com.google.common.base.Strings;
-import com.google.common.base.Suppliers;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -114,13 +113,11 @@ public class Show extends AbstractCommand implements CLICommand {
                     }
                     console.println(ansi.toString());
                 } else {
-                    CharSequence s = geogig.command(CatObject.class)
-                            .setObject(Suppliers.ofInstance(revObject)).call();
+                    CharSequence s = geogig.command(CatObject.class).setObject(revObject).call();
                     console.println(s);
                 }
             } else {
-                CharSequence s = geogig.command(CatObject.class)
-                        .setObject(Suppliers.ofInstance(revObject)).call();
+                CharSequence s = geogig.command(CatObject.class).setObject(revObject).call();
                 console.println(s);
             }
         }
@@ -158,8 +155,7 @@ public class Show extends AbstractCommand implements CLICommand {
                     }
                     console.println(ansi.toString());
                 } else {
-                    CharSequence s = geogig.command(CatObject.class)
-                            .setObject(Suppliers.ofInstance(revObject)).call();
+                    CharSequence s = geogig.command(CatObject.class).setObject(revObject).call();
                     console.println(s);
                 }
 

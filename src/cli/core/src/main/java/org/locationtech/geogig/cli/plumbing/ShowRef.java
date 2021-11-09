@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 
 import picocli.CommandLine.Command;
@@ -52,7 +52,7 @@ public class ShowRef extends AbstractCommand implements CLICommand {
         ForEachRef op = geogig.command(ForEachRef.class);
 
         Predicate<Ref> filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref ref) {
+            public @Override boolean test(Ref ref) {
                 String name = ref.getName();
                 if (!name.startsWith(Ref.REFS_PREFIX)) {
                     return false;

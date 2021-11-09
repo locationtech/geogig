@@ -33,8 +33,6 @@ import org.locationtech.geogig.porcelain.BlameException.StatusCode;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.base.Suppliers;
-
 /**
  * Creates a report that contains information about who was the last to change each attribute in a
  * feature
@@ -111,9 +109,8 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
                             report.setFirstVersion(feature, commit);
                             break;
                         }
-                        FeatureDiff featureDiff = diffFeature
-                                .setNewVersion(Suppliers.ofInstance(diff.getNewObject()))
-                                .setOldVersion(Suppliers.ofInstance(diff.getOldObject())).call();
+                        FeatureDiff featureDiff = diffFeature.setNewVersion(diff.getNewObject())
+                                .setOldVersion(diff.getOldObject()).call();
                         Map<PropertyDescriptor, AttributeDiff> attribDiffs = featureDiff.getDiffs();
                         Iterator<PropertyDescriptor> iter = attribDiffs.keySet().iterator();
                         while (iter.hasNext()) {

@@ -39,7 +39,6 @@ import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Suppliers;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -196,8 +195,7 @@ public class Conflicts extends AbstractCommand implements CLICommand {
         console.println(name + "\t" + id.toString());
         if (!id.isNull()) {
             Optional<RevObject> obj = geogig.command(RevObjectParse.class).setObjectId(id).call();
-            CharSequence s = geogig.command(CatObject.class)
-                    .setObject(Suppliers.ofInstance(obj.get())).call();
+            CharSequence s = geogig.command(CatObject.class).setObject(obj::get).call();
             console.println(s);
         }
 

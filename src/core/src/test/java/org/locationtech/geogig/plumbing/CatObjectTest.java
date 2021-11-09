@@ -25,8 +25,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.base.Suppliers;
-
 public class CatObjectTest extends RepositoryTestCase {
 
     private ObjectDatabase odb;
@@ -43,8 +41,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithoutBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) / 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
-                .call();
+        CharSequence desc = repo.command(CatObject.class).setObject(tree).call();
         String[] lines = desc.toString().split("\n");
         assertEquals(numChildren + 4, lines.length);
         for (int i = 4; i < lines.length; i++) {
@@ -58,8 +55,7 @@ public class CatObjectTest extends RepositoryTestCase {
     public void TestCatTreeWithBucketsObject() throws Exception {
         int numChildren = CanonicalNodeNameOrder.normalizedSizeLimit(0) * 2;
         RevTree tree = createTree(numChildren);
-        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(tree))
-                .call();
+        CharSequence desc = repo.command(CatObject.class).setObject(tree).call();
         String[] lines = desc.toString().split("\n");
         assertEquals(tree.bucketsSize() + 4, lines.length);
         for (int i = 4; i < lines.length; i++) {
@@ -82,8 +78,7 @@ public class CatObjectTest extends RepositoryTestCase {
     @Test
     public void TestCatFeatureObject() {
         RevFeature feature = RevFeature.builder().build(points1);
-        CharSequence desc = repo.command(CatObject.class).setObject(Suppliers.ofInstance(feature))
-                .call();
+        CharSequence desc = repo.command(CatObject.class).setObject(feature).call();
         String[] lines = desc.toString().split("\n");
 
         assertEquals(points1.getAttributeCount() + 2, lines.length);

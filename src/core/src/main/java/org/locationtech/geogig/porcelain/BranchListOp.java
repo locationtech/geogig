@@ -11,12 +11,12 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -48,16 +48,15 @@ public class BranchListOp extends AbstractGeoGigOp<ImmutableList<Ref>> {
 
     protected ImmutableList<Ref> _call() {
 
-        final Predicate<Ref> filter = new Predicate<Ref>() {
-            public @Override boolean apply(Ref input) {
-                if (locals && input.getName().startsWith(Ref.HEADS_PREFIX)) {
-                    return true;
-                }
-                if (remotes && input.getName().startsWith(Ref.REMOTES_PREFIX)) {
-                    return true;
-                }
-                return false;
+        final Predicate<Ref> filter = input -> {
+
+            if (locals && input.getName().startsWith(Ref.HEADS_PREFIX)) {
+                return true;
             }
+            if (remotes && input.getName().startsWith(Ref.REMOTES_PREFIX)) {
+                return true;
+            }
+            return false;
         };
 
         List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());

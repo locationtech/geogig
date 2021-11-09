@@ -35,8 +35,6 @@ import org.locationtech.geogig.porcelain.ResetOp.ResetMode;
 import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.Context;
 
-import com.google.common.base.Suppliers;
-
 import lombok.NonNull;
 
 /**
@@ -112,7 +110,7 @@ public class Commands extends ObjectStores {
     }
 
     public RebaseOp rebase(@NonNull ObjectId upstreamCommitId) {
-        return command(RebaseOp.class).setUpstream(Suppliers.ofInstance(upstreamCommitId));
+        return command(RebaseOp.class).setUpstream(() -> upstreamCommitId);
     }
 
     public MergeOp merge(@NonNull ObjectId commitToMerge) {

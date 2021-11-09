@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -21,9 +22,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Finds a {@link Node} by searching the given {@link RevTree} for the given path, returns the
@@ -58,7 +56,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
      * @return {@code this}
      */
     public FindTreeChild setParent(RevTree tree) {
-        this.parent = Suppliers.ofInstance(tree);
+        this.parent = () -> tree;
         return this;
     }
 

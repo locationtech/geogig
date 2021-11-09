@@ -37,8 +37,6 @@ import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -272,7 +270,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         final String currentBranch = ((SymRef) headRef).getTarget();
         final ObjectId currHeadCommitId = headRef.getObjectId();
 
-        Supplier<RevTree> oldRoot = resolveOldRoot();
+        final RevTree oldRoot;
         if (!currHeadCommitId.isNull()) {
             if (amend) {
                 RevCommit headCommit = command(RevObjectParse.class).setObjectId(currHeadCommitId)
@@ -283,13 +281,15 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
                 }
                 RevTree commitTree = command(RevObjectParse.class)
                         .setObjectId(headCommit.getTreeId()).call(RevTree.class).get();
-                oldRoot = Suppliers.ofInstance(commitTree);
+                oldRoot = commitTree;
             } else {
+                oldRoot = resolveOldRoot();
                 parents.add(0, currHeadCommitId);
             }
         } else {
             Preconditions.checkArgument(!amend,
                     "Cannot amend. There is no previous commit to amend");
+            oldRoot = resolveOldRoot();
         }
 
         // additional operations in case we are committing after a conflicted merge
@@ -307,7 +307,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         ObjectId newTreeId;
         {
             WriteTree2 writeTree = command(WriteTree2.class);
-            writeTree.setOldRoot(oldRoot).setProgressListener(subProgress(writeTreeProgress));
+            writeTree.setOldRoot(() -> oldRoot).setProgressListener(subProgress(writeTreeProgress));
             if (!pathFilters.isEmpty()) {
                 writeTree.setPathFilter(pathFilters);
             }
@@ -386,18 +386,12 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
         return String.format("commit %s%s: %s", id, am, title);
     }
 
-    private Supplier<RevTree> resolveOldRoot() {
-        Supplier<RevTree> supplier = new Supplier<RevTree>() {
-            public @Override RevTree get() {
-                Optional<ObjectId> head = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
-                if (!head.isPresent() || head.get().isNull()) {
-                    return RevTree.EMPTY;
-                }
-                return command(RevObjectParse.class).setObjectId(head.get()).call(RevTree.class)
-                        .get();
-            }
-        };
-        return Suppliers.memoize(supplier);
+    private RevTree resolveOldRoot() {
+        Optional<ObjectId> head = command(ResolveTreeish.class).setTreeish(Ref.HEAD).call();
+        if (!head.isPresent() || head.get().isNull()) {
+            return RevTree.EMPTY;
+        }
+        return command(RevObjectParse.class).setObjectId(head.get()).call(RevTree.class).get();
     }
 
     private String resolveCommitter() {

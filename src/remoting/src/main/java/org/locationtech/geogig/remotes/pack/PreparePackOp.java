@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.DiffEntry;
@@ -39,8 +40,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.IndexDatabase;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
@@ -113,26 +112,11 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
             }
         };
 
-        return resolveHeadCommits(refs, isTags, Predicates.alwaysTrue(), fn);
+        return resolveHeadCommits(refs, isTags, x -> true, fn);
     }
 
     private Set<ObjectId> resolveHaveCommits(List<RefRequest> refs, boolean isTags) {
-
-        // (o) -> o.have.get()
-        Function<RefRequest, ObjectId> fn = new Function<RefRequest, ObjectId>() {
-            public @Override ObjectId apply(RefRequest o) {
-                return o.have.get();
-            }
-        };
-
-        // (r) -> r.have.isPresent()
-        Predicate<RefRequest> fn2 = new Predicate<RefRequest>() {
-            public @Override boolean apply(RefRequest r) {
-                return r.have.isPresent();
-            }
-        };
-
-        return resolveHeadCommits(refs, isTags, fn2, fn);
+        return resolveHeadCommits(refs, isTags, r -> r.have.isPresent(), o -> o.have.get());
     }
 
     private Set<RevTag> resolveWantTags(List<RefRequest> tagRequests) {
@@ -156,37 +140,15 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
     }
 
     private List<RefRequest> resolveTagRequests() {
+
         final PackRequest req = this.request;
 
-        List<RefRequest> refs;
-
-        // (r) -> r.name.startsWith(Ref.TAGS_PREFIX)
-        Predicate<RefRequest> fn = new Predicate<RefRequest>() {
-            public @Override boolean apply(RefRequest r) {
-                return r.name.startsWith(Ref.TAGS_PREFIX);
-            }
-        };
-
-        refs = newArrayList(filter(req.getRefs(), fn));
-
-        return refs;
+        return newArrayList(filter(req.getRefs(), r -> r.name.startsWith(Ref.TAGS_PREFIX)));
     }
 
     private List<RefRequest> resolveRefRequests() {
         final PackRequest req = this.request;
-
-        List<RefRequest> refs;
-
-        // (r) -> !r.name.startsWith(Ref.TAGS_PREFIX)
-        Predicate<RefRequest> fn = new Predicate<RefRequest>() {
-            public @Override boolean apply(RefRequest r) {
-                return !r.name.startsWith(Ref.TAGS_PREFIX);
-            }
-        };
-
-        refs = newArrayList(filter(req.getRefs(), fn));
-
-        return refs;
+        return newArrayList(filter(req.getRefs(), r -> !r.name.startsWith(Ref.TAGS_PREFIX)));
     }
 
     private void processRequests(//

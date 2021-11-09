@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.diff;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bounded;
@@ -26,10 +27,10 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Streams;
 
 import lombok.NonNull;
 
@@ -217,8 +218,9 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (tree.bucketsSize() > 0) {
                 this.children = new Buckets(tree);
             } else {
-                this.children = Iterators.filter(
-                        RevObjects.children(tree, CanonicalNodeOrder.INSTANCE), boundsFilter);
+                this.children = Streams
+                        .stream(RevObjects.children(tree, CanonicalNodeOrder.INSTANCE))
+                        .filter(boundsFilter).iterator();
             }
         }
 
@@ -236,7 +238,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
         public Features(RevTree tree) {
             if (tree.featuresSize() > 0) {
-                this.features = Iterators.filter(tree.features().iterator(), boundsFilter);
+                this.features = tree.features().stream().filter(boundsFilter).iterator();
             } else if (tree.bucketsSize() > 0) {
                 this.features = new FeatureBuckets(tree);
             } else {
@@ -260,7 +262,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             if (tree.numTrees() == 0) {
                 this.trees = Collections.emptyIterator();
             } else if (tree.treesSize() > 0) {
-                this.trees = Iterators.filter(tree.trees().iterator(), boundsFilter);
+                this.trees = tree.trees().stream().filter(boundsFilter).iterator();
             } else if (tree.bucketsSize() > 0) {
                 this.trees = new TreeBuckets(tree);
             } else {
@@ -287,7 +289,7 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
 
         public Buckets(RevTree tree) {
             Preconditions.checkArgument(tree.bucketsSize() > 0);
-            buckets = Iterators.filter(tree.getBuckets().iterator(), boundsFilter);
+            buckets = Streams.stream(tree.getBuckets()).filter(boundsFilter).iterator();
             bucketEntries = Collections.emptyIterator();
             // may it be a mixed tree (having both direct children and buckets)
             bucketEntries = RevObjects.children(tree, CanonicalNodeOrder.INSTANCE);

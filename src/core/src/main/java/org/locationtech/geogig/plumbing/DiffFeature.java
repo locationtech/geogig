@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.NodeRef;
@@ -24,7 +25,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 

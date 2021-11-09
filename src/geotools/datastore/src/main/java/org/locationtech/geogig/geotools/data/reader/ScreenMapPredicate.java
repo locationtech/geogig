@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.referencing.operation.TransformException;
-
-import com.google.common.base.Predicate;
 
 /**
  * Filters out {@link Bounded} ({@link NodeRef node refs} and {@link Bucket buckets}) based on a
@@ -123,7 +122,7 @@ public class ScreenMapPredicate implements Predicate<Bounded> {
         return stats;
     }
 
-    public @Override boolean apply(@Nullable Bounded b) {
+    public @Override boolean test(@Nullable Bounded b) {
         if (b == null) {
             return false;
         }

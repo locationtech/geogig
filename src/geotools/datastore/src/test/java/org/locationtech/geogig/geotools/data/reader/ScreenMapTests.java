@@ -50,9 +50,9 @@ public class ScreenMapTests {
         FeatureScreenMapPredicate smp = new FeatureScreenMapPredicate(sm);
 
         // first one goes through
-        assertTrue(smp.apply(feature1));
+        assertTrue(smp.test(feature1));
         // second one doesn't
-        assertFalse(smp.apply(feature2));
+        assertFalse(smp.test(feature2));
     }
 
     @Test

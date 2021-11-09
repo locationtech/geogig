@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -31,8 +32,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 import lombok.NonNull;
 
@@ -156,7 +155,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
     }
 
     public PullOp setRemote(final @NonNull Remote remote) {
-        return setRemote(Suppliers.ofInstance(Optional.of(remote)));
+        return setRemote(() -> Optional.of(remote));
     }
 
     /**
@@ -257,13 +256,7 @@ public class PullOp extends AbstractGeoGigOp<PullResult> {
             final Ref localRemoteRef = localRemoteRefOpt.get();
             if (rebase) {
                 getProgressListener().setDescription("Pull: rebasing...");
-
-                // () -> localRemoteRef.getObjectId()
-                Supplier<ObjectId> fn = new Supplier<ObjectId>() {
-                    public @Override ObjectId get() {
-                        return localRemoteRef.getObjectId();
-                    }
-                };
+                Supplier<ObjectId> fn = () -> localRemoteRef.getObjectId();
                 command(RebaseOp.class).setUpstream(fn).call();
             } else {
                 getProgressListener().setDescription("Pull: merging...");

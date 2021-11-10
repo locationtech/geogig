@@ -48,7 +48,6 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Strings;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -229,7 +228,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         });
         // since they're not canonical trees, diff reports adds and removes instead of changes
         Map<Node, Node> changed = new HashMap<>();
-        for (String name : new HashSet<>(Sets.union(added.keySet(), removed.keySet()))) {
+        for (String name : Sets.union(added.keySet(), removed.keySet())) {
             if (added.containsKey(name) && removed.containsKey(name)) {
                 changed.put(removed.remove(name), added.remove(name));
             }
@@ -272,7 +271,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
             List<Node> list = new ArrayList<>(treeNodes);
             Collections.shuffle(list);
             int removeCount = ncount / 10;
-            removedNodes = ImmutableSet.copyOf(list.subList(0, removeCount));
+            removedNodes = new HashSet<>(list.subList(0, removeCount));
             for (Node node : removedNodes) {
                 boolean removed = builder.remove(node);
                 assertTrue("Not removed: " + node, removed);

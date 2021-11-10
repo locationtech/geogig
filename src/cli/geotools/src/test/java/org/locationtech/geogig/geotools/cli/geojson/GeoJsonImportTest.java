@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.LineString;
 import org.mockito.exceptions.base.MockitoException;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class GeoJsonImportTest extends RepositoryTestCase {
@@ -103,8 +103,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         RevFeature feature1Obj = odb.getFeature(feature1id);
         RevFeature feature2Obj = odb.getFeature(feature2id);
 
-        ImmutableSet<PropertyDescriptor> attributes = cli.getGeogig()
-                .command(DescribeFeatureType.class)
+        Set<PropertyDescriptor> attributes = cli.getGeogig().command(DescribeFeatureType.class)
                 .setFeatureType(odb.getFeatureType(rootNode.getMetadataId())).call();
         assertEquals(3, attributes.size());
         int attributeIndex = 0;

@@ -47,7 +47,7 @@ public class AddOp extends AbstractGeoGigOp<WorkingTree> {
      * Constructs a new {@code AddOp} with the given parameters.
      */
     public AddOp() {
-        patterns = new HashSet<String>();
+        patterns = new HashSet<>();
     }
 
     /**

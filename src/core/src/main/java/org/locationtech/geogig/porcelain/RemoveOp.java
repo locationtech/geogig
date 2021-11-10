@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -255,7 +254,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
         ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, NodeRef::path);
 
         final Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
-                new HashSet<>(pathsToRemove));
+                Set.copyOf(pathsToRemove));
 
         Map<String, NodeRef> requestedTreesMap = treesByPath.entrySet().stream()
                 .filter(e -> requestedTrees.contains(e.getKey()))

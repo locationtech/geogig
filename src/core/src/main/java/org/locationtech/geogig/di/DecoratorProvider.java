@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.di;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,14 +21,12 @@ import lombok.NonNull;
 
 class DecoratorProvider {
 
-    private Set<Decorator> decorators;
+    private final Set<Decorator> decorators;
 
     private Map<Class<?>, Object> singletonDecorators = Maps.newConcurrentMap();
 
     public DecoratorProvider() {
-        this.decorators = new HashSet<>();
-        decorators.add(new CommandHooksDecorator());
-        decorators.add(new ConflictInterceptor());
+        this.decorators = Set.of(new CommandHooksDecorator(), new ConflictInterceptor());
     }
 
     @SuppressWarnings("unchecked")

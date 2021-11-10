@@ -21,15 +21,14 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Resolve a ref name to the stored {@link Ref reference} object
  */
 public class RefParse extends AbstractGeoGigOp<Optional<Ref>> {
 
-    private static final Set<String> STANDARD_REFS = ImmutableSet.of(Ref.HEAD, Ref.MASTER,
-            Ref.ORIGIN, Ref.STAGE_HEAD, Ref.WORK_HEAD);
+    private static final Set<String> STANDARD_REFS = Set.of(Ref.HEAD, Ref.MASTER, Ref.ORIGIN,
+            Ref.STAGE_HEAD, Ref.WORK_HEAD);
 
     private String refSpec;
 

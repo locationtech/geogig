@@ -17,7 +17,6 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -210,7 +209,7 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
             List<NodeRef> treeNodes;
             treeNodes = command(FindFeatureTypeTrees.class).setRootTree(left).setSource(store)
                     .call();
-            return new HashSet<>(treeNodes);
+            return Set.copyOf(treeNodes);
         });
     }
 

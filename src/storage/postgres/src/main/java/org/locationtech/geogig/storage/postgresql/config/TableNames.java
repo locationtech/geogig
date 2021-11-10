@@ -154,9 +154,9 @@ public class TableNames implements Cloneable {
     }
 
     public List<String> all() {
-        return Arrays.asList(metadata(), repositories(), config(), refs(), conflicts(),
-                objects(), index(), indexMappings(), indexObjects(), commits(), features(),
-                featureTypes(), trees(), graphEdges(), graphMappings(), graphProperties(), blobs());
+        return Arrays.asList(metadata(), repositories(), config(), refs(), conflicts(), objects(),
+                index(), indexMappings(), indexObjects(), commits(), features(), featureTypes(),
+                trees(), graphEdges(), graphMappings(), graphProperties(), blobs());
     }
 
 }

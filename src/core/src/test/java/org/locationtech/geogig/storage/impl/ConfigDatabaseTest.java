@@ -34,7 +34,6 @@ import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
@@ -136,7 +135,7 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.put("section2.subsection4.string", "4");
 
         List<String> allSubsections = config.getAllSubsections("section1");
-        Set<String> expected = ImmutableSet.of("subsection1", "subsection2", "subsection1.subsub1",
+        Set<String> expected = Set.of("subsection1", "subsection2", "subsection1.subsub1",
                 "subsection2.subsub2");
         assertEquals(expected, new HashSet<String>(allSubsections));
     }
@@ -153,7 +152,7 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.putGlobal("section2.subsection4.string", "4");
 
         List<String> allSubsections = config.getAllSubsectionsGlobal("section1");
-        Set<String> expected = ImmutableSet.of("subsection1", "subsection2", "subsection1.subsub1",
+        Set<String> expected = Set.of("subsection1", "subsection2", "subsection1.subsub1",
                 "subsection2.subsub2");
         assertEquals(expected, new HashSet<String>(allSubsections));
     }

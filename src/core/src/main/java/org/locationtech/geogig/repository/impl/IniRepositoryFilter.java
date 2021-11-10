@@ -52,7 +52,7 @@ public class IniRepositoryFilter extends RepositoryFilter {
 
             final Map<String, String> pairs = ini.getAll();
 
-            Set<String> seen = new HashSet<String>();
+            Set<String> seen = new HashSet<>();
             for (Entry<String, String> pair : pairs.entrySet()) {
                 String qualifiedName = pair.getKey();
                 String[] split = qualifiedName.split("\\.");

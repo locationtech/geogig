@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 /**
  * Connects to the specified remote, retrieves its {@link Ref refs}, closes the remote connection
@@ -162,16 +161,16 @@ public class LsRemoteOp extends AbstractGeoGigOp<Set<Ref>> {
         }
 
         if (headRef.isPresent()) {
-            Set<Ref> refs = Sets.newHashSet(remoteRefs);
+            Set<Ref> refs = new TreeSet<>(remoteRefs);
             refs.add(headRef.get());
-            remoteRefs = ImmutableSet.copyOf(refs);
+            remoteRefs = refs;
         }
 
         Set<Ref> filtered = remoteRefs.stream()
                 .filter(r -> remoteConfig.mapToLocal(r.getName()).isPresent())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toCollection(TreeSet::new));
 
-        return ImmutableSet.copyOf(filtered);
+        return filtered;
 
     }
 

@@ -11,6 +11,7 @@ package org.locationtech.geogig.ql.cli;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.ql.porcelain.QLDelete;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class QLDeleteIntegrationTest extends RepositoryTestCase {
@@ -55,18 +55,18 @@ public class QLDeleteIntegrationTest extends RepositoryTestCase {
     public void simpleDelete() {
         DiffObjectCount res = delete("delete from Points").get();
         assertEquals(3, res.getFeaturesRemoved());
-        assertEquals(ImmutableSet.of(), lsTree("WORK_HEAD:Points"));
-        assertEquals(ImmutableSet.of(idP1, idP2, idP3), lsTree("STAGE_HEAD:Points"));
-        assertEquals(ImmutableSet.of(idP1, idP2, idP3), lsTree("HEAD:Points"));
+        assertEquals(Collections.emptySet(), lsTree("WORK_HEAD:Points"));
+        assertEquals(Set.of(idP1, idP2, idP3), lsTree("STAGE_HEAD:Points"));
+        assertEquals(Set.of(idP1, idP2, idP3), lsTree("HEAD:Points"));
     }
 
     @Test
     public void simpleFidFilterDelete() {
         DiffObjectCount res = delete("delete from Points where @id = 'Points.3'").get();
         assertEquals(1, res.getFeaturesRemoved());
-        assertEquals(ImmutableSet.of(idP1, idP2), lsTree("WORK_HEAD:Points"));
-        assertEquals(ImmutableSet.of(idP1, idP2, idP3), lsTree("STAGE_HEAD:Points"));
-        assertEquals(ImmutableSet.of(idP1, idP2, idP3), lsTree("HEAD:Points"));
+        assertEquals(Set.of(idP1, idP2), lsTree("WORK_HEAD:Points"));
+        assertEquals(Set.of(idP1, idP2, idP3), lsTree("STAGE_HEAD:Points"));
+        assertEquals(Set.of(idP1, idP2, idP3), lsTree("HEAD:Points"));
     }
 
     public Set<String> lsTree(String treeIsh) {

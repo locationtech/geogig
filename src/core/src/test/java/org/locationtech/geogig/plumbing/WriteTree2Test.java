@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Test;
@@ -51,9 +52,7 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -266,7 +265,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         Set<String> expected = set("roads", "roads/roads.0", "roads/roads.1", "buildings",
                 "buildings/buildings.0");
-        ImmutableSet<String> actual = refsByPath.keySet();
+        Set<String> actual = refsByPath.keySet();
 
         assertEquals(expected, actual);
     }
@@ -300,7 +299,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         Set<String> expected = set("roads", "roads/highways", "roads/highways/highways.0",
                 "roads/streets", "buildings", "buildings/stores", "buildings/stores/stores.0",
                 "buildings/stores/stores.1", "buildings/unknown", "buildings/unknown/unknown.0");
-        ImmutableSet<String> actual = refsByPath.keySet();
+        Set<String> actual = refsByPath.keySet();
 
         assertEquals(expected, actual);
     }
@@ -615,8 +614,8 @@ public class WriteTree2Test extends RepositoryTestCase {
 
     private void verifyTreeStructure(ObjectId treeId, NodeRef... treeRefs) {
 
-        Set<String> expectedPaths = ImmutableSet
-                .copyOf(Iterables.transform(Arrays.asList(treeRefs), (nr) -> nr.path()));
+        Set<String> expectedPaths = Arrays.stream(treeRefs).map(NodeRef::path)
+                .collect(Collectors.toSet());
 
         ImmutableMap<String, NodeRef> refs = getTreeRefsByPath(treeId);
 

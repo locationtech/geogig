@@ -112,8 +112,7 @@ public class GeoPackageTestSupport {
         return dataStore;
     }
 
-    public void exportToFile(File file, String tableName, List<Feature> features)
-            throws Exception {
+    public void exportToFile(File file, String tableName, List<Feature> features) throws Exception {
         MemoryDataStore memStore = new MemoryDataStoreWithProvidedFIDSupport();
         memStore.addFeatures(features);
         DataStore gpkgStore = createDataStore(file);

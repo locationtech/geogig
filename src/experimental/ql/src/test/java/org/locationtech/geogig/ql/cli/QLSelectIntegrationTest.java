@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -37,7 +38,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.TransformException;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import net.sf.jsqlparser.statement.select.Select;
@@ -280,7 +280,7 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
     private void testBounds(String boundsQuery, double minx, double miny, double maxx, double maxy,
             String srs) {
         SimpleFeatureCollection result = helper.selectAndAssert(boundsQuery,
-                ImmutableSet.of("bounds"), "minx", "miny", "maxx", "maxy", "crs");
+                Set.of("bounds"), "minx", "miny", "maxx", "maxy", "crs");
 
         try (SimpleFeatureIterator features = result.features()) {
             assertTrue(features.hasNext());

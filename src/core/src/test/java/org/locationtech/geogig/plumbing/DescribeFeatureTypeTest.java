@@ -12,12 +12,12 @@ package org.locationtech.geogig.plumbing;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Set;
+
 import org.junit.Test;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import com.google.common.collect.ImmutableSet;
 
 public class DescribeFeatureTypeTest extends RepositoryTestCase {
 
@@ -43,7 +43,7 @@ public class DescribeFeatureTypeTest extends RepositoryTestCase {
     public void testDescribeFeatureType() throws Exception {
         DescribeFeatureType describe = new DescribeFeatureType();
 
-        ImmutableSet<PropertyDescriptor> properties = describe.setFeatureType(featureType).call();
+        Set<PropertyDescriptor> properties = describe.setFeatureType(featureType).call();
 
         for (PropertyDescriptor prop : properties) {
             assertTrue(pointsType.getDescriptors().contains(prop));

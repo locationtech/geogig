@@ -23,7 +23,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
 
@@ -138,7 +137,7 @@ public @ToString final class IndexInfo {
     }
 
     public static Set<String> getMaterializedAttributeNames(IndexInfo info) {
-        Set<String> availableAttNames = ImmutableSet.of();
+        Set<String> availableAttNames = Collections.emptySet();
 
         final @Nullable String[] attNames = (String[]) info.getMetadata()
                 .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);

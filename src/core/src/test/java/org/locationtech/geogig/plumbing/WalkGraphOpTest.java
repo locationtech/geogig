@@ -30,8 +30,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.collect.ImmutableSet;
-
 public class WalkGraphOpTest extends RepositoryTestCase {
 
     private static class AccumulatingListener implements WalkGraphOp.Listener {
@@ -132,7 +130,7 @@ public class WalkGraphOpTest extends RepositoryTestCase {
 
         List<String> sevents = listener.sevents;
 
-        Set<String> expected = ImmutableSet.of(//
+        Set<String> expected = Set.of(//
                 "COMMIT Lines.1", //
                 "TREE ", //
                 "FEATURETYPE Points", //

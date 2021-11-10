@@ -17,14 +17,14 @@ import static org.locationtech.geogig.model.internal.Quadrant.NW;
 import static org.locationtech.geogig.model.internal.Quadrant.SE;
 import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
+import java.util.List;
+
 import org.junit.Test;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-
-import com.google.common.collect.Lists;
 
 public class QuadrantTest {
 
@@ -159,8 +159,7 @@ public class QuadrantTest {
         final Envelope ne = NE.slice(parent);
         final Envelope se = SE.slice(parent);
 
-        Geometry mpoly = GF
-                .buildGeometry(Lists.newArrayList(poly(sw), poly(nw), poly(ne), poly(se)));
+        Geometry mpoly = GF.buildGeometry(List.of(poly(sw), poly(nw), poly(ne), poly(se)));
 
         assertEquals(parent, mpoly.getEnvelopeInternal());
 

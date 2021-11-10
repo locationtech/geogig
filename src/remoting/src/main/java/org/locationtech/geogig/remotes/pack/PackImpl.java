@@ -41,7 +41,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import lombok.NonNull;
@@ -76,7 +75,7 @@ class PackImpl implements Pack {
         progress.started();
 
         List<RefDiff> appliedDiffs = new ArrayList<>();
-        List<RefRequest> reqs = Lists.newArrayList(missingCommits.keySet());
+        List<RefRequest> reqs = new ArrayList<>(missingCommits.keySet());
 
         Deduplicator deduplicator = DeduplicationService.create();
         try {
@@ -94,7 +93,7 @@ class PackImpl implements Pack {
 
         // process indexes
         if (!missingIndexes.isEmpty()) {
-            reqs = Lists.newArrayList(missingIndexes.keySet());
+            reqs = new ArrayList<>(missingIndexes.keySet());
             deduplicator = DeduplicationService.create();
             try {
                 for (RefRequest req : reqs) {

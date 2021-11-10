@@ -1,6 +1,7 @@
 package org.locationtech.geogig.plumbing;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -12,8 +13,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.collect.Lists;
 
 /**
  * Fast way to compute which child trees have changed between two versions of a tree with tree nodes
@@ -28,7 +27,7 @@ public class FindChangedTrees extends AbstractGeoGigOp<List<DiffEntry>> {
 
     private RevTree oldTree, newTree;
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final List<String> pathFilters = new LinkedList<>();
 
     private ObjectStore leftSource;
 

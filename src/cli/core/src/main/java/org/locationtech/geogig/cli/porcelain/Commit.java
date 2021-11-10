@@ -10,6 +10,7 @@
 package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +36,6 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -74,7 +74,7 @@ public class Commit extends AbstractCommand implements CLICommand {
     private boolean quiet;
 
     @Parameters(arity = "*", description = "If given, commit only the indicated paths")
-    private List<String> paths = Lists.newLinkedList();
+    private List<String> paths = new LinkedList<>();
 
     @Option(names = "--allow-empty", description = "Create commit even if there are no staged changes (i.e. it'll point to the same root tree than its parent)")
     private boolean allowEmpty;

@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,8 +42,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
 
 /**
  * Exports feature trees (layers) from the repository to a GeoTools {@link DataStore}.
@@ -191,12 +192,12 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
 
         checkArgument(commit.isPresent(), "RefSpec doesn't resolve to a commit: '%s'", refSpec);
 
-        final List<NodeRef> featureTreeRefs = Lists.newArrayList(
-                command(LsTreeOp.class).setReference(commit.get().getTreeId().toString())
-                        .setStrategy(Strategy.TREES_ONLY).call());
+        Iterator<NodeRef> featureTreeRefs = command(LsTreeOp.class)
+                .setReference(commit.get().getTreeId().toString()).setStrategy(Strategy.TREES_ONLY)
+                .call();
 
         final Set<String> exportLayers;
-        final Set<String> repoLayers = featureTreeRefs.stream().map(NodeRef::name)
+        final Set<String> repoLayers = Streams.stream(featureTreeRefs).map(NodeRef::name)
                 .collect(Collectors.toSet());
 
         if (treePaths == null || treePaths.isEmpty()) {

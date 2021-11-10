@@ -11,7 +11,7 @@ package org.locationtech.geogig.test.integration;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -20,7 +20,6 @@ import org.locationtech.geogig.plumbing.merge.ConflictsQueryOp;
 import org.locationtech.geogig.plumbing.merge.ConflictsWriteOp;
 import org.locationtech.geogig.repository.Conflict;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class ConflictsReadWriteOpTest extends RepositoryTestCase {
@@ -35,7 +34,7 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
         Conflict conflict2 = new Conflict(idP2, RevObjectTestSupport.hashString("ancestor2"),
                 RevObjectTestSupport.hashString("ours2"),
                 RevObjectTestSupport.hashString("theirs2"));
-        ArrayList<Conflict> conflicts = Lists.newArrayList(conflict, conflict2);
+        List<Conflict> conflicts = List.of(conflict, conflict2);
         repo.command(ConflictsWriteOp.class).setConflicts(conflicts).call();
 
         Set<Conflict> returnedConflicts = Sets

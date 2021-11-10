@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,6 @@ import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
-
-import com.google.common.collect.Lists;
 
 /**
  * A container for blame information. It just stores the commit of the last modification for each
@@ -33,7 +32,7 @@ public class BlameReport {
     private HashMap<String, ValueAndCommit> changes;
 
     public BlameReport(RevFeatureType featureType) {
-        attributes = Lists.newArrayList();
+        attributes = new ArrayList<>();
         for (PropertyDescriptor attribute : featureType.descriptors()) {
             attributes.add(attribute.getName().getLocalPart());
         }

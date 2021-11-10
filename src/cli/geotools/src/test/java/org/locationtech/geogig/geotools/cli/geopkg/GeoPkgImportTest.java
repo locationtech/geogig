@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +30,7 @@ import org.locationtech.geogig.plumbing.LsTreeOp;
 import org.locationtech.geogig.plumbing.LsTreeOp.Strategy;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 public class GeoPkgImportTest extends RepositoryTestCase {
 
@@ -66,8 +67,8 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
         assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
-        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
-                (nr) -> nr.name());
+        List<String> nodeList = Streams.stream(nodeIterator).map(NodeRef::name)
+                .collect(Collectors.toList());
         assertTrue(nodeList.contains("Points"));
         assertTrue(nodeList.contains("1"));
         assertTrue(nodeList.contains("2"));
@@ -84,8 +85,8 @@ public class GeoPkgImportTest extends RepositoryTestCase {
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
         assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
-        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
-                (nr) -> nr.name());
+        List<String> nodeList = Streams.stream(nodeIterator).map(NodeRef::name)
+                .collect(Collectors.toList());
         // Since there are Lines/1 and Points/1 etc, 1, 2, and 3 should be in the list twice. Remove
         // one after checking the first time.
         assertTrue(nodeList.contains("Points"));

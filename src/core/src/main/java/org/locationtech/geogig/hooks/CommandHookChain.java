@@ -22,8 +22,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Command;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.Lists;
-
 import lombok.extern.slf4j.Slf4j;
 
 final @Slf4j class CommandHookChain {
@@ -71,7 +69,9 @@ final @Slf4j class CommandHookChain {
     final void runPreHooks() {
         AbstractGeoGigOp<?> command = target;
         // run pre-hooks
-        for (CommandHook hook : Lists.reverse(hooks)) {
+        List<CommandHook> hooks = this.hooks;
+        Collections.reverse(hooks);
+        for (CommandHook hook : hooks) {
             log.debug("Running pre command hook {}", hook);
             command = hook.pre(command);
         }

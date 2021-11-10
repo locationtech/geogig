@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
@@ -49,8 +50,8 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 public abstract class RevTreeBuilderTest {
 
@@ -338,7 +339,7 @@ public abstract class RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, tree, objectStore,
                 Strategy.CHILDREN);
-        return Lists.newArrayList(Iterators.transform(it, NodeRef::getNode));
+        return Streams.stream(it).map(NodeRef::getNode).collect(Collectors.toList());
     }
 
     protected void print(RevTree root) {

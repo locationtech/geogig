@@ -16,9 +16,11 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.cli.Console;
@@ -32,8 +34,6 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.collect.Lists;
-
 public class CLI {
 
     public int run(InputStream stdin, PrintStream stdout, String[] args) throws IOException {
@@ -42,7 +42,7 @@ public class CLI {
         final @Nullable String repoURI;
         final String[] cliArgs;
         {
-            List<String> arglist = Lists.newArrayList(args);
+            List<String> arglist = Arrays.stream(args).collect(Collectors.toList());
             if (arglist.indexOf("--repo") > -1) {
                 int indexOfRepoArg = arglist.indexOf("--repo");
                 int indexOfRepoValue = indexOfRepoArg + 1;

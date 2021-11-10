@@ -45,7 +45,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
 
@@ -160,7 +159,7 @@ public class PushOpTest extends RemoteRepositoryTestCase {
             insertAndAdd(localRepo, f);
         }
 
-        List<RevCommit> commitsToPush = Lists.newLinkedList();
+        List<RevCommit> commitsToPush = new LinkedList<>();
 
         commitsToPush.add(commit(localRepo, "root commit"));
 

@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -44,7 +45,6 @@ import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -135,13 +135,8 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
         Preconditions.checkArgument(partialId.length() > 7,
                 "partial id must be at least 8 characters long: ", partialId);
         checkState(isOpen(), "db is closed");
-        List<ObjectId> matches = Lists.newLinkedList();
-        for (ObjectId id : objects.keySet()) {
-            if (id.toString().startsWith(partialId)) {
-                matches.add(id);
-            }
-        }
-        return matches;
+        return objects.keySet().stream().filter(id -> id.toString().startsWith(partialId))
+                .collect(Collectors.toList());
     }
 
     public @Override boolean put(final RevObject object) {

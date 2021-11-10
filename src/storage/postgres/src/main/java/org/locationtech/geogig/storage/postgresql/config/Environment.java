@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -328,7 +328,7 @@ public class Environment implements Cloneable {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     repoPK = rs.getInt(1);
-                    List<Integer> all = Lists.newArrayList(repoPK);
+                    List<Integer> all = new ArrayList<>(List.of(repoPK));
                     while (rs.next()) {
                         all.add(rs.getInt(1));
                     }

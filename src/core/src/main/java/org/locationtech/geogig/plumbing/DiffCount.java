@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,8 +25,6 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.collect.Lists;
-
 /**
  * Counts differences between two trees.
  * 
@@ -33,7 +32,7 @@ import com.google.common.collect.Lists;
  */
 public class DiffCount extends AbstractGeoGigOp<DiffObjectCount> {
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final List<String> pathFilters = new LinkedList<>();
 
     private ObjectStore leftSource, rightSource;
 

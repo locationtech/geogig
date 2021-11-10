@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -119,7 +118,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
     public WriteTree2 setPathFilter(@Nullable Iterable<String> pathFilters) {
         this.pathFilters.clear();
         if (pathFilters != null) {
-            this.pathFilters.addAll(Lists.newArrayList(pathFilters));
+            pathFilters.forEach(this.pathFilters::add);
         }
         return this;
     }

@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.collect.Lists;
 
 public class UpdateIndexOpTest extends RepositoryTestCase {
 
@@ -94,7 +93,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Index index = repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("x", "y"))//
+                .setExtraAttributes(List.of("x", "y"))//
                 .call();
 
         IndexInfo indexInfo = indexdb.getIndexInfo(worldPointsLayer.getName(), "geom").get();
@@ -107,7 +106,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertEquals(new Envelope(-180, 180, -90, 90),
                 indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-        List<String> extraAttributes = Lists.newArrayList(
+        List<String> extraAttributes = List.of(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         assertEquals(2, extraAttributes.size());
         assertTrue(extraAttributes.contains("x"));
@@ -132,7 +131,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         Index index = repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setAttributeName("geom")//
-                .setExtraAttributes(Lists.newArrayList("x", "y"))//
+                .setExtraAttributes(List.of("x", "y"))//
                 .setAdd(true)//
                 .call();
 
@@ -146,7 +145,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertEquals(new Envelope(-180, 180, -90, 90),
                 indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-        List<String> extraAttributes = Lists.newArrayList(
+        List<String> extraAttributes = Arrays.asList(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         assertEquals(2, extraAttributes.size());
         assertTrue(extraAttributes.contains("x"));
@@ -170,7 +169,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Index index = repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("y"))//
+                .setExtraAttributes(List.of("y"))//
                 .setOverwrite(true)//
                 .call();
 
@@ -184,7 +183,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertEquals(new Envelope(-180, 180, -90, 90),
                 indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-        List<String> extraAttributes = Lists.newArrayList(
+        List<String> extraAttributes = Arrays.asList(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         assertEquals(1, extraAttributes.size());
         assertTrue(extraAttributes.contains("y"));
@@ -255,7 +254,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertEquals(newBounds, indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-        List<String> extraAttributes = Lists.newArrayList(
+        List<String> extraAttributes = Arrays.asList(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         assertEquals(1, extraAttributes.size());
         assertTrue(extraAttributes.contains("x"));
@@ -277,7 +276,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("y"))//
+                .setExtraAttributes(List.of("y"))//
         ::call);
         assertThat(e.getMessage(), containsString(
                 "Extra attributes already exist on index, specify add or overwrite to update."));
@@ -289,7 +288,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("x"))//
+                .setExtraAttributes(List.of("x"))//
                 .setOverwrite(true)//
         ::call);
         assertThat(e.getMessage(), containsString("Nothing to update..."));
@@ -301,7 +300,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("x"))//
+                .setExtraAttributes(List.of("x"))//
                 .setAdd(true)//
         ::call);
         assertThat(e.getMessage(), containsString("Nothing to update..."));
@@ -323,7 +322,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     public void testUpdateNoExistingIndex() {
         Exception e = assertThrows(IllegalArgumentException.class, repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("y"))//
+                .setExtraAttributes(List.of("y"))//
         ::call);
 
         assertThat(e.getMessage(), containsString("A matching index could not be found."));
@@ -377,7 +376,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
 
         Index index = repo.command(UpdateIndexOp.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
-                .setExtraAttributes(Lists.newArrayList("y"))//
+                .setExtraAttributes(List.of("y"))//
                 .setAdd(true)//
                 .setIndexHistory(true)//
                 .call();
@@ -392,7 +391,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
         assertEquals(new Envelope(-180, 180, -90, 90),
                 indexInfo.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS));
         assertTrue(indexInfo.getMetadata().containsKey(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
-        List<String> extraAttributes = Lists.newArrayList(
+        List<String> extraAttributes = Arrays.asList(
                 (String[]) indexInfo.getMetadata().get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA));
         assertEquals(2, extraAttributes.size());
         assertTrue(extraAttributes.contains("x"));
@@ -464,7 +463,7 @@ public class UpdateIndexOpTest extends RepositoryTestCase {
     private Index updateIndex(String treeName, @Nullable String... extraAttributes) {
         List<String> extraAtts = null;
         if (extraAttributes != null) {
-            extraAtts = Lists.newArrayList(extraAttributes);
+            extraAtts = Arrays.asList(extraAttributes);
         }
         Index index = repo.command(UpdateIndexOp.class)//
                 .setOverwrite(true)//

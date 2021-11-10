@@ -11,14 +11,13 @@ package org.locationtech.geogig.storage.postgresql.functional;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.locationtech.geogig.cli.test.functional.TestRepoURIBuilder;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
-
-import com.google.common.collect.Lists;
 
 import cucumber.api.Scenario;
 import cucumber.runtime.java.StepDefAnnotation;
@@ -40,7 +39,7 @@ public class PostgreSQLStepDefinitions {
     }
 
     static final class PGTestRepoURIBuilder extends TestRepoURIBuilder {
-        private List<PGTemporaryTestConfig> testConfigs = Lists.newArrayList();
+        private List<PGTemporaryTestConfig> testConfigs = new ArrayList<>();
 
         public @Override void before(Scenario scenario) throws Throwable {
             // nothing to do

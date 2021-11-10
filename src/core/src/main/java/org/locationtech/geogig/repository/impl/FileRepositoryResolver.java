@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.RefDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.hash.Hashing;
 
 import lombok.NonNull;
@@ -128,7 +128,8 @@ public abstract class FileRepositoryResolver implements RepositoryResolver {
     public @Override List<String> listRepoNamesUnderRootURI(@NonNull URI rootRepoURI) {
         final File rootDirectory = toFile(rootRepoURI);
 
-        return Lists.newLinkedList(reposUnderRootDirectory(rootDirectory).keySet());
+        return reposUnderRootDirectory(rootDirectory).keySet().stream()
+                .collect(Collectors.toList());
     }
 
     public @Override String getName(@NonNull URI repoURI) {

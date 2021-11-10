@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -39,7 +40,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -196,7 +196,8 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
     private List<String> resolveTargetAttributes(Insert insert) {
         List<Column> columns = insert.getColumns();
         checkArgument(columns != null && !columns.isEmpty(), "no target attributes were indicated");
-        return Lists.transform(columns, (c) -> c.getColumnName().replaceAll("\"", ""));
+        return columns.stream().map(c -> c.getColumnName().replaceAll("\"", ""))
+                .collect(Collectors.toList());
     }
 
     private List<List<org.opengis.filter.expression.Expression>> parseValueExpressions(

@@ -30,7 +30,6 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -80,10 +79,10 @@ public class IndexUtils {
         } else {
             Optional<IndexInfo> indexInfoOpt = indexdb.getIndexInfo(treeName, attributeName);
             if (indexInfoOpt.isPresent()) {
-                return Lists.newArrayList(indexInfoOpt.get());
+                return List.of(indexInfoOpt.get());
             }
         }
-        return Lists.newArrayList();
+        return List.of();
     }
 
     /**

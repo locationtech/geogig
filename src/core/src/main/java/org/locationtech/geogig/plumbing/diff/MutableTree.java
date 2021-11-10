@@ -16,6 +16,7 @@ import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
@@ -119,7 +119,7 @@ public class MutableTree implements Cloneable {
             @Nullable final NodeRef... treeRefs) {
         Iterator<NodeRef> refs = Collections.emptyIterator();
         if (treeRefs != null) {
-            refs = Lists.newArrayList(treeRefs).iterator();
+            refs = Arrays.asList(treeRefs).iterator();
         }
         return createFromRefs(rootId, refs);
     }
@@ -135,7 +135,7 @@ public class MutableTree implements Cloneable {
     public static MutableTree createFromPaths(final ObjectId rootId,
             final Map<String, NodeRef> entries) {
 
-        List<NodeRef> refsByDepth = Lists.newArrayList(entries.values());
+        List<NodeRef> refsByDepth = new ArrayList<>(entries.values());
         Collections.sort(refsByDepth, DEEPEST_LAST_COMPARATOR);
 
         Node rootNode = RevObjectFactory.defaultInstance().createNode(ROOT, rootId, ObjectId.NULL,

@@ -52,7 +52,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.ProgressListener;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 
 public class LogOpTest extends RepositoryTestCase {
@@ -237,7 +236,7 @@ public class LogOpTest extends RepositoryTestCase {
     public void testPathFilterSingleFeature() throws Exception {
 
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> allCommits = Lists.newArrayList();
+        List<RevCommit> allCommits = new ArrayList<>();
         RevCommit expectedCommit = null;
 
         for (Feature f : features) {
@@ -260,7 +259,7 @@ public class LogOpTest extends RepositoryTestCase {
     @Test
     public void testMultiplePaths() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> allCommits = Lists.newArrayList();
+        List<RevCommit> allCommits = new ArrayList<>();
         RevCommit expectedLineCommit = null;
         RevCommit expectedPointCommit = null;
         for (Feature f : features) {
@@ -293,9 +292,9 @@ public class LogOpTest extends RepositoryTestCase {
     public void testPathFilterByTypeName() throws Exception {
 
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        LinkedList<RevCommit> commits = Lists.newLinkedList();
+        LinkedList<RevCommit> commits = new LinkedList<>();
 
-        LinkedList<RevCommit> typeName1Commits = Lists.newLinkedList();
+        LinkedList<RevCommit> typeName1Commits = new LinkedList<>();
 
         for (Feature f : features) {
             insertAndAdd(f);

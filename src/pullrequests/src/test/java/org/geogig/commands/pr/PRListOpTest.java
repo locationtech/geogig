@@ -11,12 +11,12 @@ package org.geogig.commands.pr;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.locationtech.geogig.test.TestData;
-
-import com.google.common.collect.Lists;
 
 public class PRListOpTest {
 
@@ -32,7 +32,7 @@ public class PRListOpTest {
         PR pr1 = createPr(1, "branch1");
         PR pr2 = createPr(2, "branch2");
 
-        assertEquals(Lists.newArrayList(pr1, pr2), origin.getRepo().command(PRListOp.class).call());
+        assertEquals(List.of(pr1, pr2), origin.getRepo().command(PRListOp.class).call());
     }
 
     private PR createPr(int id, String branch) {

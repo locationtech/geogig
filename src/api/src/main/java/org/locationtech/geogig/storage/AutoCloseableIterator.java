@@ -13,9 +13,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Iterators;
 
@@ -41,6 +44,15 @@ public interface AutoCloseableIterator<T> extends Iterator<T>, AutoCloseable {
      * @return the next element in the iterator
      */
     public @Override T next();
+
+    default List<T> toList() {
+        try {
+            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, 0), false)
+                    .collect(Collectors.toList());
+        } finally {
+            close();
+        }
+    }
 
     /**
      * @return an empty iterator that does nothing on close.

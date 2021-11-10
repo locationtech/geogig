@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevTag;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
@@ -66,7 +66,7 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
                         .call();
             }
             // current local local copy of the remote refs (e.g. refs/remotes/<remote>/<branch>
-            List<Ref> remoteLocalRefs = Lists.newArrayList(getRemoteLocalRefs());
+            List<Ref> remoteLocalRefs = getRemoteLocalRefs().stream().collect(Collectors.toList());
             if (!formatAsRemoteRefs) {
                 // format local repository copies of the remote refs to the remote's local namespace
                 remoteLocalRefs = command(MapRef.class)//

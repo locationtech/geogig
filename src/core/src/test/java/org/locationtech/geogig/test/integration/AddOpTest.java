@@ -38,8 +38,6 @@ import org.locationtech.geogig.porcelain.MergeConflictsException;
 import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.collect.Lists;
-
 public class AddOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -126,11 +124,11 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points2);
         repo.command(AddOp.class).call();
         List<DiffEntry> staged = toList(
-                repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
+                repo.context().stagingArea().getStaged(List.of(pointsName)));
         assertEquals(3, staged.size());
         delete(points1);
         repo.command(AddOp.class).call();
-        staged = toList(repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
+        staged = toList(repo.context().stagingArea().getStaged(List.of(pointsName)));
         assertEquals(2, staged.size());
     }
 
@@ -142,7 +140,7 @@ public class AddOpTest extends RepositoryTestCase {
         repo.context().workingTree().delete(pointsName);
         repo.command(AddOp.class).call();
         List<DiffEntry> staged = toList(
-                repo.context().stagingArea().getStaged(Lists.newArrayList(pointsName)));
+                repo.context().stagingArea().getStaged(List.of(pointsName)));
         assertEquals(0, staged.size());
         assertEquals(0, repo.context().stagingArea().countStaged(null).featureCount());
         assertEquals(0, repo.context().stagingArea().countStaged(null).treeCount());

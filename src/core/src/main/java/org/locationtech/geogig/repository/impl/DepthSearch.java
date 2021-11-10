@@ -26,7 +26,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 /**
  * Searches for a {@link Node} within a particular tree.
@@ -98,9 +97,9 @@ public class DepthSearch {
 
         checkArgument(parentPath.isEmpty() || childPath.startsWith(parentPath + PATH_SEPARATOR));
 
-        final List<String> parentSteps = Lists
-                .newArrayList(Splitter.on(PATH_SEPARATOR).omitEmptyStrings().split(parentPath));
-        List<String> childSteps = Lists.newArrayList(Splitter.on(PATH_SEPARATOR).split(childPath));
+        final List<String> parentSteps = Splitter.on(PATH_SEPARATOR).omitEmptyStrings()
+                .splitToList(parentPath);
+        List<String> childSteps = Splitter.on(PATH_SEPARATOR).splitToList(childPath);
         childSteps = childSteps.subList(parentSteps.size(), childSteps.size());
 
         RevTree subTree = parent;

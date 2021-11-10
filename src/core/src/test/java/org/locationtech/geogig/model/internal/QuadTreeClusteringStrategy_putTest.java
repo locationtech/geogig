@@ -20,7 +20,6 @@ import static org.locationtech.geogig.model.internal.Quadrant.NW;
 import static org.locationtech.geogig.model.internal.Quadrant.SE;
 import static org.locationtech.geogig.model.internal.Quadrant.SW;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -33,7 +32,6 @@ import org.locationtech.geogig.model.impl.RevObjectTestSupport;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 public class QuadTreeClusteringStrategy_putTest {
 
@@ -282,7 +280,7 @@ public class QuadTreeClusteringStrategy_putTest {
 
     public @Test void testUpdatesShrinksAndExpand() {
 
-        final ArrayList<Quadrant> targetQuadrant = Lists.newArrayList(NW, NE, NE, SE);
+        final List<Quadrant> targetQuadrant = List.of(NW, NE, NE, SE);
         // create a buckets node at some depth
         final List<Node> origNodes;
         RevTree origTree;

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -473,7 +474,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public List<String> getRemoteNames() {
-        return Lists.transform(argsBuilder.remotes, Remote::getName);
+        return argsBuilder.remotes.stream().map(Remote::getName).collect(Collectors.toList());
     }
 
     /**

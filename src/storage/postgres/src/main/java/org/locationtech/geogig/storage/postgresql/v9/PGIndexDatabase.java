@@ -47,7 +47,6 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -228,7 +227,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 "SELECT attributeName, strategy, metadata FROM %s WHERE repository = ? AND treeName = ?",
                 env.getTables().index());
 
-        List<IndexInfo> indexes = Lists.newArrayList();
+        List<IndexInfo> indexes = new ArrayList<>();
 
         try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx
@@ -264,7 +263,7 @@ public class PGIndexDatabase extends PGObjectStore implements IndexDatabase {
                 "SELECT treeName, attributeName, strategy, metadata FROM %s WHERE repository = ?",
                 env.getTables().index());
 
-        List<IndexInfo> indexes = Lists.newArrayList();
+        List<IndexInfo> indexes = new ArrayList<>();
 
         try (Connection cx = env.getConnection()) {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, log, repositoryId))) {

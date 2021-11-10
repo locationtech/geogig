@@ -25,8 +25,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.Lists;
-
 public class DiffBoundsTest extends RepositoryTestCase {
 
     private Feature l1Modified;
@@ -37,8 +35,8 @@ public class DiffBoundsTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
         // create one commit per feature
-        ArrayList<RevCommit> commits = Lists
-                .newArrayList(populate(true, points1, points3, points1_modified));
+        List<RevCommit> commits = new ArrayList<>(
+                populate(true, points1, points3, points1_modified));
         this.points1_modified_commit = commits.get(2);
 
         Feature p1ModifiedAgain = feature(pointsType, idP1, "StringProp1_1a", Integer.valueOf(1001),

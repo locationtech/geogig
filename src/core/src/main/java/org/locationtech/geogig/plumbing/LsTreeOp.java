@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -195,7 +195,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
         switch (type) {
         case FEATURE:
             NodeRef nodeRef = treeRef.isPresent() ? treeRef.get() : null;
-            List<NodeRef> nodeRefs = Lists.newArrayList();
+            List<NodeRef> nodeRefs = new ArrayList<>();
             nodeRefs.add(nodeRef);
             // If show trees options is passed in show all trees that contain this feature
             if (this.strategy == Strategy.TREES_ONLY) {

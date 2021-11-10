@@ -15,6 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -23,15 +24,13 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.Lists;
-
 public class GeometryDiffTest {
 
     @Test
     public void testModifiedMultiPolygon() throws Exception {
         int NUM_COORDS = 10;
         Random rand = new Random();
-        List<Coordinate> list = Lists.newArrayList();
+        List<Coordinate> list = new ArrayList<>();
         for (int i = 0; i < NUM_COORDS; i++) {
             list.add(new Coordinate(rand.nextInt(), rand.nextInt()));
         }

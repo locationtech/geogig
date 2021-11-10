@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,7 +80,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
@@ -320,7 +320,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         }
 
         SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-        List<AttributeDescriptor> newAttributes = Lists.newArrayList();
+        List<AttributeDescriptor> newAttributes = new ArrayList<>();
 
         String oldGeomName = featureType.getGeometryDescriptor().getName().getLocalPart();
         Collection<AttributeDescriptor> descriptors = featureType.getAttributeDescriptors();

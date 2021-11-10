@@ -9,12 +9,12 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.difference;
 import static com.google.common.collect.Maps.uniqueIndex;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -93,7 +93,7 @@ public @Builder class DiffSummaryOp extends AbstractGeoGigOp<List<LayerDiffSumma
                 changedPaths);
         CompletableFuture.allOf(futures).join();
 
-        return newArrayList(futures).stream().map(CompletableFuture<LayerDiffSummary>::join)
+        return Arrays.stream(futures).map(CompletableFuture<LayerDiffSummary>::join)
                 .collect(Collectors.toList());
     }
 

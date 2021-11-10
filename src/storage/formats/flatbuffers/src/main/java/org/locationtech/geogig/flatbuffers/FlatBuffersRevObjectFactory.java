@@ -74,8 +74,9 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,
             @NonNull RevPerson committer, @NonNull String message) {
-        if (parents.indexOf(null) > -1) {
-            throw new NullPointerException("null parent at index " + parents.indexOf(null));
+        for (ObjectId pid : parents) {
+            if (null == pid)
+                throw new NullPointerException("null parent at index " + parents.indexOf(null));
         }
 
         FlatBufferBuilder fbb = newBuilder();

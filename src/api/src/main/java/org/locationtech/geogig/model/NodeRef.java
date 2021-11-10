@@ -22,7 +22,6 @@ import org.locationtech.jts.geom.Envelope;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -341,7 +340,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         checkArgument(!path.isEmpty());
 
         StringBuilder sb = new StringBuilder();
-        List<String> paths = Lists.newArrayList();
+        List<String> paths = new ArrayList<>();
 
         final String[] steps = path.split("" + PATH_SEPARATOR);
 

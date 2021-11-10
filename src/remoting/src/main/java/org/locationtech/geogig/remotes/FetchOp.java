@@ -16,10 +16,12 @@ import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
 import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -37,8 +39,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.RepositoryImpl;
-
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -219,7 +219,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     public List<String> getRemoteNames() {
-        return Lists.transform(argsBuilder.remotes, Remote::getName);
+        return argsBuilder.remotes.stream().map(Remote::getName).collect(Collectors.toList());
     }
 
     /**
@@ -460,7 +460,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
     private List<RefDiff> findOutdatedRefs(Remote remote, Set<Ref> remoteRefs,
             Set<Ref> localRemoteRefs, Optional<Integer> depth) {
 
-        List<RefDiff> changedRefs = Lists.newLinkedList();
+        List<RefDiff> changedRefs = new LinkedList<>();
 
         for (Ref remoteRef : remoteRefs) {// refs/heads/xxx or refs/tags/yyy, though we don't handle
                                           // tags yet

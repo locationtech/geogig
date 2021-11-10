@@ -10,6 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -55,7 +56,6 @@ import org.opengis.feature.type.Name;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -467,7 +467,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
         }
 
         // list of non-null attributes provided
-        final List<String> indexAttributes = Lists.newArrayList();
+        final List<String> indexAttributes = new ArrayList<>();
         if (extraAttributes != null && extraAttributes.length > 0) {
             // add any non-null attributes to the list to be indexed
             for (String attr : extraAttributes) {

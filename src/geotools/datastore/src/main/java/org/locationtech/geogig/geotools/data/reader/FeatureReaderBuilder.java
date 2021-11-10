@@ -15,13 +15,13 @@ import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -86,7 +86,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
@@ -124,7 +123,7 @@ public class FeatureReaderBuilder {
     /**
      * The set of attribute names from {@link #nativeSchema}
      */
-    private final Set<String> nativeSchemaAttributeNames;
+    private final LinkedHashSet<String> nativeSchemaAttributeNames;
 
     /**
      * The required full schema, might differ from {@link #nativeSchema} in the type name or the
@@ -173,8 +172,9 @@ public class FeatureReaderBuilder {
         this.nativeSchema = GT.adapt(nativeType.type());
         this.typeRef = typeRef;
 
-        this.nativeSchemaAttributeNames = Sets.newHashSet(Lists.transform(
-                nativeSchema.getAttributeDescriptors(), AttributeDescriptor::getLocalName));
+        this.nativeSchemaAttributeNames = nativeSchema.getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -474,7 +474,7 @@ public class FeatureReaderBuilder {
             if (this.outputSchemaPropertyNames == Query.ALL_NAMES) {
                 outputSchemaProperties = simpleNames(info.fullSchema);
             } else {
-                outputSchemaProperties = Lists.newArrayList(this.outputSchemaPropertyNames);
+                outputSchemaProperties = Arrays.asList(this.outputSchemaPropertyNames);
             }
             SimpleFeatureType outputSchema;
             outputSchema = SimpleFeatureTypeBuilder.retype(info.fullSchema, outputSchemaProperties);
@@ -529,7 +529,8 @@ public class FeatureReaderBuilder {
     }
 
     private List<String> simpleNames(SimpleFeatureType type) {
-        return Lists.transform(type.getAttributeDescriptors(), AttributeDescriptor::getLocalName);
+        return type.getAttributeDescriptors().stream().map(AttributeDescriptor::getLocalName)
+                .collect(Collectors.toList());
     }
 
     private AutoCloseableIterator<SimpleFeature> applyPostFilter(Filter postFilter,
@@ -915,11 +916,10 @@ public class FeatureReaderBuilder {
         List<String> pathFilters = Collections.emptyList();
         if (filter instanceof Id) {
             final Set<Identifier> identifiers = ((Id) filter).getIdentifiers();
-            Iterator<FeatureId> featureIds = Iterators.filter(
-                    Iterators.filter(identifiers.iterator(), FeatureId.class), Objects::nonNull);
-            Preconditions.checkArgument(featureIds.hasNext(), "Empty Id filter");
+            Preconditions.checkArgument(!identifiers.isEmpty(), "Empty Id filter");
 
-            pathFilters = Lists.newArrayList(Iterators.transform(featureIds, FeatureId::getID));
+            pathFilters = identifiers.stream().filter(FeatureId.class::isInstance)
+                    .map(FeatureId.class::cast).map(FeatureId::getID).collect(Collectors.toList());
         }
 
         return pathFilters;

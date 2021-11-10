@@ -32,7 +32,6 @@ import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -117,7 +116,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
     public @Override List<IndexInfo> getIndexInfos(String treeName) {
         checkOpen();
         byte[] indexKey = indexKey(treeName, null);
-        List<IndexInfo> indexes = Lists.newArrayList();
+        List<IndexInfo> indexes = new ArrayList<>();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             try (RocksIterator it = dbRef.db().newIterator(indexMetadataColumn)) {
                 it.seek(indexKey);
@@ -138,7 +137,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
 
     public @Override List<IndexInfo> getIndexInfos() {
         checkOpen();
-        List<IndexInfo> indexes = Lists.newArrayList();
+        List<IndexInfo> indexes = new ArrayList<>();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             try (RocksIterator it = dbRef.db().newIterator(indexMetadataColumn)) {
                 it.seekToFirst();

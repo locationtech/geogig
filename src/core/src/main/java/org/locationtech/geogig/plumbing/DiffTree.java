@@ -51,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -63,7 +62,7 @@ public class DiffTree extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>>
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiffTree.class);
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final List<String> pathFilters = new LinkedList<>();
 
     private Envelope boundsFilter;
 

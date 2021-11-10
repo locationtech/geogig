@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -55,7 +56,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 @Ignore // sparse cloning not really supported yet
 public class SparseCloneTest extends RemoteRepositoryTestCase {
@@ -249,8 +249,10 @@ public class SparseCloneTest extends RemoteRepositoryTestCase {
         // Make sure the local repository got the correct commits
         logged = newArrayList(localRepo.command(LogOp.class).call());
 
-        List<ObjectId> expectedTrees = Lists.transform(expected, (c) -> c.getTreeId());
-        List<ObjectId> actualTrees = Lists.transform(logged, (c) -> c.getTreeId());
+        List<ObjectId> expectedTrees = expected.stream().map(RevCommit::getTreeId)
+                .collect(Collectors.toList());
+        List<ObjectId> actualTrees = logged.stream().map(RevCommit::getTreeId)
+                .collect(Collectors.toList());
         assertEquals(expectedTrees, actualTrees);
 
         assertEquals(expected, logged);

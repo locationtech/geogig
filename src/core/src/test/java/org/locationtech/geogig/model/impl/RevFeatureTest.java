@@ -13,32 +13,31 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 
-import com.google.common.collect.Lists;
-
 public class RevFeatureTest {
 
     @Test
     public void testRevFeatureConstructorAndAccessors() {
-        List<Object> values = Lists.newArrayList("StringProp1_1", Integer.valueOf(1000),
-                "POINT(1 1)");
+        List<Object> values = List.of("StringProp1_1", Integer.valueOf(1000), "POINT(1 1)");
 
         RevFeature feature = RevFeature.builder().addAll(values).build();
 
         assertEquals(TYPE.FEATURE, feature.getType());
 
-        assertEquals(Lists.transform(values, (v) -> Optional.ofNullable(v)), feature.getValues());
+        List<Optional<Object>> expected = values.stream().map(Optional::ofNullable)
+                .collect(Collectors.toList());
+        assertEquals(expected, feature.getValues());
     }
 
     @Test
     public void testRevFeatureToString() {
-        List<Object> values = Lists.newArrayList("StringProp1_1", Integer.valueOf(1000),
-                "POINT(1 1)");
+        List<Object> values = List.of("StringProp1_1", Integer.valueOf(1000), "POINT(1 1)");
 
         RevFeature feature = RevFeature.builder().addAll(values).build();
 

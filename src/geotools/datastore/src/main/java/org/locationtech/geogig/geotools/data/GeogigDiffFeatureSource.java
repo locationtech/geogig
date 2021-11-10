@@ -13,10 +13,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.FeatureReader;
@@ -64,7 +64,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -306,8 +305,8 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         final boolean retypeRequired = isRetypeRequired(query, resultSchema);
         if (retypeRequired) {
             String[] propertyNames = query.getPropertyNames();
-            List<String> outputSchemaPropertyNames = propertyNames == null ? Collections.emptyList()
-                    : Lists.newArrayList(propertyNames);
+            List<String> outputSchemaPropertyNames = propertyNames == null ? List.of()
+                    : List.of(propertyNames);
 
             SimpleFeatureType outputSchema;
             outputSchema = SimpleFeatureTypeBuilder.retype(resultSchema, outputSchemaPropertyNames);
@@ -324,8 +323,8 @@ public class GeogigDiffFeatureSource extends ContentFeatureSource {
         if (Query.ALL_NAMES == queryProps) {
             return false;
         }
-        List<String> resultNames = Lists.transform(resultSchema.getAttributeDescriptors(),
-                AttributeDescriptor::getLocalName);
+        List<String> resultNames = resultSchema.getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName).collect(Collectors.toList());
 
         boolean retypeRequired = !Arrays.asList(queryProps).equals(resultNames);
         return retypeRequired;

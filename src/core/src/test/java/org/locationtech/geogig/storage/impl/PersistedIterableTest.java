@@ -14,7 +14,6 @@ import static org.junit.Assert.assertNull;
 import static org.locationtech.geogig.storage.impl.PersistedIterable.newStringIterable;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -53,8 +52,7 @@ public class PersistedIterableTest {
                 assertEquals(i + 1, iterable.size());
             }
             assertEquals(expected.size(), iterable.size());
-            Iterator<String> iterator = iterable.iterator();
-            List<String> actual = Lists.newArrayList(iterator);
+            List<String> actual = Lists.newArrayList(iterable);
             assertEquals(expected.size(), actual.size());
             assertEquals(expected, actual);
             iterable.close();

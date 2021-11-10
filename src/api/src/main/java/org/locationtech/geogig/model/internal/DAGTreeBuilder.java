@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
@@ -308,8 +309,8 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
             List<Node> featuresList = Collections.emptyList();
             {
                 Comparator<NodeId> nodeOrdering = state.clusteringStrategy.getNodeOrdering();
-                List<NodeId> nodeIds = root.childrenList();
-                Collections.sort(nodeIds, nodeOrdering);
+                List<NodeId> nodeIds = root.childrenList().stream().sorted(nodeOrdering)
+                        .collect(Collectors.toList());
                 for (int i = 0; i < nodeIds.size(); i++) {
                     Node node = state.clusteringStrategy.getNode(nodeIds.get(i));
                     if (TYPE.FEATURE == node.getType()) {

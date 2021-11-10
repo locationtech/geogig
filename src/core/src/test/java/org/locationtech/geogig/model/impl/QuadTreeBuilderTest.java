@@ -228,7 +228,8 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         });
         // since they're not canonical trees, diff reports adds and removes instead of changes
         Map<Node, Node> changed = new HashMap<>();
-        for (String name : Sets.union(added.keySet(), removed.keySet())) {
+        for (String name : Sets.union(new HashSet<>(added.keySet()),
+                new HashSet<>(removed.keySet()))) {
             if (added.containsKey(name) && removed.containsKey(name)) {
                 changed.put(removed.remove(name), added.remove(name));
             }

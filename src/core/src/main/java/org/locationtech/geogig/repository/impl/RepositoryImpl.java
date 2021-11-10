@@ -16,6 +16,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.ConfigOp;
@@ -37,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 import lombok.experimental.Accessors;
@@ -57,7 +57,7 @@ import lombok.experimental.Accessors;
 public class RepositoryImpl implements Repository {
     private static Logger LOGGER = LoggerFactory.getLogger(RepositoryImpl.class);
 
-    private List<RepositoryListener> listeners = Lists.newCopyOnWriteArrayList();
+    private List<RepositoryListener> listeners = new CopyOnWriteArrayList<>();
 
     private Context context;
 

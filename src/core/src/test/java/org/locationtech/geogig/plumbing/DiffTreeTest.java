@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -256,15 +255,15 @@ public class DiffTreeTest {
         diffTree.setOldTree(leftTree).setNewTree(rightTree);
 
         diffTree.setChangeTypeFilter(ChangeType.ADDED);
-        list = newArrayList(diffTree.call());
+        list = diffTree.call().toList();
         assertEquals(list.toString(), expectedAdds, list.size());
 
         diffTree.setChangeTypeFilter(ChangeType.REMOVED);
-        list = newArrayList(diffTree.call());
+        list = diffTree.call().toList();
         assertEquals(list.toString(), expectedRemoves, list.size());
 
         diffTree.setChangeTypeFilter(ChangeType.MODIFIED);
-        list = newArrayList(diffTree.call());
+        list = diffTree.call().toList();
         assertEquals(list.toString(), expectedChanges, list.size());
     }
 

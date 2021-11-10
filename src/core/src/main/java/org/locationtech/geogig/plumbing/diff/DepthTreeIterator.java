@@ -24,6 +24,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.RevTree;
+import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
@@ -38,7 +39,8 @@ import lombok.NonNull;
  * An iterator over a {@link RevTree} that can return different results depending on the
  * {@link #Strategy} given;
  */
-public class DepthTreeIterator extends AbstractIterator<NodeRef> {
+public class DepthTreeIterator extends AbstractIterator<NodeRef>
+        implements AutoCloseableIterator<NodeRef> {
     public enum Strategy {
         /**
          * Default strategy, list the all direct child entries of a tree, no recursion
@@ -363,5 +365,10 @@ public class DepthTreeIterator extends AbstractIterator<NodeRef> {
             }
             return Collections.emptyIterator();
         }
+    }
+
+    @Override
+    public void close() {
+        // nothing to do
     }
 }

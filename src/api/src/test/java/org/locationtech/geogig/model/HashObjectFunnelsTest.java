@@ -28,6 +28,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.feature.FeatureType;
@@ -41,7 +42,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.Lists;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 
@@ -319,7 +319,8 @@ public class HashObjectFunnelsTest {
         ObjectId featureId1 = ObjectId.create(rawKey);
 
         hasher = ObjectId.HASH_FUNCTION.newHasher();
-        HashObjectFunnels.feature(hasher, Lists.transform(values, (value) -> value.orElse(null)));
+        HashObjectFunnels.feature(hasher,
+                values.stream().map(o -> o.orElse(null)).collect(Collectors.toList()));
         rawKey = hasher.hash().asBytes();
         assertEquals(ObjectId.NUM_BYTES, rawKey.length);
         ObjectId featureId2 = ObjectId.create(rawKey);

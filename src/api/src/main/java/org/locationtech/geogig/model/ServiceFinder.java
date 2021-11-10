@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -92,7 +93,7 @@ public class ServiceFinder {
     public <T> List<T> lookupServices(@NonNull Class<T> type) {
         log.debug("Looking up instances of service {}", type.getName());
         ServiceLoader<T> loader = ServiceLoader.load(type);
-        ArrayList<T> services = Lists.newArrayList(loader.iterator());
+        List<T> services = loader.stream().map(Provider::get).collect(Collectors.toList());
         log.debug("Found {} instances of service {}: {}", services.size(), type.getName(),
                 services.stream().map(s -> s.getClass().getName()).collect(Collectors.toList()));
         return services;

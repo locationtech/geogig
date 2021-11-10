@@ -174,8 +174,7 @@ public class MergeStatusBuilderDiffEntrySerializerTest {
 
             assertEquals(expected.size(), iterable.size());
 
-            Iterator<DiffEntry> iterator = iterable.iterator();
-            ArrayList<DiffEntry> actual = Lists.newArrayList(iterator);
+            ArrayList<DiffEntry> actual = Lists.newArrayList(iterable);
             assertEquals(expected.size(), actual.size());
             assertEquals(expected, actual);
         }

@@ -10,7 +10,7 @@
 package org.locationtech.geogig.geotools.data;
 
 import java.lang.ref.SoftReference;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,7 +50,6 @@ import org.opengis.filter.expression.PropertyName;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Lists;
 
 /**
  * Helper class for {@link GeogigFeatureSource} to handle a {@link FeatureVisitor} if possible
@@ -217,8 +216,7 @@ class GeogigFeatureVisitorHandler {
     }
 
     private int findAttributeIndex(String propertyName, RevFeatureType nativeType) {
-        ArrayList<PropertyDescriptor> descriptors = Lists
-                .newArrayList(nativeType.type().getDescriptors());
+        List<PropertyDescriptor> descriptors = nativeType.descriptors();
         for (int i = 0; i < descriptors.size(); i++) {
             if (propertyName.equals(descriptors.get(i).getName().getLocalPart())) {
                 return i;

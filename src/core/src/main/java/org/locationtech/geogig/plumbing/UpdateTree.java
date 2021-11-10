@@ -13,7 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -28,7 +28,6 @@ import org.locationtech.geogig.plumbing.diff.MutableTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 import lombok.NonNull;
@@ -116,11 +115,10 @@ public class UpdateTree extends AbstractGeoGigOp<RevTree> {
     }
 
     private MutableTree load(RevTree tree) {
-        List<NodeRef> childTrees = Lists
-                .newArrayList(command(LsTreeOp.class).setReference(tree.getId().toString())
-                        .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES).call());
+        Iterator<NodeRef> childTrees = command(LsTreeOp.class).setReference(tree.getId().toString())
+                .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES).call();
 
-        MutableTree mutableRoot = MutableTree.createFromRefs(tree.getId(), childTrees.iterator());
+        MutableTree mutableRoot = MutableTree.createFromRefs(tree.getId(), childTrees);
 
         return mutableRoot;
     }

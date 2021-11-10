@@ -379,7 +379,7 @@ public class CloneOpTest extends RemoteRepositoryTestCase {
         // Commit several features to the remote
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
         LinkedList<RevCommit> expected = new LinkedList<RevCommit>();
-        List<RevTag> tags = Lists.newArrayList();
+        List<RevTag> tags = new ArrayList<>();
 
         for (Feature f : features) {
             ObjectId oId = insertAndAdd(remoteRepo, f);

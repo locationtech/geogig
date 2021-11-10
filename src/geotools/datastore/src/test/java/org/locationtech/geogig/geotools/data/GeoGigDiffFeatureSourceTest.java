@@ -234,7 +234,7 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
     private List<DiffEntry> getExpectedEntries(String layerName, String oldHead, String newHead) {
         AutoCloseableIterator<DiffEntry> diffs = repo.command(DiffTree.class)
                 .setPathFilter(layerName).setOldVersion(oldHead).setNewVersion(newHead).call();
-        return Lists.newArrayList(diffs);
+        return diffs.toList();
     }
 
     private void assertDiffSchema(SimpleFeatureSource diffFeatureSource,

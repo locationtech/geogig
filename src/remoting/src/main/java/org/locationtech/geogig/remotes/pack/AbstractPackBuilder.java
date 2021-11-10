@@ -15,14 +15,13 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.remotes.pack.Pack.IndexDef;
 import org.locationtech.geogig.repository.IndexInfo;
-
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -64,7 +63,7 @@ public abstract class AbstractPackBuilder implements PackBuilder {
         require(Status.IDLE);
         this.missingCommits = new LinkedHashMap<>();
         this.missingIndexes = new LinkedHashMap<>();
-        this.tags = Lists.newArrayList(tags);
+        this.tags = tags.stream().collect(Collectors.toList());
         set(Status.READY);
     }
 

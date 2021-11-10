@@ -9,13 +9,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ServiceFinder;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -119,13 +120,12 @@ public class RepositoryFinder {
 
     public List<RepositoryResolver> lookupResolvers() {
 
-        List<RepositoryResolver> resolvers;
-        resolvers = Lists.newArrayList(ServiceLoader.load(RepositoryResolver.class).iterator());
+        List<RepositoryResolver> resolvers = ServiceLoader.load(RepositoryResolver.class).stream()
+                .map(Provider::get).collect(Collectors.toList());
         if (resolvers.isEmpty()) {
             ClassLoader classLoader = RepositoryResolver.class.getClassLoader();
-            ServiceLoader<RepositoryResolver> serviceLoader = ServiceLoader
-                    .load(RepositoryResolver.class, classLoader);
-            resolvers = Lists.newArrayList(serviceLoader.iterator());
+            resolvers = ServiceLoader.load(RepositoryResolver.class, classLoader).stream()
+                    .map(Provider::get).collect(Collectors.toList());
         }
         return resolvers;
     }

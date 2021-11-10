@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -27,7 +29,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 /**
  * Provides an implementation of a GeoGig index database that utilizes the heap for the storage of
@@ -55,11 +56,7 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
 
     private void addIndex(IndexInfo index) {
         String treeName = index.getTreeName();
-        if (indexes.containsKey(treeName)) {
-            indexes.get(treeName).add(index);
-        } else {
-            indexes.put(treeName, Lists.newArrayList(index));
-        }
+        indexes.computeIfAbsent(treeName, k -> new ArrayList<>()).add(index);
     }
 
     public @Override IndexInfo createIndexInfo(String treeName, String attributeName,
@@ -92,18 +89,11 @@ public class HeapIndexDatabase extends ForwardingObjectStore implements IndexDat
     }
 
     public @Override List<IndexInfo> getIndexInfos(String treeName) {
-        if (indexes.containsKey(treeName)) {
-            return indexes.get(treeName);
-        }
-        return Lists.newArrayList();
+        return indexes.getOrDefault(treeName, List.of());
     }
 
     public @Override List<IndexInfo> getIndexInfos() {
-        List<IndexInfo> indexInfos = Lists.newLinkedList();
-        for (List<IndexInfo> treeInfos : indexes.values()) {
-            indexInfos.addAll(treeInfos);
-        }
-        return indexInfos;
+        return indexes.values().stream().flatMap(List::stream).collect(Collectors.toList());
     }
 
     public @Override boolean dropIndex(IndexInfo index) {

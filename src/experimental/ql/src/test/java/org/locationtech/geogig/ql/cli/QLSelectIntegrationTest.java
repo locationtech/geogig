@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -34,11 +35,10 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.operation.TransformException;
-
-import com.google.common.collect.Lists;
 
 import net.sf.jsqlparser.statement.select.Select;
 
@@ -145,8 +145,8 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
             String... expectedAttributesInOrder) {
 
         SimpleFeatureType schema = features.getSchema();
-        List<String> actual = Lists.transform(schema.getAttributeDescriptors(),
-                (a) -> a.getLocalName());
+        List<String> actual = schema.getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName).collect(Collectors.toList());
         List<String> expected = Arrays.asList(expectedAttributesInOrder);
 
         assertEquals(expected, actual);
@@ -279,8 +279,8 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
 
     private void testBounds(String boundsQuery, double minx, double miny, double maxx, double maxy,
             String srs) {
-        SimpleFeatureCollection result = helper.selectAndAssert(boundsQuery,
-                Set.of("bounds"), "minx", "miny", "maxx", "maxy", "crs");
+        SimpleFeatureCollection result = helper.selectAndAssert(boundsQuery, Set.of("bounds"),
+                "minx", "miny", "maxx", "maxy", "crs");
 
         try (SimpleFeatureIterator features = result.features()) {
             assertTrue(features.hasNext());

@@ -51,8 +51,8 @@ public @UtilityClass class RevObjectTestUtil {
     private static void deepEquals(@NonNull Iterable<Bucket> expected,
             @NonNull Iterable<Bucket> actual) {
 
-        ArrayList<Bucket> e = Lists.newArrayList(expected);
-        ArrayList<Bucket> a = Lists.newArrayList(actual);
+        List<Bucket> e = Lists.newArrayList(expected);
+        List<Bucket> a = Lists.newArrayList(actual);
         assertEquals(e.size(), a.size());
         for (int i = 0; i < e.size(); i++) {
             deepEquals(e.get(i), a.get(i));

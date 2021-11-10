@@ -505,6 +505,7 @@ public abstract class ObjectStoreConformanceTest {
         assertEquals(Sets.newHashSet(ids), Sets.newHashSet(found));
     }
 
+    @SuppressWarnings("resource")
     @Test
     public void testGetObjects() throws Exception {
         final int numSubTrees = 512;
@@ -515,10 +516,10 @@ public abstract class ObjectStoreConformanceTest {
                 featuresPerSubtre, metadataId);
         final List<NodeRef> treeNodes;
         final List<NodeRef> featureNodes;
-        treeNodes = Lists.newArrayList(
-                new DepthTreeIterator("", metadataId, tree, db, Strategy.RECURSIVE_TREES_ONLY));
-        featureNodes = Lists.newArrayList(
-                new DepthTreeIterator("", metadataId, tree, db, Strategy.RECURSIVE_FEATURES_ONLY));
+        treeNodes = new DepthTreeIterator("", metadataId, tree, db, Strategy.RECURSIVE_TREES_ONLY)
+                .toList();
+        featureNodes = new DepthTreeIterator("", metadataId, tree, db,
+                Strategy.RECURSIVE_FEATURES_ONLY).toList();
         // preflight checks
         assertEquals(numSubTrees, treeNodes.size());
         assertEquals(totalFeatures, featureNodes.size());
@@ -613,11 +614,7 @@ public abstract class ObjectStoreConformanceTest {
             AutoCloseableIterator<DiffObjectInfo<RevFeature>> iterator;
             iterator = db.getDiffObjects(entries.iterator(), RevFeature.class);
             assertNotNull(iterator);
-            try {
-                objectDiffs = Lists.newArrayList(iterator);
-            } finally {
-                iterator.close();
-            }
+            objectDiffs = iterator.toList();
         }
         assertEquals(entries.size(), objectDiffs.size());
 

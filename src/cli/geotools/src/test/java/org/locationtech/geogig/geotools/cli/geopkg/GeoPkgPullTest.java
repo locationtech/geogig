@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
@@ -46,7 +47,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 @Ignore // REVISIT: ExportOp needs a revamp
 public class GeoPkgPullTest extends RepositoryTestCase {
@@ -118,8 +119,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
         assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
-        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
-                (nr) -> nr.name());
+        List<String> nodeList = Streams.stream(nodeIterator).map(NodeRef::name)
+                .collect(Collectors.toList());
         assertEquals(5, nodeList.size());
         assertTrue(nodeList.contains(pointsType.getName().getLocalPart()));
         nodeList.remove(pointsType.getName().getLocalPart());
@@ -187,8 +188,8 @@ public class GeoPkgPullTest extends RepositoryTestCase {
         Iterator<NodeRef> nodeIterator = cli.getGeogig().command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST).call();
         assertTrue("Expected repo to have some nodes, but was empty", nodeIterator.hasNext());
-        List<String> nodeList = Lists.transform(Lists.newArrayList(nodeIterator),
-                (nr) -> nr.name());
+        List<String> nodeList = Streams.stream(nodeIterator).map(NodeRef::name)
+                .collect(Collectors.toList());
         assertEquals(9, nodeList.size());
         assertTrue(nodeList.contains(pointsType.getName().getLocalPart()));
         nodeList.remove(pointsType.getName().getLocalPart());

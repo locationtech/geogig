@@ -37,7 +37,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 class WorkingTreeInsertHelper {
@@ -200,7 +199,7 @@ class WorkingTreeInsertHelper {
 
         final Map<NodeRef, RevTree> builtTrees = new ConcurrentHashMap<>();
 
-        List<AsyncBuildTree> tasks = Lists.newArrayList();
+        List<AsyncBuildTree> tasks = new ArrayList<>();
 
         for (Entry<String, RevTreeBuilder> builderEntry : treeBuilders.entrySet()) {
             final String treePath = builderEntry.getKey();

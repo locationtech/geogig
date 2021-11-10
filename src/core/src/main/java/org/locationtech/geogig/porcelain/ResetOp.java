@@ -50,7 +50,7 @@ public class ResetOp extends AbstractGeoGigOp<Boolean> {
 
     private ResetMode mode = ResetMode.NONE;
 
-    private Set<String> patterns = new HashSet<String>();
+    private Set<String> patterns = new HashSet<>();
 
     private boolean clean = true;
 

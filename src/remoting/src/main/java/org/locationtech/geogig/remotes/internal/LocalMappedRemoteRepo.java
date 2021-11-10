@@ -16,6 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 import org.locationtech.geogig.model.DiffEntry;
@@ -47,7 +48,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * An implementation of a remote repository that exists on the local machine.
@@ -104,7 +104,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
      * @param getTags whether to return refs in the {@code refs/tags} namespace
      * @return an immutable set of refs from the remote
      */
-    public @Override ImmutableSet<Ref> listRefs(final Repository local, final boolean getHeads,
+    public @Override Set<Ref> listRefs(final Repository local, final boolean getHeads,
             final boolean getTags) {
         Predicate<Ref> filter = input -> {
             boolean keep = false;
@@ -120,7 +120,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
         Set<Ref> remoteRefs = remoteRepo.command(ForEachRef.class).setFilter(filter).call();
 
         // Translate the refs to their mapped values.
-        ImmutableSet.Builder<Ref> builder = new ImmutableSet.Builder<Ref>();
+        Set<Ref> refs = new TreeSet<>();
         for (Ref remoteRef : remoteRefs) {
             Ref newRef = remoteRef;
             GraphDatabase graphdb = local.context().graphDatabase();
@@ -131,9 +131,9 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
                     newRef = new Ref(remoteRef.getName(), mappedCommit);
                 }
             }
-            builder.add(newRef);
+            refs.add(newRef);
         }
-        return builder.build();
+        return refs;
     }
 
     /**
@@ -225,6 +225,8 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
             }
             try (AutoCloseableIterator<DiffEntry> diffIter = from.command(DiffOp.class)
                     .setNewVersion(commitId).setOldVersion(parent).setReportTrees(true).call()) {
+
+                @SuppressWarnings("resource")
                 LocalCopyingDiffIterator changes = new LocalCopyingDiffIterator(diffIter, from, to);
 
                 final RevTree rootTree;
@@ -244,7 +246,7 @@ public class LocalMappedRemoteRepo extends AbstractMappedRemoteRepo {
 
                 // Create new commit
                 ObjectId newTreeId = to.command(WriteTree.class).setOldRoot(() -> rootTree)
-                        .setDiffSupplier(() -> (AutoCloseableIterator<DiffEntry>) changes).call();
+                        .setDiffSupplier(() -> changes).call();
 
                 RevCommitBuilder builder = RevCommit.builder().init(commit);
                 builder.parentIds(newParents);

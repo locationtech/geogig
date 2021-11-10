@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -69,7 +70,6 @@ import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -345,7 +345,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         Filter filter = ff.and(unsupported, supported);
 
         PrePostFilterSplitter filterSplitter = new PrePostFilterSplitter()
-                .extraAttributes(ImmutableSet.of("ip")).filter(filter).build();
+                .extraAttributes(Set.of("ip")).filter(filter).build();
 
         Predicate<Bounded> preFilter = PreFilter.forFilter(filterSplitter.getPreFilter());
         assertTrue(preFilter instanceof PreFilter);

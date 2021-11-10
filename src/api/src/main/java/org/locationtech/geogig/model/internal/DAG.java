@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 public class DAG implements Cloneable, Serializable {
@@ -117,7 +116,7 @@ public class DAG implements Cloneable, Serializable {
         this.originalTreeId = originalTreeId;
         this.state = STATE.INITIALIZED;
         this.children = Collections.emptyMap();
-        this.buckets = ImmutableSet.of();
+        this.buckets = Collections.emptySet();
     }
 
     public void reset(ObjectId originalTreeId) {
@@ -184,7 +183,7 @@ public class DAG implements Cloneable, Serializable {
     public void clearBuckets() {
         if (!buckets.isEmpty()) {
             setMutated();
-            this.buckets = ImmutableSet.of();
+            this.buckets = Collections.emptySet();
         }
     }
 

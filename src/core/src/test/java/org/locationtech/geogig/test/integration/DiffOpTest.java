@@ -39,7 +39,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -557,8 +556,8 @@ public class DiffOpTest extends RepositoryTestCase {
 
         assertNotNull(difflist);
         assertEquals(4, difflist.size());
-        Set<String> expected = ImmutableSet.of(linesName, pointsName,
-                NodeRef.appendChild(linesName, idL1), NodeRef.appendChild(pointsName, idP1));
+        Set<String> expected = Set.of(linesName, pointsName, NodeRef.appendChild(linesName, idL1),
+                NodeRef.appendChild(pointsName, idP1));
         Set<String> actual = Sets.newHashSet(Collections2.transform(difflist, (e) -> e.newPath()));
         assertEquals(expected, actual);
     }

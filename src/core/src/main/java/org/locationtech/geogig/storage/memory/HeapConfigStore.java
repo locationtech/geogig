@@ -13,7 +13,6 @@ import static java.util.Optional.ofNullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigException;
@@ -28,7 +28,6 @@ import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConfigStore;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.collect.Sets;
 
 import lombok.NonNull;
 
@@ -145,8 +144,8 @@ public class HeapConfigStore extends AbstractStore implements ConfigStore {
     private void removeSection(@NonNull ConcurrentMap<String, String> config,
             @NonNull String section) {
         final String prefix = section + ".";
-        Set<String> matching = new HashSet<>(
-                Sets.filter(config.keySet(), (k) -> k.startsWith(prefix)));
+        Set<String> matching = config.keySet().stream().filter(k -> k.startsWith(prefix))
+                .collect(Collectors.toSet());
         if (matching.isEmpty()) {
             throw new ConfigException(StatusCode.MISSING_SECTION);
         }

@@ -12,7 +12,6 @@ package org.locationtech.geogig.geotools.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DefaultTransaction;
@@ -73,7 +73,6 @@ import org.opengis.referencing.operation.TransformException;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.PeekingIterator;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -161,12 +160,12 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             PeekingIterator<SimpleFeature> peekingIt = Iterators.peekingIterator(filteredIter);
             if (peekingIt.hasNext()) {
                 SimpleFeature peek = peekingIt.peek();
-                Set<String> sourceAtts = new HashSet<String>(
-                        Lists.transform(peek.getFeatureType().getAttributeDescriptors(),
-                                AttributeDescriptor::getLocalName));
-                Set<String> targetAtts = new HashSet<String>(
-                        Lists.transform(targetStore.getSchema().getAttributeDescriptors(),
-                                AttributeDescriptor::getLocalName));
+
+                Set<String> sourceAtts = peek.getFeatureType().getAttributeDescriptors().stream()
+                        .map(AttributeDescriptor::getLocalName).collect(Collectors.toSet());
+                Set<String> targetAtts = targetStore.getSchema().getAttributeDescriptors().stream()
+                        .map(AttributeDescriptor::getLocalName).collect(Collectors.toSet());
+
                 if (Sets.intersection(sourceAtts, targetAtts).isEmpty()) {
                     throw new GeoToolsOpException(StatusCode.UNABLE_TO_ADD,
                             "No common attributes between source and target feature types");

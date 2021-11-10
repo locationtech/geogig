@@ -18,6 +18,7 @@ import static org.locationtech.geogig.model.Ref.WORK_HEAD;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefChange;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -51,8 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j(topic = "geogig.hooks")
 public class UpdateIndexesHook implements CommandHook {
 
-    private static final ImmutableSet<String> WORK_REFS = ImmutableSet.of(HEAD, STAGE_HEAD,
-            WORK_HEAD, MERGE_HEAD, CHERRY_PICK_HEAD, ORIG_HEAD);
+    private static final Set<String> WORK_REFS = Set.of(HEAD, STAGE_HEAD, WORK_HEAD, MERGE_HEAD,
+            CHERRY_PICK_HEAD, ORIG_HEAD);
 
     public @Override boolean appliesTo(Class<? extends AbstractGeoGigOp<?>> clazz) {
         return UpdateRefs.class.equals(clazz);

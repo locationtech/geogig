@@ -82,8 +82,7 @@ public class DataSourceManagerIT {
         doReturn(9).when(dsm).getDriverMajorVersion();
         doReturn(11).when(dsm).getDriverMinorVersion();
 
-        List<String> mockjars = Arrays.asList("/usr/local/lib/postgres911.jar",
-                "postgres42.jar");
+        List<String> mockjars = Arrays.asList("/usr/local/lib/postgres911.jar", "postgres42.jar");
         doReturn(mockjars).when(dsm).getPostgresJars();
 
         assertFalse(dsm.verifyDriverVersion());

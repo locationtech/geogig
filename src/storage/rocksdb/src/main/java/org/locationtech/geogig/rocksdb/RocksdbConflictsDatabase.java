@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
@@ -301,7 +300,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
     public @Override Set<String> findConflicts(@Nullable String txId, Iterable<String> paths) {
         Optional<RocksDBReference> dbRefOpt = getDb(txId);
         if (!dbRefOpt.isPresent()) {
-            return ImmutableSet.of();
+            return Set.of();
         }
         Set<String> found = new HashSet<>();
         byte[] noData = new byte[0];

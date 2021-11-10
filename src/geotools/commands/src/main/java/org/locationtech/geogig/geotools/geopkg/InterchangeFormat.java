@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -241,7 +241,7 @@ public class InterchangeFormat {
             @Nullable String authorName, @Nullable String authorEmail,
             @Nullable String... tableNames) {
 
-        final Set<String> importTables = tableNames == null ? ImmutableSet.of()
+        final Set<String> importTables = tableNames == null ? Collections.emptySet()
                 : Sets.newHashSet(tableNames);
 
         List<AuditReport> reports = new ArrayList<>();

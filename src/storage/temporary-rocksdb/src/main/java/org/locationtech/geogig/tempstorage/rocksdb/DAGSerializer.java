@@ -25,7 +25,6 @@ import org.locationtech.geogig.storage.datastream.FormatCommonV2_2;
 import org.locationtech.geogig.storage.datastream.Varint;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -115,7 +114,7 @@ final @UtilityClass class DAGSerializer {
         final int bucketSize = in.readShort();
 
         Map<String, NodeId> children = ImmutableMap.of();
-        Set<TreeId> buckets = ImmutableSet.of();
+        Set<TreeId> buckets = Set.of();
 
         if (childrenSize > 0) {
             children = new HashMap<>();

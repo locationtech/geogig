@@ -196,7 +196,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
     public LogOp addPath(final @NonNull String path) {
 
         if (this.paths == null) {
-            this.paths = new HashSet<String>();
+            this.paths = new HashSet<>();
         }
         this.paths.add(path);
         return this;

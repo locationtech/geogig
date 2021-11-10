@@ -17,7 +17,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -103,7 +102,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         RevFeature feature1Obj = odb.getFeature(feature1id);
         RevFeature feature2Obj = odb.getFeature(feature2id);
 
-        Set<PropertyDescriptor> attributes = cli.getGeogig().command(DescribeFeatureType.class)
+        List<PropertyDescriptor> attributes = cli.getGeogig().command(DescribeFeatureType.class)
                 .setFeatureType(odb.getFeatureType(rootNode.getMetadataId())).call();
         assertEquals(3, attributes.size());
         int attributeIndex = 0;

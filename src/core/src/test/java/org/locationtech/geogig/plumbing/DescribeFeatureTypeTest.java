@@ -12,7 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Set;
+import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -43,7 +43,7 @@ public class DescribeFeatureTypeTest extends RepositoryTestCase {
     public void testDescribeFeatureType() throws Exception {
         DescribeFeatureType describe = new DescribeFeatureType();
 
-        Set<PropertyDescriptor> properties = describe.setFeatureType(featureType).call();
+        List<PropertyDescriptor> properties = describe.setFeatureType(featureType).call();
 
         for (PropertyDescriptor prop : properties) {
             assertTrue(pointsType.getDescriptors().contains(prop));

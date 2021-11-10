@@ -9,20 +9,18 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import java.util.Set;
+import java.util.List;
 
-import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Retrieves the set of property descriptors for the given feature type.
  */
-public class DescribeFeatureType extends AbstractGeoGigOp<Set<PropertyDescriptor>> {
+public class DescribeFeatureType extends AbstractGeoGigOp<List<PropertyDescriptor>> {
 
     private RevFeatureType featureType;
 
@@ -39,11 +37,8 @@ public class DescribeFeatureType extends AbstractGeoGigOp<Set<PropertyDescriptor
      * 
      * @return a sorted set of all the property descriptors of the feature type.
      */
-    protected @Override Set<PropertyDescriptor> _call() {
+    protected @Override List<PropertyDescriptor> _call() {
         Preconditions.checkState(featureType != null, "FeatureType has not been set.");
-
-        FeatureType type = featureType.type();
-
-        return ImmutableSet.copyOf(type.getDescriptors());
+        return featureType.descriptors();
     }
 }

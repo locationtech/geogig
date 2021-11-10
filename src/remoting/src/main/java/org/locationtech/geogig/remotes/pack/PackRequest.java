@@ -11,6 +11,7 @@ package org.locationtech.geogig.remotes.pack;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -23,8 +24,6 @@ import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.impl.RepositoryFilter;
-
-import com.google.common.collect.Lists;
 
 /**
  * Packages up a set of {@link RefRequest} for {@link SendPackOp} to ask a repository to send all
@@ -94,7 +93,7 @@ public class PackRequest {
      * @return safe copy
      */
     public List<RefRequest> getRefs() {
-        return Lists.newArrayList(refs.values());
+        return new ArrayList<>(refs.values());
     }
 
     public @Override boolean equals(Object o) {

@@ -29,7 +29,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.filter.Filter;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Lists;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
@@ -135,8 +134,7 @@ public @CanRunDuringConflict class QLUpdate extends AbstractGeoGigOp<Supplier<Di
 
     private String[] parsePropertyNames(Update update) {
         List<Column> columns = update.getColumns();
-        return Lists.transform(columns, (c) -> c.getColumnName())
-                .toArray(new String[columns.size()]);
+        return columns.stream().map(c -> c.getColumnName()).toArray(String[]::new);
     }
 
     private String parseTreePath(String treeish) {

@@ -35,8 +35,6 @@ import org.locationtech.geogig.porcelain.RemoveOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.FeatureInfo;
 
-import com.google.common.collect.Lists;
-
 public class ReportMergeConflictsOpTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -81,7 +79,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
     }
 
@@ -101,7 +99,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
     }
 
@@ -130,7 +128,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
                 "POINT(1 1)");
         assertEquals(RevFeature.builder().build(pointsMerged), consumer.merged.get(0).getFeature());
         Boolean hasConflictsOrAutomerge = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());
 
     }
@@ -155,7 +153,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflictsOrAutomerge = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflictsOrAutomerge.booleanValue());
     }
 
@@ -179,7 +177,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -201,7 +199,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -224,7 +222,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getConflicts());
         assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -244,7 +242,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
     }
 
@@ -268,7 +266,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
     }
 
@@ -292,7 +290,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getConflicts());
         assertEquals(0, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -319,7 +317,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getUnconflicted()); // the change in the feature is the
                                                       // same, so no conflict
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -343,7 +341,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(1, conflicts.getConflicts());
         assertEquals(1, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertTrue(hasConflicts.booleanValue());
     }
 
@@ -366,7 +364,7 @@ public class ReportMergeConflictsOpTest extends RepositoryTestCase {
         assertEquals(0, conflicts.getConflicts());
         assertEquals(2, conflicts.getUnconflicted());
         Boolean hasConflicts = repo.command(CheckMergeScenarioOp.class)
-                .setCommits(Lists.newArrayList(masterCommit, branchCommit)).call();
+                .setCommits(List.of(masterCommit, branchCommit)).call();
         assertFalse(hasConflicts.booleanValue());
     }
 

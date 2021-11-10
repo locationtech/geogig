@@ -72,7 +72,6 @@ import org.opengis.filter.identity.ResourceId;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -533,7 +532,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     }
 
     private List<SimpleFeature> toList(SimpleFeatureCollection collection) {
-        List<SimpleFeature> features = Lists.newArrayList();
+        List<SimpleFeature> features = new ArrayList<>();
         SimpleFeatureIterator iterator = collection.features();
         try {
             while (iterator.hasNext()) {

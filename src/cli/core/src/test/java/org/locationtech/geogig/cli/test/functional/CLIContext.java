@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -49,7 +50,6 @@ import org.locationtech.geogig.test.TestPlatform;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.CharSource;
 
@@ -223,7 +223,7 @@ public class CLIContext {
     public List<ObjectId> insert(Feature... features) throws Exception {
         geogigCLI.close();
         Geogig geogig = geogigCLI.newGeoGIG(Hints.readWrite());
-        List<ObjectId> ids = Lists.newArrayListWithCapacity(features.length);
+        List<ObjectId> ids = new ArrayList<>(features.length);
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
         for (Feature f : features) {
             FeatureType type = f.getType();

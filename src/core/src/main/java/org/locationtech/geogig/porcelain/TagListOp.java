@@ -9,11 +9,9 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Lists.transform;
-
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -32,12 +30,11 @@ import com.google.common.collect.Streams;
 public class TagListOp extends AbstractGeoGigOp<List<RevTag>> {
 
     protected @Override List<RevTag> _call() {
-        List<Ref> refs = newArrayList(
-                command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call());
-        List<ObjectId> tagIds = transform(refs, Ref::getObjectId);
+        Set<Ref> refs = command(ForEachRef.class).setPrefixFilter(Ref.TAGS_PREFIX).call();
+        List<ObjectId> tagIds = refs.stream().map(Ref::getObjectId).collect(Collectors.toList());
 
-        Iterator<RevTag> alltags;
-        alltags = objectDatabase().getAll(tagIds, BulkOpListener.NOOP_LISTENER, RevTag.class);
+        Iterator<RevTag> alltags = objectDatabase().getAll(tagIds, BulkOpListener.NOOP_LISTENER,
+                RevTag.class);
 
         return Streams.stream(alltags).collect(Collectors.toList());
     }

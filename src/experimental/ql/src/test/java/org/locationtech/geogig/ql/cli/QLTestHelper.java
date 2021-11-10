@@ -10,7 +10,6 @@
 package org.locationtech.geogig.ql.cli;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newTreeSet;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.FeatureIteratorIterator;
@@ -27,9 +27,9 @@ import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.ql.porcelain.QLSelect;
 import org.locationtech.geogig.repository.Repository;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.AttributeDescriptor;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 public class QLTestHelper {
 
@@ -61,7 +61,7 @@ public class QLTestHelper {
     public SimpleFeatureCollection selectAndAssert(String query, String... expectedFids) {
         Set<String> fids = new HashSet<>();
         if (expectedFids != null && expectedFids.length > 0) {
-            fids.addAll(Lists.newArrayList(expectedFids));
+            fids.addAll(Arrays.asList(expectedFids));
         }
         return selectAndAssert(query, fids);
     }
@@ -76,8 +76,9 @@ public class QLTestHelper {
         assertEquals(expectedFids, fids);
 
         if (expectedAttributes != null && expectedAttributes.length > 0) {
-            Set<String> returnedAtts = newTreeSet(Lists.transform(
-                    result.getSchema().getAttributeDescriptors(), (a) -> a.getLocalName()));
+            Set<String> returnedAtts = result.getSchema().getAttributeDescriptors().stream()
+                    .map(AttributeDescriptor::getLocalName)
+                    .collect(Collectors.toCollection(TreeSet::new));
             Set<String> expectedAtts = new TreeSet<>(Arrays.asList(expectedAttributes));
             assertEquals(expectedAtts, returnedAtts);
         }

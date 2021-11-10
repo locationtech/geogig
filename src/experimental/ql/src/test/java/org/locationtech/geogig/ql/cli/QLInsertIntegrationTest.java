@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataUtilities;
@@ -43,10 +44,9 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import net.sf.jsqlparser.statement.insert.Insert;
 
@@ -126,8 +126,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         assertEquals(1, insert(sql).getFeaturesAdded());
         SimpleFeature inserted = getFeature("select * from \"WORK_HEAD:Points\" where ip = 7");
 
-        assertFeature(inserted, null,
-                Map.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
+        assertFeature(inserted, null, Map.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
     }
 
     @SuppressWarnings("unchecked")
@@ -255,8 +254,8 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
 
     private boolean equals(Map<String, Object> expectedValues, SimpleFeature feature) {
 
-        Set<String> typeAttributes = Sets.newHashSet(Lists.transform(
-                feature.getFeatureType().getAttributeDescriptors(), (d) -> d.getLocalName()));
+        Set<String> typeAttributes = feature.getFeatureType().getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName).collect(Collectors.toSet());
 
         Set<String> attNames = expectedValues.keySet();
 

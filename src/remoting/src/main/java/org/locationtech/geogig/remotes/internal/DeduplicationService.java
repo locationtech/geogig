@@ -11,11 +11,11 @@ package org.locationtech.geogig.remotes.internal;
 
 import java.util.List;
 import java.util.ServiceLoader;
+import java.util.ServiceLoader.Provider;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 /**
  * A service for providing deduplicators.
@@ -43,7 +43,8 @@ public interface DeduplicationService {
         final Logger LOG = LoggerFactory.getLogger(DeduplicationService.class);
         ServiceLoader<DeduplicationService> loader = ServiceLoader.load(DeduplicationService.class,
                 DeduplicationService.class.getClassLoader());
-        List<DeduplicationService> services = Lists.newArrayList(loader.iterator());
+        List<DeduplicationService> services = loader.stream().map(Provider::get)
+                .collect(Collectors.toList());
 
         DeduplicationService service;
         if (services.isEmpty()) {

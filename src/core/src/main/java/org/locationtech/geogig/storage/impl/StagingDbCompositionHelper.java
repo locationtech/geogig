@@ -12,6 +12,7 @@ package org.locationtech.geogig.storage.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -28,7 +29,7 @@ public class StagingDbCompositionHelper {
             final ObjectStore stagingDb, final Iterable<ObjectId> ids,
             final BulkOpListener listener) {
 
-        final List<ObjectId> missingInStaging = Lists.newLinkedList();
+        final List<ObjectId> missingInStaging = new LinkedList<>();
 
         final int limit = 10000;
 

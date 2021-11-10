@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -22,7 +23,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 /**
  * Compares content and metadata links of blobs between the index and repository
@@ -32,7 +32,7 @@ public class DiffIndex extends AbstractGeoGigOp<AutoCloseableIterator<DiffEntry>
 
     private String refSpec;
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final List<String> pathFilters = new LinkedList<>();
 
     private boolean reportTrees;
 

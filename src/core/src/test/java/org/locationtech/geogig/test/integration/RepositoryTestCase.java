@@ -58,7 +58,6 @@ import org.locationtech.jts.io.WKTReader;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 public abstract class RepositoryTestCase {
 
@@ -368,7 +367,7 @@ public abstract class RepositoryTestCase {
         Map<FeatureType, RevFeatureType> types = new HashMap<>();
 
         List<FeatureInfo> rfIds = new ArrayList<>();
-        List<FeatureInfo> infos = Lists.transform(features, (f) -> {
+        List<FeatureInfo> infos = features.stream().map(f -> {
             final String path = NodeRef.appendChild(f.getType().getName().getLocalPart(),
                     f.getId());
             FeatureInfo fi;
@@ -385,7 +384,7 @@ public abstract class RepositoryTestCase {
                 rfIds.add(fi);
             }
             return fi;
-        });
+        }).collect(Collectors.toList());
         repo.context().workingTree().insert(infos.iterator(), DefaultProgressListener.NULL);
         return rfIds;
     }

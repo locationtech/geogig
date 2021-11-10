@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,6 @@ import java.util.Optional;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import lombok.Getter;
@@ -34,9 +34,9 @@ class Node {
 
     final @Getter ObjectId id;
 
-    final List<Edge> in = Lists.newArrayList();
+    final List<Edge> in = new ArrayList<>();
 
-    final List<Edge> out = Lists.newArrayList();
+    final List<Edge> out = new ArrayList<>();
 
     boolean root = false;
 

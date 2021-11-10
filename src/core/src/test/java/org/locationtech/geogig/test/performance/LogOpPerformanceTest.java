@@ -10,6 +10,7 @@
 package org.locationtech.geogig.test.performance;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 
 public class LogOpPerformanceTest extends RepositoryTestCase {
 
@@ -124,7 +124,7 @@ public class LogOpPerformanceTest extends RepositoryTestCase {
     }
 
     private List<ObjectId> createBranches(int numBranches, int numCommits) {
-        List<ObjectId> list = Lists.newArrayList();
+        List<ObjectId> list = new ArrayList<>();
         for (int i = 1; i <= numBranches; i++) {
             String branchName = "branch" + Integer.toString(i);
             repo.command(CommitOp.class).setAllowEmpty(true)

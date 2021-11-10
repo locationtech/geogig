@@ -13,15 +13,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.plumbing.DiffWorkTree;
 import org.locationtech.geogig.porcelain.CleanOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-
-import com.google.common.collect.Lists;
 
 public class CleanOpTest extends RepositoryTestCase {
 
@@ -35,7 +33,7 @@ public class CleanOpTest extends RepositoryTestCase {
 
         repo.command(CleanOp.class).call();
         try (AutoCloseableIterator<DiffEntry> deleted = repo.command(DiffWorkTree.class).call()) {
-            ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
+            List<DiffEntry> list = deleted.toList();
             // Check that all the features have been deleted
             assertEquals(0, list.size());
         }
@@ -48,7 +46,7 @@ public class CleanOpTest extends RepositoryTestCase {
 
         repo.command(CleanOp.class).setPath(pointsName).call();
         try (AutoCloseableIterator<DiffEntry> deleted = repo.command(DiffWorkTree.class).call()) {
-            ArrayList<DiffEntry> list = Lists.newArrayList(deleted);
+            List<DiffEntry> list = deleted.toList();
             // Check that all the point features have been deleted but not the line one
             assertEquals(1, list.size());
         }

@@ -40,7 +40,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquash() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).call();
@@ -49,7 +49,7 @@ public class SquashOpTest extends RepositoryTestCase {
 
         repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
         Iterator<RevCommit> log = repo.command(LogOp.class).call();
-        ArrayList<RevCommit> logentries = Lists.newArrayList(log);
+        List<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(3, logentries.size());
         RevCommit headCommit = logentries.get(0);
         RevCommit squashedCommit = logentries.get(1);
@@ -64,7 +64,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquashWithMessage() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).setMessage("Squashed").call();
@@ -73,7 +73,7 @@ public class SquashOpTest extends RepositoryTestCase {
 
         repo.command(SquashOp.class).setSince(commits.get(1)).setUntil(commits.get(4)).call();
         Iterator<RevCommit> log = repo.command(LogOp.class).call();
-        ArrayList<RevCommit> logentries = Lists.newArrayList(log);
+        List<RevCommit> logentries = Lists.newArrayList(log);
         assertEquals(3, logentries.size());
         RevCommit headCommit = logentries.get(0);
         RevCommit squashedCommit = logentries.get(1);
@@ -88,7 +88,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquashAtBranchTip() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).call();
@@ -111,7 +111,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquashAtHistoryOrigin() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).call();
@@ -129,7 +129,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquashwithSameSinceAndUntilCommit() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).setMessage(f.getId()).call();
@@ -148,7 +148,7 @@ public class SquashOpTest extends RepositoryTestCase {
     @Test
     public void testSquash2() throws Exception {
         List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
-        List<RevCommit> commits = Lists.newArrayList();
+        List<RevCommit> commits = new ArrayList<>();
         for (Feature f : features) {
             insertAndAdd(f);
             final RevCommit commit = repo.command(CommitOp.class).setMessage(f.getId()).call();

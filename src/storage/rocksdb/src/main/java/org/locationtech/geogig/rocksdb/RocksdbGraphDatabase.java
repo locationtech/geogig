@@ -43,7 +43,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
@@ -211,17 +210,17 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
         int depth = 0;
 
         try (RocksDBReference dbRef = dbhandle.getReference()) {
-            Queue<ObjectId> q = Lists.newLinkedList();
+            Queue<ObjectId> q = new LinkedList<>();
             NodeData node = getNodeInternal(dbRef, commitId, true, null);
             Iterables.addAll(q, node.outgoing);
 
-            List<ObjectId> next = Lists.newArrayList();
+            List<ObjectId> next = new ArrayList<>();
             while (!q.isEmpty()) {
                 depth++;
                 while (!q.isEmpty()) {
                     ObjectId n = q.poll();
                     NodeData parentNode = getNodeInternal(dbRef, n, true, null);
-                    List<ObjectId> parents = Lists.newArrayList(parentNode.outgoing);
+                    List<ObjectId> parents = new ArrayList<>(parentNode.outgoing);
                     if (parents.size() == 0) {
                         return depth;
                     }

@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +38,6 @@ import org.locationtech.geogig.plumbing.merge.ReadMergeCommitMessageOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -97,7 +97,7 @@ public class CommitOp extends AbstractGeoGigOp<RevCommit> {
 
     private boolean amend;
 
-    private final List<String> pathFilters = Lists.newLinkedList();
+    private final List<String> pathFilters = new LinkedList<>();
 
     /**
      * If set, ignores other information for creating a commit and uses the passed one.

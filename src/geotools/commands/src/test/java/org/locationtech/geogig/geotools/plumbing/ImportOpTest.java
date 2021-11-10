@@ -218,7 +218,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
         Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
-        ArrayList<NodeRef> list = Lists.newArrayList(features);
+        List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(4, list.size());
         TreeSet<ObjectId> set = Sets.newTreeSet();
         for (NodeRef node : list) {
@@ -258,7 +258,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
         Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
-        ArrayList<NodeRef> list = Lists.newArrayList(features);
+        List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(5, list.size());
         TreeSet<ObjectId> set = Sets.newTreeSet();
         ArrayList<RevFeatureType> ftlist = new ArrayList<RevFeatureType>();
@@ -290,7 +290,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
         Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
-        ArrayList<NodeRef> list = Lists.newArrayList(features);
+        List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(3, list.size());
         TreeSet<ObjectId> set = Sets.newTreeSet();
         for (NodeRef node : list) {
@@ -312,7 +312,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
         Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
-        ArrayList<NodeRef> list = Lists.newArrayList(features);
+        List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(3, list.size());
         Optional<RevFeature> feature = repo.command(RevObjectParse.class)
                 .setRefSpec("WORK_HEAD:table1/feature1").call(RevFeature.class);
@@ -343,7 +343,7 @@ public class ImportOpTest extends RepositoryTestCase {
         importOp.call();
         Iterator<NodeRef> features = repo.command(LsTreeOp.class)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
-        ArrayList<NodeRef> list = Lists.newArrayList(features);
+        List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(2, list.size());
         Optional<RevFeatureType> featureType = repo.command(RevObjectParse.class)
                 .setObjectId(list.get(0).getMetadataId()).call(RevFeatureType.class);

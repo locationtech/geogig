@@ -38,7 +38,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.hash.HashCode;

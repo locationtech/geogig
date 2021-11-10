@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
@@ -81,7 +81,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
 
     private boolean firstParent;
 
-    private List<ObjectId> commits = Lists.newArrayList();
+    private List<ObjectId> commits = new ArrayList<>();
 
     public LogOp() {
         timeRange = ALWAYS;
@@ -395,7 +395,7 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
                 ObjectId oldestCommitId) {
             this.graphDb = repo.graph().db();
             tips = new Stack<RevCommit>();
-            stopPoints = Lists.newArrayList();
+            stopPoints = new ArrayList<>();
             stopPoints.add(oldestCommitId);
             this.oldestCommitId = oldestCommitId;
             for (ObjectId tip : tipsList) {

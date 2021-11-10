@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -18,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -133,8 +133,8 @@ public class PostOrderDiffWalkTest {
         rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
-        List<? extends Bounded> expectedLeft = newArrayList(null, nodeFor(left));
-        List<? extends Bounded> expectedRight = newArrayList(featureNodeRef("f", 1),
+        List<? extends Bounded> expectedLeft = Arrays.asList(null, nodeFor(left));
+        List<? extends Bounded> expectedRight = Arrays.asList(featureNodeRef("f", 1),
                 nodeFor(right));
 
         visitor.walk(testConsumer);
@@ -153,11 +153,11 @@ public class PostOrderDiffWalkTest {
         rightSource.put(right);
         PostOrderDiffWalk visitor = new PostOrderDiffWalk(left, right, leftSource, rightSource);
 
-        List<? extends Bounded> expectedLeft = newArrayList(//
+        List<? extends Bounded> expectedLeft = Arrays.asList(//
                 null, //
                 null, //
                 nodeFor(left));
-        List<? extends Bounded> expectedRight = newArrayList(//
+        List<? extends Bounded> expectedRight = Arrays.asList(//
                 featureNodeRef("f", 3), //
                 featureNodeRef("f", 4), //
                 nodeFor(right));

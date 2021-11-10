@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
@@ -45,7 +46,6 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -205,7 +205,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         if (!quadBounds.contains(nodeBounds)) {
             GeometryFactory gf = new GeometryFactory();
             Polygon qgeom = SpatialOps.toGeometry(quadBounds);
-            ArrayList<Geometry> pointGeoms = Lists.newArrayList(gf.createPoint(center),
+            List<Geometry> pointGeoms = List.of(gf.createPoint(center),
                     SpatialOps.toGeometry(nodeBounds));
             Geometry point = gf.buildGeometry(pointGeoms);
             String msg = qgeom + " does not contain " + point;
@@ -326,8 +326,8 @@ public class QuadTreeTestSupport extends ExternalResource {
     }
 
     public DAG findDAG(QuadTreeClusteringStrategy quadStrategy, List<Quadrant> key) {
-        List<Integer> bucketNumbers = Lists.transform(key,
-                (q) -> Integer.valueOf(q.getBucketNumber()));
+        List<Integer> bucketNumbers = key.stream().map(Quadrant::getBucketNumber)
+                .collect(Collectors.toList());
         String skey = bucketNumbers.toString();
         return findDAG(quadStrategy, skey);
     }

@@ -65,7 +65,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 
 @Ignore
 public class PreOrderDiffWalkQuadTreeTest {
@@ -827,8 +826,9 @@ public class PreOrderDiffWalkQuadTreeTest {
         final int size = 100_000;
 
         final RevTree left = testSupport.createFeaturesTree(leftSource, "", size);
-        ArrayList<NodeRef> leftFeatureNodes = Lists.newArrayList(new DepthTreeIterator("",
-                ObjectId.NULL, left, leftSource, Strategy.RECURSIVE_FEATURES_ONLY));
+        @SuppressWarnings("resource")
+        List<NodeRef> leftFeatureNodes = new DepthTreeIterator("", ObjectId.NULL, left, leftSource,
+                Strategy.RECURSIVE_FEATURES_ONLY).toList();
 
         RevTreeBuilder rightBuilder = CanonicalTreeBuilder.create(rightSource);
 

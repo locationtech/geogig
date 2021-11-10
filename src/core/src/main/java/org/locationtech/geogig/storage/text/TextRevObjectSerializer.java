@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.storage.text;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
@@ -58,7 +57,6 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 
 /**
  * An {@link ObjectSerialisingFactory} for the {@link RevObject}s text format.
@@ -468,7 +466,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         }
 
         protected String parseLine(String line, String expectedHeader) throws IOException {
-            List<String> fields = newArrayList(Splitter.on('\t').split(line));
+            List<String> fields = Splitter.on('\t').splitToList(line);
             Preconditions.checkArgument(fields.size() == 2, "Expected %s\\t<...>, got '%s'",
                     expectedHeader, line);
             Preconditions.checkArgument(expectedHeader.equals(fields.get(0)),
@@ -480,7 +478,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         protected abstract T read(ObjectId id, BufferedReader reader, TYPE type) throws IOException;
 
         protected Node parseNodeLine(String line) {
-            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = Splitter.on('\t').splitToList(line);
             final int numTokens = tokens.size();
             Preconditions.checkArgument(numTokens == 6 || numTokens == 7,
                     "Wrong tree element definition: %s", line);
@@ -504,7 +502,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             if (s.equals(TextWriter.NULL_BOUNDING_BOX)) {
                 return new Envelope();
             }
-            List<String> tokens = newArrayList(Splitter.on(';').split(s));
+            List<String> tokens = Splitter.on(';').splitToList(s);
             Preconditions.checkArgument(tokens.size() == 4, "Wrong bounding box definition: %s", s);
 
             double minx = Double.parseDouble(tokens.get(0));
@@ -561,8 +559,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
                 throws IOException {
             Preconditions.checkArgument(TYPE.COMMIT.equals(type), "Wrong type: %s", type.name());
             String tree = parseLine(requireLine(reader), "tree");
-            List<String> parents = newArrayList(Splitter.on(' ').omitEmptyStrings()
-                    .split(parseLine(requireLine(reader), "parents")));
+            List<String> parents = Splitter.on(' ').omitEmptyStrings()
+                    .splitToList(parseLine(requireLine(reader), "parents"));
             RevPerson author = parsePerson(requireLine(reader), "author");
             RevPerson committer = parsePerson(requireLine(reader), "committer");
             String message = parseMessage(reader);
@@ -577,7 +575,8 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             builder.committerTimestamp(committer.getTimestamp());
             builder.committerTimeZoneOffset(committer.getTimeZoneOffset());
             builder.message(message);
-            List<ObjectId> parentIds = Lists.transform(parents, ObjectId::valueOf);
+            List<ObjectId> parentIds = parents.stream().map(ObjectId::valueOf)
+                    .collect(Collectors.toList());
             builder.parentIds(parentIds);
             builder.treeId(ObjectId.valueOf(tree));
             RevCommit commit = builder.build();
@@ -637,7 +636,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         }
 
         private Object parseAttribute(String line) {
-            List<String> tokens = newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = Splitter.on('\t').splitToList(line);
             Preconditions.checkArgument(tokens.size() == 2, "Wrong attribute definition: %s", line);
             String typeName = tokens.get(0);
             String value = tokens.get(1);
@@ -690,7 +689,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
         }
 
         private PropertyDescriptor parseAttributeDescriptor(String line) {
-            ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
+            List<String> tokens = Splitter.on('\t').splitToList(line);
             Preconditions.checkArgument(tokens.size() == 5 || tokens.size() == 6,
                     "Wrong attribute definition: %s", line);
 
@@ -747,7 +746,7 @@ public class TextRevObjectSerializer implements RevObjectSerializer {
             String line;
             while ((line = reader.readLine()) != null) {
                 Preconditions.checkArgument(!line.isEmpty(), "Empty tree element definition");
-                ArrayList<String> tokens = newArrayList(Splitter.on('\t').split(line));
+                List<String> tokens = Splitter.on('\t').splitToList(line);
                 String nodeType = tokens.get(0);
                 if (nodeType.equals(TextWriter.TreeNode.REF.name())) {
                     Node entryRef = parseNodeLine(line);

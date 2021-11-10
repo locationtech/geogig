@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.locationtech.geogig.plumbing.index.IndexTestSupport.getPointFid;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -44,8 +45,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.locationtech.geogig.transaction.TransactionBegin;
 import org.locationtech.geogig.transaction.TransactionEnd;
-
-import com.google.common.collect.Lists;
 
 public class UpdateIndexesOpTest extends RepositoryTestCase {
 
@@ -85,7 +84,7 @@ public class UpdateIndexesOpTest extends RepositoryTestCase {
         Index index = repo.command(CreateQuadTree.class)//
                 .setTreeRefSpec(worldPointsLayer.getName())//
                 .setGeometryAttributeName("geom")//
-                .setExtraAttributes(Lists.newArrayList(extraAttributes))//
+                .setExtraAttributes(Arrays.asList(extraAttributes))//
                 .setIndexHistory(indexHistory)//
                 .call();
         return index.info();

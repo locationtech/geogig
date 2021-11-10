@@ -11,8 +11,9 @@ package org.locationtech.geogig.cli.porcelain;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.fusesource.jansi.Ansi;
@@ -34,7 +35,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -98,7 +98,7 @@ public class Diff extends AbstractCommand implements CLICommand {
         String oldVersion = resolveOldVersion();
         String newVersion = resolveNewVersion();
 
-        List<String> paths = removeEmptyPaths();
+        List<String> paths = nonEmptyPaths();
         if (bounds) {
             DiffBounds diff = geogig.command(DiffBounds.class).setOldVersion(oldVersion)
                     .setNewVersion(newVersion).setCompareIndex(cached);
@@ -169,14 +169,9 @@ public class Diff extends AbstractCommand implements CLICommand {
         return entries;
     }
 
-    private List<String> removeEmptyPaths() {
-        List<String> paths = Lists.newLinkedList(this.paths);
-        for (Iterator<String> it = paths.iterator(); it.hasNext();) {
-            if (Strings.isNullOrEmpty(it.next())) {
-                it.remove();
-            }
-        }
-        return paths;
+    private List<String> nonEmptyPaths() {
+        return this.paths.stream().filter(Predicate.not(Strings::isNullOrEmpty))
+                .collect(Collectors.toList());
     }
 
     @Nullable

@@ -64,7 +64,7 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
     public @Override @NonNull RevCommit createCommit(@NonNull ObjectId id, @NonNull ObjectId treeId,
             @NonNull List<ObjectId> parents, @NonNull RevPerson author,
             @NonNull RevPerson committer, @NonNull String message) {
-        if (parents.indexOf(null) > -1) {
+        if (new ArrayList<>(parents).indexOf(null) > -1) {
             throw new NullPointerException("null parent at index " + parents.indexOf(null));
         }
         return new RevCommitImpl(id, treeId, //
@@ -110,11 +110,13 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
             throw new IllegalArgumentException(
                     "Cannot create a tree with negative child tree count: " + childTreeCount);
         }
-        Bucket[] array = buckets.toArray(new Bucket[buckets.size()]);
-        for (Bucket b : array) {
+        Bucket[] array = new Bucket[buckets.size()];
+        int i = 0;
+        for (Bucket b : buckets) {
             if (b == null) {
                 throw new NullPointerException("There's a null bucket in the buckets set");
             }
+            array[i++] = b;
         }
         return new NodeTree(id, size, childTreeCount, array);
     }

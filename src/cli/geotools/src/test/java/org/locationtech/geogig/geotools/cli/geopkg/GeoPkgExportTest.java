@@ -46,7 +46,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 @Ignore // REVISIT: ExportOp needs a revamp
@@ -233,7 +232,7 @@ public class GeoPkgExportTest extends RepositoryTestCase {
 
             Map<String, org.locationtech.geogig.feature.Feature> expectedFeatures;
             {
-                List<org.locationtech.geogig.feature.Feature> list = Lists.newArrayList(expected);
+                List<org.locationtech.geogig.feature.Feature> list = Arrays.asList(expected);
                 expectedFeatures = Maps.uniqueIndex(list, Feature::getId);
             }
             Set<String> actualFeatureIDs = new HashSet<String>();

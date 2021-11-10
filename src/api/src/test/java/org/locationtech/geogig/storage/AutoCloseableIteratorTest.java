@@ -22,13 +22,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Test;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 public class AutoCloseableIteratorTest {
 
     static class TestAutoCloseableIterator implements AutoCloseableIterator<String> {
 
-        private Iterator<String> source = Lists.newArrayList("item1", "item2", "item11").iterator();
+        private Iterator<String> source = List.of("item1", "item2", "item11").iterator();
 
         private AtomicBoolean wasClosed = null;
 
@@ -60,7 +59,7 @@ public class AutoCloseableIteratorTest {
 
     @Test
     public void testFromIterator() {
-        Iterator<String> original = Lists.newArrayList("item1", "item2").iterator();
+        Iterator<String> original = List.of("item1", "item2").iterator();
 
         try (AutoCloseableIterator<String> it = AutoCloseableIterator.fromIterator(original)) {
             assertTrue(it.hasNext());

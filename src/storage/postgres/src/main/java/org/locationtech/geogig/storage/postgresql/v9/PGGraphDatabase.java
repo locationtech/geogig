@@ -358,16 +358,16 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
     public @Override int getDepth(ObjectId commitId) {
         int depth = 0;
 
-        Queue<PGId> q = Lists.newLinkedList();
+        Queue<PGId> q = new LinkedList<>();
         try (Connection cx = env.getConnection()) {
             Iterables.addAll(q, outgoing(PGId.valueOf(commitId), cx));
 
-            List<PGId> next = Lists.newArrayList();
+            List<PGId> next = new ArrayList<>();
             while (!q.isEmpty()) {
                 depth++;
                 while (!q.isEmpty()) {
                     PGId n = q.poll();
-                    List<PGId> parents = Lists.newArrayList(outgoing(n, cx));
+                    List<PGId> parents = outgoing(n, cx);
                     if (parents.size() == 0) {
                         return depth;
                     }

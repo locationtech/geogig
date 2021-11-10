@@ -14,6 +14,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,7 @@ public class IndexTestSupport {
         RevFeatureBuilder builder = RevFeature.builder();
         builder.addValue(gf.createPoint(new Coordinate(x, y)));
         if (extraAttribues != null) {
-            builder.addAll(Lists.newArrayList(extraAttribues));
+            builder.addAll(Arrays.asList(extraAttribues));
         }
         RevFeature feature = builder.build();
         return feature;

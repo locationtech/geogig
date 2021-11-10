@@ -71,7 +71,6 @@ import org.opengis.filter.sort.SortBy;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 public class FeatureReaderBuilderTest extends RepositoryTestCase {
 
@@ -107,7 +106,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     private Index createIndex(@Nullable String... extraAttributes) {
         List<String> extraAtts = null;
         if (extraAttributes != null) {
-            extraAtts = Lists.newArrayList(extraAttributes);
+            extraAtts = Arrays.asList(extraAttributes);
         }
         Index index = repo.command(CreateQuadTree.class).setExtraAttributes(extraAtts)
                 .setGeometryAttributeName("pp").setTreeRefSpec(pointsName).call();
@@ -253,7 +252,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     @Test
     public void testResultingSchemaExplicitSubset() {
         Query query = new Query();
-        query.setPropertyNames(Lists.newArrayList("ip"));
+        query.setPropertyNames(List.of("ip"));
 
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(query);
 
@@ -264,7 +263,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     @Test
     public void testResultingSchemaIncludesFilterAttributes() {
         Query query = new Query();
-        query.setPropertyNames(Lists.newArrayList("ip"));
+        query.setPropertyNames(List.of("ip"));
 
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
         PropertyIsEqualTo filter = ff.equals(ff.property("sp"), ff.literal("something"));
@@ -274,11 +273,10 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(query);
 
         SimpleFeatureType resultType = reader.getFeatureType();
-        List<String> resultatts = Lists.transform(resultType.getAttributeDescriptors(),
-                (d) -> d.getLocalName());
+        List<String> resultatts = resultType.getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName).collect(Collectors.toList());
 
-        assertEquals(1, resultatts.size());
-        assertTrue(resultatts.contains("ip"));
+        assertEquals(List.of("ip"), resultatts);
     }
 
     /**
@@ -288,7 +286,7 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
     @Test
     public void testResultingSchemaIncludesFilterAttributesBBOXOptimization() {
         Query query = new Query();
-        query.setPropertyNames(Lists.newArrayList("ip", "sp"));
+        query.setPropertyNames(List.of("ip", "sp"));
 
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
         Filter filter = ff.bbox("pp", -1, -1, 1, 1, "EPSG:4326");
@@ -298,8 +296,8 @@ public class FeatureReaderBuilderTest extends RepositoryTestCase {
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = getReader(query);
 
         SimpleFeatureType resultType = reader.getFeatureType();
-        List<String> resultatts = Lists.transform(resultType.getAttributeDescriptors(),
-                (d) -> d.getLocalName());
+        List<String> resultatts = resultType.getAttributeDescriptors().stream()
+                .map(AttributeDescriptor::getLocalName).collect(Collectors.toList());
 
         assertEquals(2, resultatts.size());
         assertTrue(resultatts.contains("ip"));

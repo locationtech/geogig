@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -18,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doReturn;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -119,13 +119,13 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createCommitTwoParents() throws IOException {
-        List<ObjectId> parents = newArrayList(id3, id4);
+        List<ObjectId> parents = List.of(id3, id4);
         String message = "sample commit message";
         testCommit(id1, id2, parents, person1, person2, message);
     }
 
     public @Test final void createCommitSeveralParents() throws IOException {
-        List<ObjectId> parents = newArrayList(id2, id3, id4, id5);
+        List<ObjectId> parents = List.of(id2, id3, id4, id5);
         String message = "sample commit message";
         testCommit(id1, id2, parents, person1, person2, message);
     }
@@ -149,7 +149,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createCommitNullElementInParentsList() throws IOException {
-        List<ObjectId> parents = newArrayList(id3, null, id4);
+        List<ObjectId> parents = Arrays.asList(id3, null, id4);
 
         NullPointerException npe = assertThrows(NullPointerException.class,
                 () -> testCommit(id1, id2, parents, person1, person2, "message"));
@@ -369,7 +369,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafNullElementInTrees() {
-        List<Node> trees = newArrayList(treeNode("t1", id1, id5), null, treeNode("t2", id2, id5));
+        List<Node> trees = Arrays.asList(treeNode("t1", id1, id5), null, treeNode("t2", id2, id5));
 
         Exception e = assertThrows(NullPointerException.class,
                 () -> testCreateLeafTree(id1, 0, trees, emptyList()));
@@ -377,7 +377,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafNullElementInFeatures() {
-        List<Node> features = newArrayList(featureNode("f1", id1), null, featureNode("f2", id2));
+        List<Node> features = Arrays.asList(featureNode("f1", id1), null, featureNode("f2", id2));
         Exception e = assertThrows(NullPointerException.class,
                 () -> testCreateLeafTree(id1, 0, emptyList(), features));
         assertThat(e.getMessage(), containsString("null node in features at index 1"));
@@ -385,7 +385,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafFeatureNodeInTrees() {
-        List<Node> trees = newArrayList(treeNode("t1", id1, id5), treeNode("t2", id2, id5), //
+        List<Node> trees = List.of(treeNode("t1", id1, id5), treeNode("t2", id2, id5), //
                 featureNode("f1", id3)// WRONG
         );
         Exception e = assertThrows(IllegalArgumentException.class,
@@ -394,7 +394,7 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafTreeNodeInFeatures() {
-        List<Node> features = newArrayList(featureNode("f1", id1), featureNode("f2", id2), //
+        List<Node> features = List.of(featureNode("f1", id1), featureNode("f2", id2), //
                 treeNode("t1", id3, id5)// WRONG
         );
         Exception e = assertThrows(IllegalArgumentException.class,
@@ -403,20 +403,19 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeaf() {
-        List<Node> trees = newArrayList(treeNode("t1", id1, id5), treeNode("t2", id2, id5));
-        List<Node> features = newArrayList(featureNode("f1", id1), featureNode("f2", id2),
+        List<Node> trees = List.of(treeNode("t1", id1, id5), treeNode("t2", id2, id5));
+        List<Node> features = List.of(featureNode("f1", id1), featureNode("f2", id2),
                 featureNode("f3", id3), featureNode("f4", id4), featureNode("f5", id5));
         testCreateLeafTree(id1, 0, trees, features);
     }
 
     public @Test final void createTreeLeafFeatureNodesWithExtraData() {
-        List<Node> features = newArrayList(featureNodeFull("f1", id1, 1),
-                featureNodeFull("f2", id2, 2));
+        List<Node> features = List.of(featureNodeFull("f1", id1, 1), featureNodeFull("f2", id2, 2));
         testCreateLeafTree(id1, 0, emptyList(), features);
     }
 
     public @Test final void createTreeLeafFeatureNodesSomeWithExtraData() {
-        List<Node> features = newArrayList(//
+        List<Node> features = List.of(//
                 featureNodeFull("f1", id1, 1), // with extra data
                 featureNode("f2", id2), // without extra data
                 featureNodeFull("f3", id3, 3), // with extra data
@@ -425,14 +424,13 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafTreeNodesWithExtraData() {
-        List<Node> trees = newArrayList(treeNodeFull("t1", id1, id2, 1),
-                treeNodeFull("t2", id3, id4, 2), treeNodeFull("t3", id5, id6, 3),
-                treeNodeFull("t4", id7, id8, 4));
+        List<Node> trees = List.of(treeNodeFull("t1", id1, id2, 1), treeNodeFull("t2", id3, id4, 2),
+                treeNodeFull("t3", id5, id6, 3), treeNodeFull("t4", id7, id8, 4));
         testCreateLeafTree(id5, 10, trees, emptyList());
     }
 
     public @Test final void createTreeLeafTreeNodesSomeWithExtraData() {
-        List<Node> trees = newArrayList(//
+        List<Node> trees = List.of(//
                 treeNodeFull("t1", id1, id2, 1), // with extra data
                 treeNode("t2", id3, id4), // without extra data
                 treeNodeFull("t3", id5, id6, 3), // with extra data
@@ -441,20 +439,20 @@ public abstract class RevObjectFactoryConformanceTest {
     }
 
     public @Test final void createTreeLeafTreeAndFeatureNodesWithExtraData() {
-        List<Node> trees = newArrayList(treeNode("t1", id1, id4), treeNode("t2", id2, id5));
-        List<Node> features = newArrayList(featureNodeFull("f1", id1, 1),
-                featureNodeFull("f2", id2, 2), featureNodeFull("f3", id3, 3),
-                featureNodeFull("f4", id4, 4), featureNodeFull("f5", id5, 5));
+        List<Node> trees = List.of(treeNode("t1", id1, id4), treeNode("t2", id2, id5));
+        List<Node> features = List.of(featureNodeFull("f1", id1, 1), featureNodeFull("f2", id2, 2),
+                featureNodeFull("f3", id3, 3), featureNodeFull("f4", id4, 4),
+                featureNodeFull("f5", id5, 5));
         testCreateLeafTree(id1, 0, trees, features);
     }
 
     public @Test final void createTreeLeafTreeSomeWithExtraData() {
-        List<Node> trees = newArrayList(//
+        List<Node> trees = List.of(//
                 treeNodeFull("t1", id1, id2, 1), // with extra data
                 treeNode("t2", id3, id4), // without extra data
                 treeNodeFull("t3", id5, id6, 3), // with extra data
                 treeNode("t4", id7, id8));// without extra data
-        List<Node> features = newArrayList(//
+        List<Node> features = List.of(//
                 featureNodeFull("f1", id1, 1), // with extra data
                 featureNode("f2", id2), // without extra data
                 featureNodeFull("f3", id3, 3), // with extra data
@@ -485,7 +483,8 @@ public abstract class RevObjectFactoryConformanceTest {
         buckets.add(bucket(id4, 4));
         buckets.add(bucket(id2, 2));
         SortedSet<Bucket> spied = Mockito.spy(buckets);
-        Mockito.doReturn(Iterators.concat(buckets.iterator(), Iterators.singletonIterator(null)))
+        doReturn(3).when(spied).size();
+        doReturn(Iterators.concat(buckets.iterator(), Iterators.singletonIterator(null)))
                 .when(spied).iterator();
 
         Exception e = assertThrows(NullPointerException.class,

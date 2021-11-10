@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
@@ -37,7 +38,7 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 public class BulkFeatureRetrieverTest {
 
@@ -69,8 +70,7 @@ public class BulkFeatureRetrieverTest {
                 TYPE.FEATURE, new Envelope(), null);
         NodeRef nr2 = new NodeRef(n2, "testcase", meta1);
 
-        List<ObjectInfo<RevObject>> objs = Lists.newArrayList(ObjectInfo.of(nr1, f1),
-                ObjectInfo.of(nr2, f2));
+        List<ObjectInfo<RevObject>> objs = List.of(ObjectInfo.of(nr1, f1), ObjectInfo.of(nr2, f2));
 
         AutoCloseableIterator<ObjectInfo<RevObject>> objects = AutoCloseableIterator
                 .fromIterator(objs.iterator());
@@ -83,7 +83,7 @@ public class BulkFeatureRetrieverTest {
 
         Iterator<Feature> results = getter.getGeoToolsFeatures(input);
 
-        List<Feature> feats = Lists.newArrayList(results);
+        List<Feature> feats = Streams.stream(results).collect(Collectors.toList());
 
         assertEquals(2, feats.size());
 

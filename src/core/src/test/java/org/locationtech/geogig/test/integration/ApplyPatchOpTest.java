@@ -15,7 +15,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +40,6 @@ import org.locationtech.geogig.porcelain.CannotApplyPatchException;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class ApplyPatchOpTest extends RepositoryTestCase {
@@ -108,7 +106,7 @@ public class ApplyPatchOpTest extends RepositoryTestCase {
         assertTrue(featureBlobId.isPresent());
         try (AutoCloseableIterator<DiffEntry> unstaged = repo.context().workingTree()
                 .getUnstaged(pointsName)) {
-            ArrayList<DiffEntry> diffs = Lists.newArrayList(unstaged);
+            List<DiffEntry> diffs = unstaged.toList();
             assertEquals(2, diffs.size());
         }
         Optional<RevFeature> feature = repo.command(RevObjectParse.class)

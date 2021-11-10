@@ -11,7 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -39,8 +38,8 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 /**
  * Operation to squash commits into one.
@@ -137,9 +136,9 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
 
         Iterator<RevCommit> toSquash = command(LogOp.class).setSince(since.getParentIds().get(0))
                 .setUntil(until.getId()).setFirstParentOnly(true).call();
-        List<ObjectId> firstParents = Lists.newArrayList();
-        List<ObjectId> secondaryParents = Lists.newArrayList();
-        final List<ObjectId> squashedIds = Lists.newArrayList();
+        List<ObjectId> firstParents = new ArrayList<>();
+        List<ObjectId> secondaryParents = new ArrayList<>();
+        final List<ObjectId> squashedIds = new ArrayList<>();
         RevCommit commitToSquash = until;
         while (toSquash.hasNext()) {
             commitToSquash = toSquash.next();
@@ -186,7 +185,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         // parents.add(0, newHead);
 
         // Create new commit
-        List<ObjectId> parents = Lists.newArrayList();
+        List<ObjectId> parents = new ArrayList<>();
         parents.addAll(firstParents);
         parents.addAll(secondaryParents);
         ObjectId endTree = until.getTreeId();
@@ -245,19 +244,10 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {
             RevCommitBuilder builder = RevCommit.builder().platform(this.platform()).init(commit);
-            Function<ObjectId, ObjectId> fn = new Function<ObjectId, ObjectId>() {
-                public @Override ObjectId apply(ObjectId id) {
-                    if (replacedCommits.containsKey(id)) {
-                        return replacedCommits.get(id);
-                    } else {
-                        return id;
-                    }
-                }
-            };
 
-            Collection<ObjectId> parents = commit.getParentIds().stream().map(fn)
-                    .collect(Collectors.toList());
-            builder.parentIds(Lists.newArrayList(parents));
+            List<ObjectId> parents = commit.getParentIds().stream()
+                    .map(id -> replacedCommits.getOrDefault(id, id)).collect(Collectors.toList());
+            builder.parentIds(parents);
             builder.treeId(commit.getTreeId());
             long timestamp = platform.currentTimeMillis();
             builder.committerTimestamp(timestamp);
@@ -283,7 +273,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
 
     private List<RevCommit> getCommitsAfterUntil() {
         Iterator<RevCommit> commitIterator = command(LogOp.class).setSince(until.getId()).call();
-        List<RevCommit> commits = Lists.newArrayList(commitIterator);
+        List<RevCommit> commits = Streams.stream(commitIterator).collect(Collectors.toList());
         Collections.reverse(commits);
         return commits;
     }

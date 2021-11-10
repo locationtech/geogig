@@ -9,13 +9,14 @@
  */
 package org.locationtech.geogig.storage.memory;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -38,7 +39,7 @@ public class PathToRootWalker implements Iterator<List<Node>> {
     Set<Node> seen;
 
     public PathToRootWalker(Node start) {
-        q = Lists.newLinkedList();
+        q = new LinkedList<>();
         q.add(start);
 
         seen = Sets.newHashSet();
@@ -49,8 +50,8 @@ public class PathToRootWalker implements Iterator<List<Node>> {
     }
 
     public @Override List<Node> next() {
-        List<Node> curr = Lists.newArrayList();
-        List<Node> next = Lists.newArrayList();
+        List<Node> curr = new ArrayList<>();
+        List<Node> next = new ArrayList<>();
 
         while (!q.isEmpty()) {
             Node node = q.poll();

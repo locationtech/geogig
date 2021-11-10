@@ -47,7 +47,6 @@ import org.locationtech.jts.geom.Point;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 public class DataStoreConcurrencyTest extends RepositoryTestCase {
@@ -192,7 +191,7 @@ public class DataStoreConcurrencyTest extends RepositoryTestCase {
     }
 
     private List<Future<Integer>> runInserts(final int writeThreadCount, final int insertsPerTask) {
-        List<Future<Integer>> insertResults = Lists.newArrayList();
+        List<Future<Integer>> insertResults = new ArrayList<>();
         for (int i = 0; i < writeThreadCount; i++) {
             insertResults.add(editThreads.submit(new InsertTask(store, insertsPerTask)));
         }
@@ -200,7 +199,7 @@ public class DataStoreConcurrencyTest extends RepositoryTestCase {
     }
 
     private List<Future<Integer>> runReads(final int readThreadCount, final int readsPerTask) {
-        List<Future<Integer>> readResults = Lists.newArrayList();
+        List<Future<Integer>> readResults = new ArrayList<>();
         for (int i = 0; i < readThreadCount; i++) {
             readResults.add(readThreads.submit(new ReadTask(store, readsPerTask)));
         }

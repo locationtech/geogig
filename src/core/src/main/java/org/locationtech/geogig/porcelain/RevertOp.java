@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.di.CanRunDuringConflict;
@@ -268,8 +269,11 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                     msg.append(commit.getId().toString().substring(0, 8));
                     msg.append(" " + commit.getMessage() + "\n");
 
-                    Lists.newArrayList(Iterators.limit(conflicts.iterator(), 50)).forEach(c -> msg
-                            .append("CONFLICT: conflict in ").append(c.getPath()).append("\n"));
+                    StreamSupport.stream(conflicts.spliterator(), false)//
+                            .limit(50)//
+                            .map(Conflict::getPath)//
+                            .forEach(p -> msg.append("CONFLICT: conflict in ").append(p)
+                                    .append("\n"));
                     if (numConflicts > 50) {
                         msg.append(String.format("And %,d more...", numConflicts - 50));
                     }
@@ -332,7 +336,8 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                 while (partitions.hasNext()) {
 
                     List<DiffEntry> partition = partitions.next();
-                    branchDiffCommand.setPathFilter(Lists.transform(partition, DiffEntry::path));
+                    branchDiffCommand.setPathFilter(
+                            partition.stream().map(DiffEntry::path).collect(Collectors.toList()));
 
                     try (AutoCloseableIterator<DiffEntry> headToCommitDiff = branchDiffCommand
                             .call()) {

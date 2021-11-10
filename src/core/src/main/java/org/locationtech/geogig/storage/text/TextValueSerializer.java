@@ -11,6 +11,7 @@ package org.locationtech.geogig.storage.text;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 /**
  * A text serializer for attribute values
@@ -111,7 +111,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.BOOLEAN_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Boolean> list = Lists.newArrayList();
+                List<Boolean> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Boolean.valueOf(token));
                 }
@@ -121,7 +121,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.BYTE_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Byte> list = Lists.newArrayList();
+                List<Byte> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Byte.valueOf(token));
                 }
@@ -131,7 +131,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.SHORT_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.replace("[", "").replace("]", "").split(" ");
-                List<Short> list = Lists.newArrayList();
+                List<Short> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Short.valueOf(token));
                 }
@@ -141,7 +141,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.INTEGER_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Integer> list = Lists.newArrayList();
+                List<Integer> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Integer.valueOf(token));
                 }
@@ -151,7 +151,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.LONG_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Long> list = Lists.newArrayList();
+                List<Long> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Long.valueOf(token));
                 }
@@ -161,7 +161,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.FLOAT_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Float> list = Lists.newArrayList();
+                List<Float> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Float.valueOf(token));
                 }
@@ -171,7 +171,7 @@ public class TextValueSerializer {
         serializers.put(FieldType.DOUBLE_ARRAY, new ArraySerializer() {
             public @Override Object fromString(String in) {
                 String[] s = in.split(" ");
-                List<Double> list = Lists.newArrayList();
+                List<Double> list = new ArrayList<>();
                 for (String token : s) {
                     list.add(Double.valueOf(token));
                 }

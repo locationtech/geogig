@@ -12,12 +12,11 @@ package org.locationtech.geogig.porcelain;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.ForEachRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.collect.Lists;
 
 /**
  * Creates a new head ref (branch) pointing to the specified tree-ish or the current HEAD if no
@@ -58,7 +57,8 @@ public class BranchListOp extends AbstractGeoGigOp<List<Ref>> {
             return false;
         };
 
-        List<Ref> refs = Lists.newArrayList(command(ForEachRef.class).setFilter(filter).call());
+        List<Ref> refs = command(ForEachRef.class).setFilter(filter).call().stream()
+                .collect(Collectors.toList());
         Collections.sort(refs);
         return refs;
     }

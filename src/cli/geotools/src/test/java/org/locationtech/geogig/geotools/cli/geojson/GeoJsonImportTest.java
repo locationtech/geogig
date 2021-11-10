@@ -16,7 +16,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +41,7 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.LineString;
 import org.mockito.exceptions.base.MockitoException;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 public class GeoJsonImportTest extends RepositoryTestCase {
 
@@ -66,9 +68,9 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         importCommand.destTable = "importedTable";
         importCommand.run(cli);
 
-        List<NodeRef> nodes = Lists
-                .newArrayList(cli.getGeogig().getRepository().command(LsTreeOp.class)
-                        .setStrategy(Strategy.DEPTHFIRST).setReference(Ref.WORK_HEAD).call());
+        Iterator<NodeRef> iterator = cli.getGeogig().getRepository().command(LsTreeOp.class)
+                .setStrategy(Strategy.DEPTHFIRST).setReference(Ref.WORK_HEAD).call();
+        List<NodeRef> nodes = Streams.stream(iterator).collect(Collectors.toList());
 
         // There should be 3 nodes, the feature type tree and the two features.
         assertEquals(3, nodes.size());

@@ -52,7 +52,6 @@ import org.locationtech.geogig.test.TestRepository;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -266,7 +265,7 @@ public class FindChangedTreesTest {
                 .setNewTree(right)//
                 .call()) {
 
-            return Lists.newArrayList(it);
+            return it.toList();
         }
     }
 

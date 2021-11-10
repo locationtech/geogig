@@ -12,8 +12,8 @@ package org.locationtech.geogig.geotools.data.reader;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -102,12 +102,12 @@ public class MaterializedIndexFeatureIteratorTest extends RepositoryTestCase {
         NodeRef n3 = nodeRef(points3, "pp", "ip");
 
         AutoCloseableIterator<NodeRef> nodes = AutoCloseableIterator
-                .fromIterator(Lists.newArrayList(n1, n2, n3).iterator());
+                .fromIterator(List.of(n1, n2, n3).iterator());
 
         MaterializedIndexFeatureIterator iterator;
         iterator = MaterializedIndexFeatureIterator.create(subType, nodes, geometryFactory, crs);
 
-        ArrayList<SimpleFeature> features = Lists.newArrayList(iterator);
+        List<SimpleFeature> features = Lists.newArrayList(iterator);
         assertEquals(3, features.size());
         assertFeature(subType, points1, features.get(0));
         assertFeature(subType, points2, features.get(1));

@@ -26,6 +26,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.storage.datastream.Varint;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;
@@ -244,7 +244,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
             }
 
             if (!this.buffer.isEmpty()) {
-                ArrayList<T> buffered = Lists.newArrayList(this.buffer);
+                List<T> buffered = List.copyOf(this.buffer);
                 iterator = Iterators.concat(iterator, buffered.iterator());
             }
         } catch (Exception e) {

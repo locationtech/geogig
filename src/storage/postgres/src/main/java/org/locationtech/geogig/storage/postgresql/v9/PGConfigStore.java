@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.function.IntSupplier;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.AbstractStore;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
@@ -43,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import lombok.NonNull;
@@ -451,7 +449,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     repoPK = rs.getInt(1);
-                    List<Integer> all = Lists.newArrayList(repoPK);
+                    List<Integer> all = new ArrayList<>(List.of(repoPK));
                     while (rs.next()) {
                         all.add(rs.getInt(1));
                     }

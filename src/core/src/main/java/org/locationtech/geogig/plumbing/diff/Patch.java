@@ -27,8 +27,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
-import com.google.common.collect.Lists;
-
 /**
  * A patch that can be applied onto a working tree.
  * 
@@ -63,10 +61,10 @@ public class Patch {
     }
 
     public Patch(Map<ObjectId, RevFeatureType> typeCache) {
-        modifiedFeatures = Lists.newArrayList();
-        removedFeatures = Lists.newArrayList();
-        addedFeatures = Lists.newArrayList();
-        alteredTrees = Lists.newArrayList();
+        modifiedFeatures = new ArrayList<>();
+        removedFeatures = new ArrayList<>();
+        addedFeatures = new ArrayList<>();
+        alteredTrees = new ArrayList<>();
         featureTypes = new HashMap<>(typeCache);
     }
 

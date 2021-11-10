@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -53,7 +54,6 @@ import org.mockito.Mockito;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -254,8 +254,8 @@ public abstract class CanonicalClusteringStrategyTest {
             strategy.put(n);
         }
 
-        Set<Node> initial = Sets.newTreeSet(
-                Lists.transform(flatten(strategy.buildRoot()), nid -> strategy.getNode(nid)));
+        Set<Node> initial = flatten(strategy.buildRoot()).stream().map(nid -> strategy.getNode(nid))
+                .collect(Collectors.toCollection(TreeSet::new));
         assertEquals(nodes.size(), initial.size());
 
         final Map<Integer, Node> randomEdits = Maps.newHashMap();
@@ -279,8 +279,9 @@ public abstract class CanonicalClusteringStrategyTest {
             }
         }
 
-        Set<Node> result = Sets.newTreeSet(
-                Lists.transform(flatten(strategy.buildRoot()), nid -> strategy.getNode(nid)));
+        Set<Node> result = flatten(strategy.buildRoot()).stream().map(strategy::getNode)
+                .collect(Collectors.toCollection(TreeSet::new));
+
         assertEquals(nodes.size(), result.size());
 
         Set<Node> difference = Sets.difference(Sets.newHashSet(result), Sets.newHashSet(initial));

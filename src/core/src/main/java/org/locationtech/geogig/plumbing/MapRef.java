@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 
@@ -49,8 +48,8 @@ public class MapRef extends AbstractGeoGigOp<List<Ref>> {
         checkState(toRemote != null,
                 "must indicate whether to convert refs to local or remotes namespace");
 
-        return Lists.newArrayList(
-                Iterables.transform(refs, r -> toRemote.booleanValue() ? toRemote(r) : toLocal(r)));
+        return refs.stream().map(r -> toRemote ? toRemote(r) : toLocal(r))
+                .collect(Collectors.toList());
     }
 
     private Ref toRemote(Ref localRef) {

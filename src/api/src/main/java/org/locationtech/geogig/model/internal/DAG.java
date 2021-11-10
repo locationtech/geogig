@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 
 public class DAG implements Cloneable, Serializable {
 
@@ -278,11 +277,11 @@ public class DAG implements Cloneable, Serializable {
     }
 
     public List<TreeId> bucketList() {
-        return Lists.newArrayList(buckets);
+        return List.copyOf(buckets);
     }
 
     public List<NodeId> childrenList() {
-        return Lists.newArrayList(children.values());
+        return List.copyOf(children.values());
     }
 
     public void removeBucket(TreeId id) {

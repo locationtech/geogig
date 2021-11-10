@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import lombok.NonNull;
@@ -55,7 +55,7 @@ public class PatchSerializer {
     public static Patch read(@NonNull BufferedReader reader) {
 
         Patch patch = new Patch();
-        List<String> subset = Lists.newArrayList();
+        List<String> subset = new ArrayList<>();
         Map<String, RevFeatureType> featureTypes = Maps.newHashMap();
         try {
             String line;

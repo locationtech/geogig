@@ -12,10 +12,10 @@ package org.locationtech.geogig.ql.cli;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.model.NodeRef;
@@ -72,7 +72,6 @@ public class QLDeleteIntegrationTest extends RepositoryTestCase {
     public Set<String> lsTree(String treeIsh) {
         List<NodeRef> nodes = Lists.newArrayList(repo.command(LsTreeOp.class).setReference(treeIsh)
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call());
-        Set<String> ids = new HashSet<>(Lists.transform(nodes, (n) -> n.name()));
-        return ids;
+        return nodes.stream().map(NodeRef::name).collect(Collectors.toSet());
     }
 }

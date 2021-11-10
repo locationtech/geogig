@@ -265,7 +265,7 @@ public abstract class RevObjectSerializerConformanceTest {
         b.authorTimestamp(authorTimestamp);
         b.committerTimestamp(committerTimestamp);
         if (parentIds != null) {
-            b.parentIds(Lists.newArrayList(parentIds));
+            b.parentIds(Arrays.asList(parentIds));
         }
         return b;
     }

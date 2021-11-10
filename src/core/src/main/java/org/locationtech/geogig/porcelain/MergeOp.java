@@ -41,8 +41,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
-import com.google.common.collect.Lists;
-
 import lombok.NonNull;
 
 /**
@@ -225,9 +223,9 @@ public class MergeOp extends AbstractGeoGigOp<MergeOp.MergeReport> {
                 progress);
         MergeScenarioReport mergeScenario = null;
 
-        List<CommitAncestorPair> pairs = Lists.newArrayList();
+        List<CommitAncestorPair> pairs = new ArrayList<>();
 
-        List<RevCommit> revCommits = Lists.newArrayList();
+        List<RevCommit> revCommits = new ArrayList<>();
         if (!headRef.getObjectId().isNull()) {
             revCommits.add(objects.getCommit(headRef.getObjectId()));
         }

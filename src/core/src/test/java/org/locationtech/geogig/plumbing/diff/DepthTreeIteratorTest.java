@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing.diff;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.featureNode;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,7 +27,7 @@ import org.locationtech.geogig.plumbing.diff.DepthTreeIterator.Strategy;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Streams;
 
 /**
  *
@@ -185,8 +186,7 @@ public class DepthTreeIteratorTest extends Assert {
     }
 
     private List<NodeRef> list(RevTree tree, Strategy strategy) {
-        List<NodeRef> refs = Lists.newArrayList(iterator(tree, strategy));
-        return refs;
+        return Streams.stream(iterator(tree, strategy)).collect(Collectors.toList());
     }
 
     private DepthTreeIterator iterator(RevTree tree, Strategy strategy) {

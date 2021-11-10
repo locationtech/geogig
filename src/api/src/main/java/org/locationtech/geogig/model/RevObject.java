@@ -9,7 +9,8 @@
  */
 package org.locationtech.geogig.model;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+
 import com.google.common.hash.HashFunction;
 
 import lombok.NonNull;
@@ -141,10 +142,10 @@ public interface RevObject extends Comparable<RevObject> {
             return VALUES[value];
         }
 
-        private static final ImmutableMap<Class<? extends RevObject>, Integer> byBinding = ImmutableMap
-                .of(COMMIT.binding(), COMMIT.value(), TREE.binding(), TREE.value(),
-                        FEATURE.binding(), FEATURE.value(), TAG.binding(), TAG.value(),
-                        FEATURETYPE.binding(), FEATURETYPE.value());
+        private static final Map<Class<? extends RevObject>, Integer> BY_BINDING = Map.of(
+                COMMIT.binding(), COMMIT.value(), TREE.binding(), TREE.value(), FEATURE.binding(),
+                FEATURE.value(), TAG.binding(), TAG.value(), FEATURETYPE.binding(),
+                FEATURETYPE.value());
 
         /**
          * @param binding the specific kind of {@link RevObject} for which to return its bound enum
@@ -152,7 +153,7 @@ public interface RevObject extends Comparable<RevObject> {
          * @return the enum value bound to {@code binding}
          */
         public static TYPE valueOf(final @NonNull Class<? extends RevObject> binding) {
-            final @NonNull Integer value = byBinding.get(binding);
+            final @NonNull Integer value = BY_BINDING.get(binding);
             return valueOf(value);
         }
     }

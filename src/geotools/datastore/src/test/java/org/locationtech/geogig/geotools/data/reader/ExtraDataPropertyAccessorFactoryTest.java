@@ -41,8 +41,6 @@ import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableMap;
-
 public class ExtraDataPropertyAccessorFactoryTest {
 
     private Node testNode;
@@ -57,12 +55,12 @@ public class ExtraDataPropertyAccessorFactoryTest {
         ObjectId metadataId = hashString("metadata");
         Envelope bounds = new Envelope(0, 180, 0, 90);
 
-        Map<String, Object> materializedAttributes = ImmutableMap.of(//
+        Map<String, Object> materializedAttributes = Map.of(//
                 "int", 1, //
                 "double", 0.5, //
                 "date", new Date(1486344231314L));
 
-        Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
+        Map<String, Object> extraData = Map.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
         testNode = RevObjectFactory.defaultInstance().createNode("test", oid, metadataId,

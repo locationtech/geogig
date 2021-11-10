@@ -42,7 +42,6 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -251,7 +250,7 @@ public class RemoveOp extends AbstractGeoGigOp<DiffObjectCount> {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .setReference(workTree.getId().toString()).call();
 
-        ImmutableMap<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, NodeRef::path);
+        Map<String, NodeRef> treesByPath = Maps.uniqueIndex(childTrees, NodeRef::path);
 
         final Set<String> requestedTrees = Sets.intersection(treesByPath.keySet(),
                 Set.copyOf(pathsToRemove));

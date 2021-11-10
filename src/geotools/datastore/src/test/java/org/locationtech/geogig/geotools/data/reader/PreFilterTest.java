@@ -58,8 +58,6 @@ import org.opengis.filter.spatial.Within;
 import org.opengis.filter.temporal.After;
 import org.opengis.filter.temporal.AnyInteracts;
 
-import com.google.common.collect.ImmutableMap;
-
 public class PreFilterTest {
 
     private final Date DATE_VALUE = new Date(1486344231314L);
@@ -90,7 +88,7 @@ public class PreFilterTest {
         filterSplitter = new PrePostFilterSplitter()
                 .extraAttributes(materializedAttributes.keySet());
 
-        Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
+        Map<String, Object> extraData = Map.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
         testNode = RevObjectFactory.defaultInstance().createNode("testFid", oid, metadataId,

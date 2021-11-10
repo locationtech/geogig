@@ -19,7 +19,6 @@ import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 /**
@@ -73,7 +72,7 @@ public class BlameReport {
      * 
      */
     public Map<String, ValueAndCommit> getChanges() {
-        return ImmutableMap.copyOf(changes);
+        return Map.copyOf(changes);
     }
 
     /**

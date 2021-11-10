@@ -7,8 +7,6 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
 
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap, and
  * makes sure the returned map is a recursive safe copy in order to preserve the node's immutability
@@ -35,7 +33,7 @@ public class ExtraData {
     public Map<String, Object> asMap() {
         final int size = kvp.length;
         if (0 == size) {
-            return ImmutableMap.of();
+            return Map.of();
         }
         Map<String, Object> map = new HashMap<>(size);
         for (int i = 0; i < size; i += 2) {

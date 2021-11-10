@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.UUID;
 
 import org.locationtech.geogig.model.ObjectId;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.locationtech.geogig.transaction.TransactionResolve;
-
-import com.google.common.collect.ImmutableMap;
 
 import lombok.Builder;
 import lombok.Data;
@@ -103,17 +102,15 @@ public @Data @Builder class PR {
     }
 
     Map<String, String> toProperties() {
-        ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String> builder();
-        builder.put(KEY_TRANSACTION, transactionId.toString())//
-                .put(KEY_REMOTE, remote.toString())//
-                .put(KEY_REMOTEBRANCH, remoteBranch)//
-                .put(KEY_TARGETBRANCH, targetBranch)//
-                .put(KEY_TITLE, title);
+        Map<String, String> props = new TreeMap<>();
+        props.put(KEY_TRANSACTION, transactionId.toString());
+        props.put(KEY_REMOTE, remote.toString());
+        props.put(KEY_REMOTEBRANCH, remoteBranch);
+        props.put(KEY_TARGETBRANCH, targetBranch);
+        props.put(KEY_TITLE, title);
         if (description != null) {
-            builder.put(KEY_DESCRIPTION, description);
+            props.put(KEY_DESCRIPTION, description);
         }
-
-        final Map<String, String> props = builder.build();
         return props;
     }
 

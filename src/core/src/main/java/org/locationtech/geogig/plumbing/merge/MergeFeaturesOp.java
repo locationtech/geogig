@@ -32,7 +32,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -89,7 +88,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
         Iterable<ObjectId> ids = Arrays.asList(metadataId, ancestorFeatureId, featureAId,
                 featureBId);
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
+        Map<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
         checkState(map.containsKey(metadataId), "Invalid reference: %s", metadataId);
         checkState(map.containsKey(ancestorFeatureId), "Invalid reference: %s", ancestorFeatureId);
         checkState(map.containsKey(featureAId), "Invalid reference: %s", featureAId);

@@ -9,11 +9,12 @@
  */
 package org.locationtech.geogig.storage.text;
 
-import static org.locationtech.geogig.storage.text.Marshallers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.storage.text.Marshallers.marshall;
+import static org.locationtech.geogig.storage.text.Marshallers.unmarshall;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,9 +23,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.junit.Test;
-import org.locationtech.geogig.model.FieldType;
-
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Test suite for {@link MapMarshaller}
@@ -55,7 +53,7 @@ public class MapMarshallerTest {
         map.put("key3", Integer.valueOf(12345));
         map.put("nullval", null);
         map.put("arrayval", new double[] { Math.PI, Double.MIN_VALUE, Double.MAX_VALUE });
-        map.put("submap", ImmutableMap.of("submap1", "subvalue1", "submap2", Long.valueOf(789)));
+        map.put("submap", Map.of("submap1", "subvalue1", "submap2", Long.valueOf(789)));
 
         // assertNull(StringConverters.marshall(map, Integer.class));
 

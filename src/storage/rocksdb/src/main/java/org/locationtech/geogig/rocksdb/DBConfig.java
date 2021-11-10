@@ -15,15 +15,13 @@ import java.util.Set;
 
 import org.rocksdb.ColumnFamilyHandle;
 
-import com.google.common.collect.ImmutableMap;
-
 class DBConfig {
 
     private final String dbpath;
 
     private final boolean readOnly;
 
-    private ImmutableMap<String, String> defaultMetadata;
+    private Map<String, String> defaultMetadata;
 
     private Set<String> columnFamilyNames;
 
@@ -36,7 +34,7 @@ class DBConfig {
         this.dbpath = dbpath;
         this.readOnly = readOnly;
         this.columnFamilyNames = columnFamilyNames;
-        this.defaultMetadata = ImmutableMap.copyOf(defaultMetadata);
+        this.defaultMetadata = Map.copyOf(defaultMetadata);
     }
 
     /**
@@ -51,7 +49,7 @@ class DBConfig {
      * key/value pairs, as long as {@code readOnly == false} and the db is being created for the
      * first time.
      */
-    public ImmutableMap<String, String> getDefaultMetadata() {
+    public Map<String, String> getDefaultMetadata() {
         return defaultMetadata;
     }
 

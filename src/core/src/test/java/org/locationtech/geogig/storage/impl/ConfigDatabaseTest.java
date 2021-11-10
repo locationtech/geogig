@@ -33,8 +33,6 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.ConfigDatabase;
 import org.locationtech.geogig.storage.ConfigException;
 
-import com.google.common.collect.ImmutableMap;
-
 public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
 
     @Rule
@@ -167,9 +165,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.put("section2.subsection.string", "4");
 
         Map<String, String> all = config.getAll();
-        Map<String, String> expected = ImmutableMap.of("section1.int", "1",
-                "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
-                "section2.int", "3", "section2.subsection.string", "4");
+        Map<String, String> expected = Map.of("section1.int", "1", "section1.subsection.string",
+                "2", "section1.subsection.subsub.int", "1", "section2.int", "3",
+                "section2.subsection.string", "4");
         // check key by key instead of equals on the maps in case the backend adds some extra config
         // as part of its initialization process
         expected.entrySet().forEach((e) -> assertEquals(e.getValue(), all.get(e.getKey())));
@@ -184,10 +182,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.putGlobal("section1.subsection.subsub.string", "4");
         config.putGlobal("section2.int", 3);
 
-        assertEquals(ImmutableMap.of("int", "1"), config.getAllSectionGlobal("section1"));
-        assertEquals(ImmutableMap.of("string", "2"),
-                config.getAllSectionGlobal("section1.subsection"));
-        assertEquals(ImmutableMap.of("int", "1", "string", "4"),
+        assertEquals(Map.of("int", "1"), config.getAllSectionGlobal("section1"));
+        assertEquals(Map.of("string", "2"), config.getAllSectionGlobal("section1.subsection"));
+        assertEquals(Map.of("int", "1", "string", "4"),
                 config.getAllSectionGlobal("section1.subsection.subsub"));
     }
 
@@ -201,9 +198,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.putGlobal("section2.subsection.string", "4");
 
         Map<String, String> all = config.getAllGlobal();
-        Map<String, String> expected = ImmutableMap.of("section1.int", "1",
-                "section1.subsection.string", "2", "section1.subsection.subsub.int", "1",
-                "section2.int", "3", "section2.subsection.string", "4");
+        Map<String, String> expected = Map.of("section1.int", "1", "section1.subsection.string",
+                "2", "section1.subsection.subsub.int", "1", "section2.int", "3",
+                "section2.subsection.string", "4");
         assertEquals(expected, all);
     }
 
@@ -216,9 +213,9 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
         config.put("section1.subsection.subsub.string", "4");
         config.put("section2.int", 3);
 
-        assertEquals(ImmutableMap.of("int", "1"), config.getAllSection("section1"));
-        assertEquals(ImmutableMap.of("string", "2"), config.getAllSection("section1.subsection"));
-        assertEquals(ImmutableMap.of("int", "1", "string", "4"),
+        assertEquals(Map.of("int", "1"), config.getAllSection("section1"));
+        assertEquals(Map.of("string", "2"), config.getAllSection("section1.subsection"));
+        assertEquals(Map.of("int", "1", "string", "4"),
                 config.getAllSection("section1.subsection.subsub"));
     }
 
@@ -301,15 +298,15 @@ public abstract class ConfigDatabaseTest<C extends ConfigDatabase> {
     @Test
     public void testPutSection() {
         // Test integer and string
-        ImmutableMap<String, String> map = ImmutableMap.of(//
+        Map<String, String> map = Map.of(//
                 "k1", "v1", //
                 "subsection.string", "2", //
                 "subsection.int", "1", //
                 "subsection.long", "4"//
         );
         config.putSection("section1", map);
-        assertEquals(ImmutableMap.of("k1", "v1"), config.getAllSection("section1"));
-        assertEquals(ImmutableMap.of("string", "2", "int", "1", "long", "4"),
+        assertEquals(Map.of("k1", "v1"), config.getAllSection("section1"));
+        assertEquals(Map.of("string", "2", "int", "1", "long", "4"),
                 config.getAllSection("section1.subsection"));
     }
 

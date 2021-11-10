@@ -51,7 +51,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.mockito.Mockito;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 
 import lombok.NonNull;
@@ -800,8 +799,8 @@ public abstract class RevObjectFactoryConformanceTest {
         map1.put("geom", geom);
         map2.put("geom", geom);
 
-        extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        extraData = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         return extraData;
     }

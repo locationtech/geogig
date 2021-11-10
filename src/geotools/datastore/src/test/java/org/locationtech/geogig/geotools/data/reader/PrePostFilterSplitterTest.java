@@ -55,8 +55,6 @@ import org.opengis.filter.spatial.Overlaps;
 import org.opengis.filter.spatial.Touches;
 import org.opengis.filter.spatial.Within;
 
-import com.google.common.collect.ImmutableMap;
-
 public class PrePostFilterSplitterTest {
 
     private final Date DATE_VALUE = new Date(1486344231314L);
@@ -81,7 +79,7 @@ public class PrePostFilterSplitterTest {
         materializedAttributes.put("nullprop", null);
         materializedAttributes.put("materialized_geom", null);
 
-        Map<String, Object> extraData = ImmutableMap.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
+        Map<String, Object> extraData = Map.of(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA,
                 materializedAttributes);
 
         testNode = RevObjectFactory.defaultInstance().createNode("testFid", oid, metadataId,

@@ -30,7 +30,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -343,8 +342,8 @@ public @UtilityClass class RevObjectTestUtil {
         map1.put("geom", geom);
         map2.put("geom", geom);
 
-        extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        extraData = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         return extraData;
     }

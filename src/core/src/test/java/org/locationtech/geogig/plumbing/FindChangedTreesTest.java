@@ -51,7 +51,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.test.TestRepository;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapDifference;
@@ -279,8 +278,8 @@ public class FindChangedTreesTest {
         Iterator<NodeRef> oldtrees = lstreeOld.call();
         Iterator<NodeRef> newtrees = lstreeNew.call();
 
-        ImmutableMap<String, NodeRef> oldtreemap = Maps.uniqueIndex(oldtrees, (r) -> r.path());
-        ImmutableMap<String, NodeRef> newtreemap = Maps.uniqueIndex(newtrees, (r) -> r.path());
+        Map<String, NodeRef> oldtreemap = Maps.uniqueIndex(oldtrees, (r) -> r.path());
+        Map<String, NodeRef> newtreemap = Maps.uniqueIndex(newtrees, (r) -> r.path());
 
         MapDifference<String, NodeRef> difference = Maps.difference(oldtreemap, newtreemap);
         List<DiffEntry> res = new ArrayList<>();

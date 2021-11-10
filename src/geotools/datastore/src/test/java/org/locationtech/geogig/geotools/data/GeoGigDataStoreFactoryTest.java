@@ -28,7 +28,6 @@ import org.geotools.data.DataStoreFinder;
 import org.junit.Test;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 
 public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
@@ -59,7 +58,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         dataStore = DataStoreFinder.getDataStore(params);
         assertNull(dataStore);
 
-        params = ImmutableMap.of(REPOSITORY.key, repoURI);
+        params = Map.of(REPOSITORY.key, repoURI);
         dataStore = DataStoreFinder.getDataStore(params);
         assertNotNull(dataStore);
         assertTrue(dataStore instanceof GeoGigDataStore);
@@ -70,17 +69,16 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
         Map<String, Serializable> params = Collections.emptyMap();
         assertFalse(factory.canProcess(params));
 
-        assertTrue(factory.canProcess(ImmutableMap.of(REPOSITORY.key, repoURI)));
-        assertTrue(factory.canProcess(ImmutableMap.of(REPOSITORY.key, repoURI.toString())));
+        assertTrue(factory.canProcess(Map.of(REPOSITORY.key, repoURI)));
+        assertTrue(factory.canProcess(Map.of(REPOSITORY.key, repoURI.toString())));
 
-        assertFalse(
-                factory.canProcess(ImmutableMap.of(REPOSITORY.key, "invalidschema://somerepo")));
+        assertFalse(factory.canProcess(Map.of(REPOSITORY.key, "invalidschema://somerepo")));
     }
 
     @Test
     public void testCreateDataStoreNonExistentRepository() throws IOException {
         Map<String, Serializable> params;
-        params = ImmutableMap.of(REPOSITORY.key, repoURI.resolve("nonexistent"));
+        params = Map.of(REPOSITORY.key, repoURI.resolve("nonexistent"));
         try {
             factory.createDataStore(params);
             fail("Expectd IOE on non existing repository");
@@ -93,7 +91,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     public void testCreateDataStore() throws IOException {
         Map<String, Serializable> params;
 
-        params = ImmutableMap.of(REPOSITORY.key, repoURI);
+        params = Map.of(REPOSITORY.key, repoURI);
 
         GeoGigDataStore store = factory.createDataStore(params);
         assertNotNull(store);
@@ -103,7 +101,7 @@ public class GeoGigDataStoreFactoryTest extends RepositoryTestCase {
     @Test
     public void testCreateNewDataStore() throws IOException {
         Map<String, Serializable> params;
-        params = ImmutableMap.of(REPOSITORY.key, repoURI.resolve("newdatastore"));
+        params = Map.of(REPOSITORY.key, repoURI.resolve("newdatastore"));
 
         GeoGigDataStore store = factory.createNewDataStore(params);
         assertNotNull(store);

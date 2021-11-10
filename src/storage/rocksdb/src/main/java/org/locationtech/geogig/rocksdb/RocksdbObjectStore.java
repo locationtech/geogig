@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 
 import lombok.NonNull;
@@ -86,8 +85,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
         if (isOpen()) {
             return;
         }
-        Map<String, String> defaultMetadata = ImmutableMap.of("version",
-                RocksdbRepositoryResolver.VERSION, "serializer", "proxy");
+        Map<String, String> defaultMetadata = Map.of("version", RocksdbRepositoryResolver.VERSION,
+                "serializer", "proxy");
 
         DBConfig address = new DBConfig(dbDirectory.getAbsolutePath(), isReadOnly(),
                 defaultMetadata, columnFamilyNames);

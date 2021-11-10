@@ -68,7 +68,6 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 
@@ -423,8 +422,8 @@ public abstract class RevObjectSerializerConformanceTest {
         map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
         map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
 
-        map3 = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        map3 = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         RevFeature revFeature1 = RevFeature.builder()
                 .build(feature(featureType, "f1", "the name", map1));
@@ -468,8 +467,8 @@ public abstract class RevObjectSerializerConformanceTest {
         map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
         map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
 
-        extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        extraData = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         Node n = RevObjectFactory.defaultInstance().createNode("fid",
                 RevObjectTestSupport.hashString("id"), ObjectId.NULL, TYPE.FEATURE, null,

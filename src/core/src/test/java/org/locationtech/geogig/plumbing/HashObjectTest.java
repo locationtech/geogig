@@ -45,7 +45,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 
 public class HashObjectTest extends RepositoryTestCase {
 
@@ -213,8 +212,8 @@ public class HashObjectTest extends RepositoryTestCase {
         map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
         map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
 
-        map3 = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        map3 = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         Feature f1 = feature(featureType, "f1", "the name", map1);
         Feature f2 = feature(featureType, "f2", "the name", map2);

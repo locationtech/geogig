@@ -30,8 +30,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.ImmutableMap;
-
 public class NodeTest {
 
     @Test
@@ -279,8 +277,8 @@ public class NodeTest {
         map1.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
         map2.put("geom", geom("LINESTRING(1 1, 1.1 2.1, 100 1000)"));
 
-        extraData = ImmutableMap.of("I", (Object) "am", "a", (Object) "different", "map than",
-                (Object) map1, "and", (Object) map2);
+        extraData = Map.of("I", (Object) "am", "a", (Object) "different", "map than", (Object) map1,
+                "and", (Object) map2);
 
         Node n = RevObjectFactory.defaultInstance().createNode("fid", RevTree.EMPTY_TREE_ID,
                 ObjectId.NULL, TYPE.FEATURE, null, extraData);

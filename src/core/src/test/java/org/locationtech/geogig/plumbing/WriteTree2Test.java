@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -51,7 +52,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
@@ -99,7 +99,7 @@ public class WriteTree2Test extends RepositoryTestCase {
 
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(1, refsByPath.size());
         assertTrue(refsByPath.keySet().contains("roads"));
     }
@@ -118,7 +118,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(1, refsByPath.size());
         assertTrue(refsByPath.containsKey("roadsRenamed"));
     }
@@ -141,7 +141,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(3, refsByPath.size());
         assertTrue(refsByPath.containsKey("roads"));
         assertTrue(refsByPath.containsKey("roads/highways"));
@@ -168,7 +168,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(4, refsByPath.size());
         Set<String> expected = set("buildings", "buildings/stores", "buildings/unknown",
                 "buildings/towers");
@@ -190,7 +190,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         assertNotNull(newRepoRoot);
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(set("buildings", "buildings/stores"), refsByPath.keySet());
         assertEquals(id("d31"), refsByPath.get("buildings/stores").getMetadataId());
     }
@@ -211,7 +211,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         final ObjectId newRepoRoot = command.call();
         assertNotNull(newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(set(), refsByPath.keySet());
     }
 
@@ -239,7 +239,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
+        Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(set("roads", "roads/highways", "buildings", "buildings/stores"),
                 refsByPath.keySet());
     }
@@ -261,7 +261,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
+        Map<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
 
         Set<String> expected = set("roads", "roads/roads.0", "roads/roads.1", "buildings",
                 "buildings/buildings.0");
@@ -294,7 +294,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
+        Map<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
 
         Set<String> expected = set("roads", "roads/highways", "roads/highways/highways.0",
                 "roads/streets", "buildings", "buildings/stores", "buildings/stores/stores.0",
@@ -335,7 +335,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         // check all blobs have been moved from the index to the object database
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
-        ImmutableMap<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
+        Map<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
         Set<String> paths = Sets.newTreeSet();
         paths.addAll(refsByPath.keySet());
 
@@ -512,32 +512,30 @@ public class WriteTree2Test extends RepositoryTestCase {
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
         final boolean includeFeatures = true;
-        ImmutableMap<String, NodeRef> stagedRefs = getRefsByPath(rightTree.getId(),
-                includeFeatures);
+        Map<String, NodeRef> stagedRefs = getRefsByPath(rightTree.getId(), includeFeatures);
 
-        ImmutableMap<String, NodeRef> resultRefs = getRefsByPath(newRepoRoot, includeFeatures);
+        Map<String, NodeRef> resultRefs = getRefsByPath(newRepoRoot, includeFeatures);
 
         MapDifference<String, NodeRef> difference = Maps.difference(resultRefs, stagedRefs);
 
         return difference;
     }
 
-    private ImmutableMap<String, NodeRef> getTreeRefsByPath(ObjectId newRepoRoot) {
+    private Map<String, NodeRef> getTreeRefsByPath(ObjectId newRepoRoot) {
         Iterator<NodeRef> iterator = repo.command(LsTreeOp.class)
                 .setReference(newRepoRoot.toString()).setStrategy(Strategy.DEPTHFIRST_ONLY_TREES)
                 .call();
 
-        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
+        Map<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
         return refsByPath;
     }
 
-    private ImmutableMap<String, NodeRef> getRefsByPath(ObjectId repoRoot,
-            boolean includeFeatures) {
+    private Map<String, NodeRef> getRefsByPath(ObjectId repoRoot, boolean includeFeatures) {
 
         Strategy strategy = includeFeatures ? Strategy.DEPTHFIRST : Strategy.DEPTHFIRST_ONLY_TREES;
         Iterator<NodeRef> iterator = repo.command(LsTreeOp.class).setReference(repoRoot.toString())
                 .setStrategy(strategy).call();
-        ImmutableMap<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
+        Map<String, NodeRef> refsByPath = Maps.uniqueIndex(iterator, (n) -> n.path());
         return refsByPath;
     }
 
@@ -617,7 +615,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         Set<String> expectedPaths = Arrays.stream(treeRefs).map(NodeRef::path)
                 .collect(Collectors.toSet());
 
-        ImmutableMap<String, NodeRef> refs = getTreeRefsByPath(treeId);
+        Map<String, NodeRef> refs = getTreeRefsByPath(treeId);
 
         assertEquals(expectedPaths, refs.keySet());
     }

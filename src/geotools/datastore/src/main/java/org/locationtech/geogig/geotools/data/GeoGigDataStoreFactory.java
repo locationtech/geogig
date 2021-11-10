@@ -11,7 +11,6 @@ package org.locationtech.geogig.geotools.data;
 
 import java.awt.RenderingHints.Key;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -27,8 +26,6 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
 
 public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
 
@@ -79,7 +76,7 @@ public class GeoGigDataStoreFactory implements DataStoreFactorySpi {
     public static final Param AUTO_INDEXING = new Param("autoIndexing", Boolean.class,
             "Let GeoServer automatically create spatial indexes and add time/elevation attributes if the layer has them",
             false/* required */, false/* default */, //
-            ImmutableMap.of(Parameter.LEVEL, "advanced"));
+            Map.of(Parameter.LEVEL, "advanced"));
 
     public @Override String getDisplayName() {
         return DISPLAY_NAME;

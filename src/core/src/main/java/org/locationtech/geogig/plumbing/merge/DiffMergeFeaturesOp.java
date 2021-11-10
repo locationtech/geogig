@@ -39,7 +39,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Geometry;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -181,7 +180,7 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
                 toMergeMetadataId, ancestorFeatureId, featureAId, featureBId);
 
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
-        ImmutableMap<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
+        Map<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);
 
         if (ids.size() != map.size()) {
             ids.forEach((id) -> checkState(map.containsKey(id), "Invalid reference: %s", id));

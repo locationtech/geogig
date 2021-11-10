@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 
 class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
@@ -164,7 +163,7 @@ class RocksConnectionManager extends ConnectionManager<DBConfig, DBHandle> {
 
                 // save default metadata
                 if (!dbExists) {
-                    ImmutableMap<String, String> defaultMetadata = dbconfig.getDefaultMetadata();
+                    Map<String, String> defaultMetadata = dbconfig.getDefaultMetadata();
                     defaultMetadata.forEach((k, v) -> dbHandle.setMetadata(k, v));
                 }
             }

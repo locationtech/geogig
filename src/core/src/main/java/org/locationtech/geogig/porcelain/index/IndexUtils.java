@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -29,7 +30,6 @@ import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -59,7 +59,7 @@ public class IndexUtils {
         }
         List<NodeRef> treeRefs = context.command(FindFeatureTypeTrees.class).setRootTreeRef(rootRef)
                 .call();
-        ImmutableMap<String, NodeRef> map = Maps.uniqueIndex(treeRefs, NodeRef::path);
+        Map<String, NodeRef> map = Maps.uniqueIndex(treeRefs, NodeRef::path);
         NodeRef treeRef = map.get(treePath);
         return treeRef;
     }

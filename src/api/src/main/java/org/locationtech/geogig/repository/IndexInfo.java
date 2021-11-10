@@ -22,7 +22,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
 
@@ -61,7 +60,7 @@ public @ToString final class IndexInfo {
         this.treeName = treeName;
         this.attributeName = attributeName;
         this.indexType = indexType;
-        this.metadata = metadata == null ? Collections.emptyMap() : ImmutableMap.copyOf(metadata);
+        this.metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
     }
 
     public ObjectId getId() {

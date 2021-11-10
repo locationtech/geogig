@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
 
 import lombok.NonNull;
 
@@ -250,7 +249,7 @@ public class CacheManager implements CacheManagerBean {
         Pattern pattern = Pattern.compile("(\\A[+-]?[\\d.]+)([GMKB]?)(.*)",
                 Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(sizeArg);
-        Map<String, Integer> powers = ImmutableMap.of(//
+        Map<String, Integer> powers = Map.of(//
                 "", 0, //
                 "B", 0, //
                 "K", 1, //

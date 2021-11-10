@@ -22,8 +22,6 @@ import java.util.Objects;
 import org.geotools.util.Converters;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableMap;
-
 /**
  * Test suite for {@link MapStringConverter}
  *
@@ -46,7 +44,7 @@ public class MapToStringConverterFactoryTest {
         map.put("key3", Integer.valueOf(12345));
         map.put("nullval", null);
         map.put("arrayval", new double[] { Math.PI, Double.MIN_VALUE, Double.MAX_VALUE });
-        map.put("submap", ImmutableMap.of("submap1", "subvalue1", "submap2", new Long(789)));
+        map.put("submap", Map.of("submap1", "subvalue1", "submap2", new Long(789)));
 
         assertNull(Converters.convert(map, Integer.class));
 

@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -160,7 +159,7 @@ public class FeatureDiff {
     }
 
     public Map<PropertyDescriptor, AttributeDiff> getDiffs() {
-        return ImmutableMap.copyOf(diffs);
+        return Map.copyOf(diffs);
     }
 
     /**

@@ -51,7 +51,6 @@ import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
@@ -83,7 +82,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
     private String filterFile;
 
     public InitOp setConfig(Map<String, String> suppliedConfiguration) {
-        this.config = ImmutableMap.copyOf(suppliedConfiguration);
+        this.config = Map.copyOf(suppliedConfiguration);
         return this;
     }
 

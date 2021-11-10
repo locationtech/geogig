@@ -44,7 +44,6 @@ import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -128,7 +127,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
         SimpleFeature inserted = getFeature("select * from \"WORK_HEAD:Points\" where ip = 7");
 
         assertFeature(inserted, null,
-                ImmutableMap.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
+                Map.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
     }
 
     @SuppressWarnings("unchecked")
@@ -162,16 +161,16 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
     }
 
     Map<String, Object> map(String k1, Object v1, String k2, Object v2) {
-        return ImmutableMap.of(k1, v1, k2, v2);
+        return Map.of(k1, v1, k2, v2);
     }
 
     Map<String, Object> map(String k1, Object v1, String k2, Object v2, String k3, Object v3) {
-        return ImmutableMap.of(k1, v1, k2, v2, k3, v3);
+        return Map.of(k1, v1, k2, v2, k3, v3);
     }
 
     Map<String, Object> map(String k1, Object v1, String k2, Object v2, String k3, Object v3,
             String k4, Object v4) {
-        return ImmutableMap.of(k1, v1, k2, v2, k3, v3, k4, v4);
+        return Map.of(k1, v1, k2, v2, k3, v3, k4, v4);
     }
 
     @Test
@@ -181,7 +180,7 @@ public class QLInsertIntegrationTest extends RepositoryTestCase {
 
         SimpleFeature inserted = getFeature("select * from \"WORK_HEAD:Points\" where ip = 7");
         assertFeature(inserted, "newid.1",
-                ImmutableMap.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
+                Map.of("ip", 7, "sp", "siete", "pp", geom("POINT(7 7)")));
     }
 
     @Test

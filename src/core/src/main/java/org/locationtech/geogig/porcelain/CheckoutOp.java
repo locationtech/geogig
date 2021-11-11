@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -56,7 +57,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 import lombok.NonNull;
 
@@ -82,7 +82,7 @@ public class CheckoutOp extends AbstractGeoGigOp<CheckoutResult> {
     private boolean theirs;
 
     public CheckoutOp() {
-        paths = Sets.newTreeSet();
+        paths = new TreeSet<>();
     }
 
     public CheckoutOp setSource(@Nullable final String branchOrCommit) {

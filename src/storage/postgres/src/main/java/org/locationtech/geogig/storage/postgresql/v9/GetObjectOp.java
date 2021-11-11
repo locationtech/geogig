@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> 
 
     public GetObjectOp(Collection<NodeRef> ids, BulkOpListener listener, PGObjectStore db,
             Class<T> type) {
-        this.queryNodes = Sets.newHashSet(ids);
+        this.queryNodes = new HashSet<>(ids);
         this.callback = listener;
         this.db = db;
         this.type = type;

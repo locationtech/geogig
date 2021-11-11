@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,7 +19,6 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 import lombok.Setter;

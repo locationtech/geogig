@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -54,7 +55,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  *
@@ -233,8 +233,8 @@ public class FindChangedTreesTest {
             assertEquals(expected, res.size());
             assertEquals(expected, resDiffTree.size());
             assertEquals(expected, resLsTree.size());
-            assertEquals(Sets.newHashSet(res), Sets.newHashSet(resDiffTree));
-            assertEquals(Sets.newHashSet(res), Sets.newHashSet(resLsTree));
+            assertEquals(Set.copyOf(res), Set.copyOf(resDiffTree));
+            assertEquals(Set.copyOf(res), Set.copyOf(resLsTree));
         });
     }
 

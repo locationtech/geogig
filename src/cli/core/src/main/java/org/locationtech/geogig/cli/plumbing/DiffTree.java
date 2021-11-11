@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -39,7 +40,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -101,8 +101,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                                 .setNewVersion(diffEntry.getNewObject())
                                 .setOldVersion(diffEntry.getOldObject()).call();
                         Map<PropertyDescriptor, AttributeDiff> diffs = featureDiff.getDiffs();
-                        HashSet<PropertyDescriptor> diffDescriptors = Sets
-                                .newHashSet(diffs.keySet());
+                        Set<PropertyDescriptor> diffDescriptors = new HashSet<>(diffs.keySet());
                         NodeRef noderef = diffEntry.changeType() != ChangeType.REMOVED
                                 ? diffEntry.getNewObject()
                                 : diffEntry.getOldObject();

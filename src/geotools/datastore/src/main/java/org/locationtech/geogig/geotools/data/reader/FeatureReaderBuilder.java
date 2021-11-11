@@ -86,7 +86,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -693,7 +692,8 @@ public class FeatureReaderBuilder {
             return Collections.emptySet();
         }
 
-        Set<String> requiredProps = Sets.newHashSet(outputSchemaPropertyNames);
+        Set<String> requiredProps = Arrays.stream(outputSchemaPropertyNames)
+                .collect(Collectors.toSet());
         // if the filter is a simple BBOX filter against the default geometry attribute, don't force
         // it, we can optimize bbox filter out of Node.bounds()
         if (!(nativeFilter instanceof BBOX)) {
@@ -709,7 +709,7 @@ public class FeatureReaderBuilder {
             return Collections.emptySet();
         }
 
-        return Sets.newHashSet(filterAttributes);
+        return Set.of(filterAttributes);
     }
 
     public static AutoCloseableIterator<NodeRef> toFeatureRefs(

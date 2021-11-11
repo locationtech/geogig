@@ -61,7 +61,6 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import lombok.NonNull;
 
@@ -220,7 +219,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(4, list.size());
-        TreeSet<ObjectId> set = Sets.newTreeSet();
+        TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
             set.add(node.getMetadataId());
         }
@@ -260,7 +259,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(5, list.size());
-        TreeSet<ObjectId> set = Sets.newTreeSet();
+        TreeSet<ObjectId> set = new TreeSet<>();
         ArrayList<RevFeatureType> ftlist = new ArrayList<RevFeatureType>();
         for (NodeRef node : list) {
             Optional<RevFeatureType> ft = repo.command(RevObjectParse.class)
@@ -292,7 +291,7 @@ public class ImportOpTest extends RepositoryTestCase {
                 .setStrategy(Strategy.DEPTHFIRST_ONLY_FEATURES).call();
         List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(3, list.size());
-        TreeSet<ObjectId> set = Sets.newTreeSet();
+        TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
             set.add(node.getMetadataId());
         }
@@ -321,7 +320,7 @@ public class ImportOpTest extends RepositoryTestCase {
         assertEquals(2, values.size());
         assertTrue(values.get(0).isPresent());
         assertFalse(values.get(1).isPresent());
-        TreeSet<ObjectId> set = Sets.newTreeSet();
+        TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
             set.add(node.getMetadataId());
         }

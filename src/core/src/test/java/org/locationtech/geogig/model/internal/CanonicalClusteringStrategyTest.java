@@ -284,7 +284,7 @@ public abstract class CanonicalClusteringStrategyTest {
 
         assertEquals(nodes.size(), result.size());
 
-        Set<Node> difference = Sets.difference(Sets.newHashSet(result), Sets.newHashSet(initial));
+        Set<Node> difference = Sets.difference(result, initial);
         assertEquals(randomEdits.size(), difference.size());
 
         assertEquals(new HashSet<>(randomEdits.values()), difference);

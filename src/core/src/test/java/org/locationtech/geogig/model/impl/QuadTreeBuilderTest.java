@@ -50,7 +50,6 @@ import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 
 public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
@@ -137,7 +136,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
         Set<Node> expectedNodes = new HashSet<>(nodes);
         Set<Node> actualNodes = getNodes(revTreeFromRandomQuadTree);
         if (!expectedNodes.equals(actualNodes)) {
-            SetView<Node> difference = Sets.difference(expectedNodes, actualNodes);
+            Set<Node> difference = Sets.difference(expectedNodes, actualNodes);
             Assert.fail("Missing: " + difference);
         }
         // print(revTreeFromSequentialQuadTree);
@@ -284,7 +283,7 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         Set<Node> resultNodes = getNodes(result);
 
-        SetView<Node> difference = Sets.difference(nodes, resultNodes);
+        Set<Node> difference = Sets.difference(nodes, resultNodes);
         assertEquals(removedNodes.size(), difference.size());
 
         assertEquals(removedNodes, difference);
@@ -328,8 +327,8 @@ public abstract class QuadTreeBuilderTest extends RevTreeBuilderTest {
 
         Set<Node> resultNodes = getNodes(result);
 
-        SetView<Node> removed = Sets.difference(origNodes, resultNodes);
-        SetView<Node> added = Sets.difference(resultNodes, origNodes);
+        Set<Node> removed = Sets.difference(origNodes, resultNodes);
+        Set<Node> added = Sets.difference(resultNodes, origNodes);
 
         assertEquals(removedNodes.size(), removed.size());
         assertEquals(addedNodes.size(), added.size());

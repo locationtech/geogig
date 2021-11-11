@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.ql.cli;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -17,7 +16,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -121,13 +119,13 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void simpleSelect() {
-        helper.selectAndAssert("select * from Points", newHashSet(idP1, idP2, idP3), "sp", "ip",
+        helper.selectAndAssert("select * from Points", Set.of(idP1, idP2, idP3), "sp", "ip",
                 "pp");
     }
 
     @Test
     public void simpleSelectRestrictAttributes() {
-        HashSet<String> allFids = newHashSet(idP1, idP2, idP3);
+        Set<String> allFids = Set.of(idP1, idP2, idP3);
         helper.selectAndAssert("select ip from Points", allFids, "ip");
         helper.selectAndAssert("select pp from Points", allFids, "pp");
         helper.selectAndAssert("select pp, sp from Points", allFids, "sp", "pp");
@@ -159,8 +157,8 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void greaterThan() {
-        helper.selectAndAssert("select * from \"HEAD~:Points\" where ip > 1000", newHashSet(idP2));
-        helper.selectAndAssert("select * from \"Points\" where ip > 1001", newHashSet(idP2, idP3));
+        helper.selectAndAssert("select * from \"HEAD~:Points\" where ip > 1000", Set.of(idP2));
+        helper.selectAndAssert("select * from \"Points\" where ip > 1001", Set.of(idP2, idP3));
     }
 
     @Test
@@ -197,7 +195,7 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
     @Test
     public void between() {
         helper.selectAndAssert("select * from Points where ip between 2000 and 3000",
-                newHashSet(idP2, idP3));
+                Set.of(idP2, idP3));
     }
 
     @Test

@@ -215,7 +215,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             SimpleFeatureType featureType = (SimpleFeatureType) featureSource.getSchema();
 
             if (!Filter.INCLUDE.equals(filter)) {
-                Set<String> filterAtts = Sets.newHashSet(attributeNames(filter, featureType));
+                Set<String> filterAtts = Set.of(attributeNames(filter, featureType));
                 SetView<String> missing = Sets.difference(filterAtts,
                         featureType.getAttributeDescriptors().stream()
                                 .map(att -> att.getLocalName()).collect(Collectors.toSet()));

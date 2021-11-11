@@ -130,13 +130,13 @@ public class PreparePackOp extends AbstractGeoGigOp<Pack> {
     private Set<ObjectId> resolveHeadCommits(List<RefRequest> refs, boolean isTags,
             Predicate<? super RefRequest> filter,
             Function<? super RefRequest, ? extends ObjectId> function) {
-        List<ObjectId> ids = refs.stream().filter(filter).map(function)
-                .collect(Collectors.toList());
+
+        Set<ObjectId> ids = refs.stream().filter(filter).map(function).collect(Collectors.toSet());
         if (isTags) {
             Iterator<RevTag> tags = objectDatabase().getAll(ids, NOOP_LISTENER, RevTag.class);
-            ids = newArrayList(Iterators.transform(tags, RevTag::getCommitId));
+            ids = Sets.newHashSet(Iterators.transform(tags, RevTag::getCommitId));
         }
-        return Sets.newHashSet(ids);
+        return ids;
     }
 
     private List<RefRequest> resolveTagRequests() {

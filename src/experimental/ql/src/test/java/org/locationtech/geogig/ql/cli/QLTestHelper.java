@@ -70,8 +70,9 @@ public class QLTestHelper {
             String... expectedAttributes) {
 
         SimpleFeatureCollection result = select(query);
-        Set<String> fids = newHashSet(Iterators.transform(
-                new FeatureIteratorIterator<SimpleFeature>(result.features()), (f) -> f.getID()));
+        Set<String> fids = newHashSet(
+                Iterators.transform(new FeatureIteratorIterator<SimpleFeature>(result.features()),
+                        SimpleFeature::getID));
 
         assertEquals(expectedFids, fids);
 

@@ -349,7 +349,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
                         lock.readLock().unlock();
                         lock.writeLock().lock();
                         try {
-                            copyIds = Sets.newHashSet(ids);
+                            copyIds = new HashSet<>(ids);
                             ids.clear();
                         } finally {
                             lock.writeLock().unlock();

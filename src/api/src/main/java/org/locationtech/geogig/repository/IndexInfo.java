@@ -22,7 +22,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
 import com.google.common.hash.Hasher;
 
 import lombok.ToString;
@@ -141,7 +140,7 @@ public @ToString final class IndexInfo {
         final @Nullable String[] attNames = (String[]) info.getMetadata()
                 .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
         if (attNames != null) {
-            availableAttNames = Sets.newHashSet(attNames);
+            availableAttNames = Set.of(attNames);
         }
         return availableAttNames;
     }

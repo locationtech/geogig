@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Test;
@@ -156,10 +157,12 @@ public class MemoryRepositoryResolverTest {
         resolver.initialize(resolver.buildRepoURI(root3, "r1"));
         resolver.initialize(resolver.buildRepoURI(root3, "r5"));
 
-        assertEquals(newHashSet("r1", "r2", "r3"),
-                newHashSet(resolver.listRepoNamesUnderRootURI(root1)));
-        assertEquals(newHashSet("r1", "r4"), newHashSet(resolver.listRepoNamesUnderRootURI(root2)));
-        assertEquals(newHashSet("r1", "r5"), newHashSet(resolver.listRepoNamesUnderRootURI(root3)));
+        assertEquals(Set.of("r1", "r2", "r3"),
+                resolver.listRepoNamesUnderRootURI(root1).stream().collect(Collectors.toSet()));
+        assertEquals(Set.of("r1", "r4"),
+                resolver.listRepoNamesUnderRootURI(root2).stream().collect(Collectors.toSet()));
+        assertEquals(Set.of("r1", "r5"),
+                resolver.listRepoNamesUnderRootURI(root3).stream().collect(Collectors.toSet()));
     }
 
     public @Test void testGetName() {

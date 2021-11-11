@@ -55,7 +55,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class WriteTree2Test extends RepositoryTestCase {
 
@@ -336,7 +335,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
 
         Map<String, NodeRef> refsByPath = getRefsByPath(newRepoRoot, true);
-        Set<String> paths = Sets.newTreeSet();
+        Set<String> paths = new TreeSet<>();
         paths.addAll(refsByPath.keySet());
 
         Set<String> expected = set(//

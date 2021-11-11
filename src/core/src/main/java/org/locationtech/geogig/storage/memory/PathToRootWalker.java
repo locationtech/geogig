@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.memory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,7 +18,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 
 /**
  * Walks a path from the specified node to a root, bifurcating along the way in cases where a node
@@ -42,7 +42,7 @@ public class PathToRootWalker implements Iterator<List<Node>> {
         q = new LinkedList<>();
         q.add(start);
 
-        seen = Sets.newHashSet();
+        seen = new HashSet<>();
     }
 
     public @Override boolean hasNext() {

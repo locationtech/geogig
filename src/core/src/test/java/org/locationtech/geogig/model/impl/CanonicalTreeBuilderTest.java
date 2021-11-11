@@ -74,7 +74,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
-        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
+        Set<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
         assertEquals(numEntries - removedKeys.size(), names.size());
         for (Node key : removedKeys) {
             assertFalse(names.contains(key.getName()));
@@ -111,7 +111,7 @@ public class CanonicalTreeBuilderTest extends RevTreeBuilderTest {
 
         Iterator<NodeRef> it = new DepthTreeIterator("", ObjectId.NULL, result, objectStore,
                 Strategy.CHILDREN);
-        HashSet<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
+        Set<String> names = Sets.newHashSet(Iterators.transform(it, NodeRef::name));
         assertEquals(numEntries - removedKeys.size(), names.size());
         for (Node key : removedKeys) {
             assertFalse(names.contains(key.getName()));

@@ -37,7 +37,6 @@ import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 public class PRMergeOpTest {
 
@@ -218,7 +217,7 @@ public class PRMergeOpTest {
         assertTrue(result.getReport().isPresent());
 
         Map<String, NodeRef> features = origin.getFeatureNodes("HEAD");
-        Set<String> expected = Sets.newHashSet("Points/Point.1", "Points/Point.2", "Points/Point.3",
+        Set<String> expected = Set.of("Points/Point.1", "Points/Point.2", "Points/Point.3",
                 "Polygons/Polygon.1", "Polygons/Polygon.4", "Lines/Line.3", "Lines/Line.1",
                 "Lines/Line.2");
         assertEquals(expected, features.keySet());

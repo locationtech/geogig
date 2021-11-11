@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
@@ -36,7 +37,6 @@ import org.locationtech.geogig.storage.ConflictsDatabase;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDatabase> {
 
@@ -345,12 +345,11 @@ public abstract class ConflictsDatabaseConformanceTest<T extends ConflictsDataba
         add(ns, b1, b2, b3);
         add(null, c1, c2, c3);
 
-        assertTrue(conflicts
-                .findConflicts(null, Sets.newHashSet(b1.getPath(), b2.getPath(), b3.getPath()))
+        assertTrue(conflicts.findConflicts(null, Set.of(b1.getPath(), b2.getPath(), b3.getPath()))
                 .isEmpty());
 
-        assertEquals(Sets.newHashSet(b2.getPath(), b3.getPath()),
-                conflicts.findConflicts(ns, Sets.newHashSet(b2.getPath(), b3.getPath())));
+        assertEquals(Set.of(b2.getPath(), b3.getPath()),
+                conflicts.findConflicts(ns, Set.of(b2.getPath(), b3.getPath())));
 
     }
 }

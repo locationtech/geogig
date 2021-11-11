@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,7 +74,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
@@ -328,7 +328,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         collection = pointsSource.getFeatures();
         assertEquals(pointsType, GT.adapt(collection.getSchema()));
 
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (Feature f : toList(collection)) {
             SimpleFeature sf = (SimpleFeature) f;
             actual.add(sf.getAttributes());
@@ -342,7 +342,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         collection = linesSource.getFeatures();
         assertEquals(linesType, GT.adapt(collection.getSchema()));
 
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (Feature f : toList(collection)) {
             actual.add(((SimpleFeature) f).getAttributes());
         }
@@ -362,7 +362,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         filter = ff.id(Collections.singleton(ff.featureId(RepositoryTestCase.idP2)));
         collection = pointsSource.getFeatures(new Query(pointsName, filter));
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
@@ -379,7 +379,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
                 ff.literal(geometry));
 
         collection = pointsSource.getFeatures(new Query(pointsName, filter));
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
@@ -398,7 +398,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
                 ff.literal(geometry));
 
         collection = pointsSource.getFeatures(new Query(pointsName, filter));
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
@@ -409,7 +409,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
 
         filter = ECQL.toFilter("sp = 'StringProp2_3' OR ip = 2000");
         collection = linesSource.getFeatures(new Query(linesName, filter));
-        actual = Sets.newHashSet();
+        actual = new HashSet<>();
         for (SimpleFeature f : toList(collection)) {
             actual.add(f.getAttributes());
         }
@@ -424,7 +424,7 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
         SimpleFeatureCollection collection = pointsSource.getFeatures(Query.ALL);
         SimpleFeatureIterator features = collection.features();
 
-        Set<FeatureId> ids = Sets.newHashSet();
+        Set<FeatureId> ids = new HashSet<>();
         try {
             while (features.hasNext()) {
                 SimpleFeature next = features.next();
@@ -590,11 +590,11 @@ public class GeoGigFeatureSourceTest extends RepositoryTestCase {
     public @Test void handleUniqueVisitorMaterializedAttribute() {
         NodeRef typeRef = pointsSource.delegate.getTypeRef();
         createIndex(typeRef, Collections.singletonList("ip"));
-        testVisitor(new UniqueVisitor("ip"), Sets.newHashSet(1000, 2000, 3000));
+        testVisitor(new UniqueVisitor("ip"), Set.of(1000, 2000, 3000));
     }
 
     public @Test void handleUniqueVisitorNotIndexed() {
-        testVisitor(new UniqueVisitor("ip"), Sets.newHashSet(1000, 2000, 3000));
+        testVisitor(new UniqueVisitor("ip"), Set.of(1000, 2000, 3000));
     }
 
     /**

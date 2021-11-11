@@ -17,6 +17,8 @@ import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,7 +40,6 @@ import org.locationtech.geogig.test.TestData;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 public class PRHealthCheckOpTest {
 
@@ -122,8 +123,8 @@ public class PRHealthCheckOpTest {
         assertNotNull(status);
         assertEquals(request, status.getRequest());
 
-        assertEquals(Sets.newHashSet("Lines", "Points", "Polygons"),
-                Sets.newHashSet(status.getAffectedLayers()));
+        assertEquals(Set.of("Lines", "Points", "Polygons"),
+                status.getAffectedLayers().stream().collect(Collectors.toSet()));
 
         Optional<ObjectId> mergeCommit = status.getMergeCommit();
         assertFalse(mergeCommit.toString(), mergeCommit.isPresent());
@@ -180,8 +181,8 @@ public class PRHealthCheckOpTest {
                 .call();
         assertNotNull(status);
         assertEquals(request, status.getRequest());
-        assertEquals(Sets.newHashSet("Lines", "Points", "Polygons"),
-                Sets.newHashSet(status.getAffectedLayers()));
+        assertEquals(Set.of("Lines", "Points", "Polygons"),
+                status.getAffectedLayers().stream().collect(Collectors.toSet()));
 
         Optional<ObjectId> mergeCommit = status.getMergeCommit();
         assertFalse(mergeCommit.toString(), mergeCommit.isPresent());
@@ -215,8 +216,8 @@ public class PRHealthCheckOpTest {
                 .call();
         assertNotNull(status);
         assertEquals(request, status.getRequest());
-        assertEquals(Sets.newHashSet("Lines", "Points", "Polygons"),
-                Sets.newHashSet(status.getAffectedLayers()));
+        assertEquals(Set.of("Lines", "Points", "Polygons"),
+                status.getAffectedLayers().stream().collect(Collectors.toSet()));
 
         Optional<ObjectId> mergeCommit = status.getMergeCommit();
         assertFalse(mergeCommit.toString(), mergeCommit.isPresent());
@@ -250,8 +251,8 @@ public class PRHealthCheckOpTest {
                 .call();
         assertNotNull(status);
         assertEquals(request, status.getRequest());
-        assertEquals(Sets.newHashSet("Lines", "Points", "Polygons"),
-                Sets.newHashSet(status.getAffectedLayers()));
+        assertEquals(Set.of("Lines", "Points", "Polygons"),
+                status.getAffectedLayers().stream().collect(Collectors.toSet()));
         Optional<ObjectId> mergeCommit = status.getMergeCommit();
         assertTrue(mergeCommit.toString(), mergeCommit.isPresent());
 

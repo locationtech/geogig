@@ -21,7 +21,6 @@ import org.locationtech.geogig.storage.BulkOpListener;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.collect.AbstractIterator;
-import com.google.common.collect.Lists;
 
 public class StagingDbCompositionHelper {
 

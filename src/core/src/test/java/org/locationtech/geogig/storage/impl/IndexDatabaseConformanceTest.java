@@ -40,8 +40,6 @@ import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.memory.HeapIndexDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.Sets;
-
 /**
  * Base class to check an {@link IndexDatabase}'s implementation conformance to the interface
  * contract
@@ -483,11 +481,7 @@ public abstract class IndexDatabaseConformanceTest extends ObjectStoreConformanc
     }
 
     private Set<IndexTreeMapping> toSet(AutoCloseableIterator<IndexTreeMapping> mappings) {
-        try {
-            return Sets.newHashSet(mappings);
-        } finally {
-            mappings.close();
-        }
+        return Set.copyOf(mappings.toList());
     }
 
     private IndexInfo createIndex(String treeName, IndexDatabase target) {

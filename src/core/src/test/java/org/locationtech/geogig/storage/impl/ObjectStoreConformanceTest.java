@@ -273,13 +273,12 @@ public abstract class ObjectStoreConformanceTest {
         assertTrue(db.put(feature(5, "not queried 1")));
         assertTrue(db.put(feature(6, "not queried 2")));
 
-        Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
+        Set<ObjectId> ids = expected.stream().map(RevObject::getId).collect(Collectors.toSet());
 
         Iterator<RevObject> iterator = db.getAll(ids);
         List<RevObject> actual = Streams.stream(iterator).collect(Collectors.toList());
 
-        assertEquals(Sets.newHashSet(ids),
-                Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
+        assertEquals(ids, actual.stream().map(RevObject::getId).collect(Collectors.toSet()));
 
     }
 
@@ -296,7 +295,7 @@ public abstract class ObjectStoreConformanceTest {
         assertTrue(db.put(feature(5, "not queried 1")));
         assertTrue(db.put(feature(6, "not queried 2")));
 
-        Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
+        Set<ObjectId> ids = expected.stream().map(RevObject::getId).collect(Collectors.toSet());
 
         CountingListener listener = BulkOpListener.newCountingListener();
 
@@ -305,10 +304,10 @@ public abstract class ObjectStoreConformanceTest {
 
         Iterator<RevObject> result = db.getAll(Iterables.concat(notFound, ids), listener);
 
-        List<RevObject> actual = Streams.stream(result).collect(Collectors.toList());
+        Set<ObjectId> actual = Streams.stream(result).map(RevObject::getId)
+                .collect(Collectors.toSet());
 
-        assertEquals(Sets.newHashSet(ids),
-                Sets.newHashSet(Iterables.transform(actual, RevObject::getId)));
+        assertEquals(ids, actual);
 
         assertEquals(expected.size(), listener.found());
         assertEquals(2, listener.notFound());
@@ -334,22 +333,22 @@ public abstract class ObjectStoreConformanceTest {
         Set<RevFeature> features = Sets.newHashSet(db.getAll(queryIds, listener, RevFeature.class));
         assertEquals(2, listener.found());
         assertEquals(3, listener.notFound());
-        assertEquals(Sets.newHashSet(f1.getId(), f3.getId()),
-                Sets.newHashSet(Iterables.transform(features, (f) -> f.getId())));
+        assertEquals(Set.of(f1.getId(), f3.getId()),
+                features.stream().map(RevFeature::getId).collect(Collectors.toSet()));
 
         listener = BulkOpListener.newCountingListener();
         Set<RevTree> trees = Sets.newHashSet(db.getAll(queryIds, listener, RevTree.class));
         assertEquals(3, listener.found());
         assertEquals(2, listener.notFound());
-        assertEquals(Sets.newHashSet(t1.getId(), t2.getId(), t3.getId()),
-                Sets.newHashSet(Iterables.transform(trees, (t) -> t.getId())));
+        assertEquals(Set.of(t1.getId(), t2.getId(), t3.getId()),
+                trees.stream().map(RevTree::getId).collect(Collectors.toSet()));
 
         listener = BulkOpListener.newCountingListener();
         Set<RevObject> all = Sets.newHashSet(db.getAll(queryIds, listener, RevObject.class));
         assertEquals(5, listener.found());
         assertEquals(0, listener.notFound());
-        assertEquals(Sets.newHashSet(f1.getId(), f3.getId(), t1.getId(), t2.getId(), t3.getId()),
-                Sets.newHashSet(Iterables.transform(all, (o) -> o.getId())));
+        assertEquals(Set.of(f1.getId(), f3.getId(), t1.getId(), t2.getId(), t3.getId()),
+                all.stream().map(RevObject::getId).collect(Collectors.toSet()));
 
     }
 
@@ -418,31 +417,31 @@ public abstract class ObjectStoreConformanceTest {
         assertTrue(db.put(featureForceId(id4, "f4")));
         assertTrue(db.put(featureForceId(id5, "f5")));
 
-        HashSet<ObjectId> matches;
+        Set<ObjectId> matches;
 
-        matches = Sets.newHashSet(db.lookUp("00000000"));
-        assertEquals(Sets.newHashSet(), matches);
+        matches = db.lookUp("00000000").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(), matches);
 
-        matches = Sets.newHashSet(db.lookUp("ffffffff"));
-        assertEquals(Sets.newHashSet(), matches);
+        matches = db.lookUp("ffffffff").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(), matches);
 
-        matches = Sets.newHashSet(db.lookUp("01234567"));
-        assertEquals(Sets.newHashSet(id1, id2, id3, id4, id5), matches);
+        matches = db.lookUp("01234567").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(id1, id2, id3, id4, id5), matches);
 
-        matches = Sets.newHashSet(db.lookUp("012345678"));
-        assertEquals(Sets.newHashSet(id2, id3, id4, id5), matches);
+        matches = db.lookUp("012345678").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(id2, id3, id4, id5), matches);
 
-        matches = Sets.newHashSet(db.lookUp("0123456789"));
-        assertEquals(Sets.newHashSet(id3, id4, id5), matches);
+        matches = db.lookUp("0123456789").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(id3, id4, id5), matches);
 
-        matches = Sets.newHashSet(db.lookUp("0123456789a"));
-        assertEquals(Sets.newHashSet(id4, id5), matches);
+        matches = db.lookUp("0123456789a").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(id4, id5), matches);
 
-        matches = Sets.newHashSet(db.lookUp("0123456789ab"));
-        assertEquals(Sets.newHashSet(id5), matches);
+        matches = db.lookUp("0123456789ab").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(id5), matches);
 
-        matches = Sets.newHashSet(db.lookUp("0123456789abc"));
-        assertEquals(Sets.newHashSet(), matches);
+        matches = db.lookUp("0123456789abc").stream().collect(Collectors.toSet());
+        assertEquals(Set.of(), matches);
     }
 
     @Test
@@ -471,7 +470,8 @@ public abstract class ObjectStoreConformanceTest {
                 feature(1, "value", Integer.valueOf(111)), feature(2, (Object) null),
                 RevTree.EMPTY);
 
-        final Iterable<ObjectId> ids = Iterables.transform(expected, RevObject::getId);
+        final Set<ObjectId> ids = expected.stream().map(RevObject::getId)
+                .collect(Collectors.toSet());
 
         final List<ObjectId> found = new CopyOnWriteArrayList<>();
         final List<ObjectId> inserted = new CopyOnWriteArrayList<>();
@@ -494,7 +494,7 @@ public abstract class ObjectStoreConformanceTest {
         db.putAll(expected.iterator(), listener);
 
         assertTrue(found.toString(), found.isEmpty());
-        assertEquals(Sets.newHashSet(ids), Sets.newHashSet(inserted));
+        assertEquals(ids, inserted.stream().collect(Collectors.toSet()));
 
         found.clear();
         inserted.clear();
@@ -502,7 +502,7 @@ public abstract class ObjectStoreConformanceTest {
         db.putAll(expected.iterator(), listener);
 
         assertTrue(inserted.toString(), inserted.isEmpty());
-        assertEquals(Sets.newHashSet(ids), Sets.newHashSet(found));
+        assertEquals(ids, found.stream().collect(Collectors.toSet()));
     }
 
     @SuppressWarnings("resource")

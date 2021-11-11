@@ -19,6 +19,7 @@ import static org.mockito.Mockito.doReturn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +55,6 @@ import org.mockito.Mockito;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
@@ -258,7 +258,7 @@ public abstract class CanonicalClusteringStrategyTest {
                 .collect(Collectors.toCollection(TreeSet::new));
         assertEquals(nodes.size(), initial.size());
 
-        final Map<Integer, Node> randomEdits = Maps.newHashMap();
+        final Map<Integer, Node> randomEdits = new HashMap<>();
         {
             Random randGen = new Random();
             for (int i = 0; i < numEntries / 2; i++) {

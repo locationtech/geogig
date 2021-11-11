@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 
 import picocli.CommandLine.Command;
@@ -158,7 +158,7 @@ public class Log extends AbstractCommand implements CLICommand {
         LogOp op = geogig.command(LogOp.class).setTopoOrder(this.topo)
                 .setFirstParentOnly(this.firstParent);
 
-        refs = Maps.newHashMap();
+        refs = new HashMap<>();
         if (this.decoration) {
             Optional<Ref> head = geogig.command(RefParse.class).setName(Ref.HEAD).call();
             refs.put(head.get().getObjectId(), Ref.HEAD);

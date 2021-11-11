@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,
@@ -106,9 +106,9 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
         final RevTree oldRootTree = resolveRootTree();
         final ObjectDatabase repositoryDatabase = objectDatabase();
 
-        Map<String, RevTreeBuilder> repositoryChangedTrees = Maps.newHashMap();
-        Map<String, NodeRef> indexChangedTrees = Maps.newHashMap();
-        Map<String, ObjectId> changedTreesMetadataId = Maps.newHashMap();
+        Map<String, RevTreeBuilder> repositoryChangedTrees = new HashMap<>();
+        Map<String, NodeRef> indexChangedTrees = new HashMap<>();
+        Map<String, ObjectId> changedTreesMetadataId = new HashMap<>();
         Set<String> deletedTrees = new HashSet<>();
         final boolean copyObjects = this.fromDb != null;
         NodeRef ref;

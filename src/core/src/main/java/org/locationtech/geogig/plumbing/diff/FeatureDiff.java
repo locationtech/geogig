@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * Defines the differences between 2 versions of the a given feature
@@ -48,7 +47,7 @@ public class FeatureDiff {
     public FeatureDiff(String path, Map<PropertyDescriptor, AttributeDiff> diffs,
             RevFeatureType oldFeatureType, RevFeatureType newFeatureType) {
         this.path = path;
-        this.diffs = Maps.newHashMap(diffs);
+        this.diffs = new HashMap<>(diffs);
         this.newFeatureType = newFeatureType;
         this.oldFeatureType = oldFeatureType;
     }
@@ -242,7 +241,7 @@ public class FeatureDiff {
      * @return
      */
     public FeatureDiff reversed() {
-        Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+        Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
         Set<Entry<PropertyDescriptor, AttributeDiff>> entries = diffs.entrySet();
         for (Iterator<Entry<PropertyDescriptor, AttributeDiff>> iterator = entries
                 .iterator(); iterator.hasNext();) {

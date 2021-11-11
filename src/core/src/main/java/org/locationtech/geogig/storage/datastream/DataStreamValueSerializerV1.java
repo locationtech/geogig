@@ -17,6 +17,7 @@ import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,7 +33,6 @@ import org.locationtech.jts.io.WKBReader;
 import org.locationtech.jts.io.WKBWriter;
 
 import com.google.common.base.Splitter;
-import com.google.common.collect.Maps;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
@@ -434,7 +434,7 @@ class DataStreamValueSerializerV1 implements ValueSerializer {
 
     public @Override Map<String, Object> readMap(DataInput in) throws IOException {
         final int size = in.readInt();
-        Map<String, Object> map = Maps.newHashMap();
+        Map<String, Object> map = new HashMap<>();
         for (int i = 0; i < size; i++) {
             String key = readString(in);
             byte fieldTag = in.readByte();

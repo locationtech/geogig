@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -55,7 +56,6 @@ import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import lombok.NonNull;
@@ -162,9 +162,9 @@ public class StagingAreaImpl implements StagingArea {
 
         final boolean hasConflicts;
 
-        final Map<String, RevTreeBuilder> featureTypeTrees = Maps.newConcurrentMap();
+        final Map<String, RevTreeBuilder> featureTypeTrees = new ConcurrentHashMap<>();
 
-        final Map<String, NodeRef> currentFeatureTypeRefs = Maps.newConcurrentMap();
+        final Map<String, NodeRef> currentFeatureTypeRefs = new ConcurrentHashMap<>();
 
         final Set<String> removedTrees = Sets.newConcurrentHashSet();
 

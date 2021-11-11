@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.porcelain;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.geogig.model.DiffEntry;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.plumbing.diff.Patch;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-
-import com.google.common.collect.Maps;
 
 /**
  * Creates a patch that represents the differences between to version of the repository *
@@ -47,7 +46,7 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
 
     protected @Override Patch _call() {
         Patch patch = new Patch();
-        Map<ObjectId, RevFeatureType> featureTypes = Maps.newHashMap();
+        Map<ObjectId, RevFeatureType> featureTypes = new HashMap<>();
         while (diffs.hasNext()) {
             DiffEntry diffEntry = diffs.next();
             final NodeRef newObject = diffEntry.getNewObject();

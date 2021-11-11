@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
 public abstract class RevTreeBuilderTest {
@@ -137,7 +137,7 @@ public abstract class RevTreeBuilderTest {
         final RevTree tree = objectStore.getTree(treeId);
 
         {
-            Map<Integer, Node> randomEdits = Maps.newHashMap();
+            Map<Integer, Node> randomEdits = new HashMap<>();
             Random randGen = new Random();
             for (int i = 0; i < tree.size() / 2; i++) {
                 int random;

@@ -42,7 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 
@@ -240,7 +239,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
             try (PreparedStatement ps = cx.prepareStatement(log(sql, LOG, repositoryPK, section))) {
                 ps.setInt(1, repositoryPK);
                 ps.setString(2, section);
-                Map<String, String> all = Maps.newLinkedHashMap();
+                Map<String, String> all = new LinkedHashMap<>();
 
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {

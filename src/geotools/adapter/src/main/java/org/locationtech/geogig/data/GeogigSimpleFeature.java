@@ -48,7 +48,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  */
@@ -401,7 +400,7 @@ class GeogigSimpleFeature implements SimpleFeature {
 
     public @Override Map<Object, Object> getUserData() {
         if (userData == null) {
-            userData = Maps.newHashMap();
+            userData = new HashMap<>();
         }
         return userData;
     }
@@ -645,7 +644,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         List<org.locationtech.geogig.feature.PropertyDescriptor> sortedDescriptors = type
                 .getDescriptors();
 
-        Map<String, Integer> typeAttNameToRevTypeIndex = Maps.newHashMap();
+        Map<String, Integer> typeAttNameToRevTypeIndex = new HashMap<>();
 
         final org.locationtech.geogig.feature.PropertyDescriptor defaultGeometry = type
                 .getGeometryDescriptor().orElse(null);

@@ -10,13 +10,13 @@
 package org.locationtech.geogig.plumbing.diff;
 
 import static com.google.common.collect.Maps.difference;
-import static com.google.common.collect.Maps.newHashMap;
-import static com.google.common.collect.Maps.newTreeMap;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,7 +25,6 @@ import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.MapDifference.ValueDifference;
-import com.google.common.collect.Maps;
 import com.google.common.collect.SortedMapDifference;
 
 /**
@@ -84,7 +83,7 @@ public class TreeDifference {
         SortedMap<String, MutableTree> entriesOnlyOnLeft = difference.entriesOnlyOnLeft();
         SortedMap<String, MutableTree> entriesOnlyOnRight = difference.entriesOnlyOnRight();
 
-        SortedMap<NodeRef, NodeRef> matches = newTreeMap();
+        SortedMap<NodeRef, NodeRef> matches = new TreeMap<>();
 
         for (Map.Entry<String, MutableTree> right : entriesOnlyOnRight.entrySet()) {
             for (Map.Entry<String, MutableTree> left : entriesOnlyOnLeft.entrySet()) {
@@ -120,7 +119,7 @@ public class TreeDifference {
         difference = difference(leftEntries, rightEntries);
 
         Map<String, MutableTree> entriesOnlyOnRight;
-        entriesOnlyOnRight = newHashMap(difference.entriesOnlyOnRight());
+        entriesOnlyOnRight = new HashMap<>(difference.entriesOnlyOnRight());
 
         // ignore renames
         Map<NodeRef, NodeRef> pureRenames = findRenames(difference);
@@ -170,7 +169,7 @@ public class TreeDifference {
         SortedMap<String, ValueDifference<MutableTree>> entriesDiffering;
         entriesDiffering = difference.entriesDiffering();
 
-        SortedMap<NodeRef, NodeRef> matches = Maps.newTreeMap(MutableTree.DEEPEST_FIRST_COMPARATOR);
+        SortedMap<NodeRef, NodeRef> matches = new TreeMap<>(MutableTree.DEEPEST_FIRST_COMPARATOR);
 
         for (Map.Entry<String, ValueDifference<MutableTree>> e : entriesDiffering.entrySet()) {
             String nodePath = e.getKey();
@@ -195,7 +194,7 @@ public class TreeDifference {
         SortedMap<String, MutableTree> leftEntries = leftTree.getChildrenAsMap();
         SortedMap<String, MutableTree> rightEntries = rightTree.getChildrenAsMap();
 
-        Map<NodeRef, NodeRef> matches = Maps.newTreeMap();
+        Map<NodeRef, NodeRef> matches = new TreeMap<>();
 
         for (Map.Entry<String, MutableTree> e : leftEntries.entrySet()) {
             final String nodePath = e.getKey();

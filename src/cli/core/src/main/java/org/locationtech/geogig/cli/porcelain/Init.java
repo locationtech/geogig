@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -140,7 +140,7 @@ public class Init extends AbstractCommand implements CLICommand {
     }
 
     public static Map<String, String> splitConfig(final String configArg) {
-        Map<String, String> configProps = Maps.newTreeMap();
+        Map<String, String> configProps = new TreeMap<>();
         if (configArg != null) {
             String[] options = configArg.split(",");
             for (String option : options) {

@@ -82,7 +82,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;
 
@@ -652,7 +651,7 @@ public class DefaultStepDefinitions {
     public void I_have_a_patch_file() throws Throwable {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getId());
-        Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+        Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
         Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         map.put(pointsType.getDescriptor("sp"), diff);

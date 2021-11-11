@@ -28,8 +28,6 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
 
-import com.google.common.collect.Sets;
-
 class GetObjectOp<T extends RevObject> implements Callable<List<ObjectInfo<T>>> {
 
     private final Set<NodeRef> queryNodes;

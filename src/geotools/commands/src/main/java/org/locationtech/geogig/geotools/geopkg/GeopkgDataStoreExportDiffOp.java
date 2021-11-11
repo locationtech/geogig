@@ -92,8 +92,7 @@ public class GeopkgDataStoreExportDiffOp extends DataStoreExportOp<File> {
                 .setFilter(targetTableName).call()) {
             while (diff.hasNext()) {
                 DiffEntry entry = diff.next();
-                changedNodes.put(entry.newName() != null ? entry.newName() : entry.oldName(),
-                        entry.changeType());
+                changedNodes.put(entry.name(), entry.changeType());
             }
         }
 

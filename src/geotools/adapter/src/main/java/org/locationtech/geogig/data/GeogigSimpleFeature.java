@@ -203,10 +203,10 @@ class GeogigSimpleFeature implements SimpleFeature {
         return atts;
     }
 
-    public @Override Object getDefaultGeometry() {
+    public @Override Geometry getDefaultGeometry() {
         // should be specified in the index as the default key (null)
         Integer idx = nameToRevTypeIndex.get(null);
-        Object defaultGeometry = idx == null ? null : getAttribute(idx.intValue());
+        Geometry defaultGeometry = idx == null ? null : (Geometry) getAttribute(idx.intValue());
 
         // not found? do we have a default geometry at all?
         if (defaultGeometry == null) {
@@ -214,7 +214,7 @@ class GeogigSimpleFeature implements SimpleFeature {
             if (geometryDescriptor != null) {
                 Integer defaultGeomIndex = nameToRevTypeIndex
                         .get(geometryDescriptor.getName().getLocalPart());
-                defaultGeometry = getAttribute(defaultGeomIndex.intValue());
+                defaultGeometry = (Geometry) getAttribute(defaultGeomIndex.intValue());
             }
         }
 
@@ -308,7 +308,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         GeometryDescriptor geometryDescriptor = featureType.getGeometryDescriptor();
         GeometryAttribute geometryAttribute = null;
         if (geometryDescriptor != null) {
-            Object defaultGeometry = getDefaultGeometry();
+            Geometry defaultGeometry = getDefaultGeometry();
             geometryAttribute = new GeometryAttributeImpl(defaultGeometry, geometryDescriptor,
                     null);
         }

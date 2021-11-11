@@ -9,9 +9,10 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 /**
  * This represents a bounds - much like a JTS Envelope. However, to save space, this uses Float32
@@ -162,7 +163,7 @@ public class Float32Bounds {
      * {@link Envelope#isNull() empty}, otherwise a Float32Bounds that's guaranteed to contain
      * {@code bounds}
      */
-    public static Float32Bounds valueOf(@Nullable Envelope bounds) {
+    public static @NonNull Float32Bounds valueOf(Envelope bounds) {
         return bounds == null || bounds.isNull() ? EMPTY : new Float32Bounds(bounds);
     }
 

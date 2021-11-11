@@ -130,13 +130,13 @@ public class Reset extends AbstractCommand implements CLICommand {
                         ChangeType type = entry.changeType();
                         switch (type) {
                         case ADDED:
-                            cli.getConsole().println("A\t" + entry.newPath());
+                            cli.getConsole().println("A\t" + entry.path());
                             break;
                         case MODIFIED:
-                            cli.getConsole().println("M\t" + entry.newPath());
+                            cli.getConsole().println("M\t" + entry.path());
                             break;
                         case REMOVED:
-                            cli.getConsole().println("D\t" + entry.oldPath());
+                            cli.getConsole().println("D\t" + entry.path());
                             break;
                         }
                     }

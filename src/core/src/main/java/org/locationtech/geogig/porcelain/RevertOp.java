@@ -375,7 +375,7 @@ public class RevertOp extends AbstractGeoGigOp<Boolean> {
                                     ObjectId ancestor = right.oldObjectId();
                                     ObjectId theirs = right.newObjectId();
                                     conflictsTarget.add(
-                                            new Conflict(right.oldPath(), ancestor, ours, theirs));
+                                            new Conflict(right.path(), ancestor, ours, theirs));
                                 }
                             }
                         }

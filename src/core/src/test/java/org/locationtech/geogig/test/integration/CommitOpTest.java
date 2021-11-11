@@ -468,15 +468,14 @@ public class CommitOpTest extends RepositoryTestCase {
             List<DiffEntry> unstaged = toList(workingTree.getUnstaged(null));
             assertEquals(unstaged.toString(), 1, unstaged.size());
             // assertEquals(NodeRef.ROOT, unstaged.get(0).newName());
-            assertEquals(emptyTreeName, unstaged.get(0).newName());
+            assertEquals(emptyTreeName, unstaged.get(0).name());
         }
         repo.commands().command(AddOp.class).call();
         {
             StagingArea index = repo.getContext().stagingArea();
             List<DiffEntry> staged = toList(index.getStaged(null));
             assertEquals(staged.toString(), 1, staged.size());
-            // assertEquals(NodeRef.ROOT, staged.get(0).newName());
-            assertEquals(emptyTreeName, staged.get(0).newName());
+            assertEquals(emptyTreeName, staged.get(0).name());
         }
         CommitOp commitCommand = repo.commands().command(CommitOp.class);
         RevCommit commit = commitCommand.call();

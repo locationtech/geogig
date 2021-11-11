@@ -81,14 +81,12 @@ public class DiffTree extends AbstractCommand implements CLICommand {
 
         Geogig geogig = cli.getGeogig();
 
-        DiffEntry diffEntry;
         HashMap<String, Long[]> stats = new HashMap<>();
         try (AutoCloseableIterator<DiffEntry> diffEntries = buildDiffEntries(cli)) {
             while (diffEntries.hasNext()) {
-                diffEntry = diffEntries.next();
+                final DiffEntry diffEntry = diffEntries.next();
                 StringBuilder sb = new StringBuilder();
-                String path = diffEntry.newPath() != null ? diffEntry.newPath()
-                        : diffEntry.oldPath();
+                String path = diffEntry.path();
 
                 if (describe) {
                     sb.append(diffEntry.changeType().toString().charAt(0)).append(' ').append(path)

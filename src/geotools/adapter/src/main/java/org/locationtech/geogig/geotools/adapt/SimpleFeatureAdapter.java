@@ -77,7 +77,7 @@ public class SimpleFeatureAdapter implements SimpleFeature {
         if (geometryDescriptor == null) {
             return null;
         }
-        Object defaultGeometry = getDefaultGeometry();
+        Geometry defaultGeometry = getDefaultGeometry();
         return new GeometryAttributeImpl(defaultGeometry, geometryDescriptor, null);
     }
 
@@ -247,8 +247,8 @@ public class SimpleFeatureAdapter implements SimpleFeature {
         return feature.getAttributeCount();
     }
 
-    public @Override Object getDefaultGeometry() {
-        return feature.getDefaultGeometry();
+    public @Override Geometry getDefaultGeometry() {
+        return feature.getDefaultGeometry().orElse(null);
     }
 
     public @Override void setDefaultGeometry(Object geometry) {

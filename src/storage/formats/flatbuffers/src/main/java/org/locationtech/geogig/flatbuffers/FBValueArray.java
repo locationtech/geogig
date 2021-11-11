@@ -12,9 +12,7 @@ package org.locationtech.geogig.flatbuffers;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.Feature;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Geometry;
@@ -53,11 +51,7 @@ final class FBValueArray implements ValueArray {
         }
     }
 
-    private @Nullable Object getInternal(int index, GeometryFactory gf) {
+    private Object getInternal(int index, GeometryFactory gf) {
         return ValueSerializer.decodeValue(values.values(index), gf);
-    }
-
-    private @Nullable Object safeCopy(@Nullable Object value) {
-        return FieldType.forValue(value).safeCopy(value);
     }
 }

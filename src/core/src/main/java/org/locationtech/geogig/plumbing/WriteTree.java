@@ -127,7 +127,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
 
                 DiffEntry diff = diffs.next();
                 // ignore the root entry
-                if (NodeRef.ROOT.equals(diff.newName()) || NodeRef.ROOT.equals(diff.oldName())) {
+                if (NodeRef.ROOT.equals(diff.name())) {
                     continue;
                 }
                 ref = diff.getNewObject();

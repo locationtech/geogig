@@ -36,5 +36,4 @@
  * @apiNote all method arguments and return values are non-null by default, except if they're
  *          annotated with {@code @org.eclipse.jdt.annotation.Nullable}
  */
-@org.eclipse.jdt.annotation.NonNullByDefault
 package org.locationtech.geogig.model;

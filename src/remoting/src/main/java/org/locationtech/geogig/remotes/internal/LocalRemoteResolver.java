@@ -40,7 +40,7 @@ public class LocalRemoteResolver implements RemoteResolver {
         if (RepositoryFinder.INSTANCE.resolverAvailableForURIScheme(scheme)) {
             IRemoteRepo remoteRepo = null;
 
-            if (remote.getMapped()) {
+            if (remote.isMapped()) {
                 remoteRepo = new LocalMappedRemoteRepo(remote, fetchURI);
             } else {
                 remoteRepo = new LocalRemoteRepo(remote, fetchURI);

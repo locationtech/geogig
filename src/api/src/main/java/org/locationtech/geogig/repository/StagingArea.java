@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -79,8 +78,7 @@ public interface StagingArea {
      * @return an iterator for all of the differences between STAGE_HEAD and HEAD based on the path
      *         filter.
      */
-    public abstract AutoCloseableIterator<DiffEntry> getStaged(
-            final @Nullable List<String> pathFilters);
+    public abstract AutoCloseableIterator<DiffEntry> getStaged(final List<String> pathFilters);
 
     /**
      * Returns the number of differences between STAGE_HEAD and HEAD based on the path filter.
@@ -88,7 +86,7 @@ public interface StagingArea {
      * @param pathFilters the path filters for the changes
      * @return the number differences
      */
-    public abstract DiffObjectCount countStaged(final @Nullable List<String> pathFilters);
+    public abstract DiffObjectCount countStaged(final List<String> pathFilters);
 
     /**
      * Returns the number of conflicted objects in the index, for the given path filter.
@@ -96,7 +94,7 @@ public interface StagingArea {
      * @param pathFilter the path filter for the conflicts
      * @return the number of conflicted objects
      */
-    public long countConflicted(final @Nullable String pathFilter);
+    public long countConflicted(final String pathFilter);
 
     /**
      * Returns the list of conflicted objects in the index for the given path filter.
@@ -104,6 +102,6 @@ public interface StagingArea {
      * @param pathFilter the path filter for the conflicts
      * @return the list of conflicts
      */
-    public Iterator<Conflict> getConflicted(final @Nullable String pathFilter);
+    public Iterator<Conflict> getConflicted(final String pathFilter);
 
 }

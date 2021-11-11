@@ -19,7 +19,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.UUID;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -68,8 +67,8 @@ public @UtilityClass class RevObjectTestUtil {
     }
 
     public static void equalsPrecise(Envelope expected, Envelope actual) {
-        final @Nullable Envelope preciseExpected = RevObjects.makePrecise(expected);
-        final @Nullable Envelope preciseActual = RevObjects.makePrecise(actual);
+        final Envelope preciseExpected = RevObjects.makePrecise(expected);
+        final Envelope preciseActual = RevObjects.makePrecise(actual);
         assertEquals(preciseExpected, preciseActual);
     }
 

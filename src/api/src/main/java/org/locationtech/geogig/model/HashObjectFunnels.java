@@ -20,7 +20,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
@@ -101,36 +100,36 @@ public class HashObjectFunnels {
         TreeFunnel.INSTANCE.funnel(into, trees, features, buckets);
     }
 
-    public static ObjectId hashTag(@NonNull String name, @NonNull ObjectId commitId,
+    public static @NonNull ObjectId hashTag(@NonNull String name, @NonNull ObjectId commitId,
             @NonNull String message, @NonNull RevPerson tagger) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.tag(hasher, name, commitId, message, tagger);
         return ObjectId.create(hasher.hash().asBytes());
     }
 
-    public static ObjectId hashFeature(@NonNull List<Object> values) {
+    public static @NonNull ObjectId hashFeature(@NonNull List<Object> values) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.feature(hasher, values);
         return ObjectId.create(hasher.hash().asBytes());
     }
 
-    public static ObjectId hashCommit(@NonNull ObjectId treeId, @NonNull List<ObjectId> parentIds,
-            @NonNull RevPerson author, @NonNull RevPerson committer,
-            @NonNull String commitMessage) {
+    public static @NonNull ObjectId hashCommit(@NonNull ObjectId treeId,
+            @NonNull List<ObjectId> parentIds, @NonNull RevPerson author,
+            @NonNull RevPerson committer, @NonNull String commitMessage) {
 
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.commit(hasher, treeId, parentIds, author, committer, commitMessage);
         return ObjectId.create(hasher.hash().asBytes());
     }
 
-    public static ObjectId hashFeatureType(@NonNull FeatureType featureType) {
+    public static @NonNull ObjectId hashFeatureType(@NonNull FeatureType featureType) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         HashObjectFunnels.featureType(hasher, featureType);
         return ObjectId.create(hasher.hash().asBytes());
     }
 
-    public static ObjectId hashTree(@Nullable List<Node> trees, @Nullable List<Node> features,
-            @Nullable Iterable<Bucket> buckets) {
+    public static @NonNull ObjectId hashTree(List<Node> trees, List<Node> features,
+            Iterable<Bucket> buckets) {
 
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         trees = trees == null ? Collections.emptyList() : trees;
@@ -204,7 +203,7 @@ public class HashObjectFunnels {
         }
     };
 
-    public static ObjectId hashValue(@Nullable Object value) {
+    public static @NonNull ObjectId hashValue(Object value) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         PropertyValueFunnel.funnel(value, hasher);
         final byte[] rawKey = hasher.hash().asBytes();
@@ -212,7 +211,7 @@ public class HashObjectFunnels {
         return id;
     }
 
-    public static ObjectId hashObject(@NonNull RevObject o) {
+    public static @NonNull ObjectId hashObject(@NonNull RevObject o) {
         final Hasher hasher = ObjectId.HASH_FUNCTION.newHasher();
         switch (o.getType()) {
         case COMMIT:
@@ -390,7 +389,7 @@ public class HashObjectFunnels {
     private static final Funnel<Object> PropertyValueFunnel = new Funnel<Object>() {
         private static final long serialVersionUID = 1L;
 
-        public @Override void funnel(final @Nullable Object value, PrimitiveSink into) {
+        public @Override void funnel(final Object value, PrimitiveSink into) {
             final FieldType fieldType = FieldType.forValue(value);
             switch (fieldType) {
             case UNKNOWN:

@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage;
 
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 
@@ -44,8 +43,7 @@ public class RefChange {
         return new RefChange(oldValue, newValue, name);
     }
 
-    public static RefChange of(@NonNull String name, @Nullable Ref oldValue,
-            @Nullable Ref newValue) {
+    public static RefChange of(@NonNull String name, Ref oldValue, Ref newValue) {
         return RefChange.of(name, Optional.ofNullable(oldValue), Optional.ofNullable(newValue));
     }
 

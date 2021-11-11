@@ -14,9 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.Feature;
-import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevObjects;
 import org.locationtech.jts.geom.Geometry;
@@ -63,11 +61,7 @@ final class FBFeature extends FBRevObject<Feature> implements RevFeature {
         }
     }
 
-    private @Nullable Object getInternal(int index, GeometryFactory gf) {
+    private Object getInternal(int index, GeometryFactory gf) {
         return ValueSerializer.decodeValue(getTable().values(index), gf);
-    }
-
-    private @Nullable Object safeCopy(@Nullable Object value) {
-        return FieldType.forValue(value).safeCopy(value);
     }
 }

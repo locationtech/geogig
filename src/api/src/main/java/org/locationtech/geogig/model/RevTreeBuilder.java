@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.function.BooleanSupplier;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
 import org.locationtech.geogig.model.impl.QuadTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
@@ -42,17 +41,17 @@ import lombok.NonNull;
  */
 public interface RevTreeBuilder {
 
-    public RevTreeBuilder original(RevTree original);
+    public RevTreeBuilder original(@NonNull RevTree original);
 
     /**
      * Add a node to the mutable tree representation.
      */
-    public boolean put(Node node);
+    public boolean put(@NonNull Node node);
 
     /**
      * Removes a node to the mutable tree representation.
      */
-    public boolean remove(Node node);
+    public boolean remove(@NonNull Node node);
 
     /**
      * Replace {@code oldNode} by {@code newNode} in the mutable tree representation.
@@ -65,7 +64,7 @@ public interface RevTreeBuilder {
      * node name.
      * 
      */
-    public boolean update(Node oldNode, Node newNode);
+    public boolean update(@NonNull Node oldNode, @NonNull Node newNode);
 
     /**
      * Builds a final immutable tree out of the current state of this tree builder.
@@ -76,7 +75,7 @@ public interface RevTreeBuilder {
      * 
      * @return the created tree
      */
-    public RevTree build();
+    public @NonNull RevTree build();
 
     /**
      * Builds a final immutable tree out of the current state of this tree builder.
@@ -89,12 +88,12 @@ public interface RevTreeBuilder {
      * @return the created tree, or {@code null} if {@link BooleanSupplier#getAsBoolean()
      *         abortFlag.getAsBoolean() == true}
      */
-    public @Nullable RevTree build(BooleanSupplier abortFlag);
+    public @NonNull RevTree build(@NonNull BooleanSupplier abortFlag);
 
     public void dispose();
 
-    static RevTree build(final long size, final int childTreeCount, @Nullable List<Node> trees,
-            @Nullable List<Node> features, @Nullable SortedSet<Bucket> buckets) {
+    static RevTree build(final long size, final int childTreeCount, List<Node> trees,
+            List<Node> features, SortedSet<Bucket> buckets) {
 
         trees = trees == null ? Collections.emptyList() : trees;
         features = features == null ? Collections.emptyList() : features;

@@ -13,9 +13,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
+
+import lombok.NonNull;
 
 /**
  * Defines a serialization/de-serialization mechanism for {@link RevObject} instances
@@ -23,12 +24,13 @@ import org.locationtech.geogig.model.RevObject;
  */
 public interface RevObjectSerializer {
 
-    void write(RevObject o, OutputStream out) throws IOException;
+    void write(@NonNull RevObject o, @NonNull OutputStream out) throws IOException;
 
-    RevObject read(@Nullable ObjectId id, InputStream in) throws IOException;
+    RevObject read(ObjectId id, @NonNull InputStream in) throws IOException;
 
-    RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length) throws IOException;
+    RevObject read(ObjectId id, @NonNull byte[] data, int offset, int length) throws IOException;
 
+    @NonNull
     String getDisplayName();
 
     /**

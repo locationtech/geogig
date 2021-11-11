@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -54,7 +53,7 @@ public @ToString final class IndexInfo {
     private final Map<String, Object> metadata;
 
     public IndexInfo(String treeName, String attributeName, IndexType indexType,
-            @Nullable Map<String, Object> metadata) {
+            Map<String, Object> metadata) {
         this.indexId = getIndexId(treeName, attributeName);
         this.treeName = treeName;
         this.attributeName = attributeName;
@@ -137,7 +136,7 @@ public @ToString final class IndexInfo {
     public static Set<String> getMaterializedAttributeNames(IndexInfo info) {
         Set<String> availableAttNames = Collections.emptySet();
 
-        final @Nullable String[] attNames = (String[]) info.getMetadata()
+        final String[] attNames = (String[]) info.getMetadata()
                 .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
         if (attNames != null) {
             availableAttNames = Set.of(attNames);
@@ -147,18 +146,18 @@ public @ToString final class IndexInfo {
 
     @SuppressWarnings("unchecked")
     public static Map<String, Object> getMaterializedAttributes(Node n) {
-        Object v = n.getExtraData(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
+        Object v = n.getExtraData(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA).orElse(null);
         Preconditions.checkArgument(v == null || v instanceof Map);
         return (Map<String, Object>) v;
     }
 
-    public static @Nullable Object getMaterializedAttribute(String attName, Node n) {
+    public static Object getMaterializedAttribute(String attName, Node n) {
         Map<String, Object> ma = getMaterializedAttributes(n);
         Object o = ma == null ? null : ma.get(attName);
         return o;
     }
 
-    public static @Nullable Envelope getMaxBounds(IndexInfo info) {
+    public static Envelope getMaxBounds(IndexInfo info) {
         Envelope maxBounds = (Envelope) info.getMetadata().get(IndexInfo.MD_QUAD_MAX_BOUNDS);
         return maxBounds;
     }

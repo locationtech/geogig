@@ -17,7 +17,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
@@ -208,7 +207,6 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
         final int childDepthIndex = rootId.depthLength();
 
         final TreeId expandsTo;
-        @Nullable
         Quadrant quadrant = computeQuadrant(treeBounds, childDepthIndex);
         if (quadrant == null) {
             final int unpromotableBucketIndex = unpromotableBucketIndex();
@@ -359,7 +357,6 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      *         {@link Node#bounds() bounds} {@link Envelope} or {@code null}
      */
     public @Override NodeId computeId(final Node node) {
-        @Nullable
         Envelope bounds = node.bounds().orElse(null);
         return new NodeId(node.getName(), bounds);
     }
@@ -396,8 +393,7 @@ final class QuadTreeClusteringStrategy extends ClusteringStrategy {
      * @return the quadrant the bounds fall into, or {@code null} if bounds can't be fully contained
      *         by a quadrant at the given depth, or {@link #maxDepth} has been reached.
      */
-    @Nullable
-    Quadrant computeQuadrant(@Nullable Envelope nodeBounds, final int depthIndex) {
+    Quadrant computeQuadrant(Envelope nodeBounds, final int depthIndex) {
         if (depthIndex >= maxDepth || nodeBounds == null || nodeBounds.isNull()) {
             return null;
         }

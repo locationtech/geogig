@@ -12,7 +12,6 @@ package org.locationtech.geogig.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -35,7 +34,7 @@ import lombok.experimental.Accessors;
  */
 public final @Accessors(fluent = true) class RevFeatureBuilder {
 
-    private @Setter @Nullable ObjectId id;
+    private @Setter ObjectId id;
 
     private ArrayList</* @Nullable */Object> values = new ArrayList<>(5);
 
@@ -65,7 +64,7 @@ public final @Accessors(fluent = true) class RevFeatureBuilder {
      * Adds the provided value to the tail of the sequence of attribute values that compose the
      * {@link RevFeature} being built.
      */
-    public RevFeatureBuilder addValue(@Nullable Object value) {
+    public @NonNull RevFeatureBuilder addValue(Object value) {
         return addValueNoCopy(value);
     }
 
@@ -73,7 +72,7 @@ public final @Accessors(fluent = true) class RevFeatureBuilder {
      * Use with caution, this object takes ownership of {@code value} without making a safe copy of
      * it.
      */
-    public RevFeatureBuilder addValueNoCopy(@Nullable Object value) {
+    public @NonNull RevFeatureBuilder addValueNoCopy(Object value) {
         if (value instanceof Geometry) {
             value = normalizeIfNeeded((Geometry) value);
         }

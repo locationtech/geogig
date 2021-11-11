@@ -364,7 +364,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             }
 
             // Update HEAD ref
-            if (!remote.getMapped()) {
+            if (!remote.isMapped()) {
                 Optional<Ref> remoteHead = remoteRepo.headRef();
                 if (remoteHead.isPresent() && !remoteHead.get().getObjectId().isNull()) {
                     updateLocalRef(remoteHead.get(), remote, localRemoteRefs);
@@ -411,7 +411,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
             Remote remote) {
 
         final Optional<Integer> repoDepth = repository().getDepth();
-        final boolean getTags = args.fetchTags && !remote.getMapped()
+        final boolean getTags = args.fetchTags && !remote.isMapped()
                 && (!repoDepth.isPresent() || args.fullDepth);
 
         Set<Ref> remoteRemoteRefs;
@@ -444,7 +444,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
         } else {
             ObjectId effectiveId = remoteRef.getObjectId();
 
-            if (remote.getMapped() && !geogig().objects().commitExists(remoteRef.getObjectId())) {
+            if (remote.isMapped() && !geogig().objects().commitExists(remoteRef.getObjectId())) {
                 effectiveId = graphDatabase().getMapping(effectiveId);
             }
             updatedRef = command(UpdateRef.class).setName(refName).setNewValue(effectiveId)
@@ -464,7 +464,7 @@ public class FetchOp extends AbstractGeoGigOp<TransferSummary> {
 
         for (Ref remoteRef : remoteRefs) {// refs/heads/xxx or refs/tags/yyy, though we don't handle
                                           // tags yet
-            if (remote.getMapped()
+            if (remote.isMapped()
                     && !remoteRef.localName().equals(Ref.localName(remote.getMappedBranch()))) {
                 // for a mapped remote, we are only interested in the branch we are mapped to
                 continue;

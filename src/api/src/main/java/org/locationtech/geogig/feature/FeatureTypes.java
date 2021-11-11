@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CRS;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
@@ -97,7 +96,7 @@ public class FeatureTypes {
         return builder.build();
     }
 
-    private static @Nullable CoordinateReferenceSystem toCrs(@Nullable String srid) {
+    private static CoordinateReferenceSystem toCrs(String srid) {
         CoordinateReferenceSystem crs = null;
         if (srid != null) {
             Integer id = Integer.parseInt(srid);

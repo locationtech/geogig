@@ -85,7 +85,7 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                         featureTypes.put(newObject.getMetadataId(), featureType);
                     }
 
-                    String name = diffEntry.newPath();
+                    String name = diffEntry.path();
                     patch.addAddedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
                     ObjectId metadataId = diffEntry.getNewObject().getMetadataId();
@@ -109,7 +109,7 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                                 .get();
                         featureTypes.put(oldObject.getMetadataId(), featureType);
                     }
-                    String name = diffEntry.oldPath();
+                    String name = diffEntry.path();
                     patch.addRemovedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
                     ObjectId metadataId = diffEntry.getOldObject().getMetadataId();

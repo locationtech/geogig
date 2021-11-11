@@ -12,7 +12,6 @@ package org.locationtech.geogig.flatbuffers;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.FLATGEOMETRY;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.GeometryType;
 import org.locationtech.jts.geom.Coordinate;
@@ -79,8 +78,7 @@ final @UtilityClass class GeometryFlatSerializer {
         return FLATGEOMETRY.createFLATGEOMETRY(builder, dimension, type, ordinatesOffset);
     }
 
-    public static @Nullable Geometry decode(@NonNull FLATGEOMETRY fg,
-            @NonNull GeometryFactory geomFac) {
+    public static Geometry decode(@NonNull FLATGEOMETRY fg, @NonNull GeometryFactory geomFac) {
 
         final int dimension = fg.dimension();
         final byte geometryType = fg.type();

@@ -84,11 +84,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.jdt</groupId>
-      <artifactId>org.eclipse.jdt.annotation</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>

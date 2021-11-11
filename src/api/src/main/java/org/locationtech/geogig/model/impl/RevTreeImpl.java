@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -32,8 +31,8 @@ abstract class RevTreeImpl extends AbstractRevObject implements RevTree {
 
         private final Node[] trees;
 
-        public LeafTree(final ObjectId id, final long size, final @Nullable Node[] features,
-                @Nullable Node[] trees) {
+        public LeafTree(final @NonNull ObjectId id, final long size, final Node[] features,
+                Node[] trees) {
             super(id, size);
             this.features = features;
             this.trees = trees;

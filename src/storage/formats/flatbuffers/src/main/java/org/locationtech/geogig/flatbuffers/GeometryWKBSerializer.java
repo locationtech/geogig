@@ -12,7 +12,6 @@ package org.locationtech.geogig.flatbuffers;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.WKBGEOMETRY;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -35,8 +34,7 @@ final @UtilityClass class GeometryWKBSerializer {
         return WKBGEOMETRY.createWKBGEOMETRY(builder, valueVector);
     }
 
-    public static @Nullable Geometry decode(@NonNull WKBGEOMETRY wkb,
-            @NonNull GeometryFactory geomFac) {
+    public static Geometry decode(@NonNull WKBGEOMETRY wkb, @NonNull GeometryFactory geomFac) {
 
         ByteBuffer bb = wkb.valueAsByteBuffer();
         WKBReader reader = new WKBReader(geomFac);

@@ -4,8 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.FieldType;
+
+import lombok.NonNull;
 
 /**
  * Holds on the node's extra data as an array of objects to lower the memory impact of HashMap, and
@@ -21,7 +22,7 @@ public class ExtraData {
         this.kvp = kvp;
     }
 
-    public @Nullable Object get(String key) {
+    public Object get(String key) {
         for (int i = 0; i < kvp.length; i += 2) {
             if (Objects.equals(kvp[i], key)) {
                 return safeCopy(kvp[i + 1]);
@@ -44,7 +45,7 @@ public class ExtraData {
         return map;
     }
 
-    static ExtraData of(@Nullable Map<String, Object> map) {
+    static @NonNull ExtraData of(Map<String, Object> map) {
         if (null == map || map.isEmpty()) {
             return EMPTY;
         }

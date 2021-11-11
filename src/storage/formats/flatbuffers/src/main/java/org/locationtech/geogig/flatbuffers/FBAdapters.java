@@ -12,7 +12,6 @@ package org.locationtech.geogig.flatbuffers;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.crs.CRS;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
@@ -70,7 +69,7 @@ final @UtilityClass class FBAdapters {
 
         FeatureTypeBuilder featureTypeBuilder = FeatureType.builder();
         featureTypeBuilder.name(toName(t.name()));
-        final @Nullable String defaultGeometryName = t.defaultGeometryName();
+        final String defaultGeometryName = t.defaultGeometryName();
         // TODO: implement default geometry setting in geogig's feature model
         // featureTypeBuilder.setDefaultGeometry(defaultGeometryName);
 
@@ -90,7 +89,7 @@ final @UtilityClass class FBAdapters {
 
             final Name descriptorName = toName(descriptor.name());
             final Name attributeTypeName = toName(type.name());
-            final @Nullable CoordinateReferenceSystem crs = geometric ? resolveCrs(type) : null;
+            final CoordinateReferenceSystem crs = geometric ? resolveCrs(type) : null;
 
             final PropertyDescriptor attributeDescriptor = PropertyDescriptor.builder()
                     .name(descriptorName).typeName(attributeTypeName).binding(binding)

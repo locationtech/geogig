@@ -280,6 +280,7 @@
         <groupId>org.eclipse.jdt</groupId>
         <artifactId>org.eclipse.jdt.annotation</artifactId>
         <version>${jdt-annotation.version}</version>
+        <optional>true</optional>
       </dependency>
 
       <dependency>

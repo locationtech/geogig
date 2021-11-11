@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.model;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 
 import lombok.NonNull;
@@ -18,7 +17,7 @@ import lombok.experimental.Accessors;
 
 public @Accessors(fluent = true) class RevFeatureTypeBuilder {
 
-    private @Setter @Nullable ObjectId id;
+    private @Setter ObjectId id;
 
     private @Setter FeatureType type;
 
@@ -39,7 +38,7 @@ public @Accessors(fluent = true) class RevFeatureTypeBuilder {
      * {@link ObjectId id} without verifying the SHA-1 matches the contents of the
      * {@link RevFeatureType}
      */
-    public RevFeatureType build(@Nullable ObjectId id, @NonNull FeatureType featureType) {
+    public @NonNull RevFeatureType build(ObjectId id, @NonNull FeatureType featureType) {
         ObjectId oid = id == null ? HashObjectFunnels.hashFeatureType(featureType) : id;
         return RevObjectFactory.defaultInstance().createFeatureType(oid, featureType);
     }

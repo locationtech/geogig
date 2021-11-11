@@ -26,7 +26,7 @@ public class RemoteTest {
         assertEquals("fetchurl", remote.getFetchURL());
         assertEquals("pushurl", remote.getPushURL());
         assertEquals("fetch", remote.getFetchSpec());
-        assertEquals(true, remote.getMapped());
+        assertEquals(true, remote.isMapped());
         assertEquals("mappedBranch", remote.getMappedBranch());
         assertEquals("username", remote.getUserName());
         assertEquals("password", remote.getPassword());
@@ -37,7 +37,7 @@ public class RemoteTest {
         assertEquals("fetchurl", remote2.getFetchURL());
         assertEquals("pushurl", remote2.getPushURL());
         assertEquals("fetch", remote2.getFetchSpec());
-        assertEquals(false, remote2.getMapped());
+        assertEquals(false, remote2.isMapped());
         assertEquals("*", remote2.getMappedBranch());
         assertEquals(null, remote2.getUserName());
         assertEquals(null, remote2.getPassword());
@@ -60,14 +60,14 @@ public class RemoteTest {
             new Remote("name", "validuri", null, "fetch", false, null, null, null);
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("Invalid remote URL.", e.getMessage());
+            assertEquals("Invalid remote URL: null", e.getMessage());
         }
 
         try {
             new Remote("name", null, "validuri", "fetch", false, null, null, null);
             fail();
         } catch (IllegalArgumentException e) {
-            assertEquals("Invalid remote URL.", e.getMessage());
+            assertEquals("Invalid remote URL: null", e.getMessage());
         }
     }
 

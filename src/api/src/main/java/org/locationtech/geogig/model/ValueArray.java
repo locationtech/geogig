@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
@@ -46,7 +45,7 @@ public interface ValueArray extends Iterable<Object> {
      */
     public void forEach(final Consumer<Object> consumer);
 
-    public static @Nullable Object safeCopy(@Nullable Object value) {
+    public static Object safeCopy(Object value) {
         if (value == null) {
             return null;
         }

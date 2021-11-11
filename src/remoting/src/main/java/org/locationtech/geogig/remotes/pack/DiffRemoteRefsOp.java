@@ -10,7 +10,6 @@
 package org.locationtech.geogig.remotes.pack;
 
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,11 +88,10 @@ public class DiffRemoteRefsOp extends AbstractGeoGigOp<List<RefDiff>> {
             remotes = Maps.uniqueIndex(remoteRefs, Ref::getName);
             locals = Maps.uniqueIndex(remoteLocalRefs, Ref::getName);
         }
-        final boolean mapped = remote.getInfo().getMapped();
+        final boolean mapped = remote.getInfo().isMapped();
         if (mapped) {
             // for a mapped remote, we are only interested in the branch we are mapped to
             final String mappedBranch = remote.getInfo().getMappedBranch();
-            requireNonNull(mappedBranch);
             final String mappedBranchName = Ref.localName(mappedBranch);
 
             remotes = Maps.filterKeys(remotes,

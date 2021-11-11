@@ -58,7 +58,7 @@ public class CleanOp extends AbstractGeoGigOp<WorkingTree> {
                 .setFilter(path).call()) {
             final Iterator<DiffEntry> added = filter(unstaged,
                     input -> input.changeType().equals(ChangeType.ADDED));
-            workingTree().delete(transform(added, DiffEntry::newPath), getProgressListener());
+            workingTree().delete(transform(added, DiffEntry::path), getProgressListener());
         }
 
         return workingTree();

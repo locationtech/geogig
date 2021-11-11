@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -98,7 +97,7 @@ public class ObjectStoreDiffObjectIterator<T extends RevObject>
         return curr;
     }
 
-    private @Nullable DiffObjectInfo<T> computeNext() {
+    private DiffObjectInfo<T> computeNext() {
         if (nextBatch != null && nextBatch.hasNext()) {
             return nextBatch.next();
         }

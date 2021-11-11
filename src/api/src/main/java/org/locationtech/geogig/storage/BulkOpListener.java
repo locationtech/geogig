@@ -11,9 +11,9 @@ package org.locationtech.geogig.storage;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 
+import lombok.NonNull;
 import lombok.ToString;
 
 /**
@@ -38,7 +38,7 @@ public abstract class BulkOpListener {
      * @param object the object found
      * @param storageSizeBytes <b>optional</b> the object storage size, if known.
      */
-    public void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+    public void found(@NonNull ObjectId object, Integer storageSizeBytes) {
         // no-op
     }
 
@@ -50,7 +50,7 @@ public abstract class BulkOpListener {
      * @param object the object inserted
      * @param storageSizeBytes <b>optional</b> the object storage size, if known.
      */
-    public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+    public void inserted(@NonNull ObjectId object, Integer storageSizeBytes) {
         // no-op
     }
 
@@ -132,11 +132,11 @@ public abstract class BulkOpListener {
             this.target = target;
         }
 
-        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void found(ObjectId object, Integer storageSizeBytes) {
             target.found(object, storageSizeBytes);
         }
 
-        public void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public void inserted(ObjectId object, Integer storageSizeBytes) {
             target.inserted(object, storageSizeBytes);
         }
 
@@ -162,11 +162,11 @@ public abstract class BulkOpListener {
 
         private AtomicInteger notFound = new AtomicInteger();
 
-        public @Override void found(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void found(@NonNull ObjectId object, Integer storageSizeBytes) {
             found.incrementAndGet();
         }
 
-        public @Override void inserted(ObjectId object, @Nullable Integer storageSizeBytes) {
+        public @Override void inserted(@NonNull ObjectId object, Integer storageSizeBytes) {
             inserted.incrementAndGet();
         }
 

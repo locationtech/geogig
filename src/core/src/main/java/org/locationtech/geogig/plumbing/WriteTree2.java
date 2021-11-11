@@ -333,24 +333,16 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
             if (!strippedPathFilters.isEmpty()) {
                 final Set<String> expected = new HashSet<>(strippedPathFilters);
-                updatedIterator = Iterators.filter(updatedIterator, input -> {
-                    boolean applies;
-                    if (input.isDelete()) {
-                        applies = expected.contains(input.oldName());
-                    } else {
-                        applies = expected.contains(input.newName());
-                    }
-                    return applies;
-                });
+                updatedIterator = Iterators.filter(updatedIterator,
+                        de -> expected.contains(de.name()));
             }
 
             for (; updatedIterator.hasNext();) {
                 final DiffEntry diff = updatedIterator.next();
                 if (diff.isDelete()) {
-                    builder.remove(diff.oldNode());
+                    builder.remove(diff.oldNode().orElseThrow());
                 } else {
-                    NodeRef newObject = diff.getNewObject();
-                    Node node = newObject.getNode();
+                    Node node = diff.newNode().orElseThrow();
                     builder.put(node);
                 }
             }

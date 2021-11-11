@@ -9,17 +9,16 @@
  */
 package org.locationtech.geogig.model;
 
-import org.eclipse.jdt.annotation.Nullable;
-
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
 public @Accessors(fluent = true) @ToString class RevPersonBuilder {
 
-    private @Setter @Nullable String name;
+    private @Setter String name;
 
-    private @Setter @Nullable String email;
+    private @Setter String email;
 
     private @Setter long timeStamp;
 
@@ -29,8 +28,7 @@ public @Accessors(fluent = true) @ToString class RevPersonBuilder {
         return build(name, email, timeStamp, timeZoneOffset);
     }
 
-    public RevPerson build(@Nullable String name, @Nullable String email, long timeStamp,
-            int timeZoneOffset) {
+    public @NonNull RevPerson build(String name, String email, long timeStamp, int timeZoneOffset) {
         return RevObjectFactory.defaultInstance().createPerson(name, email, timeStamp,
                 timeZoneOffset);
 

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
@@ -49,7 +48,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * <p>
      * Can only be null for a root node (one with {@link NodeRef#ROOT} {@link Node#getName() name})
      */
-    @Nullable
+
     private String parentPath;
 
     /**
@@ -88,7 +87,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param newBounds the updated bounds
      * @return the newly created {@code NodeRef}
      */
-    public NodeRef update(final ObjectId newId, final @Nullable Envelope newBounds) {
+    public @NonNull NodeRef update(final @NonNull ObjectId newId, final Envelope newBounds) {
         Node newNode = node.update(newId, newBounds);
         return NodeRef.create(parentPath, newNode, metadataId);
     }
@@ -99,7 +98,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * 
      * @param node the {@code Node} to point to
      */
-    public static NodeRef createRoot(Node node) {
+    public static @NonNull NodeRef createRoot(@NonNull Node node) {
         Preconditions.checkArgument(NodeRef.ROOT.equals(node.getName()),
                 "A root NodeRef can only be created for a root node");
         return new NodeRef(node, null, ObjectId.NULL);
@@ -112,7 +111,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param node the {@code Node} to point to
      * @return the new {@code NodeRef}
      */
-    public static NodeRef create(String parentPath, Node node) {
+    public static @NonNull NodeRef create(String parentPath, @NonNull Node node) {
         return new NodeRef(node, parentPath, ObjectId.NULL);
     }
 
@@ -125,7 +124,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param metadataId the metadata id
      * @return the new {@code NodeRef}
      */
-    public static NodeRef create(String parentPath, Node node, ObjectId metadataId) {
+    public static @NonNull NodeRef create(String parentPath, @NonNull Node node,
+            @NonNull ObjectId metadataId) {
         return new NodeRef(node, parentPath, metadataId);
     }
 
@@ -149,14 +149,14 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * This is a derived property, shortcut for
      * <code>{@link #getParentPath()} + "/" + getNode().getName() </code>
      */
-    public String path() {
+    public @NonNull String path() {
         return NodeRef.appendChild(parentPath, node.getName());
     }
 
     /**
      * @return the simple name of the {@link Node} this object points to
      */
-    public String name() {
+    public @NonNull String name() {
         return node.getName();
     }
 
@@ -178,9 +178,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     public ObjectId getMetadataId() {
         if (node.getMetadataId().isPresent() && !node.getMetadataId().get().isNull()) {
             return node.getMetadataId().get();
-        } else {
-            return this.metadataId;
         }
+        return this.metadataId;
     }
 
     /**
@@ -250,7 +249,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return non null parent path, empty string if {@code fullPath} has no children (i.e. no
      *         {@link #PATH_SEPARATOR}).
      */
-    public static @Nullable String parentPath(@Nullable String fullPath) {
+    public static String parentPath(String fullPath) {
         if (fullPath == null || fullPath.isEmpty()) {
             return null;
         }
@@ -289,7 +288,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return non null node, original string if {@code fullPath} has no path (i.e. no
      *         {@link #PATH_SEPARATOR}).
      */
-    public static @Nullable String nodeFromPath(@Nullable String fullPath) {
+    public static String nodeFromPath(String fullPath) {
         if (fullPath == null || fullPath.isEmpty()) {
             return null;
         }
@@ -362,10 +361,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      */
     public static List<String> split(final @NonNull String path) {
         if (NodeRef.ROOT.equals(path)) {
-            return new ArrayList<>();
+            return List.of();
         }
-        List<String> split = Splitter.on(PATH_SEPARATOR).splitToList(path);
-        return split;
+        return Splitter.on(PATH_SEPARATOR).splitToList(path);
     }
 
     /**
@@ -376,7 +374,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * 
      * @return a new full path made by appending {@code childName} to {@code parentTreePath}
      */
-    public static String appendChild(String parentTreePath, @NonNull String childName) {
+    public static @NonNull String appendChild(String parentTreePath, @NonNull String childName) {
         checkArgument(parentTreePath != null || ROOT.equalsIgnoreCase(childName));
         return parentTreePath == null || ROOT.equals(parentTreePath) ? childName
                 : new StringBuilder(parentTreePath).append(PATH_SEPARATOR).append(childName)
@@ -406,7 +404,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @return the depth of the given path, being zero if the path is the root path (i.e. the empty
      *         string) or > 0 depending on how many steps compose the path
      */
-    public static int depth(String path) {
+    public static int depth(@NonNull String path) {
         return split(path).size();
     }
 
@@ -417,7 +415,8 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param childPath the child path to remove from
      * @return the stripped child path
      */
-    public static String removeParent(final String parentPath, final String childPath) {
+    public static @NonNull String removeParent(final @NonNull String parentPath,
+            final @NonNull String childPath) {
         checkArgument(isChild(parentPath, childPath));
         List<String> parent = split(parentPath);
         List<String> child = split(childPath);
@@ -445,7 +444,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * @param metadataId the metadata id of the tree
      * @return the newly constructed {@code NodeRef}
      */
-    public static NodeRef tree(@NonNull String treePath, @NonNull ObjectId id,
+    public static @NonNull NodeRef tree(@NonNull String treePath, @NonNull ObjectId id,
             @NonNull ObjectId metadataId) {
         NodeRef.checkValidPath(treePath);
         String parentPath = NodeRef.parentPath(treePath);

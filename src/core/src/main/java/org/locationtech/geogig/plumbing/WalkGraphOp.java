@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -26,8 +27,6 @@ import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.Consumer;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 public class WalkGraphOp extends AbstractGeoGigOp<Void> {
 

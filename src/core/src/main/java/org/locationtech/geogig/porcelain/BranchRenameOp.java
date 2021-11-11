@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;

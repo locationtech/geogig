@@ -11,14 +11,13 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevTag;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Resolves the branch specified or the current branch one if no branch name was given

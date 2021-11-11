@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
@@ -36,8 +37,6 @@ import org.locationtech.geogig.storage.postgresql.v9.PGConflictsDatabase;
 import org.locationtech.geogig.storage.postgresql.v9.PGIndexDatabase;
 import org.locationtech.geogig.storage.postgresql.v9.PGObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.v9.PGRefDatabase;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

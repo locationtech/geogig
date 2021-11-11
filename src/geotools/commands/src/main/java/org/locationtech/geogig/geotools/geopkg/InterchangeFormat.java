@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_DELETE;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_INSERT;
@@ -41,6 +41,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geopkg.FeatureEntry;
 import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.geom.GeoPkgGeomReader;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -68,7 +69,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;

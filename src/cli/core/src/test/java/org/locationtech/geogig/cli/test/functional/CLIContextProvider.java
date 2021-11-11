@@ -15,11 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.GlobalContextBuilder;
 import org.locationtech.geogig.test.TestPlatform;
-
-import com.google.common.base.Preconditions;
 
 import cucumber.api.Scenario;
 import cucumber.api.java.After;

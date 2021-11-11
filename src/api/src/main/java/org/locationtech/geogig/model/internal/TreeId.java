@@ -16,8 +16,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
+
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.primitives.UnsignedBytes;
 

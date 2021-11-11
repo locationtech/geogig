@@ -25,6 +25,7 @@ import org.geotools.feature.type.Types;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.Converters;
 import org.geotools.util.Utilities;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -47,7 +48,6 @@ import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 /**
  */

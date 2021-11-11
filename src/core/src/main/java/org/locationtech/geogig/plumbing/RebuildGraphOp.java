@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -21,8 +22,6 @@ import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Rebuilds the {@link GraphDatabase} and returns a list of {@link ObjectId}s that were found to be

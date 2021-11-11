@@ -37,6 +37,7 @@ import org.geotools.filter.identity.FeatureIdVersionedImpl;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -54,7 +55,6 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.identity.FeatureId;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.hash.Hasher;

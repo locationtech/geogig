@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -27,6 +28,7 @@ import org.geotools.data.store.ContentEntry;
 import org.geotools.data.store.ContentState;
 import org.geotools.feature.NameImpl;
 import org.geotools.util.logging.Logging;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.NodeRef;
@@ -54,7 +56,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import lombok.NonNull;
@@ -110,7 +111,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     public GeoGigDataStore(@NonNull Context context) {
         super();
         this.repository = context.repository();
-        Preconditions.checkNotNull(repository);
+        Objects.requireNonNull(repository);
         this._liveContext = context;
     }
 
@@ -401,9 +402,9 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     public GeogigDiffFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot,
             final ChangeType changeType) throws IOException {
-        Preconditions.checkNotNull(typeName, "typeName");
-        Preconditions.checkNotNull(oldRoot, "oldRoot");
-        Preconditions.checkNotNull(changeType, "changeType");
+        Objects.requireNonNull(typeName, "typeName");
+        Objects.requireNonNull(oldRoot, "oldRoot");
+        Objects.requireNonNull(changeType, "changeType");
 
         final Name name = name(typeName);
         ensureEntry(name);// make sure the featuretype exists
@@ -419,9 +420,9 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     public GeogigDiffFeatureSource getDiffFeatureSource(final String typeName, final String oldRoot,
             final Context oldContext, final ChangeType changeType) throws IOException {
-        Preconditions.checkNotNull(typeName, "typeName");
-        Preconditions.checkNotNull(oldRoot, "oldRoot");
-        Preconditions.checkNotNull(changeType, "changeType");
+        Objects.requireNonNull(typeName, "typeName");
+        Objects.requireNonNull(oldRoot, "oldRoot");
+        Objects.requireNonNull(changeType, "changeType");
 
         final Name name = name(typeName);
         ensureEntry(name);// make sure the featuretype exists
@@ -461,7 +462,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
     public static Optional<ObjectId> createOrUpdateIndex(Repository repository,
             @Nullable String branchOrHead, String featureTreePath, String... extraAttributes) {
 
-        Preconditions.checkNotNull(featureTreePath, "Layer name must not be null");
+        Objects.requireNonNull(featureTreePath, "Layer name must not be null");
         if (null == branchOrHead) {
             branchOrHead = Ref.HEAD;
         }

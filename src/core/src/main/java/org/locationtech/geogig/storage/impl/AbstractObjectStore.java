@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -66,7 +66,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      * @see org.locationtech.geogig.storage.ObjectDatabase#lookUp(java.lang.String)
      */
     public @Override List<ObjectId> lookUp(final String partialId) {
-        checkNotNull(partialId, "argument partialId is null");
+        requireNonNull(partialId, "argument partialId is null");
         checkArgument(partialId.length() > 7, "partial id must be at least 8 characters long: ",
                 partialId);
         checkOpen();
@@ -99,14 +99,14 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
     protected abstract List<ObjectId> lookUpInternal(byte[] raw);
 
     public @Override RevObject get(ObjectId id) {
-        checkNotNull(id, "argument id is null");
+        requireNonNull(id, "argument id is null");
         checkOpen();
 
         return get(id, true);
     }
 
     public @Override @Nullable RevObject getIfPresent(ObjectId id) {
-        checkNotNull(id, "argument id is null");
+        requireNonNull(id, "argument id is null");
         checkOpen();
 
         return get(id, false);
@@ -122,8 +122,8 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      *      org.locationtech.geogig.storage.impl.ObjectReader)
      */
     public @Override <T extends RevObject> T get(final ObjectId id, final Class<T> clazz) {
-        checkNotNull(id, "argument id is null");
-        checkNotNull(clazz, "argument class is null");
+        requireNonNull(id, "argument id is null");
+        requireNonNull(clazz, "argument class is null");
         checkOpen();
 
         RevObject obj = null;
@@ -139,8 +139,8 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
 
     public @Override @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> clazz)
             throws IllegalArgumentException {
-        checkNotNull(id, "argument id is null");
-        checkNotNull(clazz, "argument class is null");
+        requireNonNull(id, "argument id is null");
+        requireNonNull(clazz, "argument class is null");
         checkOpen();
         try {
             return clazz.cast(get(id, false));
@@ -197,7 +197,7 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
     protected abstract InputStream getRawInternal(ObjectId id, boolean failIfNotFound);
 
     public @Override boolean put(final RevObject object) {
-        checkNotNull(object, "argument object is null");
+        requireNonNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL %s", object);
         checkOpen();
 
@@ -215,8 +215,8 @@ public abstract class AbstractObjectStore extends AbstractStore implements Objec
      */
     public @Override void putAll(Iterator<? extends RevObject> objects,
             final BulkOpListener listener) {
-        checkNotNull(objects, "objects is null");
-        checkNotNull(listener, "listener is null");
+        requireNonNull(objects, "objects is null");
+        requireNonNull(listener, "listener is null");
         checkOpen();
 
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();

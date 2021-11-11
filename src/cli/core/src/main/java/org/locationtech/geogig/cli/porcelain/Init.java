@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import picocli.CommandLine.Command;

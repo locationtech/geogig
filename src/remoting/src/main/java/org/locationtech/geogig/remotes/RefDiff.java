@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.util.Optional;
 

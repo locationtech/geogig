@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.getNext;
+import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
@@ -43,7 +44,6 @@ import org.locationtech.geogig.storage.ObjectInfo;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.geogig.storage.impl.AbstractObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 
 import lombok.NonNull;
@@ -73,15 +73,15 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
      * @return true if the object exists, false otherwise
      */
     public @Override boolean exists(ObjectId id) {
-        checkNotNull(id, "id is null");
+        requireNonNull(id, "id is null");
         checkState(isOpen(), "db is closed");
         return objects.containsKey(id);
     }
 
     private <T extends RevObject> T get(ObjectId id, Class<T> type, boolean failIfAbsent)
             throws IllegalArgumentException {
-        checkNotNull(id, "argument id is null");
-        checkNotNull(type, "argument class is null");
+        requireNonNull(id, "argument id is null");
+        requireNonNull(type, "argument class is null");
         checkState(isOpen(), "db is closed");
         RevObject o = objects.get(id);
 
@@ -120,7 +120,7 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
      * @param objectId the id of the object to delete
      */
     public @Override void delete(ObjectId objectId) {
-        checkNotNull(objectId, "objectId is null");
+        requireNonNull(objectId, "objectId is null");
         checkState(isOpen(), "db is closed");
         objects.remove(objectId);
     }
@@ -140,7 +140,7 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
     }
 
     public @Override boolean put(final RevObject object) {
-        checkNotNull(object, "argument object is null");
+        requireNonNull(object, "argument object is null");
         checkArgument(!object.getId().isNull(), "ObjectId is NULL");
         checkState(isOpen(), "db is closed");
 
@@ -155,8 +155,8 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
 
     public @Override void putAll(Iterator<? extends RevObject> objects,
             final BulkOpListener listener) {
-        checkNotNull(objects, "objects is null");
-        checkNotNull(listener, "listener is null");
+        requireNonNull(objects, "objects is null");
+        requireNonNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
 
         objects.forEachRemaining((o) -> {
@@ -173,8 +173,8 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
     }
 
     public @Override void deleteAll(Iterator<ObjectId> ids, final BulkOpListener listener) {
-        checkNotNull(ids, "ids is null");
-        checkNotNull(listener, "listener is null");
+        requireNonNull(ids, "ids is null");
+        requireNonNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
 
         while (ids.hasNext()) {
@@ -199,9 +199,9 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
 
     public @Override <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
             final BulkOpListener listener, final Class<T> type) {
-        checkNotNull(ids, "ids is null");
-        checkNotNull(listener, "listener is null");
-        checkNotNull(type, "type is null");
+        requireNonNull(ids, "ids is null");
+        requireNonNull(listener, "listener is null");
+        requireNonNull(type, "type is null");
         checkState(isOpen(), "db is closed");
 
         final int characteristics = IMMUTABLE | NONNULL | DISTINCT;
@@ -235,9 +235,9 @@ public class HeapObjectStore extends AbstractStore implements ObjectStore {
     public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
 
-        checkNotNull(refs, "refs is null");
-        checkNotNull(listener, "listener is null");
-        checkNotNull(type, "type is null");
+        requireNonNull(refs, "refs is null");
+        requireNonNull(listener, "listener is null");
+        requireNonNull(type, "type is null");
         checkState(isOpen(), "Database is closed");
 
         Iterator<ObjectInfo<T>> it = new AbstractIterator<ObjectInfo<T>>() {

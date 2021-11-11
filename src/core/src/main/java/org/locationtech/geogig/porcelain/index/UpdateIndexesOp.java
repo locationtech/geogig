@@ -1,7 +1,7 @@
 package org.locationtech.geogig.porcelain.index;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +58,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
      * @return a list of {@link Index} objects that represent updated indexes
      */
     protected @Override List<Index> _call() {
-        checkNotNull(rootRefSpec, "rootRefSpec not provided");
+        requireNonNull(rootRefSpec, "rootRefSpec not provided");
 
         final Ref branchRef = this.rootRefSpec;
 

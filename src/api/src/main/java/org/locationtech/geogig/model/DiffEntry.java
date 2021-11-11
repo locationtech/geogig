@@ -13,11 +13,11 @@ import java.util.Comparator;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

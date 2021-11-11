@@ -9,19 +9,18 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.RevTreeBuilder;
 import org.locationtech.geogig.model.internal.ClusteringStrategy;
 import org.locationtech.geogig.model.internal.DAGTreeBuilder;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.Setter;

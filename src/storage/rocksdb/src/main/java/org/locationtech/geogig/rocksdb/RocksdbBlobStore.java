@@ -18,12 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
 import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 class RocksdbBlobStore implements TransactionBlobStore, Closeable {

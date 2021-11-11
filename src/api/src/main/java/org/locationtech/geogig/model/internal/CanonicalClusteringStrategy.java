@@ -11,11 +11,11 @@ package org.locationtech.geogig.model.internal;
 
 import java.util.Comparator;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.RevTree;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Ordering;
 
 class CanonicalClusteringStrategy extends ClusteringStrategy {

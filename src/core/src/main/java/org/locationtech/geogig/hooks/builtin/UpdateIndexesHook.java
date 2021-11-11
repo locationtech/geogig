@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.model.ObjectId;
@@ -37,8 +38,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefChange;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;

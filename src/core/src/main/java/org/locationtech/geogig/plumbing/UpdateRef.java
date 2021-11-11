@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.Ref.HEAD;
 import static org.locationtech.geogig.model.Ref.STAGE_HEAD;
 import static org.locationtech.geogig.model.Ref.WORK_HEAD;

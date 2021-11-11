@@ -26,12 +26,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 import lombok.Getter;
 import lombok.NonNull;

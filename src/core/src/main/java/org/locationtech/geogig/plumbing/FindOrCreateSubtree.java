@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -78,8 +78,8 @@ public class FindOrCreateSubtree extends AbstractGeoGigOp<RevTree> {
      * @return the subtree if it was found, or a new one if it wasn't
      */
     protected @Override RevTree _call() {
-        checkNotNull(parentSupplier, "parent");
-        checkNotNull(childPath, "childPath");
+        requireNonNull(parentSupplier, "parent");
+        requireNonNull(childPath, "childPath");
 
         ObjectId subtreeId;
 

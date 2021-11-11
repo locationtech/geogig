@@ -11,10 +11,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Geometry;
-
-import com.google.common.base.Preconditions;
 
 import lombok.AccessLevel;
 import lombok.Builder;

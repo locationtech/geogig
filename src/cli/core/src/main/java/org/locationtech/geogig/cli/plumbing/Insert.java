@@ -17,8 +17,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
@@ -39,7 +41,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.io.Files;
@@ -157,7 +158,7 @@ public class Insert extends AbstractCommand implements CLICommand {
                     "Wrong attribute definition: " + featureChanges.get(i));
             String fieldName = tokens[0];
             PropertyDescriptor desc = ft.getDescriptor(fieldName);
-            Preconditions.checkNotNull(desc, "Wrong attribute in feature description");
+            Objects.requireNonNull(desc, "Wrong attribute in feature description");
             FieldType type = FieldType.forBinding(desc.getBinding());
             Object value = TextValueSerializer.fromString(type, tokens[1]);
             f.setAttribute(tokens[0], value);

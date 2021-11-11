@@ -15,6 +15,7 @@ import java.util.NoSuchElementException;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureWriter;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.geotools.adapt.GT;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Preconditions;
 
 /**
  *

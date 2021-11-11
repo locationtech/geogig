@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
@@ -20,7 +21,6 @@ import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.TableNames;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Streams;
 
 import lombok.NonNull;

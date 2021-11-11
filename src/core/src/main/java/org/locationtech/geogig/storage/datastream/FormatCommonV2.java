@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.Integer.toBinaryString;
 import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarLong;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
@@ -30,6 +30,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.crs.CRS;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
@@ -55,7 +56,6 @@ import org.locationtech.geogig.plumbing.HashObject;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import com.google.common.base.Preconditions;
 import com.google.common.math.DoubleMath;
 
 import lombok.Value;

@@ -45,6 +45,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 import org.hamcrest.Matchers;
 import org.hamcrest.core.StringStartsWith;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.ArgumentTokenizer;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
@@ -80,7 +81,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.common.io.Files;

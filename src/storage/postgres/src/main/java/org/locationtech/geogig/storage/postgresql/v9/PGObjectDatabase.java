@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObject.TYPE;
@@ -22,8 +23,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.postgresql.config.ConnectionConfig;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
-
-import com.google.common.base.Preconditions;
 
 /**
  * PostgreSQL implementation for {@link ObjectDatabase}.

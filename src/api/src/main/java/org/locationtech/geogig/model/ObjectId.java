@@ -14,7 +14,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
+
 import com.google.common.collect.Ordering;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hashing;

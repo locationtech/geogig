@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -55,7 +56,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -162,7 +162,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     public @Override boolean exists(ObjectId id) {
         checkOpen();
-        checkNotNull(id, "argument id is null");
+        requireNonNull(id, "argument id is null");
 
         try (RocksDBReference dbRef = dbhandle.getReference()) {
             return exists(dbRef, bulkReadOptions, id.getRawValue());
@@ -181,7 +181,7 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     }
 
     public @Override void delete(ObjectId objectId) {
-        checkNotNull(objectId, "argument objectId is null");
+        requireNonNull(objectId, "argument objectId is null");
         checkWritable();
         byte[] key = objectId.getRawValue();
         try (RocksDBReference dbRef = dbhandle.getReference()) {
@@ -198,9 +198,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     public @Override <T extends RevObject> Iterator<T> getAll(final Iterable<ObjectId> ids,
             final BulkOpListener listener, final Class<T> type) {
-        checkNotNull(ids, "ids is null");
-        checkNotNull(listener, "listener is null");
-        checkNotNull(type, "type is null");
+        requireNonNull(ids, "ids is null");
+        requireNonNull(listener, "listener is null");
+        requireNonNull(type, "type is null");
         checkOpen();
 
         return new AbstractIterator<T>() {
@@ -245,8 +245,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     }
 
     public @Override void deleteAll(Iterator<ObjectId> ids, BulkOpListener listener) {
-        checkNotNull(ids, "argument objectId is null");
-        checkNotNull(listener, "argument listener is null");
+        requireNonNull(ids, "argument objectId is null");
+        requireNonNull(listener, "argument listener is null");
         checkWritable();
 
         final boolean checkExists = !BulkOpListener.NOOP_LISTENER.equals(listener);
@@ -346,8 +346,8 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
 
     public @Override final void putAll(Iterator<? extends RevObject> objects,
             final BulkOpListener listener) {
-        checkNotNull(objects, "objects is null");
-        checkNotNull(listener, "listener is null");
+        requireNonNull(objects, "objects is null");
+        requireNonNull(listener, "listener is null");
         checkWritable();
 
         final boolean checkExists = !BulkOpListener.NOOP_LISTENER.equals(listener);
@@ -406,9 +406,9 @@ public class RocksdbObjectStore extends AbstractObjectStore implements ObjectSto
     public @Override <T extends RevObject> AutoCloseableIterator<ObjectInfo<T>> getObjects(
             Iterator<NodeRef> refs, BulkOpListener listener, Class<T> type) {
 
-        checkNotNull(refs, "refs is null");
-        checkNotNull(listener, "listener is null");
-        checkNotNull(type, "type is null");
+        requireNonNull(refs, "refs is null");
+        requireNonNull(listener, "listener is null");
+        requireNonNull(type, "type is null");
         checkOpen();
 
         return new AutoCloseableIterator<ObjectInfo<T>>() {

@@ -5,6 +5,7 @@ import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
 
@@ -24,8 +25,6 @@ import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
-
 import lombok.NonNull;
 
 class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runnable {
@@ -43,7 +42,7 @@ class ContentIdsProducer implements java.util.function.Consumer<ObjectId>, Runna
             @NonNull Deduplicator deduplicator, @NonNull ObjectReporter objectReport) {
 
         Envelope maxBounds = IndexInfo.getMaxBounds(indexInfo);
-        Preconditions.checkNotNull(maxBounds);
+        Objects.requireNonNull(maxBounds);
         NodeOrdering diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
 
         boolean reportFeatures = false;

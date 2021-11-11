@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.flatbuffers.FlatBuffersRevObjectFactory;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.impl.CanonicalTreeBuilder;
@@ -27,8 +28,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-
-import com.google.common.base.Preconditions;
 
 @State(Scope.Benchmark)
 public class RevTreeBuilderBenchmarkState {

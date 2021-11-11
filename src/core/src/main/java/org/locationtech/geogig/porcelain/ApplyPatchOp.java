@@ -18,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.FeatureType.FeatureTypeBuilder;
@@ -40,8 +41,6 @@ import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Applies a patch to the working tree. If partial application of the patch is allowed, it returns a

@@ -12,11 +12,10 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 import java.io.File;
 
 import org.geotools.data.DataStore;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.geotools.cli.base.DataStoreDescribe;
 import org.locationtech.geogig.geotools.plumbing.DescribeOp;
-
-import com.google.common.base.Preconditions;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParentCommand;

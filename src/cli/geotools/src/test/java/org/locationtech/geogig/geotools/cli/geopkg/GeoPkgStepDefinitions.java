@@ -22,12 +22,11 @@ import org.geotools.data.DefaultTransaction;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.junit.rules.TemporaryFolder;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.test.functional.CLIContext;
 import org.locationtech.geogig.cli.test.functional.CLIContextProvider;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
-
-import com.google.common.base.Preconditions;
 
 import cucumber.api.Scenario;
 import cucumber.api.java.en.When;

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -35,9 +36,9 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.storage.datastream.Varint;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.io.ByteStreams;
@@ -210,7 +211,7 @@ public class PersistedIterable<T> implements Iterable<T>, AutoCloseable {
     }
 
     public InputStream getAsStream() throws IOException {
-        Preconditions.checkNotNull(this.serializedFile);
+        Objects.requireNonNull(this.serializedFile);
         save();
         Preconditions.checkState(Files.exists(this.serializedFile));
         InputStream stream = Files.newInputStream(serializedFile, StandardOpenOption.READ);

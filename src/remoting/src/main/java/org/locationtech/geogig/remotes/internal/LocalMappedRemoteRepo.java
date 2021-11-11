@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.net.URI;
 import java.util.LinkedList;

@@ -18,6 +18,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Finds the common {@link RevCommit commit} ancestor of two commits.

@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 
 import java.sql.Array;
@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.AbstractStore;
@@ -36,7 +38,6 @@ import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterables;
 
@@ -79,7 +80,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
 
     public PGConflictsDatabase(@NonNull Environment env) throws IllegalArgumentException {
         super(env.isReadOnly());
-        Preconditions.checkNotNull(env.getRepositoryName(), "Repository name not provided");
+        Objects.requireNonNull(env.getRepositoryName(), "Repository name not provided");
         this.env = env;
         this.conflictsTable = env.getTables().conflicts();
     }
@@ -94,7 +95,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
 
     public @Override void addConflict(@Nullable String ns, final @NonNull Conflict conflict) {
         final String path = conflict.getPath();
-        Preconditions.checkNotNull(path);
+        Objects.requireNonNull(path);
 
         final String namespace = namespace(ns);
         final String sql = format(
@@ -142,7 +143,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
             try (PreparedStatement ps = cx.prepareStatement(sql)) {
                 for (Conflict conflict : conflicts) {
                     final String path = conflict.getPath();
-                    Preconditions.checkNotNull(path);
+                    Objects.requireNonNull(path);
 
                     ps.setInt(1, env.getRepositoryId());
                     ps.setString(2, namespace);
@@ -362,7 +363,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     public @Override void removeConflict(final @Nullable String ns, final String path) {
-        checkNotNull(path, "path is null");
+        requireNonNull(path, "path is null");
         final String namespace = namespace(ns);
 
         final String sql = format(
@@ -390,7 +391,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     public @Override void removeConflicts(final @Nullable String ns, final Iterable<String> paths) {
-        checkNotNull(paths, "paths is null");
+        requireNonNull(paths, "paths is null");
         final String namespace = namespace(ns);
 
         final String sql = format(
@@ -449,7 +450,7 @@ public class PGConflictsDatabase extends AbstractStore implements ConflictsDatab
     }
 
     public @Override Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths) {
-        checkNotNull(paths, "paths is null");
+        requireNonNull(paths, "paths is null");
 
         Set<String> matches = new HashSet<>();
 

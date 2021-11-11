@@ -16,10 +16,9 @@ import java.util.HashMap;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Parses a string representing a timestamp.

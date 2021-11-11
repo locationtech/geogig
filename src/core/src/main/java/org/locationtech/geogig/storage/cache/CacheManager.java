@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.cache;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.lang.management.ManagementFactory;
@@ -214,7 +214,7 @@ public class CacheManager implements CacheManagerBean {
 
     long getCacheSizePercent(double percent) {
         checkArgument(percent >= 0d && percent <= 0.9,
-                "percent must be between zero and 90% (0.9)");
+                "percent must be between zero and 90%% (0.9)");
 
         final long maxMemory = getMaximumHeapSize();
         // Use up to 10% of the heap by default

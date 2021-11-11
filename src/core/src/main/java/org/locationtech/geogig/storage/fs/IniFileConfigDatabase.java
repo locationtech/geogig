@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
@@ -22,8 +23,6 @@ import org.locationtech.geogig.storage.ConfigException;
 import org.locationtech.geogig.storage.ConfigException.StatusCode;
 import org.locationtech.geogig.storage.ConfigStore;
 import org.locationtech.geogig.storage.internal.AbstractConfigDatabase;
-
-import com.google.common.base.Preconditions;
 
 public class IniFileConfigDatabase extends AbstractConfigDatabase {
 

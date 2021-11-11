@@ -3,14 +3,13 @@ package org.locationtech.geogig.di;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingRefDatabase;
 import org.locationtech.geogig.storage.memory.HeapRefDatabase;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

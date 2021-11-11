@@ -9,19 +9,18 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

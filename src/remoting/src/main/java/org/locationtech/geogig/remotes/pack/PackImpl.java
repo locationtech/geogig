@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.ArrayList;
@@ -81,7 +81,7 @@ class PackImpl implements Pack {
         try {
             for (RefRequest req : reqs) {
                 RefDiff changedRef = applyToPreOrder(target, req, deduplicator, progress);
-                checkNotNull(changedRef);
+                requireNonNull(changedRef);
                 appliedDiffs.add(changedRef);
             }
         } finally {
@@ -121,7 +121,7 @@ class PackImpl implements Pack {
         progress.setProgressIndicator((p) -> objectReport.toString());
 
         final List<RevCommit> commits = missingCommits.get(req);
-        checkNotNull(commits);
+        requireNonNull(commits);
 
         final ObjectDatabase sourceStore = source.context().objectDatabase();
 
@@ -217,7 +217,7 @@ class PackImpl implements Pack {
         progress.setProgressIndicator((p) -> objectReport.toString());
 
         final List<IndexDef> indexes = missingIndexes.get(req);
-        checkNotNull(indexes);
+        requireNonNull(indexes);
 
         final IndexDatabase sourceStore = source.context().indexDatabase();
         try {

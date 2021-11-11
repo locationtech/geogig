@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.plumbing.ResolveGeogigURI;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
@@ -36,8 +37,6 @@ import org.locationtech.geogig.storage.RefDatabase;
 import org.locationtech.geogig.storage.impl.Blobs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.experimental.Accessors;

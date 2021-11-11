@@ -18,6 +18,7 @@ import javax.sql.DataSource;
 
 import org.geotools.data.DataStore;
 import org.geotools.geopkg.GeoPackage;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.GeogigCLI;
 import org.locationtech.geogig.geotools.cli.base.DataStoreImport;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.geotools.geopkg.GeoPkgForwardingFeatureIteratorPr
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
 import org.locationtech.geogig.geotools.plumbing.ForwardingFeatureIteratorProvider;
 import org.locationtech.geogig.geotools.plumbing.ImportOp;
-
-import com.google.common.base.Preconditions;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ParentCommand;

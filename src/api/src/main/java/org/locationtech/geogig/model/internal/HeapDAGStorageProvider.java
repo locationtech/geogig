@@ -17,12 +17,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 class HeapDAGStorageProvider implements DAGStorageProvider {
 

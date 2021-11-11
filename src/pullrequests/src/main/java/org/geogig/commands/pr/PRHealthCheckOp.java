@@ -9,7 +9,7 @@
  */
 package org.geogig.commands.pr;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
 import java.util.Iterator;
@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -32,7 +33,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 import lombok.NonNull;

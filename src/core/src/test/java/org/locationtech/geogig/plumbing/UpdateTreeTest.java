@@ -17,6 +17,7 @@ import static org.locationtech.geogig.model.impl.RevObjectTestSupport.hashString
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -28,8 +29,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
-
-import com.google.common.base.Preconditions;
 
 /**
  *

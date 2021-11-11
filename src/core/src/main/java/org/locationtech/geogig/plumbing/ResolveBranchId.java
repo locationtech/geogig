@@ -12,11 +12,10 @@ package org.locationtech.geogig.plumbing;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Given an id, returns the ref that points to that id, if it exists

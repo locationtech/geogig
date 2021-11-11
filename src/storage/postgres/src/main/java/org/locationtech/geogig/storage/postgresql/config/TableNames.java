@@ -12,7 +12,7 @@ package org.locationtech.geogig.storage.postgresql.config;
 import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
 
 import lombok.NonNull;
 

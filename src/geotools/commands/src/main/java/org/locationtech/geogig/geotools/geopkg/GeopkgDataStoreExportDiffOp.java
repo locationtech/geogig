@@ -23,6 +23,7 @@ import java.util.function.Function;
 import org.geotools.data.DataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.geotools.plumbing.DataStoreExportOp;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
@@ -32,8 +33,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Exports changes between two commits to a geopackage file. The features that were changed between

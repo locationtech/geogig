@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.DiffEntry.ChangeType;
 import org.locationtech.geogig.model.Node;
@@ -32,8 +33,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,

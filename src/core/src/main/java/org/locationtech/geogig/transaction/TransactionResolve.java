@@ -12,9 +12,8 @@ package org.locationtech.geogig.transaction;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Resolves a provided UUID to a {@link GeogigTransaction} if it exists, or {@link Optional#empty()}

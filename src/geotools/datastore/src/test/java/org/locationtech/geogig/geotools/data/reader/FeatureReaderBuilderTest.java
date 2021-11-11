@@ -43,6 +43,7 @@ import org.geotools.util.factory.Hints;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.DiffEntry;
@@ -69,7 +70,6 @@ import org.opengis.filter.PropertyIsNotEqualTo;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.sort.SortBy;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 public class FeatureReaderBuilderTest extends RepositoryTestCase {

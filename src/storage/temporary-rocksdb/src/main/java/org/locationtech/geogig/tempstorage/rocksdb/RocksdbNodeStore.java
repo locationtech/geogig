@@ -21,6 +21,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.internal.DAGNode;
 import org.locationtech.geogig.model.internal.NodeId;
 import org.rocksdb.DBOptions;
@@ -31,7 +32,6 @@ import org.rocksdb.RocksObject;
 import org.rocksdb.WriteBatchWithIndex;
 import org.rocksdb.WriteOptions;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 import lombok.NonNull;

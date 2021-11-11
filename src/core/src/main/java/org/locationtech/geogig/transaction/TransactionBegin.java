@@ -12,12 +12,11 @@ package org.locationtech.geogig.transaction;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefDatabase;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Creates a new {@link GeogigTransaction} and copies all of the repository refs for that

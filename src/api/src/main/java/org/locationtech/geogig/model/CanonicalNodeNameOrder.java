@@ -12,7 +12,8 @@ package org.locationtech.geogig.model;
 import java.io.Serializable;
 import java.util.Comparator;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
+
 import com.google.common.primitives.UnsignedLong;
 
 /**

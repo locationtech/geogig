@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -42,6 +43,7 @@ import org.geotools.feature.type.AttributeDescriptorImpl;
 import org.geotools.filter.identity.FeatureIdImpl;
 import org.geotools.jdbc.JDBCFeatureSource;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.data.FeatureBuilder;
 import org.locationtech.geogig.data.ForwardingFeatureCollection;
 import org.locationtech.geogig.data.ForwardingFeatureIterator;
@@ -78,7 +80,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -397,7 +398,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
             } catch (IOException e) {
                 throw new GeoToolsOpException(StatusCode.TABLE_NOT_FOUND);
             }
-            Preconditions.checkNotNull(schema);
+            Objects.requireNonNull(schema);
             typeNames = new String[] { table };
         }
 
@@ -499,7 +500,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
                 return new FidAndFtOverrideFeature(next, fid, featureType);
             } else {
                 Object value = next.getAttribute(attributeName);
-                Preconditions.checkNotNull(value);
+                Objects.requireNonNull(value);
                 return new FidAndFtOverrideFeature(next, value.toString(), featureType);
             }
         }

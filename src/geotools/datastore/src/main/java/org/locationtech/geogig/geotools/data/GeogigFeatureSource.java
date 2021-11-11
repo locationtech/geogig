@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,6 +33,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.data.reader.FeatureReaderBuilder;
 import org.locationtech.geogig.geotools.data.reader.WalkInfo;
@@ -55,7 +56,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 /**
  *

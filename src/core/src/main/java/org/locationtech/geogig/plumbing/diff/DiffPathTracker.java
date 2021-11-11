@@ -13,12 +13,12 @@ import java.util.Optional;
 import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 public final class DiffPathTracker {
 

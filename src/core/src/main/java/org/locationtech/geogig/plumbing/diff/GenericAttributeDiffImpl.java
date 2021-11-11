@@ -9,15 +9,15 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 /**
  * Generic implementation of a difference between two values for a given attribute

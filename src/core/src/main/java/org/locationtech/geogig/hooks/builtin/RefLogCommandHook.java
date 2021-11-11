@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.hooks.CannotRunGeogigOperationException;
 import org.locationtech.geogig.hooks.CommandHook;
 import org.locationtech.geogig.model.Ref;
@@ -25,8 +26,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.RefChange;
 import org.locationtech.geogig.transaction.GeogigTransaction;
-
-import com.google.common.base.Preconditions;
 
 import lombok.extern.slf4j.Slf4j;
 

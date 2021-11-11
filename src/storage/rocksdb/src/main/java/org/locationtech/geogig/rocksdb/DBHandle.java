@@ -11,15 +11,15 @@ package org.locationtech.geogig.rocksdb;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.rocksdb.ColumnFamilyHandle;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 
@@ -118,7 +118,7 @@ class DBHandle {
     public void setMetadata(@NonNull String key, @NonNull String value) {
         Preconditions.checkState(!closed, "db is closed");
         Preconditions.checkState(!config.isReadOnly(), "db is read only");
-        Preconditions.checkNotNull(metadata);
+        Objects.requireNonNull(metadata);
 
         byte[] k = key.getBytes(StandardCharsets.UTF_8);
         byte[] v = value.getBytes(StandardCharsets.UTF_8);

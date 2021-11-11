@@ -12,10 +12,10 @@ package org.locationtech.geogig.storage.text;
 import java.lang.reflect.Array;
 import java.util.List;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.FieldType;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 
 import lombok.NonNull;

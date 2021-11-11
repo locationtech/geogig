@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 
@@ -40,8 +40,8 @@ public class ReceivePackOp extends AbstractGeoGigOp<List<RefDiff>> {
 
         PackProcessor processor = getPackProcessor();
         List<RefDiff> appliedChanges = pack.applyTo(processor, getProgressListener());
-        checkNotNull(appliedChanges);
-        appliedChanges.forEach((c) -> checkNotNull(c));
+        requireNonNull(appliedChanges);
+        appliedChanges.forEach((c) -> requireNonNull(c));
         return appliedChanges;
     }
 

@@ -15,11 +15,10 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

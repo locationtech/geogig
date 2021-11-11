@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
 
 import lombok.NonNull;
 

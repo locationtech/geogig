@@ -21,12 +21,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assert;
 import org.junit.rules.ExternalResource;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -44,7 +46,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -435,7 +436,7 @@ public class QuadTreeTestSupport extends ExternalResource {
         if (root.numBuckets() > 0) {
             for (TreeId bucketId : root.bucketList()) {
                 DAG child = getDAG(strategy, bucketId);
-                Preconditions.checkNotNull(child, "DAG %s not found", bucketId);
+                Objects.requireNonNull(child, "DAG not found: " + bucketId);
                 Set<NodeId> childnodes = getAllNodes(strategy, child);
                 for (NodeId id : childnodes) {
                     if (!nodes.add(id)) {

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.opengis.filter.Filter.INCLUDE;
 
 import java.util.ArrayList;

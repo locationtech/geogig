@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.storage.postgresql.config;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -24,9 +24,9 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.Hints;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 

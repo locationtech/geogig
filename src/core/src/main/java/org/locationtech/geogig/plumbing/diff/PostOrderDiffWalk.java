@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -152,7 +152,7 @@ public class PostOrderDiffWalk {
             String path = treePath(left, right);
 
             Entry entry = stack.remove(path);
-            checkNotNull(entry, "No entry for tree '%s'", path);
+            requireNonNull(entry, "No entry for tree " + path);
             entry.apply(consumer);
         }
 
@@ -173,7 +173,7 @@ public class PostOrderDiffWalk {
             final String path = bucketPath(leftParent, rightParent, bucketIndex);
 
             Entry entry = stack.remove(path);
-            checkNotNull(entry, "No entry for bucket %s", path);
+            requireNonNull(entry, "No entry for bucket " + path);
             entry.apply(consumer);
         }
     }

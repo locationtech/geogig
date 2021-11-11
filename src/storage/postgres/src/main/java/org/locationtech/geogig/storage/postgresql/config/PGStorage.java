@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.postgresql.config;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 
 import java.sql.Connection;
@@ -26,12 +26,11 @@ import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.impl.RepositoryBusyException;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

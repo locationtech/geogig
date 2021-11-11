@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Streams;
 
 /**
@@ -95,8 +95,8 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
      */
     protected @Override ObjectId _call() {
 
-        Preconditions.checkNotNull(since);
-        Preconditions.checkNotNull(until);
+        Objects.requireNonNull(since);
+        Objects.requireNonNull(until);
 
         GraphDatabase graphDb = graphDatabase();
         Repository repository = repository();

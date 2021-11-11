@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;

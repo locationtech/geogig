@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -120,7 +120,7 @@ class MaterializedIndexFeatureIterator implements AutoCloseableIterator<SimpleFe
         } else {
             final Map<String, Object> materializedAttributes;
             materializedAttributes = IndexInfo.getMaterializedAttributes(node.getNode());
-            checkNotNull(materializedAttributes);
+            requireNonNull(materializedAttributes);
 
             featureBuilder.reset();
             for (int i = 0; i < attributeDescriptors.size(); i++) {

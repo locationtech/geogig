@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.Iterator;

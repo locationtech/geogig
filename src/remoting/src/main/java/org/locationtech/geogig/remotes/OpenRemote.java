@@ -9,8 +9,9 @@
  */
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.locationtech.geogig.remotes.internal.IRemoteRepo;
@@ -19,8 +20,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Connects to a remote repository and returns its {@link IRemoteRepo} facade in an
@@ -48,7 +47,7 @@ public class OpenRemote extends AbstractGeoGigOp<IRemoteRepo> {
     }
 
     protected @Override IRemoteRepo _call() {
-        Preconditions.checkNotNull(remote, "remote to connect to not provided");
+        Objects.requireNonNull(remote, "remote to connect to not provided");
         Optional<IRemoteRepo> opRemote = RemoteResolver.newRemote(remote, remoteHints);
         checkArgument(opRemote.isPresent(), "Unknown remote type: " + remote.getFetchURL());
 

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,7 +40,7 @@ public class TransferSummary {
 
     public void addAll(final @NonNull String remoteURL, final @NonNull List<RefDiff> changes) {
         for (RefDiff cr : changes) {
-            checkNotNull(cr);
+            requireNonNull(cr);
         }
         refDiffs.putAll(remoteURL, changes);
     }

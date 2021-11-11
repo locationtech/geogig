@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.Value;

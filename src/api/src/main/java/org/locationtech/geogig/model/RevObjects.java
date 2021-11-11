@@ -18,11 +18,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.impl.Float32Bounds;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 import lombok.NonNull;

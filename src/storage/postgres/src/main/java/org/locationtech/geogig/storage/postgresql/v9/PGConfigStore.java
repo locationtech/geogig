@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.rollbackAndRethrow;
 
@@ -430,7 +430,7 @@ public class PGConfigStore extends AbstractStore implements ConfigStore {
      *         {@code repo.name} config property set to the {@code repositoryName} value
      */
     public Optional<Integer> resolveRepositoryPK(String repositoryName) throws SQLException {
-        checkNotNull(repositoryName, "provided null repository name");
+        requireNonNull(repositoryName, "provided null repository name");
         try (Connection cx = env.getConnection()) {
             return resolveRepositoryPK(repositoryName, cx);
         }

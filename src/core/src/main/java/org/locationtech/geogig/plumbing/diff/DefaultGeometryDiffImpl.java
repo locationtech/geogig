@@ -11,11 +11,10 @@ package org.locationtech.geogig.plumbing.diff;
 
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.jts.geom.Geometry;
-
-import com.google.common.base.Preconditions;
 
 /**
  * An implementation of GeometryDiff that just stores both the new and the old value, so it actually

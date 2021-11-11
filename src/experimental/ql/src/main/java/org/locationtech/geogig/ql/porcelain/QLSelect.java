@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.ql.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -111,7 +111,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
     }
 
     public QLSelect setStatement(final String statement) {
-        checkNotNull(statement, "statement is null");
+        requireNonNull(statement, "statement is null");
         this.statement = statement;
         this.select = null;
         return this;
@@ -122,7 +122,7 @@ public @CanRunDuringConflict class QLSelect extends AbstractGeoGigOp<SimpleFeatu
      * statement, pas pass directly the parsed select.
      */
     QLSelect setStatement(final Select select) {
-        checkNotNull(select, "statement is null");
+        requireNonNull(select, "statement is null");
         this.select = select;
         this.statement = null;
         return this;

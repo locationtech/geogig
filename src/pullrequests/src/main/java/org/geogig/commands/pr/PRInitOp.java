@@ -9,16 +9,18 @@
  */
 package org.geogig.commands.pr;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 
 import java.net.URI;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.FindCommonAncestor;
@@ -32,7 +34,6 @@ import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.locationtech.geogig.transaction.TransactionBegin;
 import org.locationtech.geogig.transaction.TransactionResolve;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 import lombok.AllArgsConstructor;
@@ -136,8 +137,8 @@ public @Builder @AllArgsConstructor @NoArgsConstructor class PRInitOp extends PR
     }
 
     private PR prepare(@NonNull PR pr) {
-        Preconditions.checkNotNull(pr.getTransactionId());
-        Preconditions.checkNotNull(pr.getId());
+        Objects.requireNonNull(pr.getTransactionId());
+        Objects.requireNonNull(pr.getId());
         getProgressListener().setDescription("Initializing pull request " + pr);
 
         java.util.Optional<GeogigTransaction> tx = command(TransactionResolve.class)

@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.ql.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
     public String statement;
 
     public QLInsert setStatement(final String statement) {
-        checkNotNull(statement, "statement is null");
+        requireNonNull(statement, "statement is null");
         this.statement = statement;
         return this;
     }
@@ -151,7 +151,7 @@ public @CanRunDuringConflict class QLInsert extends AbstractGeoGigOp<Supplier<Di
             return buildFeaturesFromItemsList(insert, targetSchema);
         }
         Select select = insert.getSelect();
-        checkNotNull(select, "either values or select must be provided: " + insert);
+        requireNonNull(select, "either values or select must be provided: " + insert);
         SimpleFeatureCollection source = command(QLSelect.class).setStatement(select).call();
         return source;
     }

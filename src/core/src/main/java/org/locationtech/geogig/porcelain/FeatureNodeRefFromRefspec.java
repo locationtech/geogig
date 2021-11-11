@@ -11,6 +11,7 @@ package org.locationtech.geogig.porcelain;
 
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.SpatialOps;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Returns the NodeRef corresponding to a given refspec, if available.

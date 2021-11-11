@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.plumbing.diff.DiffMatchPatch.Diff;
 import org.locationtech.geogig.plumbing.diff.DiffMatchPatch.LinesToCharsResult;
@@ -29,7 +30,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 

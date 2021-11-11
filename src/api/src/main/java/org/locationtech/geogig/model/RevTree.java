@@ -16,9 +16,9 @@ import java.util.Optional;
 import java.util.SortedSet;
 import java.util.function.Consumer;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 
 /**

@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
@@ -60,7 +61,6 @@ import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -308,7 +308,7 @@ public class WorkingTreeImpl implements WorkingTree {
 
         NodeRef ref = context.command(FindTreeChild.class).setParent(newWorkHead)
                 .setChildPath(treePath).call().orElse(null);
-        checkNotNull(ref, "tree wasn't created: " + treePath);
+        requireNonNull(ref, "tree wasn't created: " + treePath);
         return ref;
     }
 
@@ -323,7 +323,8 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final RevTree currentWorkHead = getTree();
 
-        final Map<String, NodeRef> currentTrees = new HashMap<>(Maps.uniqueIndex(getFeatureTypeTrees(), NodeRef::path));
+        final Map<String, NodeRef> currentTrees = new HashMap<>(
+                Maps.uniqueIndex(getFeatureTypeTrees(), NodeRef::path));
 
         Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
 
@@ -348,7 +349,7 @@ public class WorkingTreeImpl implements WorkingTree {
             Preconditions.checkState(parentBuilder != null);
             RevFeature feature = fi.getFeature();
             NodeRef parentRef = currentTrees.get(parentPath);
-            Preconditions.checkNotNull(parentRef);
+            Objects.requireNonNull(parentRef);
             if (fi.getFeatureTypeId().equals(parentRef.getMetadataId())) {
                 metadataId = ObjectId.NULL;// use the parent's default
             }

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.data.reader;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -39,6 +40,7 @@ import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.filter.visitor.SpatialFilterVisitor;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultEngineeringCRS;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.data.retrieve.BulkFeatureRetriever;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.Name;
@@ -84,7 +86,6 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 import lombok.Getter;
@@ -332,7 +333,7 @@ public class FeatureReaderBuilder {
                 if (maxBounds == null) {
                     maxBounds = IndexInfo.getMaxBounds(indexInfo);
                 }
-                Preconditions.checkNotNull(maxBounds);
+                Objects.requireNonNull(maxBounds);
                 diffNodeOrdering = QuadTreeBuilder.nodeOrdering(maxBounds);
                 info.diffUsesIndex = true;
                 info.materializedIndexProperties = resolveMaterializedProperties(indexInfo);

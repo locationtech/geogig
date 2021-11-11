@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 public class DAG implements Cloneable, Serializable {
 

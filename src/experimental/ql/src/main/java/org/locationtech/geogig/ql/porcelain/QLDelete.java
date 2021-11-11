@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.ql.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,7 +45,7 @@ public @CanRunDuringConflict class QLDelete extends AbstractGeoGigOp<Supplier<Di
     public String statement;
 
     public QLDelete setStatement(final String statement) {
-        checkNotNull(statement, "statement is null");
+        requireNonNull(statement, "statement is null");
         this.statement = statement;
         return this;
     }

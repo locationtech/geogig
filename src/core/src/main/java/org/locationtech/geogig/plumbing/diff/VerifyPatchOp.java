@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 /**
  * Verifies if a patch can be applied to the current working tree

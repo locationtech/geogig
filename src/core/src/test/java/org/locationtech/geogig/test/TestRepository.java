@@ -10,6 +10,7 @@ import java.util.function.Function;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.porcelain.ConfigOp;
 import org.locationtech.geogig.porcelain.ConfigOp.ConfigAction;
 import org.locationtech.geogig.porcelain.InitOp;
@@ -18,8 +19,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.storage.memory.MemoryRepositoryResolver;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.Setter;

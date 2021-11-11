@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;

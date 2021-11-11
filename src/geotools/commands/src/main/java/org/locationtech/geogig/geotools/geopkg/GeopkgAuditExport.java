@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class GeopkgAuditExport extends AbstractGeoGigOp<Void> {
     }
 
     protected @Override Void _call() {
-        checkNotNull(databaseFile, "GeoPackage file not provided");
+        requireNonNull(databaseFile, "GeoPackage file not provided");
         checkState(databaseFile.exists(), "GeoPackage file %s does not exist", databaseFile);
 
         ProgressListener progress = getProgressListener();

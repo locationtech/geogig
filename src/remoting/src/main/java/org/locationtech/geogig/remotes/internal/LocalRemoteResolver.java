@@ -10,6 +10,7 @@
 package org.locationtech.geogig.remotes.internal;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.locationtech.geogig.repository.Hints;
@@ -19,7 +20,6 @@ import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 /**
  * {@link RemoteResolver} for "local" repositories (that is, the ones that can be opened by a
@@ -36,7 +36,7 @@ public class LocalRemoteResolver implements RemoteResolver {
         final String fetchURL = remote.getFetchURL();
         final URI fetchURI = URI.create(fetchURL);
         final String scheme = fetchURI.getScheme();
-        Preconditions.checkNotNull(scheme, "Fetch URI doesn't declare scheme: %s", fetchURL);
+        Objects.requireNonNull(scheme, "Fetch URI doesn't declare scheme: " + fetchURL);
         if (RepositoryFinder.INSTANCE.resolverAvailableForURIScheme(scheme)) {
             IRemoteRepo remoteRepo = null;
 

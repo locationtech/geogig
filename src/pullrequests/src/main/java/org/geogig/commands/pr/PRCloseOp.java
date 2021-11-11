@@ -9,12 +9,11 @@
  */
 package org.geogig.commands.pr;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.UpdateRefs;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.transaction.GeogigTransaction;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

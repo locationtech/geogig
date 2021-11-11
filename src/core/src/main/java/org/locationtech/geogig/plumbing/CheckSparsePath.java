@@ -11,13 +11,12 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.Iterator;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase.Direction;
 import org.locationtech.geogig.storage.GraphDatabase.GraphEdge;
 import org.locationtech.geogig.storage.GraphDatabase.GraphNode;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Determines if there are any sparse commits between the start commit and the end commit, not

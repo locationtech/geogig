@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -21,7 +22,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import lombok.NonNull;
@@ -121,9 +121,9 @@ public class ResolveGeogigURI extends AbstractGeoGigOp<Optional<URI>> {
                 return file.toURI();
             }
             File[] contents = file.listFiles();
-            Preconditions.checkNotNull(contents,
-                    "Either '%s' is not a directory or an I/O error ocurred listing its contents",
-                    file.getAbsolutePath());
+            Objects.requireNonNull(contents,
+                    "File is either not a directory or an I/O error ocurred listing its contents"
+                            + file.getAbsolutePath());
             for (File dir : contents) {
                 if (dir.isDirectory() && dir.getName().equals(".geogig")) {
                     return lookupGeogigDirectory(dir);

@@ -11,11 +11,10 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.List;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.RevFeatureType;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Retrieves the set of property descriptors for the given feature type.

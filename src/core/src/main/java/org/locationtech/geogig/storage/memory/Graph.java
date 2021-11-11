@@ -13,9 +13,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.plumbing.DiffIndex;
@@ -24,8 +25,6 @@ import org.locationtech.geogig.repository.StagingArea;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-
-import com.google.common.base.Preconditions;
 
 @CanRunDuringConflict
 public class StatusOp extends AbstractGeoGigOp<StatusOp.StatusSummary> {

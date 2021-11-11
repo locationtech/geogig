@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.postgresql.config.Environment;
 import org.locationtech.geogig.storage.postgresql.config.EnvironmentBuilder;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.storage.postgresql.config.TableNames;
 import org.locationtech.geogig.storage.postgresql.config.Version;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
 
 /**
  * Given a geogig database, performs any necessary database schema upgrade

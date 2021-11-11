@@ -10,7 +10,7 @@
 
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static com.google.common.collect.Iterables.filter;
 import static org.locationtech.geogig.remotes.RefDiff.Type.ADDED_REF;
 import static org.locationtech.geogig.remotes.RefDiff.Type.REMOVED_REF;

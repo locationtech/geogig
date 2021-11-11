@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.test;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Arrays;

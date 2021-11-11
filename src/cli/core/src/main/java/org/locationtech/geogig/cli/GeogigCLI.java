@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.cli;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.annotation.ObjectDatabaseReadOnly;
 import org.locationtech.geogig.cli.annotation.ReadOnly;
 import org.locationtech.geogig.cli.annotation.RemotesReadOnly;
@@ -46,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -422,7 +422,7 @@ public class GeogigCLI {
      */
     private void executeInternal(String... args) throws ParameterException, CommandFailedException,
             IOException, CannotRunGeogigOperationException {
-        checkNotNull(args, "args is null");
+        requireNonNull(args, "args is null");
         INSTANCE.set(this);
         String repoURI = parseRepoURI(args);
         if (repoURI != null) {

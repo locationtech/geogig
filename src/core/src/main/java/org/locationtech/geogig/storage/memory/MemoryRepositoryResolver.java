@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.repository.Hints;
@@ -44,7 +45,6 @@ import org.locationtech.geogig.storage.decorator.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingRefDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 import lombok.EqualsAndHashCode;

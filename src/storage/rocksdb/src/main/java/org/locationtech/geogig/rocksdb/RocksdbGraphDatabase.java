@@ -20,9 +20,11 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.rocksdb.DBHandle.RocksDBReference;
@@ -39,7 +41,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -281,7 +282,7 @@ public class RocksdbGraphDatabase extends AbstractStore implements GraphDatabase
 
     private NodeData getNodeInternal(final RocksDBReference dbRef, final ObjectId id,
             final boolean failIfNotFound, @Nullable WriteBatchWithIndex batch) {
-        Preconditions.checkNotNull(id, "id");
+        Objects.requireNonNull(id, "id");
         byte[] key = id.getRawValue();
         byte[] data;
         try (ReadOptions ro = new ReadOptions()) {

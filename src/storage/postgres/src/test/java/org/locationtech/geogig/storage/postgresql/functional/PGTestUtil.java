@@ -9,11 +9,12 @@
  */
 package org.locationtech.geogig.storage.postgresql.functional;
 
+import java.util.Objects;
+
 import org.junit.internal.AssumptionViolatedException;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.storage.postgresql.config.PGTemporaryTestConfig;
 import org.locationtech.geogig.storage.postgresql.config.PGTestDataSourceProvider;
-
-import com.google.common.base.Preconditions;
 
 import cucumber.api.PendingException;
 
@@ -45,7 +46,7 @@ public class PGTestUtil {
     }
 
     public static PGTemporaryTestConfig newTestConfig(String repoName) {
-        Preconditions.checkNotNull(perTestSuiteDataSourceProvider);
+        Objects.requireNonNull(perTestSuiteDataSourceProvider);
         Preconditions.checkState(perTestSuiteDataSourceProvider.isEnabled());
         return new PGTemporaryTestConfig(repoName, perTestSuiteDataSourceProvider);
     }

@@ -11,10 +11,9 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.regex.Pattern;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Validates the format of a ref.

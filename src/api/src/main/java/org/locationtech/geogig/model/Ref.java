@@ -12,7 +12,8 @@ package org.locationtech.geogig.model;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
+
 import com.google.common.base.Strings;
 
 import lombok.NonNull;

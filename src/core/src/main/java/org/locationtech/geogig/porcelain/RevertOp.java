@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.porcelain;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.impl.Blobs.putBlob;
 import static org.locationtech.geogig.storage.impl.Blobs.readLines;
 
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.di.CanRunDuringConflict;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
@@ -54,7 +55,6 @@ import org.locationtech.geogig.storage.impl.PersistedIterable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;

@@ -13,6 +13,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -27,7 +28,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 

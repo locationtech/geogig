@@ -12,6 +12,7 @@ package org.locationtech.geogig.geotools.cli.geopkg;
 import java.io.File;
 import java.io.IOException;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CommandFailedException;
 import org.locationtech.geogig.cli.GeogigCLI;
@@ -23,7 +24,6 @@ import org.locationtech.geogig.repository.ProgressListener;
 import org.locationtech.geogig.repository.Repository;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

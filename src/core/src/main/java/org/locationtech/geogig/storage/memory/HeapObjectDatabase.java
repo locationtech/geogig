@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
@@ -102,8 +102,8 @@ public class HeapObjectDatabase extends ForwardingObjectStore implements ObjectD
     }
 
     public @Override void putAll(Iterator<? extends RevObject> objects, BulkOpListener listener) {
-        checkNotNull(objects, "objects is null");
-        checkNotNull(listener, "listener is null");
+        requireNonNull(objects, "objects is null");
+        requireNonNull(listener, "listener is null");
         checkState(isOpen(), "db is closed");
         checkWritable();
 

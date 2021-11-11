@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.Test;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.RevCommit;
@@ -43,8 +44,6 @@ import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.test.TestSupport;
-
-import com.google.common.base.Preconditions;
 
 public class PushOpTest extends RemoteRepositoryTestCase {
 

@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.geotools.cli.geopkg;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines1;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines2;
 import static org.locationtech.geogig.cli.test.functional.TestFeatures.lines3;
@@ -48,6 +48,7 @@ import org.geotools.geopkg.GeoPackage;
 import org.geotools.geopkg.GeoPkgDataStoreFactory;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.util.factory.Hints;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.test.functional.TestFeatures;
 import org.locationtech.geogig.geotools.adapt.GT;
 import org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata;
@@ -57,8 +58,6 @@ import org.opengis.feature.GeometryAttribute;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

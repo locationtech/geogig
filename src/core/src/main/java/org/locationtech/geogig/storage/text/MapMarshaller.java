@@ -15,10 +15,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.model.FieldType;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

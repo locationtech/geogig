@@ -23,7 +23,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
 
 /**
  * <p>

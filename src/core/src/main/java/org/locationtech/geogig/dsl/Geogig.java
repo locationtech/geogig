@@ -26,8 +26,6 @@ import org.locationtech.geogig.repository.RepositoryConnectionException;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
-import com.google.common.base.Preconditions;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -76,7 +74,7 @@ public class Geogig {
     }
 
     private Geogig(final Context context) {
-        Preconditions.checkNotNull(context, "context");
+        java.util.Objects.requireNonNull(context, "context");
         this.context = context;
     }
 

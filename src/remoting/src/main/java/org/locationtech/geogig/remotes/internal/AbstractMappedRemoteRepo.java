@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.ObjectId;
@@ -34,8 +35,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.GraphDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

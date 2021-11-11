@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 import javax.sql.DataSource;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.storage.AbstractStore;
@@ -42,7 +44,6 @@ import org.locationtech.geogig.storage.postgresql.config.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 
@@ -69,7 +70,7 @@ public class PGGraphDatabase extends AbstractStore implements GraphDatabase {
 
     public PGGraphDatabase(@NonNull Environment env) {
         super(env.isReadOnly());
-        Preconditions.checkNotNull(env.getRepositoryName(), "Repository name not set");
+        Objects.requireNonNull(env.getRepositoryName(), "Repository name not set");
         this.env = env;
         TableNames tables = env.getTables();
         this.EDGES = tables.graphEdges();

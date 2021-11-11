@@ -16,6 +16,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.Transaction;
 import org.geotools.data.Transaction.State;
 import org.geotools.data.store.ContentEntry;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.plumbing.DiffCount;
@@ -30,8 +31,6 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.transaction.GeogigTransaction;
 import org.locationtech.geogig.transaction.TransactionBegin;
-
-import com.google.common.base.Preconditions;
 
 /**
  *

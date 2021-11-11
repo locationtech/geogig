@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.DiffEntry;
@@ -42,8 +43,6 @@ import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.DiffObjectInfo;
 import org.locationtech.geogig.storage.ObjectDatabase;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 import lombok.Setter;

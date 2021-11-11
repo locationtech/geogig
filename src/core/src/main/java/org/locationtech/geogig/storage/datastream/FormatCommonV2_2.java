@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.model.Node;
@@ -26,8 +27,6 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevObjectFactory;
 import org.locationtech.jts.geom.Envelope;
-
-import com.google.common.base.Preconditions;
 
 public class FormatCommonV2_2 extends FormatCommonV2_1 {
 

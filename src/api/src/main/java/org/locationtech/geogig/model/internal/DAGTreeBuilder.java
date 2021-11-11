@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;

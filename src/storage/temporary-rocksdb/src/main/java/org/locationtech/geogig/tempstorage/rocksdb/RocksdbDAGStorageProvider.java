@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
@@ -30,7 +31,6 @@ import org.locationtech.geogig.model.internal.TreeId;
 import org.locationtech.geogig.storage.ObjectStore;
 import org.rocksdb.RocksDB;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 class RocksdbDAGStorageProvider implements DAGStorageProvider {

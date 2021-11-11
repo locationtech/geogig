@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.HashObjectFunnels;
@@ -29,7 +30,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.model.RevPerson;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Preconditions;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.PrimitiveSink;

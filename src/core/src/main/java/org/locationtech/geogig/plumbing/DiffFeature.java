@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -76,8 +76,8 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
      * @see FeatureDiff
      */
     protected @Override FeatureDiff _call() throws IllegalArgumentException {
-        checkNotNull(oldNodeRef, "old version not specified");
-        checkNotNull(newNodeRef, "new version not specified");
+        requireNonNull(oldNodeRef, "old version not specified");
+        requireNonNull(newNodeRef, "new version not specified");
         String oldPath = removeRef(oldNodeRef.path());
         String newPath = removeRef(newNodeRef.path());
         checkArgument(oldPath.equals(newPath),

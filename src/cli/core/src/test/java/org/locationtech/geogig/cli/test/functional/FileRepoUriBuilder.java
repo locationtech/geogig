@@ -3,9 +3,8 @@ package org.locationtech.geogig.cli.test.functional;
 import java.io.File;
 import java.net.URI;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.repository.Platform;
-
-import com.google.common.base.Preconditions;
 
 import cucumber.api.Scenario;
 

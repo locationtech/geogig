@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.Name;
@@ -53,7 +54,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.google.flatbuffers.FlatBufferBuilder.ByteBufferFactory;

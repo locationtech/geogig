@@ -1,6 +1,6 @@
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 

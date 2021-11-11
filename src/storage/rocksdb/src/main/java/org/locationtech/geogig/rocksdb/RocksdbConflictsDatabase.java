@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.rocksdb;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,7 +42,6 @@ import org.rocksdb.WriteOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.io.ByteArrayDataOutput;
@@ -121,7 +121,7 @@ public class RocksdbConflictsDatabase extends AbstractStore implements Conflicts
         if (dbExists(txId)) {
             String hanldeId = txId == null ? NULL_TX_ID : txId;
             DBHandle dbHandle = this.dbsByTransaction.remove(hanldeId);
-            Preconditions.checkNotNull(dbHandle);
+            Objects.requireNonNull(dbHandle);
             final String dbPath = dbPath(txId);
             final boolean lastHandle = RocksConnectionManager.INSTANCE.release(dbHandle);
             if (lastHandle) {

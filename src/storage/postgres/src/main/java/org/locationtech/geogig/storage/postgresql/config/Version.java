@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
+
 import com.google.common.base.Splitter;
 
 import lombok.NonNull;

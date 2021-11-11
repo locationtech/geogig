@@ -14,6 +14,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.data.DataStore;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 import org.locationtech.geogig.model.SymRef;
 import org.locationtech.geogig.plumbing.RefParse;
@@ -22,8 +23,6 @@ import org.locationtech.geogig.porcelain.CheckoutOp;
 import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.opengis.feature.Feature;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Imports feature tress (layers) into a repository from a GeoTools {@link DataStore}. This

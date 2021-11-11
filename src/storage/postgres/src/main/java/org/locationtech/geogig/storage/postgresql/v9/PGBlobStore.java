@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.locationtech.geogig.storage.postgresql.config.Environment;
@@ -26,7 +27,6 @@ import org.locationtech.geogig.transaction.TransactionBlobStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteStreams;
 
 class PGBlobStore implements TransactionBlobStore {
@@ -68,7 +68,7 @@ class PGBlobStore implements TransactionBlobStore {
     }
 
     public @Override Optional<byte[]> getBlob(final String namespace, final String path) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
 
         final String sql = format(
                 "SELECT blob FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
@@ -97,7 +97,7 @@ class PGBlobStore implements TransactionBlobStore {
 
     public @Override Optional<InputStream> getBlobAsStream(final String namespace,
             final String path) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
         Optional<byte[]> blob = getBlob(namespace, path);
         InputStream in = null;
         if (blob.isPresent()) {
@@ -107,7 +107,7 @@ class PGBlobStore implements TransactionBlobStore {
     }
 
     public @Override void putBlob(final String namespace, final String path, final byte[] blob) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
 
         String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
                 blobsTable);
@@ -143,7 +143,7 @@ class PGBlobStore implements TransactionBlobStore {
     }
 
     public @Override void putBlob(String namespace, String path, InputStream blob) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
         byte[] bytes;
         try {
             bytes = ByteStreams.toByteArray(blob);
@@ -154,7 +154,7 @@ class PGBlobStore implements TransactionBlobStore {
     }
 
     public @Override void removeBlob(final String namespace, final String path) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
         final String delete = format(
                 "LOCK TABLE %s IN SHARE ROW EXCLUSIVE MODE;"
                         + "DELETE FROM %s WHERE repository = ? AND namespace = ? AND path = ?",
@@ -182,7 +182,7 @@ class PGBlobStore implements TransactionBlobStore {
     }
 
     public @Override void removeBlobs(final String namespace) {
-        Preconditions.checkNotNull(namespace, "namespace can't be null");
+        Objects.requireNonNull(namespace, "namespace can't be null");
         final String delete = format("DELETE FROM %s WHERE repository = ? AND namespace = ?",
                 blobsTable);
 

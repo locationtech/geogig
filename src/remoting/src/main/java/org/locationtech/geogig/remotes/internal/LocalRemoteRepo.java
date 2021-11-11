@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.remotes.internal;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.RevObject.TYPE.FEATURE;
 
 import java.net.URI;
@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.NodeRef;
@@ -55,7 +56,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 
 import lombok.Getter;
@@ -130,7 +130,7 @@ public class LocalRemoteRepo extends AbstractRemoteRepo {
             }
             return keep;
         };
-        checkNotNull(remoteRepository);
+        requireNonNull(remoteRepository);
         return remoteRepository.command(ForEachRef.class).setFilter(filter).call();
     }
 

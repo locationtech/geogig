@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
+import java.util.Objects;
+
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 
@@ -21,7 +21,7 @@ public class ConflictsWriteOp extends AbstractGeoGigOp<Void> {
     private Iterable<Conflict> conflicts;
 
     protected @Override Void _call() {
-        Preconditions.checkNotNull(conflicts);
+        Objects.requireNonNull(conflicts);
         conflictsDatabase().addConflicts(null, conflicts);
         return null;
 

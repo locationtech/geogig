@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.IndexInfo;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.repository.IndexInfo.IndexType;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.IndexDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingObjectStore;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Provides an implementation of a GeoGig index database that utilizes the heap for the storage of

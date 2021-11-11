@@ -63,7 +63,8 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
      */
     public static final DataStreamRevObjectSerializerV1 INSTANCE = new DataStreamRevObjectSerializerV1();
 
-    private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = new EnumMap<>(TYPE.class);
+    private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = new EnumMap<>(
+            TYPE.class);
     static {
         serializers.put(TYPE.COMMIT, new CommitSerializer());
         serializers.put(TYPE.FEATURE, new FeatureSerializer());

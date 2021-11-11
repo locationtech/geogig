@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.NodeRef.PATH_SEPARATOR;
 
 import java.util.List;
@@ -87,9 +87,9 @@ public class DepthSearch {
     public Optional<NodeRef> find(final RevTree parent, final String parentPath,
             final String childPath) {
 
-        checkNotNull(parent, "parent");
-        checkNotNull(parentPath, "parentPath");
-        checkNotNull(childPath, "childPath");
+        requireNonNull(parent, "parent");
+        requireNonNull(parentPath, "parentPath");
+        requireNonNull(childPath, "childPath");
         checkArgument(parentPath.isEmpty()
                 || parentPath.charAt(parentPath.length() - 1) != PATH_SEPARATOR);
         checkArgument(!childPath.isEmpty(), "empty child path: '%s/%s'", parentPath, childPath);

@@ -13,13 +13,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
@@ -33,7 +34,7 @@ final class DiffPathFilter {
     private PathFilter pathFilter;
 
     public DiffPathFilter(List<String> filters) {
-        Preconditions.checkNotNull(filters, "filter list is null");
+        Objects.requireNonNull(filters, "filter list is null");
         Preconditions.checkArgument(!filters.isEmpty(), "Don't use an empty filter list");
         pathFilter = new PathFilter(NodeRef.ROOT);
         for (String f : filters) {

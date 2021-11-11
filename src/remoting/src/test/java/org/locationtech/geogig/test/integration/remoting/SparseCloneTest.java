@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.dsl.Geogig;
 import org.locationtech.geogig.feature.Feature;
 import org.locationtech.geogig.feature.FeatureType;
@@ -54,8 +55,6 @@ import org.locationtech.geogig.remotes.internal.AbstractMappedRemoteRepo;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.storage.impl.Blobs;
-
-import com.google.common.base.Preconditions;
 
 @Ignore // sparse cloning not really supported yet
 public class SparseCloneTest extends RemoteRepositoryTestCase {

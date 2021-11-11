@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Bounded;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.CanonicalNodeOrder;
@@ -59,7 +60,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
@@ -519,8 +519,9 @@ public class PreOrderDiffWalk {
                 if (!lbucket.equals(rbucket)) {
                     ltree = lbucket.isPresent() ? trees.get(lbucket.get().getObjectId()) : EMPTY;
                     rtree = rbucket.isPresent() ? trees.get(rbucket.get().getObjectId()) : EMPTY;
-                    checkNotNull(ltree, "tree of %s not found ", lbucket);
-                    checkNotNull(rtree, "tree of %s not found ", rbucket);
+                    requireNonNull(ltree, "tree not found for left bucket " + lbucket.orElse(null));
+                    requireNonNull(rtree,
+                            "tree not found for right bucket " + rbucket.orElse(null));
 
                     WalkAction task;
                     task = new TraverseBucketBucket(info, ltree, rtree, lbucket, rbucket, index);

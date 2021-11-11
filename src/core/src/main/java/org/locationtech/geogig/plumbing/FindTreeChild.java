@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -94,7 +94,7 @@ public class FindTreeChild extends AbstractGeoGigOp<Optional<NodeRef>> {
      *         {@link Optional#empty()} if it wasn't
      */
     protected @Override Optional<NodeRef> _call() {
-        checkNotNull(childPath, "childPath");
+        requireNonNull(childPath, "childPath");
         if (source == null) {
             this.source = objectDatabase();
         }

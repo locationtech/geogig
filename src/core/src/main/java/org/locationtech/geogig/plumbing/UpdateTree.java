@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 

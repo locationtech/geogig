@@ -11,10 +11,9 @@ package org.locationtech.geogig.storage;
 
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.RevObject;
-
-import com.google.common.base.Preconditions;
 
 import lombok.NonNull;
 

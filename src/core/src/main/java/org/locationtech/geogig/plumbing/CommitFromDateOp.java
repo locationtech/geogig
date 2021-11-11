@@ -13,11 +13,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevCommit;
 import org.locationtech.geogig.porcelain.LogOp;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.base.Preconditions;
 
 /**
  * Returns the last commit in the current branch at a given date

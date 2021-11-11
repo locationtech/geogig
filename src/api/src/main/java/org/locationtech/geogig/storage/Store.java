@@ -11,7 +11,7 @@ package org.locationtech.geogig.storage;
 
 import java.io.Closeable;
 
-import com.google.common.base.Preconditions;
+import org.locationtech.geogig.base.Preconditions;
 
 /**
  * Base interface for storage and retrieval of revision objects.

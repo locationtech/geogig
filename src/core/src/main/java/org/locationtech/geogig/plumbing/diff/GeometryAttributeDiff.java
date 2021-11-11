@@ -9,19 +9,19 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.ADDED;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.MODIFIED;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.NO_CHANGE;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.REMOVED;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 
 /**
  * An implementation of AttributeDiff to be used with attributes containing geometries
@@ -125,8 +125,8 @@ public class GeometryAttributeDiff implements AttributeDiff {
         case ADDED:
             return value == null;
         case REMOVED:
-            checkNotNull(oldGeometry);
-            checkNotNull(value);
+            requireNonNull(oldGeometry);
+            requireNonNull(value);
             Geometry geom = (Geometry) value;
             return geom.equalsExact(oldGeometry);
         case MODIFIED:

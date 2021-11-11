@@ -9,7 +9,7 @@
  */
 package org.locationtech.geogig.hooks;
 
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.LinkedList;

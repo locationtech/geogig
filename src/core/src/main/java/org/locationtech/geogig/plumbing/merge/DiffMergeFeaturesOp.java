@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.plumbing.merge;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,9 +192,9 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
 
     private void checkPreconditions(NodeRef commonAncestor, NodeRef mergeInto, NodeRef toMerge) {
 
-        checkNotNull(commonAncestor, "common ancestor version not specified");
-        checkNotNull(mergeInto, "old version not specified");
-        checkNotNull(toMerge, "new version not specified");
+        requireNonNull(commonAncestor, "common ancestor version not specified");
+        requireNonNull(mergeInto, "old version not specified");
+        requireNonNull(toMerge, "new version not specified");
 
         checkArgument(commonAncestor.path().equals(mergeInto.path())
                 && commonAncestor.path().equals(toMerge.path()));

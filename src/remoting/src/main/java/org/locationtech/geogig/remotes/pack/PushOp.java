@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.Ref.HEADS_PREFIX;
 import static org.locationtech.geogig.model.Ref.TAGS_PREFIX;
 
@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.hooks.Hookable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.Ref;
@@ -50,7 +51,6 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -410,8 +410,8 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
             }
             final Ref localRef = preq.localRef;
             final String remoteRefName = preq.remoteRef;
-            checkNotNull(localRef);
-            checkNotNull(remoteRefName);
+            requireNonNull(localRef);
+            requireNonNull(remoteRefName);
 
             final ObjectId want = localRef.getObjectId();
             Ref resolvedRemoteRef = remoteRefsByName.get(remoteRefName);

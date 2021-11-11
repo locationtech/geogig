@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
 import org.locationtech.geogig.cli.Console;
@@ -37,8 +38,6 @@ import org.locationtech.geogig.porcelain.MergeOp;
 import org.locationtech.geogig.porcelain.RebaseOp;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.storage.impl.Blobs;
-
-import com.google.common.base.Preconditions;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

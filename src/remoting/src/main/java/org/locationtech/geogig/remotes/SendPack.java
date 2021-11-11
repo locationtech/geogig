@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.remotes;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
+import static java.util.Objects.requireNonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +91,7 @@ public class SendPack extends AbstractGeoGigOp<TransferSummary> {
 
     public SendPack setRefs(@NonNull List<TransferableRef> refsToPush) {
         for (TransferableRef tr : refsToPush) {
-            checkNotNull(tr);
+            requireNonNull(tr);
         }
         this.refsToPush.clear();
         this.refsToPush.addAll(refsToPush);

@@ -3,11 +3,11 @@ package org.locationtech.geogig.feature;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevFeature;
 import org.locationtech.geogig.model.RevFeatureType;
@@ -67,14 +67,14 @@ public abstract @RequiredArgsConstructor class Feature implements Iterable<Objec
         this.setAttribute(getType().getAttributeIndex(name), value);
     }
 
-    public @Nullable Geometry getDefaultGeometry() {
+    public Optional<Geometry> getDefaultGeometry() {
         final int index = getType().getGeometryDescriptorIndex();
-        return -1 == index ? null : Geometry.class.cast(getAttribute(index));
+        Geometry geometry = -1 == index ? null : Geometry.class.cast(getAttribute(index));
+        return Optional.ofNullable(geometry);
     }
 
     public @NonNull Envelope getDefaultGeometryBounds() {
-        Geometry geom = getDefaultGeometry();
-        return geom == null ? new Envelope() : geom.getEnvelopeInternal();
+        return getDefaultGeometry().map(Geometry::getEnvelopeInternal).orElseGet(Envelope::new);
     }
 
     public static Feature build(@NonNull String id, @NonNull RevFeatureType type) {

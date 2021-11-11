@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -157,7 +156,7 @@ public enum FieldType implements Cloneable {
 
     private final byte tagValue;
 
-    private final Class<?> binding;
+    private final @NonNull Class<?> binding;
 
     /**
      * A function that creates a "safe copy" for an attribute value of the type denoted by this enum
@@ -196,7 +195,7 @@ public enum FieldType implements Cloneable {
         return copy;
     }
 
-    public Class<?> getBinding() {
+    public @NonNull Class<?> getBinding() {
         return binding;
     }
 
@@ -214,7 +213,7 @@ public enum FieldType implements Cloneable {
     /**
      * Obtain a {@code FieldType} constant by it's {@link #getTag() tag}
      */
-    public static FieldType valueOf(final int tagValue) {
+    public static @NonNull FieldType valueOf(final int tagValue) {
         if (tagValue == -1) {
             return UNKNOWN;
         }
@@ -227,7 +226,7 @@ public enum FieldType implements Cloneable {
      * @return the {@code FieldType} corresponding to the {@link Optional}'s value.
      * @see #forValue(Object)
      */
-    public static FieldType forValue(Optional<Object> field) {
+    public static @NonNull FieldType forValue(Optional<Object> field) {
         return forValue(field.orElse(null));
     }
 
@@ -236,7 +235,7 @@ public enum FieldType implements Cloneable {
      * 
      * @see #forBinding(Class)
      */
-    public static FieldType forValue(@Nullable Object value) {
+    public static @NonNull FieldType forValue(Object value) {
         if (value == null) {
             return NULL;
         }
@@ -249,7 +248,7 @@ public enum FieldType implements Cloneable {
      *         {@link FieldType#UNKNOWN} if no {@code FieldType} relates to the argument attribute
      *         type.
      */
-    public static FieldType forBinding(@Nullable Class<?> binding) {
+    public static @NonNull FieldType forBinding(Class<?> binding) {
         if (binding == null || Void.class.equals(binding)) {
             return NULL;
         }
@@ -276,10 +275,9 @@ public enum FieldType implements Cloneable {
      * same object if it's already immutable (e.g. {@code java.lang.Integer,etc}).
      * 
      * @param value an object of this {@code FiledType}'s {@link FieldType#getBinding() binding}
-     *        type.
+     *        type. {@literal null} if {@code value} is {@literal null}.
      */
-    @Nullable
-    public Object safeCopy(@Nullable Object value) {
+    public Object safeCopy(Object value) {
         return safeCopyBuilder.apply(value);
     }
 }

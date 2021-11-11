@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.LeafTree;
 import org.locationtech.geogig.flatbuffers.generated.v1.SHA;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.Bounds;
@@ -108,7 +107,7 @@ abstract @RequiredArgsConstructor class FBNode extends org.locationtech.geogig.m
         return ValueSerializer.decode(nodeDict);
     }
 
-    public @Nullable @Override Object getExtraData(@NonNull String key) {
+    public @Override Optional<Object> getExtraData(@NonNull String key) {
         Dictionary nodeDict = tree.nodesExtraData(nodeIndex);
         if (nodeDict == null) {
             return null;
@@ -118,7 +117,7 @@ abstract @RequiredArgsConstructor class FBNode extends org.locationtech.geogig.m
             return null;
         }
         Value value = entry.value();
-        return ValueSerializer.decodeValue(value);
+        return Optional.ofNullable(ValueSerializer.decodeValue(value));
     }
 
 }

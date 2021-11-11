@@ -50,8 +50,8 @@ public class AddOpTest extends RepositoryTestCase {
         insert(points1);
         List<DiffEntry> diffs = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, diffs.size());
-        assertEquals(pointsName, diffs.get(0).newPath());
-        assertEquals(NodeRef.appendChild(pointsName, idP1), diffs.get(1).newPath());
+        assertEquals(pointsName, diffs.get(0).path());
+        assertEquals(NodeRef.appendChild(pointsName, idP1), diffs.get(1).path());
     }
 
     @Test
@@ -93,14 +93,14 @@ public class AddOpTest extends RepositoryTestCase {
 
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
         assertEquals(RevObject.TYPE.TREE, unstaged.get(0).getNewObject().getType());
-        assertEquals("Points", unstaged.get(0).newName());
+        assertEquals("Points", unstaged.get(0).name());
         RevFeatureType ft = RevFeatureType.builder().type(pointsType).build();
         ObjectId expectedTreeMdId = ft.getId();
         assertEquals(expectedTreeMdId, unstaged.get(0).getNewObject().getMetadataId());
 
         assertEquals(ChangeType.ADDED, unstaged.get(1).changeType());
         assertEquals(RevObject.TYPE.FEATURE, unstaged.get(1).getNewObject().getType());
-        assertEquals("Points.1", unstaged.get(1).newName());
+        assertEquals("Points.1", unstaged.get(1).name());
         assertFalse("feature node's metadata id should not be set, as it uses the parent tree one",
                 unstaged.get(1).getNewObject().getNode().getMetadataId().isPresent());
     }
@@ -113,7 +113,7 @@ public class AddOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).addPattern("Points").call();
         List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, unstaged.size());
-        assertEquals(linesName, unstaged.get(0).newName());
+        assertEquals(linesName, unstaged.get(0).name());
         assertEquals(ChangeType.ADDED, unstaged.get(0).changeType());
         assertEquals(TYPE.TREE, unstaged.get(0).getNewObject().getType());
     }
@@ -157,8 +157,8 @@ public class AddOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).setUpdateOnly(true).call();
         List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
         assertEquals(2, unstaged.size());
-        assertEquals(linesName, unstaged.get(0).newName());
-        assertEquals(lines1.getId(), unstaged.get(1).newName());
+        assertEquals(linesName, unstaged.get(0).name());
+        assertEquals(lines1.getId(), unstaged.get(1).name());
     }
 
     @Test
@@ -172,21 +172,21 @@ public class AddOpTest extends RepositoryTestCase {
         repo.command(AddOp.class).setUpdateOnly(true).addPattern(pointsName).call();
         List<DiffEntry> staged = toList(repo.context().stagingArea().getStaged(null));
         assertEquals(2, staged.size());
-        assertEquals(pointsName, staged.get(0).newName());
-        assertEquals(idP1, staged.get(1).newName());
+        assertEquals(pointsName, staged.get(0).name());
+        assertEquals(idP1, staged.get(1).name());
 
         List<DiffEntry> unstaged = toList(repo.context().workingTree().getUnstaged(null));
 
         assertEquals(2, unstaged.size());
-        assertEquals(linesName, unstaged.get(0).newName());
-        assertEquals(idL1, unstaged.get(1).newName());
+        assertEquals(linesName, unstaged.get(0).name());
+        assertEquals(idL1, unstaged.get(1).name());
 
         repo.command(AddOp.class).setUpdateOnly(true).addPattern("Points").call();
         unstaged = toList(repo.context().workingTree().getUnstaged(null));
 
         assertEquals(2, unstaged.size());
-        assertEquals(linesName, unstaged.get(0).newName());
-        assertEquals(idL1, unstaged.get(1).newName());
+        assertEquals(linesName, unstaged.get(0).name());
+        assertEquals(idL1, unstaged.get(1).name());
     }
 
     @Test

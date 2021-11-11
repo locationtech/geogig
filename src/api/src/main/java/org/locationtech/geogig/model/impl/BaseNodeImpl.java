@@ -14,7 +14,6 @@ import static java.util.Optional.ofNullable;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -28,12 +27,11 @@ abstract class BaseNodeImpl extends Node {
     /*
      * The name of the element
      */
-    private final String name;
+    private final @NonNull String name;
 
     /**
      * Optional ID corresponding to metadata for the element
      */
-    @Nullable
     private final ObjectId metadataId;
 
     /**
@@ -43,13 +41,12 @@ abstract class BaseNodeImpl extends Node {
 
     private final long objectId_h2, objectId_h3;
 
-    private final ExtraData extraData;
+    private final @NonNull ExtraData extraData;
 
     private final float bounds_x1, bounds_x2, bounds_y1, bounds_y2;
 
     public BaseNodeImpl(final @NonNull String name, final @NonNull ObjectId oid,
-            final @NonNull ObjectId metadataId, @Nullable Envelope bounds,
-            @Nullable Map<String, Object> extraData) {
+            final @NonNull ObjectId metadataId, Envelope bounds, Map<String, Object> extraData) {
         this.name = name;
         this.objectId_h1 = RevObjects.h1(oid);
         this.objectId_h2 = RevObjects.h2(oid);
@@ -111,7 +108,7 @@ abstract class BaseNodeImpl extends Node {
         return extraData.asMap();
     }
 
-    public @Override @Nullable Object getExtraData(String key) {
-        return extraData.get(key);
+    public @Override Optional<Object> getExtraData(String key) {
+        return Optional.ofNullable(extraData.get(key));
     }
 }

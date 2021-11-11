@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.crs.CoordinateReferenceSystem;
 import org.locationtech.geogig.feature.FeatureType;
@@ -154,14 +153,14 @@ final class FlatBuffers {
         return offset;
     }
 
-    public RevObject decode(@Nullable ObjectId id, @NonNull byte[] data, int offset, int length) {
+    public RevObject decode(ObjectId id, @NonNull byte[] data, int offset, int length) {
         Preconditions.checkArgument(offset >= 0);
         Preconditions.checkArgument(length > 0);
         final ByteBuffer dataBuffer = ByteBuffer.wrap(data, offset, length);
         return decode(id, dataBuffer);
     }
 
-    public RevObject decode(@Nullable ObjectId id, final @NonNull ByteBuffer dataBuffer) {
+    public RevObject decode(ObjectId id, final @NonNull ByteBuffer dataBuffer) {
         final RevisionObject revObject = RevisionObject.getRootAsRevisionObject(dataBuffer);
         final byte objectType = revObject.objectType();
         final FBRevObject<?> ret;
@@ -503,11 +502,11 @@ final class FlatBuffers {
         return foffset;
     }
 
-    private @Nullable int[] writeBuckets(RevTree tree, FlatBufferBuilder builder) {
+    private int[] writeBuckets(RevTree tree, FlatBufferBuilder builder) {
         return writeBuckets(tree.bucketsSize(), tree.getBuckets(), builder);
     }
 
-    private @Nullable int[] writeBuckets(int bucketsSize, @NonNull Iterable<Bucket> buckets,
+    private int[] writeBuckets(int bucketsSize, @NonNull Iterable<Bucket> buckets,
             FlatBufferBuilder builder) {
         if (0 == bucketsSize) {
             return EMPTY_OFFSETS_VECTOR;

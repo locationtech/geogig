@@ -157,8 +157,7 @@ class GeogigTransactionState implements State {
                 while (indexDiffs.hasNext()) {
                     DiffEntry entry = indexDiffs.next();
                     msg.append("\n ").append(entry.changeType().toString().toLowerCase())
-                            .append(' ')
-                            .append(entry.newPath() == null ? entry.oldName() : entry.newPath());
+                            .append(' ').append(entry.path());
                 }
             }
         }

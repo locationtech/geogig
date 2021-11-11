@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.SortedSet;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.Bucket;
@@ -55,8 +54,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
         return 0;
     }
 
-    public @Override @NonNull RevPerson createPerson(@Nullable String name, @Nullable String email,
-            long timeStamp, int timeZoneOffset) {
+    public @Override @NonNull RevPerson createPerson(String name, String email, long timeStamp,
+            int timeZoneOffset) {
         return new RevPersonImpl(Optional.ofNullable(name), Optional.ofNullable(email), timeStamp,
                 timeZoneOffset);
     }
@@ -122,7 +121,7 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
     }
 
     public @Override Bucket createBucket(final @NonNull ObjectId bucketTree, int bucketIndex,
-            final @Nullable Envelope bounds) {
+            final Envelope bounds) {
         if (bucketIndex < 0) {
             throw new IllegalArgumentException(
                     "Bucket cannot have a negative index: " + bucketIndex);
@@ -132,8 +131,8 @@ public class RevObjectFactoryImpl implements RevObjectFactory {
     }
 
     public @Override Node createNode(final @NonNull String name, final @NonNull ObjectId objectId,
-            final @NonNull ObjectId metadataId, final @NonNull TYPE type, @Nullable Envelope bounds,
-            @Nullable Map<String, Object> extraData) {
+            final @NonNull ObjectId metadataId, final @NonNull TYPE type, Envelope bounds,
+            Map<String, Object> extraData) {
 
         bounds = bounds == null || bounds.isNull() ? null : bounds;
 

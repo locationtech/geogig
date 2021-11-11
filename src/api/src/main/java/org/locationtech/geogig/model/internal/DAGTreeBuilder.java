@@ -32,7 +32,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Bucket;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
@@ -96,10 +95,6 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
             this.newTrees = new HashMap<>();
             this.targetStore = targetStore;
             this.clusteringStrategy = clusteringStrategy;
-        }
-
-        public @Nullable NodeId computeId(Node node) {
-            return clusteringStrategy.computeId(node);
         }
 
         public void addNewTree(RevTree tree) {
@@ -172,7 +167,7 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
         return build(clusteringStrategy, targetStore, () -> false);
     }
 
-    public static @Nullable RevTree build(final @NonNull ClusteringStrategy clusteringStrategy,
+    public static RevTree build(final @NonNull ClusteringStrategy clusteringStrategy,
             final @NonNull ObjectStore targetStore, final @NonNull BooleanSupplier abortFlag) {
         SharedState state = new SharedState(targetStore, clusteringStrategy, abortFlag);
 
@@ -182,7 +177,6 @@ public @Slf4j @UtilityClass class DAGTreeBuilder {
         final int baseDepth = rootId.depthLength();
         TreeBuildTask task = new TreeBuildTask(state, root, baseDepth);
 
-        @Nullable
         RevTree tree;
         try {
             ForkJoinPool forkJoinPool = FORK_JOIN_POOL;

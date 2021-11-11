@@ -556,6 +556,11 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.eclipse.jdt</groupId>
+      <artifactId>org.eclipse.jdt.annotation</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
 </project>

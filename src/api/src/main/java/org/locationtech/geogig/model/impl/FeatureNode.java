@@ -11,15 +11,16 @@ package org.locationtech.geogig.model.impl;
 
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
+import lombok.NonNull;
+
 final class FeatureNode extends BaseNodeImpl {
 
-    public FeatureNode(String name, ObjectId oid, ObjectId mdid, @Nullable Envelope env,
-            @Nullable Map<String, Object> extraData) {
+    public FeatureNode(@NonNull String name, @NonNull ObjectId oid, @NonNull ObjectId mdid,
+            Envelope env, Map<String, Object> extraData) {
         super(name, oid, mdid, env, extraData);
     }
 

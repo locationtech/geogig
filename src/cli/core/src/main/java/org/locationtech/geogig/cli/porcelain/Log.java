@@ -369,8 +369,7 @@ public class Log extends AbstractCommand implements CLICommand {
                     DiffEntry diffEntry;
                     while (diff.hasNext()) {
                         diffEntry = diff.next();
-                        String path = diffEntry.isDelete() ? diffEntry.oldPath()
-                                : diffEntry.newPath();
+                        String path = diffEntry.path();
                         ansi.a("\t" + path).newline();
                     }
                 }

@@ -230,7 +230,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             if (theirsDiff.getNewObject().equals(oursDiff.getNewObject())) {
                 // already added in current branch, no need to do anything
             } else {
-                if (TYPE.TREE == theirsDiff.newObjectType()) {
+                if (TYPE.TREE == theirsDiff.newObjectType().orElseThrow()) {
                     checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
                 } else {
                     consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
@@ -242,7 +242,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
             // removed by both histories => no conflict and no need to do anything
             break;
         case MODIFIED:
-            if (TYPE.TREE == theirsDiff.newObjectType()) {
+            if (TYPE.TREE == theirsDiff.newObjectType().orElseThrow()) {
                 checkForFeatureTypeConflict(ancestorVersion, oursDiff, theirsDiff, report);
                 break;
             }

@@ -1,7 +1,5 @@
 package org.locationtech.geogig.model;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -24,7 +22,7 @@ public @Accessors(fluent = true) class RevTagBuilder {
         return build(id, name, commitId, message, tagger);
     }
 
-    public RevTag build(@Nullable ObjectId id, @NonNull String name, @NonNull ObjectId commitId,
+    public RevTag build(ObjectId id, @NonNull String name, @NonNull ObjectId commitId,
             @NonNull String message, @NonNull RevPerson tagger) {
         if (id == null) {
             id = HashObjectFunnels.hashTag(name, commitId, message, tagger);

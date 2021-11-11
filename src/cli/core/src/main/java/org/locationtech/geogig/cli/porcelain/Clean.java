@@ -70,7 +70,7 @@ public class Clean extends AbstractCommand {
                 while (unstaged.hasNext()) {
                     DiffEntry entry = unstaged.next();
                     if (entry.changeType() == ChangeType.ADDED) {
-                        console.println("Would remove " + entry.newPath());
+                        console.println("Would remove " + entry.path());
                     }
                 }
             }

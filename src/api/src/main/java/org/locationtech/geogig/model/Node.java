@@ -12,9 +12,10 @@ package org.locationtech.geogig.model;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
+
+import lombok.NonNull;
 
 /**
  * An identifier->object id mapping for an object
@@ -49,9 +50,7 @@ public abstract class Node implements Bounded, Comparable<Node> {
      */
     public abstract Map<String, Object> getExtraData();
 
-    public @Nullable Object getExtraData(String key) {
-        return getExtraData().get(key);
-    }
+    public abstract Optional<Object> getExtraData(@NonNull String key);
 
     /**
      * Provides for natural ordering of {@code Node}, based on {@link #getName() name}
@@ -89,11 +88,11 @@ public abstract class Node implements Bounded, Comparable<Node> {
         return RevObjects.toString(this);
     }
 
-    public Node update(final ObjectId newId) {
+    public @NonNull Node update(final @NonNull ObjectId newId) {
         return update(newId, bounds().orElse(null));
     }
 
-    public Node update(final ObjectId newId, final @Nullable Envelope newBounds) {
+    public @NonNull Node update(final @NonNull ObjectId newId, final Envelope newBounds) {
         ObjectId mdId = getMetadataId().orElse(ObjectId.NULL);
 
         return RevObjectFactory.defaultInstance().createNode(getName(), newId, mdId, getType(),

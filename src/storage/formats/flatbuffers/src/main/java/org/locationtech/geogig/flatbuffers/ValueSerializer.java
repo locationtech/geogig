@@ -16,7 +16,6 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.BIG_DECIMAL;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.BIG_INTEGER;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.BOOLEAN;
@@ -59,7 +58,7 @@ import lombok.NonNull;
 final class ValueSerializer {
 
     @SuppressWarnings("unchecked")
-    public static int encode(@Nullable Object val, @NonNull FlatBufferBuilder builder) {
+    public static int encode(Object val, @NonNull FlatBufferBuilder builder) {
 
         byte valueType = ValueUnion.NONE;
         int valueOffset = 0;
@@ -194,11 +193,11 @@ final class ValueSerializer {
         return Value.createValue(builder, valueType, valueOffset);
     }
 
-    public static @Nullable Object decodeValue(@NonNull Value v) {
+    public static Object decodeValue(@NonNull Value v) {
         return decodeValue(v, null);
     }
 
-    public static @Nullable Object decodeValue(@NonNull Value v, @Nullable GeometryFactory gf) {
+    public static Object decodeValue(@NonNull Value v, GeometryFactory gf) {
         final byte valueType = v.valueType();
         if (ValueUnion.NONE == valueType) {
             return null;

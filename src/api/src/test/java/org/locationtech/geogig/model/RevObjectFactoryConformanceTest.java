@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -217,12 +216,13 @@ public abstract class RevObjectFactoryConformanceTest {
         assertThat(e.getMessage(), containsString("bucketTree"));
     }
 
-    public void testCreateNode(String name, ObjectId oid, ObjectId metadataId, TYPE type,
-            @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
+    public void testCreateNode(@NonNull String name, @NonNull ObjectId objectId,
+            @NonNull ObjectId metadataId, TYPE type, Envelope bounds,
+            Map<String, Object> extraData) {
 
-        Node actual = createNode(name, oid, metadataId, type, bounds, extraData);
+        Node actual = createNode(name, objectId, metadataId, type, bounds, extraData);
         assertNotNull(actual);
-        Node expected = DEFAULT.createNode(name, oid, metadataId, type, bounds, extraData);
+        Node expected = DEFAULT.createNode(name, objectId, metadataId, type, bounds, extraData);
         RevObjectTestUtil.deepEquals(expected, actual);
     }
 

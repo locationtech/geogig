@@ -168,7 +168,7 @@ public class Patch {
                 : diff.getOldObject().getMetadataId();
         ObjectId newFeatureType = diff.getNewObject() == null ? null
                 : diff.getNewObject().getMetadataId();
-        String path = diff.oldPath() == null ? diff.newPath() : diff.oldPath();
+        String path = diff.path();
         alteredTrees.add(new FeatureTypeDiff(path, oldFeatureType, newFeatureType));
     }
 

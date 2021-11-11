@@ -13,8 +13,9 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.repository.Conflict;
+
+import lombok.NonNull;
 
 /**
  * Provides an interface for implementations of conflict databases, which manage GeoGig conflicts.
@@ -29,7 +30,7 @@ public interface ConflictsDatabase extends Store {
      * @return {@code true} if there are conflicts in the provided transaction namespace,
      *         {@code false} otherwise
      */
-    public boolean hasConflicts(@Nullable String namespace);
+    public boolean hasConflicts(String namespace);
 
     /**
      * Gets the specified conflict from the database.
@@ -38,7 +39,7 @@ public interface ConflictsDatabase extends Store {
      * @param path the conflict to retrieve
      * @return the conflict, or {@link Optional#empty()} if it was not found
      */
-    public Optional<Conflict> getConflict(@Nullable String namespace, String path);
+    public Optional<Conflict> getConflict(String namespace, String path);
 
     /**
      * Retrieves all conflicts that match the specified path filter.
@@ -55,8 +56,7 @@ public interface ConflictsDatabase extends Store {
      *          {@code WHERE path = '<treePath>' OR path LIKE '<treePath>/%'} to account for
      *          conflicts to the tree itself as well as any of it's children.
      */
-    public Iterator<Conflict> getByPrefix(@Nullable String namespace,
-            @Nullable String prefixFilter);
+    public Iterator<Conflict> getByPrefix(String namespace, String prefixFilter);
 
     /**
      * Gets the number of conflicts in the given path.
@@ -65,7 +65,7 @@ public interface ConflictsDatabase extends Store {
      * @param treePath the path to count
      * @return the number of conflicts
      */
-    public long getCountByPrefix(@Nullable String namespace, @Nullable String treePath);
+    public long getCountByPrefix(String namespace, String treePath);
 
     /**
      * Adds a conflict to the database.
@@ -73,12 +73,12 @@ public interface ConflictsDatabase extends Store {
      * @param namespace the namespace of the conflict
      * @param conflict the conflict to add
      */
-    public void addConflict(@Nullable String namespace, Conflict conflict);
+    public void addConflict(String namespace, Conflict conflict);
 
     /**
      * Adds the provided conflicts to the database for the given namespace.
      */
-    public void addConflicts(@Nullable String namespace, Iterable<Conflict> conflicts);
+    public void addConflicts(String namespace, Iterable<Conflict> conflicts);
 
     /**
      * Removes a conflict from the database.
@@ -86,24 +86,24 @@ public interface ConflictsDatabase extends Store {
      * @param namespace the namespace of the conflict
      * @param path the path of feature whose conflict should be removed
      */
-    public void removeConflict(@Nullable String namespace, String path);
+    public void removeConflict(String namespace, @NonNull String path);
 
     /**
      * Removes all conflicts from the database.
      * 
      * @param namespace the namespace of the conflicts to remove
      */
-    public void removeConflicts(@Nullable String namespace);
+    public void removeConflicts(String namespace);
 
     /**
      * Removes the conflicts matching the provided paths, if they exist.
      */
-    public void removeConflicts(@Nullable String namespace, Iterable<String> paths);
+    public void removeConflicts(String namespace, @NonNull Iterable<String> paths);
 
     /**
      * Finds and returns the set of conflict paths that exist and match any of the provided paths.
      */
-    public Set<String> findConflicts(@Nullable String namespace, Iterable<String> paths);
+    public Set<String> findConflicts(String namespace, @NonNull Iterable<String> paths);
 
     /**
      * Removes all conflicts that match the specified namespace/prefix filter, if given, or all that
@@ -112,5 +112,5 @@ public interface ConflictsDatabase extends Store {
      * @param namespace the transaction id, or {@code null} for no transaction namespace.
      * @param pathPrefix the path of the tree to filter by.
      */
-    public void removeByPrefix(@Nullable String namespace, @Nullable String pathPrefix);
+    public void removeByPrefix(String namespace, String pathPrefix);
 }

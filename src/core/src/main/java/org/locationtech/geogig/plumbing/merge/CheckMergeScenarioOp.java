@@ -106,11 +106,11 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         List<DiffEntry> entries = new ArrayList<DiffEntry>();
         DiffEntry next = iterator.next();
         entries.add(next);
-        String name = next.oldName() != null ? next.oldName() : next.newName();
+        String name = next.name();
         while (iterator.hasNext()) {
-            DiffEntry peeked = iterator.peek();
-            String peekedName = peeked.oldName() != null ? peeked.oldName() : peeked.newName();
-            if (name.equals(peekedName)) {
+            DiffEntry peek = iterator.peek();
+            String peekName = peek.name();
+            if (name.equals(peekName)) {
                 entries.add(iterator.next());
             } else {
                 break;

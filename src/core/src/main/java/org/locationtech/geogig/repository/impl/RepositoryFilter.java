@@ -139,8 +139,7 @@ public class RepositoryFilter {
         private final @NonNull Geometry geom;
 
         public @Override boolean test(Feature t) {
-            Geometry defaultGeometry = t.getDefaultGeometry();
-            return defaultGeometry != null && geom.intersects(defaultGeometry);
+            return t.getDefaultGeometry().map(this.geom::intersects).orElse(false);
         }
 
     }

@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.model.impl.Float32Bounds;
@@ -135,19 +134,19 @@ public @UtilityClass class RevObjects {
                 comparator);
     }
 
-    public static int h1(ObjectId id) {
+    public static int h1(@NonNull ObjectId id) {
         return id.h1;
     }
 
-    public static long h2(ObjectId id) {
+    public static long h2(@NonNull ObjectId id) {
         return id.h2;
     }
 
-    public static long h3(ObjectId id) {
+    public static long h3(@NonNull ObjectId id) {
         return id.h3;
     }
 
-    public static int h1(String hash) {
+    public static int h1(@NonNull String hash) {
         Preconditions.checkArgument(hash.length() >= 8);
         //@formatter:off
         int h1 = toInt(
@@ -159,7 +158,7 @@ public @UtilityClass class RevObjects {
         return h1;
     }
 
-    public static long h2(String hash) {
+    public static long h2(@NonNull String hash) {
         Preconditions.checkArgument(hash.length() >= 24);
         //@formatter:off
         long h2 = toLong(
@@ -175,7 +174,7 @@ public @UtilityClass class RevObjects {
         return h2;
     }
 
-    public static long h3(String hash) {
+    public static long h3(@NonNull String hash) {
         Preconditions.checkArgument(hash.length() >= 40);
         //@formatter:off
         long h3 = toLong(
@@ -285,11 +284,11 @@ public @UtilityClass class RevObjects {
                 p.getEmail().orElse(null), p.getTimestamp(), p.getTimeZoneOffset());
     }
 
-    public static boolean equals(@NonNull RevObject object, @Nullable Object o) {
+    public static boolean equals(@NonNull RevObject object, Object o) {
         return (o instanceof RevObject) && object.getId().equals(((RevObject) o).getId());
     }
 
-    public static boolean equals(@NonNull Bucket bucket, @Nullable Object o) {
+    public static boolean equals(@NonNull Bucket bucket, Object o) {
         return (o instanceof Bucket) && bucket.getIndex() == ((Bucket) o).getIndex()
                 && bucket.getObjectId().equals(((Bucket) o).getObjectId());
     }
@@ -317,7 +316,7 @@ public @UtilityClass class RevObjects {
      * Equality check based on {@link #getName() name}, {@link #getType() type}, and
      * {@link #getObjectId() objectId}; {@link #getMetadataId()} is NOT part of the equality check.
      */
-    public static boolean equals(@NonNull Node node, @Nullable Object o) {
+    public static boolean equals(@NonNull Node node, Object o) {
         if (o instanceof Node) {
             Node r = (Node) o;
             return node.getType().equals(r.getType()) && node.getName().equals(r.getName())
@@ -446,7 +445,7 @@ public @UtilityClass class RevObjects {
         return stree;
     }
 
-    public static @Nullable Envelope makePrecise(@Nullable Envelope bounds) {
+    public static Envelope makePrecise(Envelope bounds) {
         Envelope float32Bounds = Float32Bounds.valueOf(bounds).asEnvelope();
         return float32Bounds.isNull() ? null : float32Bounds;
     }

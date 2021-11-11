@@ -11,7 +11,7 @@ package org.locationtech.geogig.repository;
 
 import java.util.Map;
 
-import org.eclipse.jdt.annotation.Nullable;
+import lombok.NonNull;
 
 public interface Command<T> {
 
@@ -33,8 +33,8 @@ public interface Command<T> {
          * @param result the value returned from the {@code call} method.
          * @param exception the exception thrown by the command, or {@code null}.
          */
-        public void postCall(Command<?> command, @Nullable Object result,
-                @Nullable RuntimeException exception);
+        public void postCall(@NonNull Command<?> command, Object result,
+                RuntimeException exception);
     }
 
     /**

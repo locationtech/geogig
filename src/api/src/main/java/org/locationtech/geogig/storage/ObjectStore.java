@@ -12,7 +12,6 @@ package org.locationtech.geogig.storage;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
@@ -75,7 +74,7 @@ public interface ObjectStore extends Store {
      * @param id the id of the object to get
      * @return the object found, or {@code null} if no object is found
      */
-    public @Nullable RevObject getIfPresent(ObjectId id);
+    public RevObject getIfPresent(ObjectId id);
 
     /**
      * Reads an object with the given {@link ObjectId id} out of the database.
@@ -85,7 +84,7 @@ public interface ObjectStore extends Store {
      * @return the object found, or {@code null} if no object is found for the given id and type
      *         (note the object may exist and be of another type)
      */
-    public @Nullable <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
+    public <T extends RevObject> T getIfPresent(ObjectId id, Class<T> type)
             throws IllegalArgumentException;
 
     /**

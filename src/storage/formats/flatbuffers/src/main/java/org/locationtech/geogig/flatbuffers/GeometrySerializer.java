@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.flatbuffers;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.ENCODEDGEOMETRY;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.FLATGEOMETRY;
 import org.locationtech.geogig.flatbuffers.generated.v1.values.GEOMETRY;
@@ -43,7 +42,7 @@ final @UtilityClass class GeometrySerializer {
         return GEOMETRY.createGEOMETRY(builder, geomType, geomOffset);
     }
 
-    public static @Nullable Geometry decode(@NonNull GEOMETRY gval, @Nullable GeometryFactory gf) {
+    public static Geometry decode(@NonNull GEOMETRY gval, GeometryFactory gf) {
         final byte gtype = gval.valueType();
         final GeometryFactory geomFac = gf == null ? defaultGF : gf;
         if (ENCODEDGEOMETRY.WKBGEOMETRY == gtype) {

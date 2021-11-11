@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 
@@ -39,7 +38,7 @@ public class Remote {
 
     private String fetch;
 
-    private String mappedBranch;
+    private @NonNull String mappedBranch;
 
     private String username;
 
@@ -59,8 +58,8 @@ public class Remote {
      * @param username the user name to access the repository
      * @param password the password to access the repository
      */
-    public Remote(String name, String fetchurl, String pushurl, String fetch, boolean mapped,
-            @Nullable String mappedBranch, @Nullable String username, @Nullable String password) {
+    public Remote(@NonNull String name, String fetchurl, String pushurl, String fetch,
+            boolean mapped, String mappedBranch, String username, String password) {
         this.name = name;
         this.fetchurl = checkURL(fetchurl);
         this.pushurl = checkURL(pushurl);
@@ -81,7 +80,7 @@ public class Remote {
      * @throws IllegalArgumentException
      */
     private String checkURL(String url) {
-        Preconditions.checkArgument(url != null, "Invalid remote URL.");
+        Preconditions.checkArgument(url != null, "Invalid remote URL: %s", url);
 
         try {
             new URI(url);
@@ -178,14 +177,14 @@ public class Remote {
     /**
      * @return whether or not this remote is mapped
      */
-    public boolean getMapped() {
+    public boolean isMapped() {
         return mapped;
     }
 
     /**
-     * @return the branch the remote is mapped to
+     * @return the branch the remote is mapped to, or {@literal *} indicating all branches
      */
-    public String getMappedBranch() {
+    public @NonNull String getMappedBranch() {
         return mappedBranch;
     }
 

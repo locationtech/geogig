@@ -101,7 +101,7 @@ public class BlameOp extends AbstractGeoGigOp<BlameReport> {
                     .setOldVersion(commitB.getId()).setReportTrees(false).call()) {
                 while (diffs.hasNext()) {
                     DiffEntry diff = diffs.next();
-                    if (path.equals(diff.newPath())) {
+                    if (path.equals(diff.path())) {
                         if (diff.isAdd()) {
                             String refSpec = commit.getId().toString() + ":" + path;
                             RevFeature feature = revObjectParse.setRefSpec(refSpec)

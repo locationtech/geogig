@@ -15,7 +15,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.Checksum;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
@@ -78,7 +77,7 @@ public class RevObjectSerializerLZ4 implements RevObjectSerializer {
         return checksum;
     }
 
-    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(ObjectId id, @NonNull byte[] data, int offset, int length)
             throws IOException {
         ByteArrayInputStream in = new ByteArrayInputStream(data, offset, length);
         return read(id, in);

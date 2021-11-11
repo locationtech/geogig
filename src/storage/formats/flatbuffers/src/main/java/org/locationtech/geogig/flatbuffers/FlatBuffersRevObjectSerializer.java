@@ -19,7 +19,6 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
@@ -84,7 +83,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
         out.write(array, off, len);
     }
 
-    public @Override RevObject read(@Nullable ObjectId id, InputStream in) throws IOException {
+    public @Override RevObject read(ObjectId id, InputStream in) throws IOException {
         final byte[] dataBuffer;
         if (isLengthPrefixed()) {
             // size in little endian (FlatBuffers is LE exclusively, so follow suite)
@@ -100,7 +99,7 @@ public class FlatBuffersRevObjectSerializer implements RevObjectSerializer {
         return flatBuffers.decode(id, dataBuffer, 0, dataBuffer.length);
     }
 
-    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(ObjectId id, @NonNull byte[] data, int offset, int length)
             throws IOException {
         int padding = 0;
         if (isLengthPrefixed()) {

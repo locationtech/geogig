@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
@@ -43,7 +42,6 @@ public interface DAGStorageProvider {
 
     public void dispose();
 
-    @Nullable
     public RevTree getTree(ObjectId originalId);
 
 }

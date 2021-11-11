@@ -116,7 +116,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNotNull(de.getNewObject());
 
         String expectedPath = NodeRef.appendChild(pointsName, points1.getId());
-        assertEquals(expectedPath, de.newPath());
+        assertEquals(expectedPath, de.path());
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
         assertEquals(ObjectId.NULL, de.oldObjectId());
@@ -164,7 +164,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
         DiffEntry de = difflist.get(0);
-        assertEquals(path, de.oldPath());
+        assertEquals(path, de.path());
 
         assertEquals(DiffEntry.ChangeType.REMOVED, de.changeType());
 
@@ -192,8 +192,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
         DiffEntry de = difflist.get(0);
-        assertNull(de.oldPath());
-        assertEquals(path, de.newPath());
+        assertEquals(path, de.path());
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
 
@@ -219,7 +218,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(1, difflist.size());
         DiffEntry de = difflist.get(0);
         String expectedPath = NodeRef.appendChild(pointsName, points1.getId());
-        assertEquals(expectedPath, de.newPath());
+        assertEquals(expectedPath, de.path());
 
         assertEquals(DiffEntry.ChangeType.MODIFIED, de.changeType());
         assertEquals(oldOid, de.oldObjectId());
@@ -484,7 +483,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertNull(de.getOldObject());
         assertNotNull(de.getNewObject());
 
-        assertEquals(linesName, de.newPath());
+        assertEquals(linesName, de.path());
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
         assertEquals(ObjectId.NULL, de.oldObjectId());
@@ -529,14 +528,14 @@ public class DiffOpTest extends RepositoryTestCase {
 
         assertNotNull(difflist);
         assertEquals(1, difflist.size());
-        assertEquals(linesName, difflist.get(0).newName());
+        assertEquals(linesName, difflist.get(0).name());
 
         DiffEntry de = difflist.get(0);
 
         assertNull(de.getOldObject());
         assertNotNull(de.getNewObject());
 
-        assertEquals(linesName, de.newPath());
+        assertEquals(linesName, de.path());
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
         assertEquals(ObjectId.NULL, de.oldObjectId());
@@ -556,7 +555,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(4, difflist.size());
         Set<String> expected = Set.of(linesName, pointsName, NodeRef.appendChild(linesName, idL1),
                 NodeRef.appendChild(pointsName, idP1));
-        Set<String> actual = difflist.stream().map(DiffEntry::newPath).collect(Collectors.toSet());
+        Set<String> actual = difflist.stream().map(DiffEntry::path).collect(Collectors.toSet());
         assertEquals(expected, actual);
     }
 

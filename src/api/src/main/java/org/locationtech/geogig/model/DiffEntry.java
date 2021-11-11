@@ -12,7 +12,6 @@ package org.locationtech.geogig.model;
 import java.util.Comparator;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
@@ -77,7 +76,7 @@ public class DiffEntry {
      * @param oldObject the old node ref
      * @param newObject the new node ref
      */
-    public DiffEntry(@Nullable NodeRef oldObject, @Nullable NodeRef newObject) {
+    public DiffEntry(NodeRef oldObject, NodeRef newObject) {
 
         Preconditions.checkArgument(oldObject != null || newObject != null,
                 "Either oldObject or newObject shall not be null");
@@ -115,7 +114,7 @@ public class DiffEntry {
      * @return the id of the old version id of the object, or {@link ObjectId#NULL} if
      *         {@link #changeType()} is {@code ADD}
      */
-    public ObjectId oldObjectId() {
+    public @NonNull ObjectId oldObjectId() {
         return oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
     }
 
@@ -138,7 +137,7 @@ public class DiffEntry {
      * @return the id of the new version id of the object, or {@link ObjectId#NULL} if
      *         {@link #changeType()} is {@code DELETE}
      */
-    public ObjectId newObjectId() {
+    public @NonNull ObjectId newObjectId() {
         return newObject == null ? ObjectId.NULL : newObject.getObjectId();
     }
 
@@ -192,20 +191,6 @@ public class DiffEntry {
     }
 
     /**
-     * @return the path of the old object
-     */
-    public @Nullable String oldPath() {
-        return oldObject == null ? null : oldObject.path();
-    }
-
-    /**
-     * @return the path of the new object
-     */
-    public @Nullable String newPath() {
-        return newObject == null ? null : newObject.path();
-    }
-
-    /**
      * @return the path represented by this entry; if there is no new object, the path will be that
      *         of the old object
      */
@@ -217,30 +202,16 @@ public class DiffEntry {
         return (newObject == null ? oldObject : newObject).getParentPath();
     }
 
-    public String name() {
+    public @NonNull String name() {
         return newObject == null ? oldObject.name() : newObject.name();
     }
 
-    /**
-     * @return the name of the new object
-     */
-    public @Nullable String newName() {
-        return newObject == null ? null : newObject.getNode().getName();
+    public Optional<Node> newNode() {
+        return newObject().map(NodeRef::getNode);
     }
 
-    /**
-     * @return the name of the old object
-     */
-    public @Nullable String oldName() {
-        return oldObject == null ? null : oldObject.getNode().getName();
-    }
-
-    public @Nullable Node newNode() {
-        return newObject == null ? null : newObject.getNode();
-    }
-
-    public @Nullable Node oldNode() {
-        return oldObject == null ? null : oldObject.getNode();
+    public Optional<Node> oldNode() {
+        return oldObject().map(NodeRef::getNode);
     }
 
     /**
@@ -342,24 +313,22 @@ public class DiffEntry {
     /**
      * @return the {@link RevObject.TYPE} of the new object, or {@code null} if there isn't one
      */
-    public TYPE newObjectType() {
-        NodeRef newObject = getNewObject();
-        return newObject != null ? newObject.getType() : null;
+    public Optional<TYPE> newObjectType() {
+        return newObject().map(NodeRef::getType);
     }
 
     /**
      * @return the {@link RevObject.TYPE} of the old object, or {@code null} if there isn't one
      */
-    public TYPE oldObjectType() {
-        NodeRef oldObject = getOldObject();
-        return oldObject != null ? oldObject.getType() : null;
+    public Optional<TYPE> oldObjectType() {
+        return oldObject().map(NodeRef::getType);
     }
 
     /**
      * @return the metadata {@link ObjectId} of the new object, or {@link ObjectId#NULL} if there
      *         isn't one
      */
-    public ObjectId newMetadataId() {
+    public @NonNull ObjectId newMetadataId() {
         NodeRef newObject = getNewObject();
         return newObject != null ? newObject.getMetadataId() : ObjectId.NULL;
     }
@@ -368,7 +337,7 @@ public class DiffEntry {
      * @return the metadata {@link ObjectId} of the old object, or {@link ObjectId#NULL} if there
      *         isn't one
      */
-    public ObjectId oldMetadataId() {
+    public @NonNull ObjectId oldMetadataId() {
         NodeRef oldObject = getOldObject();
         return oldObject != null ? oldObject.getMetadataId() : ObjectId.NULL;
     }

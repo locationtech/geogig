@@ -13,7 +13,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.model.DiffEntry;
 import org.locationtech.geogig.model.Node;
@@ -153,13 +152,13 @@ public interface WorkingTree {
      * @return an iterator for all of the differences between the work tree and the index based on
      *         the path filter.
      */
-    AutoCloseableIterator<DiffEntry> getUnstaged(@Nullable String pathFilter);
+    AutoCloseableIterator<DiffEntry> getUnstaged(String pathFilter);
 
     /**
      * @param pathFilter if specified, only changes that match the filter will be counted
      * @return the number differences between the work tree and the index based on the path filter.
      */
-    DiffObjectCount countUnstaged(@Nullable String pathFilter);
+    DiffObjectCount countUnstaged(String pathFilter);
 
     /**
      * @return {@code true} if there are no unstaged changes, false otherwise

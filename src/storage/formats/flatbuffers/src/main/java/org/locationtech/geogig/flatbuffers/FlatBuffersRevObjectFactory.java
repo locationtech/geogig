@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.FeatureType;
 import org.locationtech.geogig.feature.PropertyDescriptor;
 import org.locationtech.geogig.flatbuffers.generated.v1.ObjectType;
@@ -66,7 +65,7 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
     }
 
     public @Override Node createNode(String name, ObjectId objectId, ObjectId metadataId, TYPE type,
-            @Nullable Envelope bounds, @Nullable Map<String, Object> extraData) {
+            Envelope bounds, Map<String, Object> extraData) {
 
         return DEFAULT_IMPL.createNode(name, objectId, metadataId, type, bounds, extraData);
     }
@@ -111,7 +110,7 @@ public class FlatBuffersRevObjectFactory implements RevObjectFactory {
     }
 
     public @Override Bucket createBucket(@NonNull ObjectId bucketTree, int bucketIndex,
-            @Nullable Envelope bounds) {
+            Envelope bounds) {
         if (bucketIndex < 0) {
             throw new IllegalArgumentException(
                     "Bucket cannot have a negative index: " + bucketIndex);

@@ -9,8 +9,6 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -23,7 +21,7 @@ public class NodeId {
 
     private @NonNull String name;
 
-    private @Nullable Object value;
+    private Object value;
 
     public NodeId(String name) {
         this.name = name;
@@ -31,7 +29,6 @@ public class NodeId {
     }
 
     @SuppressWarnings("unchecked")
-    @Nullable
     public <V> V value() {
         return (V) value;
     }

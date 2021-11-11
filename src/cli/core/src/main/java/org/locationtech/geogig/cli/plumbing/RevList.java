@@ -219,8 +219,7 @@ public class RevList extends AbstractCommand implements CLICommand {
                     sb.append("changes\n");
                     while (diff.hasNext()) {
                         diffEntry = diff.next();
-                        String path = diffEntry.newPath() != null ? diffEntry.newPath()
-                                : diffEntry.oldPath();
+                        String path = diffEntry.path();
                         sb.append('\t').append(path).append(' ')
                                 .append(diffEntry.oldObjectId().toString()).append(' ')
                                 .append(diffEntry.newObjectId().toString()).append('\n');

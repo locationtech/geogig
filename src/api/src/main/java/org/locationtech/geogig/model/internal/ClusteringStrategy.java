@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.Node;
@@ -89,9 +88,9 @@ public abstract class ClusteringStrategy extends NodeOrdering {
     abstract int normalizedSizeLimit(final int depthIndex);
 
     /**
-     * @return the {@link NodeId} that matches the given node
+     * @return the {@link NodeId} that matches the given node, or {@code null}
      */
-    public @Nullable abstract NodeId computeId(Node node);
+    public abstract NodeId computeId(Node node);
 
     /**
      * Computes the bucket a given {@link NodeId} lays into for a given tree depth.
@@ -102,13 +101,13 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      *         current tree node (hence creating a mixed {@link RevTree} with both direct children
      *         and buckets).
      */
-    public abstract int bucket(NodeId nodeId, int depthIndex);
+    public abstract int bucket(@NonNull NodeId nodeId, int depthIndex);
 
     /**
      * @return the bucket corresponding to {@code nodeId} at depth {@code depthIndex} as mandated by
      *         {@link CanonicalNodeNameOrder}
      */
-    public final int canonicalBucket(final NodeId nodeId, final int depthIndex) {
+    public final int canonicalBucket(final @NonNull NodeId nodeId, final int depthIndex) {
         int bucket = CanonicalNodeNameOrder.bucket(nodeId.name(), depthIndex);
         return bucket;
     }
@@ -116,7 +115,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
     /**
      * @see #getOrCreateDAG(TreeId, ObjectId)
      */
-    DAG getOrCreateDAG(TreeId treeId) {
+    DAG getOrCreateDAG(@NonNull TreeId treeId) {
         return getOrCreateDAG(treeId, RevTree.EMPTY_TREE_ID);
     }
 
@@ -124,7 +123,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      * Returns the mutable tree (DAG) associated to the given {@link TreeId}, creating it if it
      * doesn't exist and setting it's original {@link RevTree} identifier as {@code originalTreeId}
      */
-    protected DAG getOrCreateDAG(TreeId treeId, ObjectId originalTreeId) {
+    protected @NonNull DAG getOrCreateDAG(@NonNull TreeId treeId, ObjectId originalTreeId) {
         return dagCache.getOrCreate(treeId, originalTreeId);
     }
 
@@ -217,7 +216,6 @@ public abstract class ClusteringStrategy extends NodeOrdering {
      *         inserted/updated, {@code -1} if the node was deleted
      */
     public int put(final Node node) {
-        @Nullable
         final NodeId nodeId = computeId(node);
         if (null == nodeId) {
             return 0;
@@ -263,7 +261,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         final int normalizedSizeLimit = normalizedSizeLimit(dagDepth);
 
         if (dag.numBuckets() > 0) {
-            final @Nullable TreeId bucketId = computeBucketId(nodeId, dagDepth + 1);
+            final TreeId bucketId = computeBucketId(nodeId, dagDepth + 1);
             if (bucketId != null) {
                 final DAG bucketDAG = getOrCreateDAG(bucketId);
                 dag.addBucket(bucketId);
@@ -446,7 +444,7 @@ public abstract class ClusteringStrategy extends NodeOrdering {
         }
     }
 
-    protected RevTree getOriginalTree(@Nullable ObjectId originalId) {
+    protected @NonNull RevTree getOriginalTree(ObjectId originalId) {
         final RevTree original;
         if (originalId == null || RevTree.EMPTY_TREE_ID.equals(originalId)) {
             original = RevTree.EMPTY;

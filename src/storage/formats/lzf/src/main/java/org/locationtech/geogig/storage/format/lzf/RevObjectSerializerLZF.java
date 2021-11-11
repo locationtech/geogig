@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.storage.RevObjectSerializer;
@@ -50,7 +49,7 @@ public class RevObjectSerializerLZF implements RevObjectSerializer {
 
     }
 
-    public @Override RevObject read(@Nullable ObjectId id, byte[] data, int offset, int length)
+    public @Override RevObject read(ObjectId id, @NonNull byte[] data, int offset, int length)
             throws IOException {
         byte[] decoded = LZFDecoder.decode(data, offset, length);
         return factory.read(id, decoded, 0, decoded.length);

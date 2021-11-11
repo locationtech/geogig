@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.repository.IndexInfo.IndexType;
 
+import lombok.NonNull;
 import lombok.Value;
 
 /**
@@ -44,8 +44,8 @@ public interface IndexDatabase extends ObjectStore {
      * @param metadata extra properties to be used by the index
      * @return the new index
      */
-    public IndexInfo createIndexInfo(String treeName, String attributeName, IndexType strategy,
-            @Nullable Map<String, Object> metadata);
+    public IndexInfo createIndexInfo(@NonNull String treeName, String attributeName,
+            IndexType strategy, Map<String, Object> metadata);
 
     /**
      * Updates the metadata of an {@link IndexInfo} in the index database.

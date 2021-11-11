@@ -16,8 +16,6 @@ import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
-
 import com.google.common.base.Strings;
 
 import lombok.NonNull;
@@ -48,9 +46,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServiceFinder {
 
-    private @Setter @Nullable String systemProperty;
+    private @Setter String systemProperty;
 
-    private @Setter @Nullable String environmentVariable;
+    private @Setter String environmentVariable;
 
     /**
      * Implements lookup mechanism
@@ -97,7 +95,7 @@ public class ServiceFinder {
         return services;
     }
 
-    public @Nullable <T> T lookupService(@NonNull Class<T> type) {
+    public <T> T lookupService(@NonNull Class<T> type) {
         List<T> spiImpls = lookupServices(type);
         if (spiImpls.isEmpty()) {
             return null;
@@ -138,8 +136,7 @@ public class ServiceFinder {
         return instance;
     }
 
-    public @Nullable <T> T lookupSystemProperty(@NonNull Class<T> type,
-            @NonNull String systemPropertyName) {
+    public <T> T lookupSystemProperty(@NonNull Class<T> type, @NonNull String systemPropertyName) {
         log.debug("Looking up implementation of {} as System property parameter {}", type.getName(),
                 systemPropertyName);
         String className = System.getProperty(systemPropertyName);
@@ -162,7 +159,7 @@ public class ServiceFinder {
         }
     }
 
-    public @Nullable <T> T lookupEnvironmentVariable(@NonNull Class<T> type,
+    public <T> T lookupEnvironmentVariable(@NonNull Class<T> type,
             @NonNull String environmentVariable) {
 
         log.debug("Looking up implementation of {} as environment variable {}", type.getName(),

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.ObjectId;
@@ -32,7 +33,6 @@ import org.rocksdb.RocksIterator;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 
@@ -56,7 +56,7 @@ public class RocksdbIndexDatabase extends RocksdbObjectStore implements IndexDat
 
     public @Override synchronized void open() {
         if (!isOpen()) {
-            super.open(Sets.newHashSet("indexMetadata", "indexMappings"));
+            super.open(Set.of("indexMetadata", "indexMappings"));
             this.indexMetadataColumn = super.dbhandle.getColumnFamily("indexMetadata");
             this.indexMappingsColumn = super.dbhandle.getColumnFamily("indexMappings");
             Preconditions.checkState(this.indexMetadataColumn != null);

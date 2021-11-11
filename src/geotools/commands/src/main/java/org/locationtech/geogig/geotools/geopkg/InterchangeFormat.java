@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +74,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import lombok.NonNull;
 
@@ -241,8 +239,8 @@ public class InterchangeFormat {
             @Nullable String authorName, @Nullable String authorEmail,
             @Nullable String... tableNames) {
 
-        final Set<String> importTables = tableNames == null ? Collections.emptySet()
-                : Sets.newHashSet(tableNames);
+        final Set<String> importTables = tableNames == null ? Set.of()
+                : Arrays.asList(tableNames).stream().collect(Collectors.toSet());
 
         List<AuditReport> reports = new ArrayList<>();
         GeoPackage geopackage;

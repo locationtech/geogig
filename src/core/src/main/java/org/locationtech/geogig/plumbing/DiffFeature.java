@@ -12,6 +12,7 @@ package org.locationtech.geogig.plumbing;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.model.RevObject;
 import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 
 /**
@@ -83,8 +83,10 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         checkArgument(oldPath.equals(newPath),
                 "old and new versions do not corespond to the same feature");
 
-        Set<ObjectId> ids = Sets.newHashSet(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
-                oldNodeRef.getMetadataId(), newNodeRef.getMetadataId());
+        Set<ObjectId> ids = Arrays
+                .asList(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
+                        oldNodeRef.getMetadataId(), newNodeRef.getMetadataId())
+                .stream().collect(Collectors.toSet());
 
         Map<ObjectId, RevObject> objects = Streams.stream(objectDatabase().getAll(ids))
                 .collect(Collectors.toMap(RevObject::getId, revobj -> revobj));

@@ -28,7 +28,6 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.repository.IndexInfo;
 import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 
-import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +118,7 @@ public @Slf4j class IndexDuplicator {
             Set<IndexTreeMapping> mappings = new HashSet<>();
             try (AutoCloseableIterator<IndexTreeMapping> indexMappings = src
                     .resolveIndexedTrees(index)) {
-                mappings = Sets.newHashSet(indexMappings);
+                mappings = indexMappings.toList().stream().collect(Collectors.toSet());
             }
             for (IndexTreeMapping mapping : mappings) {
                 ObjectId indexTreeId = mapping.indexTree;

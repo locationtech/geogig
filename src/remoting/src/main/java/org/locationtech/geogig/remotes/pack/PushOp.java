@@ -204,7 +204,7 @@ public class PushOp extends AbstractGeoGigOp<TransferSummary> {
     }
 
     private Set<Ref> getRemoteRefs(IRemoteRepo remote) {
-        Set<Ref> remoteRefs = Sets.newHashSet(remote.listRefs(repository(), true, true));
+        Set<Ref> remoteRefs = new HashSet<>(remote.listRefs(repository(), true, true));
         Optional<Ref> headRef = remote.headRef();
         if (headRef.isPresent()) {
             remoteRefs.add(headRef.get());

@@ -25,7 +25,6 @@ import org.locationtech.geogig.remotes.RefDiff;
 import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import lombok.NonNull;

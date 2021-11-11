@@ -13,7 +13,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
-import static com.google.common.collect.Sets.newTreeSet;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
@@ -496,7 +495,7 @@ public class PreOrderDiffWalk {
                     rbucketIds.add(bucket.getObjectId());
                     indices.computeIfAbsent(Integer.valueOf(bucket.getIndex()), fn);
                 });
-                childBucketIndexes = newTreeSet(indices.values());
+                childBucketIndexes = new TreeSet<>(indices.values());
 
                 try {
                     trees = loadTrees(lbucketIds, rbucketIds);

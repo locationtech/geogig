@@ -11,6 +11,7 @@ package org.locationtech.geogig.plumbing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 /**
  * Creates a new root tree in the {@link ObjectDatabase object database} from the current index,
@@ -152,7 +152,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
         // handle renames before new and deleted trees for the computation of new and deleted to be
         // accurate, by means of the ignoreList
-        Set<String> ignoreList = Sets.newHashSet();
+        Set<String> ignoreList = new HashSet<>();
         handleRenames(treeDifference, ignoreList);
         handlePureMetadataChanges(treeDifference, ignoreList);
         handleNewTrees(treeDifference, ignoreList);
@@ -332,7 +332,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
         try (AutoCloseableIterator<DiffEntry> sourceIterator = diffs.get()) {
             Iterator<DiffEntry> updatedIterator = sourceIterator;
             if (!strippedPathFilters.isEmpty()) {
-                final Set<String> expected = Sets.newHashSet(strippedPathFilters);
+                final Set<String> expected = new HashSet<>(strippedPathFilters);
                 updatedIterator = Iterators.filter(updatedIterator, input -> {
                     boolean applies;
                     if (input.isDelete()) {

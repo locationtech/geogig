@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.locationtech.geogig.feature.Feature;
@@ -37,9 +38,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.porcelain.DiffOp;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
-
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Sets;
 
 /**
  * Unit test suite for {@link DiffOp}, must cover {@link DiffIndex}, {@link DiffWorkTree}, and
@@ -435,9 +433,9 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(ChangeType.REMOVED, diffs.get(0).changeType());
         assertEquals(ChangeType.REMOVED, diffs.get(1).changeType());
 
-        Set<ObjectId> ids = Sets.newHashSet(diffs.get(0).oldObjectId(), diffs.get(1).oldObjectId());
+        Set<ObjectId> ids = Set.of(diffs.get(0).oldObjectId(), diffs.get(1).oldObjectId());
 
-        assertEquals(Sets.newHashSet(oid11, oid13), ids);
+        assertEquals(Set.of(oid11, oid13), ids);
     }
 
     @SuppressWarnings("unused")
@@ -558,7 +556,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(4, difflist.size());
         Set<String> expected = Set.of(linesName, pointsName, NodeRef.appendChild(linesName, idL1),
                 NodeRef.appendChild(pointsName, idP1));
-        Set<String> actual = Sets.newHashSet(Collections2.transform(difflist, (e) -> e.newPath()));
+        Set<String> actual = difflist.stream().map(DiffEntry::newPath).collect(Collectors.toSet());
         assertEquals(expected, actual);
     }
 

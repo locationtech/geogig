@@ -36,7 +36,6 @@ import org.locationtech.geogig.storage.GraphDatabase;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 
 import lombok.NonNull;
@@ -319,8 +318,8 @@ public class LogOp extends AbstractGeoGigOp<Iterator<RevCommit>> {
          */
 
         public ChronologicalHistoryIterator(final List<ObjectId> tips, final Geogig repo) {
-            parents = Sets.newHashSet();
-            seenCommits = Sets.newHashSet();
+            parents = new HashSet<>();
+            seenCommits = new HashSet<>();
             for (ObjectId tip : tips) {
                 if (!tip.isNull()) {
                     final RevCommit commit = repo.objects().getCommit(tip);

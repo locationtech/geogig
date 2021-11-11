@@ -42,7 +42,6 @@ import org.locationtech.geogig.storage.IndexDatabase.IndexTreeMapping;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -133,7 +132,8 @@ public class RemotesIndexTestSupport {
             Optional<String> ref) {
 
         if (!ref.isPresent()) {
-            return Sets.newHashSet(repo.context().indexDatabase().resolveIndexedTrees(indexInfo));
+            return repo.context().indexDatabase().resolveIndexedTrees(indexInfo).toList().stream()
+                    .collect(Collectors.toSet());
         }
 
         Set<IndexTreeMapping> mappings = new HashSet<>();

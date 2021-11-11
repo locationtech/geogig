@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.storage.cache.ObjectCache;
 import org.locationtech.geogig.storage.postgresql.config.PGId;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Sets;
 
 class GetAllOp<T extends RevObject> implements Callable<List<T>> {
 
@@ -43,7 +43,7 @@ class GetAllOp<T extends RevObject> implements Callable<List<T>> {
 
     public GetAllOp(Collection<ObjectId> ids, BulkOpListener listener, PGObjectStore db,
             Class<T> type) {
-        this.queryIds = Sets.newHashSet(ids);
+        this.queryIds = new HashSet<>(ids);
         this.callback = listener;
         this.notify = !BulkOpListener.NOOP_LISTENER.equals(listener);
         this.db = db;

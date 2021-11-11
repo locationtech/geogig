@@ -11,10 +11,12 @@ package org.locationtech.geogig.porcelain.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.NodeRef;
@@ -32,7 +34,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Updates an {@link IndexInfo} with new metadata.
@@ -165,8 +166,8 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
             } else if (newAttributes == null) {
                 updatedAttributes = oldAttributes;
             } else {
-                Set<String> oldSet = Sets.newHashSet(oldAttributes);
-                Set<String> newSet = Sets.newHashSet(newAttributes);
+                Set<String> oldSet = Arrays.stream(oldAttributes).collect(Collectors.toSet());
+                Set<String> newSet = Set.of(newAttributes);
                 oldSet.addAll(newSet);
                 updatedAttributes = oldSet.toArray(new String[oldSet.size()]);
             }
@@ -251,8 +252,8 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         if (left == null || right == null) {
             return false;
         }
-        Set<String> leftSet = Sets.newHashSet(left);
-        Set<String> rightSet = Sets.newHashSet(right);
+        Set<String> leftSet = Set.of(left);
+        Set<String> rightSet = Set.of(right);
         return leftSet.containsAll(rightSet) && rightSet.containsAll(leftSet);
     }
 }

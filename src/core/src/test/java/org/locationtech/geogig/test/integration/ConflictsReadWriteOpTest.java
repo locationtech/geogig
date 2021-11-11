@@ -40,7 +40,7 @@ public class ConflictsReadWriteOpTest extends RepositoryTestCase {
         Set<Conflict> returnedConflicts = Sets
                 .newHashSet(repo.command(ConflictsQueryOp.class).call());
 
-        assertEquals(Sets.newHashSet(conflicts), returnedConflicts);
+        assertEquals(Set.copyOf(conflicts), returnedConflicts);
     }
 
 }

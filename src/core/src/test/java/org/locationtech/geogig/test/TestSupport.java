@@ -84,7 +84,7 @@ public class TestSupport {
      * repo's database
      */
     public static Set<ObjectId> verifyRepositoryContents(Repository repo, String... refs) {
-        final Set<String> filter = Sets.newHashSet(refs);
+        final Set<String> filter = Set.of(refs);
         Map<String, Ref> allRefs = Maps.uniqueIndex(
                 repo.command(ForEachRef.class).setFilter(r -> filter.contains(r.getName())).call(),
                 (r) -> r.getName());

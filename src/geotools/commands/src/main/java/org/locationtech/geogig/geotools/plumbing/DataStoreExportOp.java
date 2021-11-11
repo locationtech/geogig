@@ -14,6 +14,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -204,7 +205,7 @@ public abstract class DataStoreExportOp<T> extends AbstractGeoGigOp<T> {
             exportLayers = repoLayers;
         } else {
 
-            final Set<String> requestedLayers = Sets.newHashSet(treePaths);
+            final Set<String> requestedLayers = new HashSet<>(treePaths);
 
             final Set<String> nonExistentLayers = Sets.difference(requestedLayers, repoLayers);
             checkArgument(nonExistentLayers.isEmpty(),

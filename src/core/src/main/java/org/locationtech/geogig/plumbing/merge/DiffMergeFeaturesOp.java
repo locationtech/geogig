@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.feature.PropertyDescriptor;
@@ -40,7 +41,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Geometry;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * Takes a feature reference to a common ancestor and the two ends of a feature merge and produces a
@@ -176,8 +176,10 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         final ObjectId featureAId = mergeInto.getObjectId();
         final ObjectId featureBId = toMerge.getObjectId();
 
-        Set<ObjectId> ids = Sets.newHashSet(ancestorMetadataId, mergetIntoMetadataId,
-                toMergeMetadataId, ancestorFeatureId, featureAId, featureBId);
+        Set<ObjectId> ids = Arrays
+                .asList(ancestorMetadataId, mergetIntoMetadataId, toMergeMetadataId,
+                        ancestorFeatureId, featureAId, featureBId)
+                .stream().collect(Collectors.toSet());
 
         Iterator<RevObject> objsit = objectDatabase().getAll(ids, BulkOpListener.NOOP_LISTENER);
         Map<ObjectId, RevObject> map = Maps.uniqueIndex(objsit, RevObject::getId);

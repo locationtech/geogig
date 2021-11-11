@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.model.Node;
@@ -25,7 +26,6 @@ import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.MapDifference.ValueDifference;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.collect.SortedMapDifference;
 
 /**
@@ -128,7 +128,7 @@ public class TreeDifference {
             entriesOnlyOnRight.remove(renamedTo.path());
         }
 
-        SortedSet<NodeRef> newTreeRefs = Sets.newTreeSet();
+        SortedSet<NodeRef> newTreeRefs = new TreeSet<>();
         for (Map.Entry<String, MutableTree> newTree : entriesOnlyOnRight.entrySet()) {
             Node node = newTree.getValue().getNode();
             String parentPath = NodeRef.parentPath(newTree.getKey());

@@ -10,6 +10,7 @@
 package org.locationtech.geogig.porcelain;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,6 @@ import org.locationtech.geogig.repository.impl.DepthSearch;
 import org.locationtech.geogig.storage.ObjectStore;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 
 /**
  * Applies a patch to the working tree. If partial application of the patch is allowed, it returns a
@@ -164,7 +164,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
             RevFeatureType newRevFeatureType = getFeatureType(diff, feature, oldRevFeatureType);
             List<PropertyDescriptor> oldDescriptors = oldRevFeatureType.descriptors();
             List<PropertyDescriptor> newDescriptors = newRevFeatureType.descriptors();
-            Map<Name, Object> attrs = Maps.newHashMap();
+            Map<Name, Object> attrs = new HashMap<>();
             for (int i = 0; i < oldDescriptors.size(); i++) {
                 PropertyDescriptor descriptor = oldDescriptors.get(i);
                 if (newDescriptors.contains(descriptor)) {

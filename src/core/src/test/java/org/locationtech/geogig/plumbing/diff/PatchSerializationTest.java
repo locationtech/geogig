@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -28,8 +29,6 @@ import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.collect.Maps;
-
 public class PatchSerializationTest extends RepositoryTestCase {
 
     protected @Override void setUpInternal() throws Exception {
@@ -39,7 +38,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testRemoveFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getId());
-        Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+        Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
         Object oldValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, null);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
@@ -55,7 +54,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testAddFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getId());
-        Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+        Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
         Object newValue = points1B.getAttribute("extra");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(null, newValue);
         map.put(modifiedPointsType.getDescriptor("extra"), diff);
@@ -71,7 +70,7 @@ public class PatchSerializationTest extends RepositoryTestCase {
     public void testModifyFeatureAttributePatch() throws Exception {
         Patch patch = new Patch();
         String path = NodeRef.appendChild(pointsName, points1.getId());
-        Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+        Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
         Object oldValue = points1.getAttribute("sp");
         GenericAttributeDiffImpl diff = new GenericAttributeDiffImpl(oldValue, "new");
         Geometry oldGeometry = (Geometry) points1.getAttribute("pp");

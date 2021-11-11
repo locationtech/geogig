@@ -323,8 +323,7 @@ public class WorkingTreeImpl implements WorkingTree {
 
         final RevTree currentWorkHead = getTree();
 
-        final Map<String, NodeRef> currentTrees = Maps
-                .newHashMap(Maps.uniqueIndex(getFeatureTypeTrees(), NodeRef::path));
+        final Map<String, NodeRef> currentTrees = new HashMap<>(Maps.uniqueIndex(getFeatureTypeTrees(), NodeRef::path));
 
         Map<String, RevTreeBuilder> parentBuilders = new HashMap<>();
 

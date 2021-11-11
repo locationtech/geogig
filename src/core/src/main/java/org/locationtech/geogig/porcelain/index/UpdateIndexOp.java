@@ -12,6 +12,7 @@ package org.locationtech.geogig.porcelain.index;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +34,6 @@ import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 
 /**
  * Updates an {@link IndexInfo} with new metadata.
@@ -156,7 +156,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
                 .resolveMaterializedAttributeNames(featureType, extraAttributes);
 
         final IndexInfo newIndexInfo;
-        Map<String, Object> newMetadata = Maps.newHashMap(oldIndexInfo.getMetadata());
+        Map<String, Object> newMetadata = new HashMap<>(oldIndexInfo.getMetadata());
         String[] oldAttributes = (String[]) newMetadata
                 .get(IndexInfo.FEATURE_ATTRIBUTES_EXTRA_DATA);
         String[] updatedAttributes;

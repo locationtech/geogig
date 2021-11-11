@@ -39,8 +39,6 @@ import org.locationtech.geogig.plumbing.diff.FeatureDiff;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 
-import com.google.common.collect.Maps;
-
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
@@ -84,7 +82,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
         Geogig geogig = cli.getGeogig();
 
         DiffEntry diffEntry;
-        HashMap<String, Long[]> stats = Maps.newHashMap();
+        HashMap<String, Long[]> stats = new HashMap<>();
         try (AutoCloseableIterator<DiffEntry> diffEntries = buildDiffEntries(cli)) {
             while (diffEntries.hasNext()) {
                 diffEntry = diffEntries.next();

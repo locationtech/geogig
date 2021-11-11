@@ -11,11 +11,10 @@ package org.locationtech.geogig.di;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.locationtech.geogig.hooks.CommandHooksDecorator;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
-
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 
@@ -23,7 +22,7 @@ class DecoratorProvider {
 
     private final Set<Decorator> decorators;
 
-    private Map<Class<?>, Object> singletonDecorators = Maps.newConcurrentMap();
+    private Map<Class<?>, Object> singletonDecorators = new ConcurrentHashMap<>();
 
     public DecoratorProvider() {
         this.decorators = Set.of(new CommandHooksDecorator(), new ConflictInterceptor());

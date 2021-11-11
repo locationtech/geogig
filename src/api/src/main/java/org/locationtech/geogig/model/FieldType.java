@@ -27,8 +27,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import com.google.common.collect.Maps;
-
 import lombok.NonNull;
 
 /**
@@ -167,7 +165,7 @@ public enum FieldType implements Cloneable {
      */
     private final Function<Object, Object> safeCopyBuilder;
 
-    private static final Map<Class<?>, FieldType> BINDING_MAPPING = Maps.newHashMap();
+    private static final Map<Class<?>, FieldType> BINDING_MAPPING = new HashMap<>();
     static {
         for (FieldType t : FieldType.values()) {
             BINDING_MAPPING.put(t.getBinding(), t);

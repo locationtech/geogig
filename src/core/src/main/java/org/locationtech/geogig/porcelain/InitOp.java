@@ -51,7 +51,6 @@ import org.locationtech.geogig.storage.impl.Blobs;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 
 import lombok.AccessLevel;
@@ -110,7 +109,7 @@ public class InitOp extends AbstractGeoGigOp<Repository> {
 
         repoInitializer.initialize(repoURI);
 
-        Map<String, String> effectiveConfigBuilder = Maps.newTreeMap();
+        Map<String, String> effectiveConfigBuilder = new TreeMap<>();
         Optional<Serializable> repoName = hints.get(Hints.REPOSITORY_NAME);
         if (repoName.isPresent()) {
             effectiveConfigBuilder.put("repo.name", String.valueOf(repoName.get()));

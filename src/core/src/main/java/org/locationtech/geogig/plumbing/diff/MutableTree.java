@@ -74,7 +74,7 @@ public class MutableTree implements Cloneable {
 
     private MutableTree(Node node) {
         this.node = node;
-        this.childTrees = Maps.newTreeMap();
+        this.childTrees = new TreeMap<>();
     }
 
     public @Override String toString() {
@@ -226,7 +226,7 @@ public class MutableTree implements Cloneable {
     }
 
     public SortedMap<String, MutableTree> getChildrenAsMap() {
-        TreeMap<String, MutableTree> map = Maps.newTreeMap();
+        TreeMap<String, MutableTree> map = new TreeMap<>();
         asMap("", map);
         return map;
     }

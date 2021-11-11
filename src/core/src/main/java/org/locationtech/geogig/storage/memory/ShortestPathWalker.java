@@ -10,11 +10,10 @@
 package org.locationtech.geogig.storage.memory;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.PriorityQueue;
-
-import com.google.common.collect.Maps;
 
 /**
  * Walks a shortest path between two nodes applying Dijkstra's algorithm.
@@ -35,7 +34,7 @@ public class ShortestPathWalker implements Iterator<Node> {
         this.start = start;
         this.end = end;
 
-        nodes = Maps.newHashMap();
+        nodes = new HashMap<>();
         q = new PriorityQueue<CostNode>(100, new Comparator<CostNode>() {
             public @Override int compare(CostNode o1, CostNode o2) {
                 return o1.cost.compareTo(o2.cost);

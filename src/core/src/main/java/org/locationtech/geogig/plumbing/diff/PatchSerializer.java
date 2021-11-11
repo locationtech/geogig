@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.storage.text.TextRevObjectSerializer;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
 
 import lombok.NonNull;
 
@@ -56,7 +56,7 @@ public class PatchSerializer {
 
         Patch patch = new Patch();
         List<String> subset = new ArrayList<>();
-        Map<String, RevFeatureType> featureTypes = Maps.newHashMap();
+        Map<String, RevFeatureType> featureTypes = new HashMap<>();
         try {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -104,7 +104,7 @@ public class PatchSerializer {
                     RevFeatureType newRevFeatureType = featureTypes.get(newMetadataId);
                     RevFeatureType oldRevFeatureType = featureTypes.get(oldMetadataId);
 
-                    Map<PropertyDescriptor, AttributeDiff> map = Maps.newHashMap();
+                    Map<PropertyDescriptor, AttributeDiff> map = new HashMap<>();
                     for (int i = 1; i < lines.size(); i++) {
                         addDifference(lines.get(i), map, oldRevFeatureType, newRevFeatureType);
                     }

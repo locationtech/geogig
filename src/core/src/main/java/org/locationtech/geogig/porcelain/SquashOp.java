@@ -13,6 +13,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +39,6 @@ import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.GraphDatabase;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
 /**
@@ -239,7 +239,7 @@ public class SquashOp extends AbstractGeoGigOp<ObjectId> {
             final ObjectId squashedId) {
 
         final Platform platform = platform();
-        final Map<ObjectId, ObjectId> replacedCommits = Maps.newHashMap();
+        final Map<ObjectId, ObjectId> replacedCommits = new HashMap<>();
         replacedCommits.put(until.getId(), squashedId);
         ObjectId head = squashedId;
         for (RevCommit commit : commits) {

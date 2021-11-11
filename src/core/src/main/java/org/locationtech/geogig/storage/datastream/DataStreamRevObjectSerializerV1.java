@@ -55,7 +55,6 @@ import org.locationtech.geogig.storage.impl.ObjectWriter;
 import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 
 public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
 
@@ -64,8 +63,7 @@ public class DataStreamRevObjectSerializerV1 implements RevObjectSerializer {
      */
     public static final DataStreamRevObjectSerializerV1 INSTANCE = new DataStreamRevObjectSerializerV1();
 
-    private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = Maps
-            .newEnumMap(TYPE.class);
+    private static final EnumMap<TYPE, Serializer<? extends RevObject>> serializers = new EnumMap<>(TYPE.class);
     static {
         serializers.put(TYPE.COMMIT, new CommitSerializer());
         serializers.put(TYPE.FEATURE, new FeatureSerializer());

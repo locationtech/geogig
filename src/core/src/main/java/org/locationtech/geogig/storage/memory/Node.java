@@ -10,6 +10,7 @@
 package org.locationtech.geogig.storage.memory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +18,6 @@ import java.util.Optional;
 import org.locationtech.geogig.model.ObjectId;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 import lombok.Getter;
 
@@ -82,7 +82,7 @@ class Node {
      */
     public void put(String key, String value) {
         if (props == null) {
-            props = Maps.newHashMap();
+            props = new HashMap<>();
         }
         props.put(key, value);
     }

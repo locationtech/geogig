@@ -10,6 +10,7 @@
 package org.locationtech.geogig.repository.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,8 +38,6 @@ import org.locationtech.geogig.repository.Context;
 import org.locationtech.geogig.storage.ObjectDatabase;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.collect.Maps;
-
 class WorkingTreeInsertHelper {
 
     private static final Function<Feature, String> SIMPLE_PATH_RESOLVER = (f) -> {
@@ -53,9 +52,9 @@ class WorkingTreeInsertHelper {
 
     private Function<Feature, String> treePathResolver;
 
-    private final Map<String, RevFeatureType> revFeatureTypes = Maps.newConcurrentMap();
+    private final Map<String, RevFeatureType> revFeatureTypes = new ConcurrentHashMap<>();
 
-    private final Map<String, RevTreeBuilder> treeBuilders = Maps.newHashMap();
+    private final Map<String, RevTreeBuilder> treeBuilders = new HashMap<>();
 
     private final ExecutorService executorService;
 

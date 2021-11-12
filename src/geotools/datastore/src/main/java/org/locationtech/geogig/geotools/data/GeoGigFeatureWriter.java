@@ -48,7 +48,7 @@ class GeoGigFeatureWriter implements FeatureWriter<SimpleFeatureType, SimpleFeat
             final NodeRef typeRef, final WorkingTree workingTree) {
         this.reader = reader;
         this.typePath = typeRef.path();
-        this.featureTypeId = typeRef.getMetadataId();
+        this.featureTypeId = typeRef.metadataId();
         this.workingTree = workingTree;
         this.featureType = GT.adapt(reader.getFeatureType());
     }

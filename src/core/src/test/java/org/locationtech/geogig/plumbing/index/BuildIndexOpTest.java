@@ -174,7 +174,7 @@ public class BuildIndexOpTest extends RepositoryTestCase {
         }
         assertNotNull(typeTree);
 
-        ObjectId featureTypeId = typeTree.getMetadataId();
+        ObjectId featureTypeId = typeTree.metadataId();
         ObjectId treeId = typeTree.getObjectId();
 
         RevTree canonicalTree = repo.context().objectDatabase().getTree(treeId);

@@ -104,8 +104,8 @@ public class WalkGraphOp extends AbstractGeoGigOp<Void> {
             private Set<ObjectId> visitedTypes = new HashSet<ObjectId>();
 
             public @Override boolean tree(@Nullable NodeRef left, @Nullable NodeRef right) {
-                if (!right.getMetadataId().isNull()) {
-                    ObjectId featureTypeId = right.getMetadataId();
+                if (!right.metadataId().isNull()) {
+                    ObjectId featureTypeId = right.metadataId();
                     if (!visitedTypes.contains(featureTypeId)) {
                         visitedTypes.add(featureTypeId);
                         listener.featureType(odb.getFeatureType(featureTypeId));

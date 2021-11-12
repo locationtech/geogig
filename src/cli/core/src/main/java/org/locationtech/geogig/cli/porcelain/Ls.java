@@ -120,7 +120,7 @@ public class Ls extends AbstractCommand implements CLICommand {
                     sb.append('/');
                 }
                 if (verbose) {
-                    sb.append(' ').append(abbrev(input.getMetadataId())).append(' ')
+                    sb.append(' ').append(abbrev(input.metadataId())).append(' ')
                             .append(abbrev(input.getObjectId()));
                 }
                 return sb.toString();

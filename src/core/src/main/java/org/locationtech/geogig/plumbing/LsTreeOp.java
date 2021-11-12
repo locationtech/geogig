@@ -152,8 +152,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
 
                     Optional<NodeRef> treeRef = command(FindTreeChild.class).setSource(source)
                             .setChildPath(path).setParent(rootTree).call();
-                    metadataId = treeRef.isPresent() ? treeRef.get().getMetadataId()
-                            : ObjectId.NULL;
+                    metadataId = treeRef.isPresent() ? treeRef.get().metadataId() : ObjectId.NULL;
                 }
             }
         }
@@ -183,7 +182,7 @@ public class LsTreeOp extends AbstractGeoGigOp<Iterator<NodeRef>>
 
             Preconditions.checkArgument(treeRef.isPresent(), "Invalid reference: %s", ref);
             ObjectId treeId = treeRef.get().getObjectId();
-            metadataId = treeRef.get().getMetadataId();
+            metadataId = treeRef.get().metadataId();
             revObject = command(RevObjectParse.class).setSource(source).setObjectId(treeId)
                     .call(RevObject.class);
         }

@@ -77,8 +77,8 @@ class LocalCopyingDiffIterator implements AutoCloseableIterator<DiffEntry> {
                 RevObject object = sourceRepo.objects().get(newObject.getNode().getObjectId());
 
                 RevObject metadata = null;
-                if (newObject.getMetadataId() != ObjectId.NULL) {
-                    metadata = sourceRepo.objects().get(newObject.getMetadataId());
+                if (newObject.metadataId() != ObjectId.NULL) {
+                    metadata = sourceRepo.objects().get(newObject.metadataId());
                 }
 
                 if (!destinationRepo.objects().exists(object.getId())) {

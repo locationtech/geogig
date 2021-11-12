@@ -151,7 +151,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                 if (type == TYPE.TREE && !isDelete) {
                     // cache the tree
                     resolveTargetTree(oldRootTree, ref.name(), repositoryChangedTrees,
-                            changedTreesMetadataId, ref.getMetadataId(), repositoryDatabase);
+                            changedTreesMetadataId, ref.metadataId(), repositoryDatabase);
                 }
 
                 resolveSourceTreeRef(parentPath, indexChangedTrees, changedTreesMetadataId,
@@ -168,8 +168,8 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                 } else {
                     if (copyObjects && ref.getType().equals(TYPE.TREE)) {
                         RevTree tree = fromDb.getTree(ref.getObjectId());
-                        if (!ref.getMetadataId().isNull()) {
-                            repositoryDatabase.put(fromDb.getFeatureType(ref.getMetadataId()));
+                        if (!ref.metadataId().isNull()) {
+                            repositoryDatabase.put(fromDb.getFeatureType(ref.metadataId()));
                         }
                         if (tree.isEmpty()) {
                             repositoryDatabase.put(tree);
@@ -232,10 +232,10 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
             if (treeRef.isPresent()) {// may not be in case of a delete
                 indexTreeRef = treeRef.get();
                 indexChangedTrees.put(parentPath, indexTreeRef);
-                metadataCache.put(parentPath, indexTreeRef.getMetadataId());
+                metadataCache.put(parentPath, indexTreeRef.metadataId());
             }
         } else {
-            metadataCache.put(parentPath, indexTreeRef.getMetadataId());
+            metadataCache.put(parentPath, indexTreeRef.metadataId());
         }
     }
 
@@ -251,7 +251,7 @@ public class WriteTree extends AbstractGeoGigOp<ObjectId> {
                 Optional<NodeRef> treeRef = command(FindTreeChild.class).setParent(root)
                         .setChildPath(treePath).call();
                 if (treeRef.isPresent()) {
-                    metadataCache.put(treePath, treeRef.get().getMetadataId());
+                    metadataCache.put(treePath, treeRef.get().metadataId());
                     treeBuilder = RevTreeBuilder.builder(repositoryDatabase,
                             command(RevObjectParse.class).setObjectId(treeRef.get().getObjectId())
                                     .call(RevTree.class).get());

@@ -1264,7 +1264,7 @@ public class MergeOpTest extends RepositoryTestCase {
         Optional<NodeRef> ref = repo.command(FindTreeChild.class).setChildPath(polyName).call();
 
         assertTrue(ref.isPresent());
-        assertFalse(ref.get().getMetadataId().equals(ObjectId.NULL));
+        assertFalse(ref.get().metadataId().equals(ObjectId.NULL));
     }
 
     @Test

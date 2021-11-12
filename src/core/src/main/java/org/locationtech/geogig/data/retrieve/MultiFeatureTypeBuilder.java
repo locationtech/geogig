@@ -44,7 +44,7 @@ class MultiFeatureTypeBuilder implements Function<ObjectInfo<RevFeature>, Featur
     }
 
     public @Override Feature apply(ObjectInfo<RevFeature> info) {
-        FeatureType featureType = get(info.ref().getMetadataId());
+        FeatureType featureType = get(info.ref().metadataId());
         String id = info.node().getName();
         RevFeature values = info.object();
         Feature feature = Feature.build(id, featureType, values);

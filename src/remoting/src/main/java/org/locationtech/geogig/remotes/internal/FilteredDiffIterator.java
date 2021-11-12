@@ -104,9 +104,9 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
                             .setObjectId(newObject.getNode().getObjectId()).call().get();
 
                     RevObject metadata = null;
-                    if (newObject.getMetadataId() != ObjectId.NULL) {
+                    if (newObject.metadataId() != ObjectId.NULL) {
                         metadata = sourceRepo.command(RevObjectParse.class)
-                                .setObjectId(newObject.getMetadataId()).call().get();
+                                .setObjectId(newObject.metadataId()).call().get();
                     }
                     processObject(object);
                     processObject(metadata);
@@ -133,8 +133,8 @@ public abstract class FilteredDiffIterator implements AutoCloseableIterator<Diff
         RevObject object = sourceRepo.context().objectDatabase().get(node.getObjectId());
 
         RevObject metadata = null;
-        if (!node.getMetadataId().isNull()) {
-            metadata = sourceRepo.context().objectDatabase().get(node.getMetadataId());
+        if (!node.metadataId().isNull()) {
+            metadata = sourceRepo.context().objectDatabase().get(node.metadataId());
         }
         if (node.getType() == TYPE.FEATURE) {
             if (trackingObject(object.getId())) {

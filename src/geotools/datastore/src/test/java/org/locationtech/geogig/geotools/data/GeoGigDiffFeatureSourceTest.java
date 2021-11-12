@@ -217,7 +217,7 @@ public class GeoGigDiffFeatureSourceTest extends RepositoryTestCase {
         assertEquals(ref.name(), valueFeature.getID());
 
         RevFeatureType nativeType = repo.context().objectDatabase()
-                .getFeatureType(ref.getMetadataId());
+                .getFeatureType(ref.metadataId());
         RevFeature expected = repo.context().objectDatabase().getFeature(ref.getObjectId());
         SimpleFeature expectedFeatureValue = (SimpleFeature) new FeatureBuilder(nativeType)
                 .build(ref.name(), expected);

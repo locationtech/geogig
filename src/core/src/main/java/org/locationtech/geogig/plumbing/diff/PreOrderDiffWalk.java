@@ -925,7 +925,7 @@ public class PreOrderDiffWalk {
         }
 
         private NodeRef newRef(NodeRef parent, Node lnode) {
-            return NodeRef.create(parent.path(), lnode, parent.getMetadataId());
+            return NodeRef.create(parent.path(), lnode, parent.metadataId());
         }
 
     }

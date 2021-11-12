@@ -425,8 +425,8 @@ public class TestData {
                 .setRootTreeRef(rootTreeIsh).call();
 
         Iterator<RevFeatureType> types = context.objectDatabase().getAll(
-                Iterables.transform(treeNodes, n -> n.getMetadataId()),
-                BulkOpListener.NOOP_LISTENER, RevFeatureType.class);
+                Iterables.transform(treeNodes, n -> n.metadataId()), BulkOpListener.NOOP_LISTENER,
+                RevFeatureType.class);
 
         return Maps.uniqueIndex(types, t -> t.getName().getLocalPart());
     }

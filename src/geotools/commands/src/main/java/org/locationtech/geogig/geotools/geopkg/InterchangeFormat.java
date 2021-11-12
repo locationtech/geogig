@@ -382,7 +382,7 @@ public class InterchangeFormat {
                     final NodeRef featureTreeRef = currentTreeRef.get();
                     final RevTree currentFeatureTree = store.getTree(featureTreeRef.getObjectId());
                     final RevFeatureType featureType = store
-                            .getFeatureType(featureTreeRef.getMetadataId());
+                            .getFeatureType(featureTreeRef.metadataId());
 
                     final Iterator<Change> changes = asChanges(rs, featureType, tableReport);
                     final RevTree newFeatureTree = importAuditLog(store, currentFeatureTree,
@@ -390,7 +390,7 @@ public class InterchangeFormat {
 
                     Node featureTreeNode = RevObjectFactory.defaultInstance().createNode(
                             featureTreeRef.name(), newFeatureTree.getId(),
-                            featureTreeRef.getMetadataId(), TYPE.TREE,
+                            featureTreeRef.metadataId(), TYPE.TREE,
                             SpatialOps.boundsOf(newFeatureTree), null);
 
                     newTreeBuilder.put(featureTreeNode);

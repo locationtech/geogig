@@ -116,7 +116,7 @@ public class LsTree extends AbstractCommand implements CLICommand {
                             .append(Double.toString(env.getMaxX())).append(";")
                             .append(Double.toString(env.getMinY())).append(";")
                             .append(Double.toString(env.getMaxY()));
-                    sb.append(input.getMetadataId().toString()).append(' ')
+                    sb.append(input.metadataId().toString()).append(' ')
                             .append(input.getType().toString().toLowerCase()).append(' ')
                             .append(input.getObjectId().toString()).append(' ').append(input.path())
                             .append(' ').append(sbenv);

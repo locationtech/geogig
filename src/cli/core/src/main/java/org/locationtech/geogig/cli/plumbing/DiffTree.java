@@ -102,8 +102,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                                 ? diffEntry.getNewObject()
                                 : diffEntry.getOldObject();
                         RevFeatureType featureType = geogig.command(RevObjectParse.class)
-                                .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
-                                .get();
+                                .setObjectId(noderef.metadataId()).call(RevFeatureType.class).get();
                         Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                                 .setObjectId(noderef.getObjectId()).call();
                         RevFeature feature = (RevFeature) obj.get();
@@ -153,8 +152,7 @@ public class DiffTree extends AbstractCommand implements CLICommand {
                                 ? diffEntry.getNewObject()
                                 : diffEntry.getOldObject();
                         RevFeatureType featureType = geogig.command(RevObjectParse.class)
-                                .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class)
-                                .get();
+                                .setObjectId(noderef.metadataId()).call(RevFeatureType.class).get();
                         Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                                 .setObjectId(noderef.getObjectId()).call();
                         RevFeature feature = (RevFeature) obj.get();

@@ -65,7 +65,7 @@ public class FeatureNodeRefFromRefspec extends AbstractGeoGigOp<Optional<NodeRef
         Preconditions.checkArgument(nodeRef.isPresent(), "Invalid reference: %s", ref);
 
         RevFeatureType revFeatureType = command(RevObjectParse.class)
-                .setObjectId(nodeRef.get().getMetadataId()).call(RevFeatureType.class).get();
+                .setObjectId(nodeRef.get().metadataId()).call(RevFeatureType.class).get();
         return revFeatureType;
 
     }

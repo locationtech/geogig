@@ -139,8 +139,7 @@ public class UpdateIndexOp extends AbstractGeoGigOp<Index> {
         final NodeRef typeTreeRef = IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
         checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         final ObjectDatabase objectDatabase = objectDatabase();
-        final RevFeatureType featureType = objectDatabase
-                .getFeatureType(typeTreeRef.getMetadataId());
+        final RevFeatureType featureType = objectDatabase.getFeatureType(typeTreeRef.metadataId());
         final String treeName = typeTreeRef.path();
         final IndexDatabase indexDatabase = indexDatabase();
         final List<IndexInfo> indexInfos = IndexUtils.resolveIndexInfo(indexDatabase(), treeName,

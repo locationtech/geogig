@@ -276,7 +276,7 @@ public class FeatureReaderBuilder {
         // properties, empty list means no-properties needed
         info.requiredProperties = resolveRequiredProperties(info.nativeFilter);
 
-        final ObjectId featureTypeId = typeRef.getMetadataId();
+        final ObjectId featureTypeId = typeRef.metadataId();
 
         // perform the diff op with the supported Bucket/NodeRef filtering that'll provide the
         // NodeRef iterator to back the FeatureReader with

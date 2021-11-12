@@ -16,8 +16,7 @@ import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Objects;
-
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /**
@@ -25,6 +24,7 @@ import lombok.NonNull;
  * 
  * @since 1.0
  */
+@EqualsAndHashCode
 public class DiffEntry {
 
     /**
@@ -215,19 +215,6 @@ public class DiffEntry {
     }
 
     /**
-     * Determines if this {@code DiffEntry} is the same as another.
-     * 
-     * @param o the other object
-     */
-    public @Override boolean equals(Object o) {
-        if (!(o instanceof DiffEntry)) {
-            return false;
-        }
-        DiffEntry de = (DiffEntry) o;
-        return Objects.equal(oldObject, de.oldObject) && Objects.equal(newObject, de.newObject);
-    }
-
-    /**
      * Expands an {@link Envelope} to include both the old object and the new object if they exist.
      * 
      * @param target the {@link Envelope} to expand
@@ -239,13 +226,6 @@ public class DiffEntry {
         if (newObject != null) {
             newObject.expand(target);
         }
-    }
-
-    /**
-     * Generates a hash code for this entry.
-     */
-    public @Override int hashCode() {
-        return Objects.hashCode(oldObject, newObject);
     }
 
     /**
@@ -330,7 +310,7 @@ public class DiffEntry {
      */
     public @NonNull ObjectId newMetadataId() {
         NodeRef newObject = getNewObject();
-        return newObject != null ? newObject.getMetadataId() : ObjectId.NULL;
+        return newObject != null ? newObject.metadataId() : ObjectId.NULL;
     }
 
     /**
@@ -339,6 +319,6 @@ public class DiffEntry {
      */
     public @NonNull ObjectId oldMetadataId() {
         NodeRef oldObject = getOldObject();
-        return oldObject != null ? oldObject.getMetadataId() : ObjectId.NULL;
+        return oldObject != null ? oldObject.metadataId() : ObjectId.NULL;
     }
 }

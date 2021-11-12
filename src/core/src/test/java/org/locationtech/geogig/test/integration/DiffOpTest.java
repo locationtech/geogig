@@ -122,7 +122,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(ObjectId.NULL, de.oldObjectId());
 
         assertEquals(newOid, de.newObjectId());
-        assertFalse(de.getNewObject().getMetadataId().isNull());
+        assertFalse(de.getNewObject().metadataId().isNull());
     }
 
     @Test
@@ -145,7 +145,7 @@ public class DiffOpTest extends RepositoryTestCase {
         assertEquals(ObjectId.NULL, de.newObjectId());
 
         assertEquals(newOid, de.oldObjectId());
-        assertFalse(de.getOldObject().getMetadataId().isNull());
+        assertFalse(de.getOldObject().metadataId().isNull());
     }
 
     @Test
@@ -487,7 +487,7 @@ public class DiffOpTest extends RepositoryTestCase {
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
         assertEquals(ObjectId.NULL, de.oldObjectId());
-        assertFalse(de.getNewObject().getMetadataId().isNull());
+        assertFalse(de.getNewObject().metadataId().isNull());
     }
 
     @Test
@@ -539,7 +539,7 @@ public class DiffOpTest extends RepositoryTestCase {
 
         assertEquals(DiffEntry.ChangeType.ADDED, de.changeType());
         assertEquals(ObjectId.NULL, de.oldObjectId());
-        assertFalse(de.getNewObject().getMetadataId().isNull());
+        assertFalse(de.getNewObject().metadataId().isNull());
     }
 
     @Test

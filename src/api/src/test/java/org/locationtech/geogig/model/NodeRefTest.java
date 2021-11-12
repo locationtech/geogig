@@ -162,7 +162,7 @@ public class NodeRefTest {
                 ObjectId.valueOf("abc123000000000000001234567890abcdef0000"), ObjectId.NULL,
                 TYPE.FEATURE, null, null);
         NodeRef nodeRef = new NodeRef(node, "Points", ObjectId.NULL);
-        assertEquals(ObjectId.NULL, nodeRef.getMetadataId());
+        assertEquals(ObjectId.NULL, nodeRef.metadataId());
         assertEquals(ObjectId.NULL, nodeRef.getDefaultMetadataId());
         assertEquals(node.getName(), nodeRef.name());
         assertEquals(node.getObjectId(), nodeRef.getObjectId());
@@ -283,7 +283,7 @@ public class NodeRefTest {
         ObjectId metadataId = ObjectId.valueOf("abc123000000000000001234567890abcdef0001");
         NodeRef nodeRef = NodeRef.tree("Points", oId, metadataId);
         assertEquals(oId, nodeRef.getObjectId());
-        assertEquals(metadataId, nodeRef.getMetadataId());
+        assertEquals(metadataId, nodeRef.metadataId());
         assertEquals("Points", nodeRef.getNode().getName());
     }
 

@@ -156,9 +156,9 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
         RevFeature mergeIntoF = (RevFeature) objects.get(mergeInto.getObjectId());
         RevFeature toMergeF = (RevFeature) objects.get(toMerge.getObjectId());
 
-        RevFeatureType ancestorT = (RevFeatureType) objects.get(commonAncestor.getMetadataId());
-        RevFeatureType mergetIntoT = (RevFeatureType) objects.get(mergeInto.getMetadataId());
-        RevFeatureType toMergeT = (RevFeatureType) objects.get(toMerge.getMetadataId());
+        RevFeatureType ancestorT = (RevFeatureType) objects.get(commonAncestor.metadataId());
+        RevFeatureType mergetIntoT = (RevFeatureType) objects.get(mergeInto.metadataId());
+        RevFeatureType toMergeT = (RevFeatureType) objects.get(toMerge.metadataId());
 
         FeatureDiff mergeIntoDiff = compare(ancestorF, mergeIntoF, ancestorT, mergetIntoT);
         FeatureDiff toMergeDiff = compare(ancestorF, toMergeF, ancestorT, toMergeT);
@@ -168,9 +168,9 @@ public class DiffMergeFeaturesOp extends AbstractGeoGigOp<DiffMergeFeatureResult
 
     private Map<ObjectId, RevObject> getObjects() {
 
-        final ObjectId ancestorMetadataId = commonAncestor.getMetadataId();
-        final ObjectId mergetIntoMetadataId = mergeInto.getMetadataId();
-        final ObjectId toMergeMetadataId = toMerge.getMetadataId();
+        final ObjectId ancestorMetadataId = commonAncestor.metadataId();
+        final ObjectId mergetIntoMetadataId = mergeInto.metadataId();
+        final ObjectId toMergeMetadataId = toMerge.metadataId();
 
         final ObjectId ancestorFeatureId = commonAncestor.getObjectId();
         final ObjectId featureAId = mergeInto.getObjectId();

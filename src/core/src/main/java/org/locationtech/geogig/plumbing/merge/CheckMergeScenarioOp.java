@@ -147,8 +147,8 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         case ADDED: {
             TYPE type = diff1.getNewObject().getType();
             if (TYPE.TREE.equals(type)) {
-                isConflict = !diff1.getNewObject().getMetadataId()
-                        .equals(diff2.getNewObject().getMetadataId());
+                isConflict = !diff1.getNewObject().metadataId()
+                        .equals(diff2.getNewObject().metadataId());
             } else {
                 isConflict = !diff1.getNewObject().getObjectId()
                         .equals(diff2.getNewObject().getObjectId());
@@ -158,8 +158,8 @@ public class CheckMergeScenarioOp extends AbstractGeoGigOp<Boolean> {
         case MODIFIED: {
             TYPE type = diff1.getNewObject().getType();
             if (TYPE.TREE.equals(type)) {
-                isConflict = !diff1.getNewObject().getMetadataId()
-                        .equals(diff2.getNewObject().getMetadataId());
+                isConflict = !diff1.getNewObject().metadataId()
+                        .equals(diff2.getNewObject().metadataId());
             } else {
                 isConflict = !diff1.newObjectId().equals(diff2.newObjectId());
 

@@ -145,6 +145,6 @@ public class DepthSearchTest {
         assertTrue(ref.isPresent());
         assertEquals(type, ref.get().getType());
         assertEquals(path, ref.get().path());
-        assertEquals(expectedMdId, ref.get().getMetadataId());
+        assertEquals(expectedMdId, ref.get().metadataId());
     }
 }

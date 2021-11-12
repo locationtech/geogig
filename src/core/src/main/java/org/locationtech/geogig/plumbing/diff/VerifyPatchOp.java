@@ -96,7 +96,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), path);
             RevFeatureType featureType = command(RevObjectParse.class)
-                    .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class).get();
+                    .setObjectId(noderef.get().metadataId()).call(RevFeatureType.class).get();
             List<PropertyDescriptor> descriptors = featureType.descriptors();
             Set<Entry<PropertyDescriptor, AttributeDiff>> attrDiffs = diff.getDiffs().entrySet();
             boolean ok = true;
@@ -161,7 +161,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
                 DepthSearch depthSearch = new DepthSearch(objectDatabase());
                 Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(),
                         feature.getPath());
-                ObjectId revFeatureTypeId = noderef.get().getMetadataId();
+                ObjectId revFeatureTypeId = noderef.get().metadataId();
                 RevFeature patchRevFeature = feature.getFeature();
                 if (revFeature.equals(patchRevFeature)
                         && revFeatureTypeId.equals(feature.getFeatureTypeId())) {
@@ -177,8 +177,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
         for (FeatureTypeDiff diff : alteredTrees) {
             DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), diff.getPath());
-            ObjectId metadataId = noderef.isPresent() ? noderef.get().getMetadataId()
-                    : ObjectId.NULL;
+            ObjectId metadataId = noderef.isPresent() ? noderef.get().metadataId() : ObjectId.NULL;
             if (Objects.equal(metadataId, diff.getOldFeatureType())) {
                 toApply.addAlteredTree(diff);
             } else {

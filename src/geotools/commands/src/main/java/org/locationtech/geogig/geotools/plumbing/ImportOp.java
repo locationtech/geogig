@@ -577,7 +577,7 @@ public class ImportOp extends AbstractGeoGigOp<RevTree> {
         RevFeature oldFeature = command(RevObjectParse.class).setObjectId(node.getObjectId())
                 .call(RevFeature.class).get();
         RevFeatureType oldFeatureType;
-        oldFeatureType = command(RevObjectParse.class).setObjectId(node.getMetadataId())
+        oldFeatureType = command(RevObjectParse.class).setObjectId(node.metadataId())
                 .call(RevFeatureType.class).get();
         List<PropertyDescriptor> oldAttributes = oldFeatureType.descriptors();
         List<PropertyDescriptor> newAttributes = featureType.descriptors();

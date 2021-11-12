@@ -67,7 +67,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
         RevFeature featureA = (RevFeature) objects.get(nodeRefA.getObjectId());
         RevFeature featureB = (RevFeature) objects.get(nodeRefB.getObjectId());
         RevFeature ancestorFeature = (RevFeature) objects.get(ancestorRef.getObjectId());
-        RevFeatureType featureType = (RevFeatureType) objects.get(nodeRefA.getMetadataId());
+        RevFeatureType featureType = (RevFeatureType) objects.get(nodeRefA.metadataId());
 
         try {
             return merge(featureA, featureB, ancestorFeature, featureType);
@@ -81,7 +81,7 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
     private Map<ObjectId, RevObject> getObjects(NodeRef ancestorRef, NodeRef nodeRefA,
             NodeRef nodeRefB) {
 
-        final ObjectId metadataId = ancestorRef.getMetadataId();
+        final ObjectId metadataId = ancestorRef.metadataId();
         final ObjectId ancestorFeatureId = ancestorRef.getObjectId();
         final ObjectId featureAId = nodeRefA.getObjectId();
         final ObjectId featureBId = nodeRefB.getObjectId();
@@ -99,9 +99,9 @@ public class MergeFeaturesOp extends AbstractGeoGigOp<Feature> {
     private void checkCompatibleFeatureTypes(NodeRef ancestorRef, NodeRef nodeRefA,
             NodeRef nodeRefB) {
 
-        checkArgument(ancestorRef.getMetadataId().equals(nodeRefA.getMetadataId()),
+        checkArgument(ancestorRef.metadataId().equals(nodeRefA.metadataId()),
                 "Non-matching feature types. Cannot merge");
-        checkArgument(ancestorRef.getMetadataId().equals(nodeRefB.getMetadataId()),
+        checkArgument(ancestorRef.metadataId().equals(nodeRefB.metadataId()),
                 "Non-matching feature types. Cannot merge");
     }
 

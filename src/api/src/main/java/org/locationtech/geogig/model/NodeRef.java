@@ -49,18 +49,14 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * Can only be null for a root node (one with {@link NodeRef#ROOT} {@link Node#getName() name})
      */
 
-    private String parentPath;
+    private final String parentPath;
 
     /**
      * The {@code Node} this object points to
      */
-    private Node node;
+    private final @NonNull Node node;
 
-    /**
-     * possibly {@link ObjectId#NULL NULL} id for the object describing the object this ref points
-     * to
-     */
-    private ObjectId metadataId;
+    private final @NonNull ObjectId defaultMetadataId;
 
     /**
      * Constructs a new {@code Node} objects from a {@code Node} object without metadataId. It
@@ -69,15 +65,15 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      * 
      * @param node a Node representing the element this Node points to
      * @param parentPath the path of the parent tree, may be an empty string
-     * @param metadataId the metadataId of the element
+     * @param defaultMetadataId the metadataId of the element
      */
-    public NodeRef(@NonNull Node node, String parentPath, @NonNull ObjectId metadataId) {
+    public NodeRef(@NonNull Node node, String parentPath, @NonNull ObjectId defaultMetadataId) {
         Preconditions.checkArgument(parentPath != null || NodeRef.ROOT.equals(node.getName()),
                 "parentPath is null, did you mean an empty string? null parent path is only allowed for the root node");
 
         this.node = node;
         this.parentPath = parentPath;
-        this.metadataId = metadataId;
+        this.defaultMetadataId = defaultMetadataId;
     }
 
     /**
@@ -89,7 +85,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
      */
     public @NonNull NodeRef update(final @NonNull ObjectId newId, final Envelope newBounds) {
         Node newNode = node.update(newId, newBounds);
-        return NodeRef.create(parentPath, newNode, metadataId);
+        return NodeRef.create(parentPath, newNode, defaultMetadataId);
     }
 
     /**
@@ -168,27 +164,24 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
     }
 
     /**
-     * The node's metadata id, which can be given by the {@link Node#getMetadataId() node itself} or
-     * the metadata id given to this {@link NodeRef} constructor if the {@code Node} does not have a
-     * metadata id set, so that Nodes can inherit the metadata id from its parent tree.
+     * The resulting node's metadata id, which can be given by the {@link Node#getMetadataId() node
+     * itself} or the metadata id given to this {@link NodeRef} constructor if the {@code Node} does
+     * not have a metadata id set, so that Nodes can inherit the metadata id from its parent tree.
      * 
      * @return the node's metadata id if provided by {@link Node#getMetadataId()} or this node ref
      *         metadata id otherwise.
      */
-    public ObjectId getMetadataId() {
-        if (node.getMetadataId().isPresent() && !node.getMetadataId().get().isNull()) {
-            return node.getMetadataId().get();
-        }
-        return this.metadataId;
+    public ObjectId metadataId() {
+        return node.getMetadataId().orElse(this.defaultMetadataId);
     }
 
     /**
      * @return the metadata id of this object, not the node it points to
      * 
-     * @see NodeRef#getMetadataId()
+     * @see NodeRef#metadataId()
      */
     public ObjectId getDefaultMetadataId() {
-        return this.metadataId;
+        return this.defaultMetadataId;
     }
 
     /**
@@ -200,7 +193,7 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
 
     /**
      * Tests equality over another {@code NodeRef} based on {@link #getParentPath() parent path},
-     * {@link #getNode() node} name and id, and {@link #getMetadataId()}
+     * {@link #getNode() node} name and id, and {@link #metadataId()}
      */
     public @Override boolean equals(Object o) {
         if (!(o instanceof NodeRef)) {
@@ -208,16 +201,16 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
         }
         NodeRef r = (NodeRef) o;
         return Objects.equal(parentPath, r.parentPath) && node.equals(r.node)
-                && getMetadataId().equals(r.getMetadataId());
+                && metadataId().equals(r.metadataId());
     }
 
     /**
      * Hash code is based on {@link #getParentPath() parent path}, {@link #getNode() node} name and
-     * id, and {@link #getMetadataId()}
+     * id, and {@link #metadataId()}
      */
     public @Override int hashCode() {
         return 17 ^ (parentPath != null ? parentPath.hashCode() : 1) * node.getObjectId().hashCode()
-                * getMetadataId().hashCode();
+                * metadataId().hashCode();
     }
 
     /**

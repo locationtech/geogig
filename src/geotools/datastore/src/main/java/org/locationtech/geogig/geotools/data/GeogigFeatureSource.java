@@ -369,7 +369,7 @@ public class GeogigFeatureSource extends ContentFeatureSource {
         RevFeatureType nativeType = state.getNativeType();
         if (nativeType == null) {
             final NodeRef typeRef = getTypeRef();
-            final ObjectId metadataId = typeRef.getMetadataId();
+            final ObjectId metadataId = typeRef.metadataId();
 
             Context context = getCommandLocator();
             nativeType = context.objectDatabase().getFeatureType(metadataId);

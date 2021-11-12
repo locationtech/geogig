@@ -188,7 +188,7 @@ public class TreeDifference {
 
     /**
      * Finds tree pointers that point to the same tree (path and object id) on the left and right
-     * sides of the comparison but have different {@link NodeRef#getMetadataId() metadata ids}
+     * sides of the comparison but have different {@link NodeRef#metadataId() metadata ids}
      */
     public Map<NodeRef, NodeRef> findPureMetadataChanges() {
         SortedMap<String, MutableTree> leftEntries = leftTree.getChildrenAsMap();

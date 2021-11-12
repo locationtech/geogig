@@ -191,7 +191,7 @@ public class WriteTree2Test extends RepositoryTestCase {
         verifyRepositoryTree(NodeRef.ROOT, newRepoRoot);
         Map<String, NodeRef> refsByPath = getTreeRefsByPath(newRepoRoot);
         assertEquals(set("buildings", "buildings/stores"), refsByPath.keySet());
-        assertEquals(id("d31"), refsByPath.get("buildings/stores").getMetadataId());
+        assertEquals(id("d31"), refsByPath.get("buildings/stores").metadataId());
     }
 
     @Test

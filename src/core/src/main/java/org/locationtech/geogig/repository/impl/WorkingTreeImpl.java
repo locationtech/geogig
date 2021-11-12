@@ -350,7 +350,7 @@ public class WorkingTreeImpl implements WorkingTree {
             RevFeature feature = fi.getFeature();
             NodeRef parentRef = currentTrees.get(parentPath);
             Objects.requireNonNull(parentRef);
-            if (fi.getFeatureTypeId().equals(parentRef.getMetadataId())) {
+            if (fi.getFeatureTypeId().equals(parentRef.metadataId())) {
                 metadataId = ObjectId.NULL;// use the parent's default
             }
 
@@ -514,7 +514,7 @@ public class WorkingTreeImpl implements WorkingTree {
         Preconditions.checkArgument(null != typeTreeRef, "Tree does not exist: %s", treePath);
 
         final RevFeatureType newRevType = RevFeatureType.builder().type(featureType).build();
-        if (newRevType.getId().equals(typeTreeRef.getMetadataId())) {
+        if (newRevType.getId().equals(typeTreeRef.metadataId())) {
             return typeTreeRef;
         }
         indexDatabase.put(newRevType);

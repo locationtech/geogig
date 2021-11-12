@@ -61,10 +61,10 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                     patch.addModifiedFeature(diff);
                 } else if (revObject instanceof RevTree) {
                     RevFeatureType oldFeatureType = command(RevObjectParse.class)
-                            .setObjectId(diffEntry.getOldObject().getMetadataId())
+                            .setObjectId(diffEntry.getOldObject().metadataId())
                             .call(RevFeatureType.class).get();
                     RevFeatureType newFeatureType = command(RevObjectParse.class)
-                            .setObjectId(diffEntry.getNewObject().getMetadataId())
+                            .setObjectId(diffEntry.getNewObject().metadataId())
                             .call(RevFeatureType.class).get();
                     patch.addFeatureType(oldFeatureType);
                     patch.addFeatureType(newFeatureType);
@@ -76,19 +76,19 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                         .setObjectId(diffEntry.newObjectId()).call().get();
                 if (revObject instanceof RevFeature) {
                     RevFeatureType featureType;
-                    if (featureTypes.containsKey(newObject.getMetadataId())) {
-                        featureType = featureTypes.get(newObject.getMetadataId());
+                    if (featureTypes.containsKey(newObject.metadataId())) {
+                        featureType = featureTypes.get(newObject.metadataId());
                     } else {
                         featureType = command(RevObjectParse.class)
-                                .setObjectId(newObject.getMetadataId()).call(RevFeatureType.class)
+                                .setObjectId(newObject.metadataId()).call(RevFeatureType.class)
                                 .get();
-                        featureTypes.put(newObject.getMetadataId(), featureType);
+                        featureTypes.put(newObject.metadataId(), featureType);
                     }
 
                     String name = diffEntry.path();
                     patch.addAddedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
-                    ObjectId metadataId = diffEntry.getNewObject().getMetadataId();
+                    ObjectId metadataId = diffEntry.getNewObject().metadataId();
                     if (!metadataId.isNull()) {
                         RevFeatureType featureType = command(RevObjectParse.class)
                                 .setObjectId(metadataId).call(RevFeatureType.class).get();
@@ -101,18 +101,18 @@ public class CreatePatchOp extends AbstractGeoGigOp<Patch> {
                         .setObjectId(diffEntry.oldObjectId()).call().get();
                 if (revObject instanceof RevFeature) {
                     RevFeatureType featureType;
-                    if (featureTypes.containsKey(oldObject.getMetadataId())) {
-                        featureType = featureTypes.get(oldObject.getMetadataId());
+                    if (featureTypes.containsKey(oldObject.metadataId())) {
+                        featureType = featureTypes.get(oldObject.metadataId());
                     } else {
                         featureType = command(RevObjectParse.class)
-                                .setObjectId(oldObject.getMetadataId()).call(RevFeatureType.class)
+                                .setObjectId(oldObject.metadataId()).call(RevFeatureType.class)
                                 .get();
-                        featureTypes.put(oldObject.getMetadataId(), featureType);
+                        featureTypes.put(oldObject.metadataId(), featureType);
                     }
                     String name = diffEntry.path();
                     patch.addRemovedFeature(name, (RevFeature) revObject, featureType);
                 } else if (revObject instanceof RevTree) {
-                    ObjectId metadataId = diffEntry.getOldObject().getMetadataId();
+                    ObjectId metadataId = diffEntry.getOldObject().metadataId();
                     if (!metadataId.isNull()) {
                         RevFeatureType featureType = command(RevObjectParse.class)
                                 .setObjectId(metadataId).call(RevFeatureType.class).get();

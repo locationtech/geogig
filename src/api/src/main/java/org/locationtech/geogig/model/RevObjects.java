@@ -314,7 +314,7 @@ public @UtilityClass class RevObjects {
 
     /**
      * Equality check based on {@link #getName() name}, {@link #getType() type}, and
-     * {@link #getObjectId() objectId}; {@link #getMetadataId()} is NOT part of the equality check.
+     * {@link #getObjectId() objectId}; {@link #metadataId()} is NOT part of the equality check.
      */
     public static boolean equals(@NonNull Node node, Object o) {
         if (o instanceof Node) {

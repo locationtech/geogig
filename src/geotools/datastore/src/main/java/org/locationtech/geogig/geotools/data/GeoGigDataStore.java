@@ -248,7 +248,7 @@ public class GeoGigDataStore extends ContentDataStore implements DataStore {
 
     public org.opengis.feature.type.Name getDescriptorName(@NonNull NodeRef treeRef) {
         Preconditions.checkArgument(TYPE.TREE.equals(treeRef.getType()));
-        Preconditions.checkArgument(!treeRef.getMetadataId().isNull(),
+        Preconditions.checkArgument(!treeRef.metadataId().isNull(),
                 "NodeRef '%s' is not a feature type reference", treeRef.path());
 
         return new NameImpl(getNamespaceURI(), NodeRef.nodeFromPath(treeRef.path()));

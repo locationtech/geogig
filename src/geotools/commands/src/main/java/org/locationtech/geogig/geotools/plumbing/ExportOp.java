@@ -130,7 +130,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         final RevTree rootTree = resolveRootTree(refspec);
         final NodeRef typeTreeRef = resolTypeTreeRef(refspec, treePath, rootTree);
 
-        final ObjectId defaultMetadataId = typeTreeRef.getMetadataId();
+        final ObjectId defaultMetadataId = typeTreeRef.metadataId();
 
         final RevTree typeTree = database.getTree(typeTreeRef.getObjectId());
 
@@ -533,7 +533,7 @@ public class ExportOp extends AbstractGeoGigOp<SimpleFeatureStore> {
             if (input instanceof Node) {
                 return ((Node) input).getMetadataId().orElse(defaultMetadataId);
             }
-            return ((NodeRef) input).getMetadataId();
+            return ((NodeRef) input).metadataId();
         }
 
         private Envelope getProjectedFilter(final ObjectId metadataId) {

@@ -185,7 +185,7 @@ public class GeoJsonExport extends AbstractGeoJsonCommand implements CLICommand 
                 "pathspec '" + refspec.split(":")[1] + "' did not match any valid path");
 
         Optional<RevObject> revObject = cli.getGeogig().command(RevObjectParse.class)
-                .setObjectId(featureTypeTree.get().getMetadataId()).call();
+                .setObjectId(featureTypeTree.get().metadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
             return GT.adapt(revFeatureType.type());

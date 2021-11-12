@@ -126,7 +126,7 @@ public class CreateQuadTree extends AbstractGeoGigOp<Index> {
                 : IndexUtils.resolveTypeTreeRef(context(), treeRefSpec);
         checkArgument(typeTreeRef != null, "Can't find feature tree '%s'", treeRefSpec);
         canonicalTypeTree = objectDatabase().getTree(typeTreeRef.getObjectId());
-        featureType = objectDatabase().getFeatureType(typeTreeRef.getMetadataId());
+        featureType = objectDatabase().getFeatureType(typeTreeRef.metadataId());
 
         final PropertyDescriptor geometryAtt = IndexUtils.resolveGeometryAttribute(featureType,
                 geometryAttributeName);

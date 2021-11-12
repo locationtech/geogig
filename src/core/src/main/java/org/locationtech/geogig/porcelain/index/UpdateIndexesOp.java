@@ -116,7 +116,7 @@ public class UpdateIndexesOp extends AbstractGeoGigOp<List<Index>> {
                 progress.setDescription(String.format("Updating index %s(%s) on %s...",
                         index.getAttributeName(), index.getIndexType(), newTreeRef.path()));
 
-                final ObjectId revTypeId = newTreeRef.getMetadataId();
+                final ObjectId revTypeId = newTreeRef.metadataId();
 
                 final RevTree oldCanonicalTree;
                 if (oldTreeRef != null && indexDatabase

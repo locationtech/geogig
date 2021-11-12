@@ -371,10 +371,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertEquals("points2", treeRef.path());
         assertEquals("", treeRef.getParentPath());
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
-        assertEquals(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
+        assertEquals(treeRef.metadataId(), treeRef.getNode().getMetadataId().get());
 
         RevFeatureType featureType = repo.context().objectDatabase()
-                .getFeatureType(treeRef.getMetadataId());
+                .getFeatureType(treeRef.metadataId());
         RevObjectTestUtil.deepEquals(RevFeatureType.builder().type(pointsType).build(),
                 featureType);
     }
@@ -386,10 +386,10 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertEquals("path/to/nested/type", treeRef.path());
         assertEquals("path/to/nested", treeRef.getParentPath());
         assertTrue(treeRef.getNode().getMetadataId().isPresent());
-        assertEquals(treeRef.getMetadataId(), treeRef.getNode().getMetadataId().get());
+        assertEquals(treeRef.metadataId(), treeRef.getNode().getMetadataId().get());
 
         RevFeatureType featureType = repo.context().objectDatabase()
-                .getFeatureType(treeRef.getMetadataId());
+                .getFeatureType(treeRef.metadataId());
         RevObjectTestUtil.deepEquals(RevFeatureType.builder().type(pointsType).build(),
                 featureType);
     }
@@ -406,7 +406,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
         assertFalse(treeRef.get().getNode().getMetadataId().get().isNull());
 
         RevFeatureType featureType = repo.context().objectDatabase()
-                .getFeatureType(treeRef.get().getMetadataId());
+                .getFeatureType(treeRef.get().metadataId());
         RevObjectTestUtil.deepEquals(RevFeatureType.builder().type(pointsType).build(),
                 featureType);
 
@@ -428,7 +428,7 @@ public class WorkingTreeTest extends RepositoryTestCase {
                 .setChildPath(path).call();
         assertTrue(featureBlobId.isPresent());
         assertEquals(RevFeatureType.builder().type(modifiedPointsType).build().getId(),
-                featureBlobId.get().getMetadataId());
+                featureBlobId.get().metadataId());
         path = NodeRef.appendChild(pointsName, points3.getId());
     }
 

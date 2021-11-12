@@ -83,10 +83,9 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         checkArgument(oldPath.equals(newPath),
                 "old and new versions do not corespond to the same feature");
 
-        Set<ObjectId> ids = Arrays
-                .asList(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
-                        oldNodeRef.getMetadataId(), newNodeRef.getMetadataId())
-                .stream().collect(Collectors.toSet());
+        Set<ObjectId> ids = Arrays.asList(oldNodeRef.getObjectId(), newNodeRef.getObjectId(),
+                oldNodeRef.metadataId(), newNodeRef.metadataId()).stream()
+                .collect(Collectors.toSet());
 
         Map<ObjectId, RevObject> objects = Streams.stream(objectDatabase().getAll(ids))
                 .collect(Collectors.toMap(RevObject::getId, revobj -> revobj));
@@ -97,10 +96,10 @@ public class DiffFeature extends AbstractGeoGigOp<FeatureDiff> {
         RevFeature newFeature = (RevFeature) objects.get(newNodeRef.getObjectId());
         checkArgument(newFeature != null, "Invalid reference: %s", newNodeRef);
 
-        RevFeatureType oldFeatureType = (RevFeatureType) objects.get(oldNodeRef.getMetadataId());
+        RevFeatureType oldFeatureType = (RevFeatureType) objects.get(oldNodeRef.metadataId());
         checkArgument(oldFeatureType != null, "Invalid reference: %s", oldNodeRef);
 
-        RevFeatureType newFeatureType = (RevFeatureType) objects.get(newNodeRef.getMetadataId());
+        RevFeatureType newFeatureType = (RevFeatureType) objects.get(newNodeRef.metadataId());
         checkArgument(newFeatureType != null, "Invalid reference: %s", newNodeRef);
 
         return compare(oldNodeRef.path(), oldFeature, newFeature, oldFeatureType, newFeatureType);

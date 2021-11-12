@@ -61,7 +61,7 @@ public class LsTreeOpTest extends RepositoryTestCase {
 
         assertEquals(3, nodes.size());
         for (NodeRef ref : nodes) {
-            ObjectId metadataId = ref.getMetadataId();
+            ObjectId metadataId = ref.metadataId();
             assertFalse(metadataId.isNull());
         }
     }
@@ -72,7 +72,7 @@ public class LsTreeOpTest extends RepositoryTestCase {
         List<NodeRef> nodes = ImmutableList.copyOf(iter);
         assertEquals(3, nodes.size());
         for (NodeRef ref : nodes) {
-            ObjectId metadataId = ref.getMetadataId();
+            ObjectId metadataId = ref.metadataId();
             assertFalse(metadataId.isNull());
         }
     }

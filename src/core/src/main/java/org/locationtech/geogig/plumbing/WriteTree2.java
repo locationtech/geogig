@@ -201,7 +201,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                     // can't optimize
                     RevTree newTree = applyChanges(ref, null);
                     Node newNode = RevObjectFactory.defaultInstance().createNode(ref.name(),
-                            newTree.getId(), ref.getMetadataId(), TYPE.TREE, null, null);
+                            newTree.getId(), ref.metadataId(), TYPE.TREE, null, null);
                     MutableTree leftTree = treeDifference.getLeftTree();
                     leftTree.forceChild(ref.getParentPath(), newNode);
                 }
@@ -227,7 +227,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
                     // can't optimize
                     RevTree newTree = applyChanges(null, ref);
                     Node newNode = RevObjectFactory.defaultInstance().createNode(ref.name(),
-                            newTree.getId(), ref.getMetadataId(), TYPE.TREE, null, null);
+                            newTree.getId(), ref.metadataId(), TYPE.TREE, null, null);
                     MutableTree leftTree = treeDifference.getLeftTree();
                     leftTree.forceChild(ref.getParentPath(), newNode);
                 }
@@ -294,7 +294,7 @@ public class WriteTree2 extends AbstractGeoGigOp<ObjectId> {
 
             Envelope bounds = SpatialOps.boundsOf(tree);
             Node newTreeNode = RevObjectFactory.defaultInstance().createNode(rightTreeRef.name(),
-                    tree.getId(), rightTreeRef.getMetadataId(), TYPE.TREE, bounds, null);
+                    tree.getId(), rightTreeRef.metadataId(), TYPE.TREE, bounds, null);
 
             MutableTree leftRoot = treeDifference.getLeftTree();
             String parentPath = rightTreeRef.getParentPath();

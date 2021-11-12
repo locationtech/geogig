@@ -105,7 +105,7 @@ public class GeoJsonImportTest extends RepositoryTestCase {
         RevFeature feature2Obj = odb.getFeature(feature2id);
 
         List<PropertyDescriptor> attributes = cli.getGeogig().command(DescribeFeatureType.class)
-                .setFeatureType(odb.getFeatureType(rootNode.getMetadataId())).call();
+                .setFeatureType(odb.getFeatureType(rootNode.metadataId())).call();
         assertEquals(3, attributes.size());
         int attributeIndex = 0;
         for (PropertyDescriptor attribute : attributes) {

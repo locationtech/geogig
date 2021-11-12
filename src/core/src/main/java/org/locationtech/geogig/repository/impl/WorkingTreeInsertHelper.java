@@ -135,7 +135,7 @@ class WorkingTreeInsertHelper {
                     .setChildPath(treePath).call();
             if (treeNode.isPresent()) {
                 RevTree parentTree = db.getTree(treeNode.get().getObjectId());
-                ObjectId metadataId = treeNode.get().getMetadataId();
+                ObjectId metadataId = treeNode.get().metadataId();
                 if (!metadataId.isNull()) {
                     RevFeatureType featureType = db.getFeatureType(metadataId);
                     revFeatureTypes.put(treePath, featureType);
@@ -157,7 +157,7 @@ class WorkingTreeInsertHelper {
             final NodeRef treeRef = findOrCreateTree(treePath, type);
             final ObjectId treeId = treeRef.getObjectId();
             final RevTree origTree = db.getTree(treeId);
-            final ObjectId defaultMetadataId = treeRef.getMetadataId();
+            final ObjectId defaultMetadataId = treeRef.metadataId();
             if (!defaultMetadataId.isNull()) {
                 RevFeatureType featureType = db.getFeatureType(defaultMetadataId);
                 revFeatureTypes.put(treePath, featureType);
@@ -257,7 +257,7 @@ class WorkingTreeInsertHelper {
                         .setChildPath(parentPath).setParent(workHead).setParentPath(NodeRef.ROOT)
                         .call();
 
-                parentMetadataId = parentRef.isPresent() ? parentRef.get().getMetadataId()
+                parentMetadataId = parentRef.isPresent() ? parentRef.get().metadataId()
                         : ObjectId.NULL;
             }
             NodeRef newTreeRef = new NodeRef(treeNode, parentPath, parentMetadataId);

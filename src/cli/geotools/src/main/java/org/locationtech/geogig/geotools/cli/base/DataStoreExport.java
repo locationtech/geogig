@@ -230,7 +230,7 @@ public abstract class DataStoreExport extends AbstractCommand implements CLIComm
                 "pathspec '" + featureTreePath + "' did not match any valid path");
 
         Optional<RevObject> revObject = repository.command(RevObjectParse.class)
-                .setObjectId(featureTypeTree.get().getMetadataId()).call();
+                .setObjectId(featureTypeTree.get().metadataId()).call();
         if (revObject.isPresent() && revObject.get() instanceof RevFeatureType) {
             RevFeatureType revFeatureType = (RevFeatureType) revObject.get();
             SimpleFeatureType sft = GT.adapt(revFeatureType.type());

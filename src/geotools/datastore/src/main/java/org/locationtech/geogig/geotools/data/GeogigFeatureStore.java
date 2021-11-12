@@ -235,7 +235,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         final FeatureType nativeSchema = delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
-        final ObjectId featureTypeId = typeRef.getMetadataId();
+        final ObjectId featureTypeId = typeRef.metadataId();
 
         List<FeatureId> insertedFids = returnFidsOnInsert ? new ArrayList<>()
                 : Collections.emptyList();
@@ -347,7 +347,7 @@ public class GeogigFeatureStore extends ContentFeatureStore {
         final FeatureType nativeSchema = delegate.getNativeType().type();
         final NodeRef typeRef = delegate.getTypeRef();
         final String treePath = typeRef.path();
-        final ObjectId featureTypeId = typeRef.getMetadataId();
+        final ObjectId featureTypeId = typeRef.metadataId();
 
         try (AutoCloseableIterator<SimpleFeature> gtFeatures = modifyingFeatureIterator(names,
                 values, filter)) {

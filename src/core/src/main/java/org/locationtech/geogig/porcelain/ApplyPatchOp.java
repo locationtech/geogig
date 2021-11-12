@@ -155,7 +155,7 @@ public class ApplyPatchOp extends AbstractGeoGigOp<Patch> {
             DepthSearch depthSearch = new DepthSearch(indexDb);
             Optional<NodeRef> noderef = depthSearch.find(workTree.getTree(), path);
             RevFeatureType oldRevFeatureType = command(RevObjectParse.class)
-                    .setObjectId(noderef.get().getMetadataId()).call(RevFeatureType.class).get();
+                    .setObjectId(noderef.get().metadataId()).call(RevFeatureType.class).get();
             String refSpec = Ref.WORK_HEAD + ":" + path;
             RevFeature feature = command(RevObjectParse.class).setRefSpec(refSpec)
                     .call(RevFeature.class).get();

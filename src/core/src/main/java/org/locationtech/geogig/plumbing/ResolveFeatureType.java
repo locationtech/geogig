@@ -68,7 +68,7 @@ public class ResolveFeatureType extends AbstractGeoGigOp<Optional<RevFeatureType
             return Optional.empty();
         }
         NodeRef found = node.get();
-        ObjectId metadataID = found.getMetadataId();
+        ObjectId metadataID = found.metadataId();
         Optional<RevFeatureType> ft = command(RevObjectParse.class).setObjectId(metadataID)
                 .call(RevFeatureType.class);
         return ft;

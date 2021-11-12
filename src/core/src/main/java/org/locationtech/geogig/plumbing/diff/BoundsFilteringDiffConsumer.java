@@ -72,7 +72,7 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
     }
 
     private ObjectId md(@Nullable NodeRef ref) {
-        return ref == null ? ObjectId.NULL : ref.getMetadataId();
+        return ref == null ? ObjectId.NULL : ref.metadataId();
     }
 
     private boolean intersects(NodeRef left, NodeRef right) {
@@ -80,7 +80,7 @@ public final class BoundsFilteringDiffConsumer extends PreOrderDiffWalk.Forwardi
     }
 
     private boolean intersects(@Nullable NodeRef node) {
-        return intersects(node, node == null ? ObjectId.NULL : node.getMetadataId());
+        return intersects(node, node == null ? ObjectId.NULL : node.metadataId());
     }
 
     private boolean intersects(@Nullable Bounded node, final ObjectId metadataId) {

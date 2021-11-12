@@ -221,7 +221,7 @@ public class ImportOpTest extends RepositoryTestCase {
         assertEquals(4, list.size());
         TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
-            set.add(node.getMetadataId());
+            set.add(node.metadataId());
         }
         assertEquals(4, set.size());
         for (ObjectId metadataId : set) {
@@ -263,10 +263,10 @@ public class ImportOpTest extends RepositoryTestCase {
         ArrayList<RevFeatureType> ftlist = new ArrayList<RevFeatureType>();
         for (NodeRef node : list) {
             Optional<RevFeatureType> ft = repo.command(RevObjectParse.class)
-                    .setObjectId(node.getMetadataId()).call(RevFeatureType.class);
+                    .setObjectId(node.metadataId()).call(RevFeatureType.class);
             assertTrue(ft.isPresent());
             ftlist.add(ft.get());
-            set.add(node.getMetadataId());
+            set.add(node.metadataId());
         }
         assertEquals(4, set.size());
     }
@@ -293,7 +293,7 @@ public class ImportOpTest extends RepositoryTestCase {
         assertEquals(3, list.size());
         TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
-            set.add(node.getMetadataId());
+            set.add(node.metadataId());
         }
         assertEquals(2, set.size());
     }
@@ -322,7 +322,7 @@ public class ImportOpTest extends RepositoryTestCase {
         assertFalse(values.get(1).isPresent());
         TreeSet<ObjectId> set = new TreeSet<>();
         for (NodeRef node : list) {
-            set.add(node.getMetadataId());
+            set.add(node.metadataId());
         }
         assertEquals(1, set.size());
         Optional<RevFeatureType> featureType = repo.command(RevObjectParse.class)
@@ -345,7 +345,7 @@ public class ImportOpTest extends RepositoryTestCase {
         List<NodeRef> list = Lists.newArrayList(features);
         assertEquals(2, list.size());
         Optional<RevFeatureType> featureType = repo.command(RevObjectParse.class)
-                .setObjectId(list.get(0).getMetadataId()).call(RevFeatureType.class);
+                .setObjectId(list.get(0).metadataId()).call(RevFeatureType.class);
         assertTrue(featureType.isPresent());
         assertEquals("table1", featureType.get().getName().getLocalPart());
         assertEquals("my_geom_name",

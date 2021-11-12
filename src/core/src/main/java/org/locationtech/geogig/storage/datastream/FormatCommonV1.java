@@ -406,7 +406,7 @@ public class FormatCommonV1 {
 
     public static void writeNodeRef(NodeRef nodeRef, DataOutput data) throws IOException {
         writeNode(nodeRef.getNode(), data);
-        nodeRef.getMetadataId().writeTo(data);
+        nodeRef.metadataId().writeTo(data);
         data.writeUTF(nodeRef.getParentPath());
     }
 }

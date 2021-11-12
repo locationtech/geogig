@@ -90,7 +90,7 @@ public class ExportDiffOp extends AbstractGeoGigOp<SimpleFeatureStore> {
         final String refspec = old ? oldRef : newRef;
         final RevTree rootTree = resolveRootTree(refspec);
         final NodeRef typeTreeRef = resolTypeTreeRef(refspec, path, rootTree);
-        final ObjectId defaultMetadataId = typeTreeRef.getMetadataId();
+        final ObjectId defaultMetadataId = typeTreeRef.metadataId();
 
         final ProgressListener progressListener = getProgressListener();
 

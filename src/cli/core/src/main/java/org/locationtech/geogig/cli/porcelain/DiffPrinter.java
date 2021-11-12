@@ -66,8 +66,8 @@ class SummaryDiffPrinter implements DiffPrinter {
         final NodeRef newObject = entry.getNewObject();
         final NodeRef oldObject = entry.getOldObject();
 
-        String oldMode = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getMetadataId());
-        String newMode = shortOid(newObject == null ? ObjectId.NULL : newObject.getMetadataId());
+        String oldMode = shortOid(oldObject == null ? ObjectId.NULL : oldObject.metadataId());
+        String newMode = shortOid(newObject == null ? ObjectId.NULL : newObject.metadataId());
 
         String oldId = shortOid(oldObject == null ? ObjectId.NULL : oldObject.getObjectId());
         String newId = shortOid(newObject == null ? ObjectId.NULL : newObject.getObjectId());
@@ -193,7 +193,7 @@ class FullDiffPrinter implements DiffPrinter {
         } else if (diffEntry.changeType() == ChangeType.ADDED) {
             NodeRef noderef = diffEntry.getNewObject();
             RevFeatureType featureType = geogig.command(RevObjectParse.class)
-                    .setObjectId(noderef.getMetadataId()).call(RevFeatureType.class).get();
+                    .setObjectId(noderef.metadataId()).call(RevFeatureType.class).get();
             Optional<RevObject> obj = geogig.command(RevObjectParse.class)
                     .setObjectId(noderef.getObjectId()).call();
             RevFeature feature = (RevFeature) obj.get();

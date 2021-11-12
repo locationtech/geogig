@@ -96,7 +96,7 @@ public class AddOpTest extends RepositoryTestCase {
         assertEquals("Points", unstaged.get(0).name());
         RevFeatureType ft = RevFeatureType.builder().type(pointsType).build();
         ObjectId expectedTreeMdId = ft.getId();
-        assertEquals(expectedTreeMdId, unstaged.get(0).getNewObject().getMetadataId());
+        assertEquals(expectedTreeMdId, unstaged.get(0).getNewObject().metadataId());
 
         assertEquals(ChangeType.ADDED, unstaged.get(1).changeType());
         assertEquals(RevObject.TYPE.FEATURE, unstaged.get(1).getNewObject().getType());

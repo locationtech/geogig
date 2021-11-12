@@ -153,7 +153,7 @@ public class BuildFullHistoryIndexOp extends AbstractGeoGigOp<Integer> {
         }
         command(BuildIndexOp.class)//
                 .setIndex(index)//
-                .setRevFeatureTypeId(treeNode.get().getMetadataId())//
+                .setRevFeatureTypeId(treeNode.get().metadataId())//
                 .setOldCanonicalTree(oldCanonicalTree)//
                 .setNewCanonicalTree(newCanonicalTree)//
                 .setProgressListener(getProgressListener())//

@@ -196,7 +196,7 @@ public class StagingAreaImpl implements StagingArea {
 
             final RevTree currentTypeTree;
             if (typeTreeRef == null) {
-                ObjectId metadataId = featureRef.getMetadataId();
+                ObjectId metadataId = featureRef.metadataId();
                 Node parentNode = RevObjectFactory.defaultInstance().createNode(
                         NodeRef.nodeFromPath(typeTreePath), EMPTY_TREE_ID, metadataId, TYPE.TREE,
                         null, null);

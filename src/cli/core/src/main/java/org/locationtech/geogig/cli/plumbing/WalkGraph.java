@@ -163,8 +163,8 @@ public class WalkGraph extends AbstractCommand implements CLICommand {
                     NodeRef node = (NodeRef) b;
                     type = node.getType().toString();
                     extraData = node.path();
-                    if (!node.getMetadataId().isNull()) {
-                        extraData += " [" + node.getMetadataId() + "]";
+                    if (!node.metadataId().isNull()) {
+                        extraData += " [" + node.metadataId() + "]";
                     }
                 } else {
                     type = "BUCKET";

@@ -169,11 +169,11 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
                                     .setChildPath(path).setParent(repository.commands()
                                             .resolveTree(Ref.HEAD).orElse(RevTree.EMPTY))
                                     .call().get();
-                            if (!headVersion.getMetadataId()
-                                    .equals(diff.getNewObject().getMetadataId())) {
+                            if (!headVersion.metadataId()
+                                    .equals(diff.getNewObject().metadataId())) {
                                 consumer.conflicted(new Conflict(path, ObjectId.NULL,
-                                        diff.getNewObject().getMetadataId(),
-                                        headVersion.getMetadataId()));
+                                        diff.getNewObject().metadataId(),
+                                        headVersion.metadataId()));
                                 report.addConflict(path);
                             }
                         } else {
@@ -225,8 +225,7 @@ public class ReportCommitConflictsOp extends AbstractGeoGigOp<MergeScenarioRepor
 
                     final NodeRef headFeatureRef = new DepthSearch(objectDatabase())
                             .find(workingTree, path).get();
-                    final RevFeatureType headFeatureType = ftCache
-                            .get(headFeatureRef.getMetadataId());
+                    final RevFeatureType headFeatureType = ftCache.get(headFeatureRef.metadataId());
                     List<PropertyDescriptor> descriptors = headFeatureType.descriptors();
 
                     FeatureDiff featureDiff = DiffFeature.compare(path, oldFeature, newFeature,

@@ -265,7 +265,7 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
                     consumer.unconflicted(theirsDiff);
                     report.addUnconflicted(theirsDiff);
                 } else {
-                    ObjectId featureTypeId = oursDiff.getNewObject().getMetadataId();
+                    ObjectId featureTypeId = oursDiff.getNewObject().metadataId();
                     FeatureInfo merged = FeatureInfo.insert(mergedFeature, featureTypeId, path);
                     consumer.merged(merged);
                     report.addMerged(path);
@@ -280,15 +280,15 @@ public class ReportMergeScenarioOp extends AbstractGeoGigOp<MergeScenarioReport>
 
         final String path = oursDiff.path();
 
-        final boolean featureTypeConflict = !theirsDiff.getNewObject().getMetadataId()
-                .equals(oursDiff.getNewObject().getMetadataId());
+        final boolean featureTypeConflict = !theirsDiff.getNewObject().metadataId()
+                .equals(oursDiff.getNewObject().metadataId());
         if (featureTypeConflict) {
             // In this case, we store the metadata id, not the element id
             ObjectId ancestorVersionId = ancestorVersion.isPresent()
-                    ? ancestorVersion.get().getMetadataId()
+                    ? ancestorVersion.get().metadataId()
                     : ObjectId.NULL;
-            ObjectId ours = oursDiff.getNewObject().getMetadataId();
-            ObjectId theirs = theirsDiff.getNewObject().getMetadataId();
+            ObjectId ours = oursDiff.getNewObject().metadataId();
+            ObjectId theirs = theirsDiff.getNewObject().metadataId();
             consumer.conflicted(new Conflict(path, ancestorVersionId, ours, theirs));
             report.addConflict(path);
         }

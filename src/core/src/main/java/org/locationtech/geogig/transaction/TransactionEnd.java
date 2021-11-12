@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.transaction;
 
+import static java.lang.String.format;
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.Collections;

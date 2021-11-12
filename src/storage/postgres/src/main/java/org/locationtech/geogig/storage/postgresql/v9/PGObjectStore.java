@@ -9,13 +9,13 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_GETALL_BATCH_SIZE;
 import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_PUTALL_BATCH_SIZE;
 import static org.locationtech.geogig.storage.postgresql.config.Environment.KEY_THREADPOOL_SIZE;

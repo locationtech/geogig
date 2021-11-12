@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
+import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.util.Objects.requireNonNull;
 import static org.locationtech.geogig.model.Ref.HEADS_PREFIX;
 import static org.locationtech.geogig.model.Ref.TAGS_PREFIX;
 

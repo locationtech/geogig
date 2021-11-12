@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.ql.porcelain;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.util.List;

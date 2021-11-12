@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.model.impl;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.impl.RevObjectTestSupport.findNode;
 
 import java.io.IOException;

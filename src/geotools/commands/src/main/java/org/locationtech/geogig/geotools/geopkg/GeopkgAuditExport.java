@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;

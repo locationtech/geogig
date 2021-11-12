@@ -11,6 +11,7 @@ package org.locationtech.geogig.cli.remoting;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import org.locationtech.geogig.cli.AbstractCommand;
 import org.locationtech.geogig.cli.CLICommand;
@@ -27,8 +28,6 @@ import org.locationtech.geogig.remotes.PullResult;
 import org.locationtech.geogig.remotes.SynchronizationException;
 import org.locationtech.geogig.remotes.TransferSummary;
 import org.locationtech.geogig.repository.DiffObjectCount;
-
-import com.google.common.base.Objects;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
@@ -114,7 +113,7 @@ public class Pull extends AbstractCommand implements CLICommand {
 
             if (oldRef == null && newRef == null) {
                 console.println("Nothing to pull.");
-            } else if (Objects.equal(oldRef, newRef)) {
+            } else if (Objects.equals(oldRef, newRef)) {
                 String name = oldRef == null ? newRef.getName() : oldRef.getName();
                 name = Ref.localName(name);
                 console.println(name + " already up to date.");

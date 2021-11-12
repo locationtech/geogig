@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.transform;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -59,7 +60,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.ListMultimap;
@@ -709,7 +709,7 @@ public class PreOrderDiffWalk {
                 return null;
             }
             checkState(left != null || right != null, "both nodes can't be null");
-            checkArgument(!Objects.equal(left, right));
+            checkArgument(!Objects.equals(left, right));
 
             final TYPE type = left == null ? right.getType() : left.getType();
 
@@ -761,7 +761,7 @@ public class PreOrderDiffWalk {
         protected @Override void compute() {
             final @Nullable NodeRef leftNode = info.left.parentRef;
             final @Nullable NodeRef rightNode = info.right.parentRef;
-            if (Objects.equal(leftNode, rightNode)) {
+            if (Objects.equals(leftNode, rightNode)) {
                 return;
             }
             if (info.consumer.isCancelled()) {
@@ -801,7 +801,7 @@ public class PreOrderDiffWalk {
         }
 
         protected @Override void compute() {
-            if (Objects.equal(left, right)) {
+            if (Objects.equals(left, right)) {
                 return;
             }
             if (info.consumer.isCancelled()) {
@@ -884,7 +884,7 @@ public class PreOrderDiffWalk {
                     // changed it or not
                     Node l = li.next();
                     Node r = ri.next();
-                    if (!Objects.equal(l, r)) {
+                    if (!Objects.equals(l, r)) {
                         NodeRef lref = newRef(leftParent, l);
                         NodeRef rref = newRef(rightParent, r);
                         if (!l.equals(r)) {

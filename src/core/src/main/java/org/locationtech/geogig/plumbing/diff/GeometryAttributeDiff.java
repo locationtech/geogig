@@ -15,13 +15,13 @@ import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.MODIFIED;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.NO_CHANGE;
 import static org.locationtech.geogig.plumbing.diff.AttributeDiff.TYPE.REMOVED;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.FieldType;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
 import org.locationtech.jts.geom.Geometry;
-
-import com.google.common.base.Objects;
 
 /**
  * An implementation of AttributeDiff to be used with attributes containing geometries
@@ -166,7 +166,7 @@ public class GeometryAttributeDiff implements AttributeDiff {
         }
         GeometryAttributeDiff d = (GeometryAttributeDiff) o;
         if (oldGeometry == null && newGeometry == null) {
-            return d.oldGeometry == null && d.newGeometry == null && Objects.equal(type, d.type);
+            return d.oldGeometry == null && d.newGeometry == null && Objects.equals(type, d.type);
         } else {
             return diff.equals(d.diff);
         }

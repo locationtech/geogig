@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.geotools.feature.GeometryAttributeImpl;
@@ -46,8 +47,6 @@ import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.google.common.base.Objects;
 
 /**
  */
@@ -447,7 +446,7 @@ class GeogigSimpleFeature implements SimpleFeature {
         for (int i = 0, ii = getAttributeCount(); i < ii; i++) {
             Object otherAtt = feat.getAttribute(i);
 
-            if (!Objects.equal(otherAtt, getAttribute(i))) {
+            if (!Objects.equals(otherAtt, getAttribute(i))) {
                 return false;
             }
         }

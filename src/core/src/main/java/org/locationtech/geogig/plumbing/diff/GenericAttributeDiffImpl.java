@@ -11,13 +11,12 @@ package org.locationtech.geogig.plumbing.diff;
 
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.storage.text.TextValueSerializer;
-
-import com.google.common.base.Objects;
 
 /**
  * Generic implementation of a difference between two values for a given attribute
@@ -102,7 +101,7 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
 
     public @Override boolean canBeAppliedOn(@Nullable Object obj) {
         checkArgument(!(obj instanceof Optional));
-        return Objects.equal(obj, oldValue) || Objects.equal(obj, newValue);
+        return Objects.equals(obj, oldValue) || Objects.equals(obj, newValue);
     }
 
     public @Override String asText() {
@@ -128,7 +127,7 @@ public class GenericAttributeDiffImpl implements AttributeDiff {
     public @Override boolean conflicts(AttributeDiff ad) {
         if (ad instanceof GenericAttributeDiffImpl) {
             GenericAttributeDiffImpl gad = (GenericAttributeDiffImpl) ad;
-            return !Objects.equal(gad.newValue, newValue);
+            return !Objects.equals(gad.newValue, newValue);
         } else {
             return true;
         }

@@ -2,10 +2,9 @@ package org.locationtech.geogig.storage.postgresql.config;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 import org.eclipse.jdt.annotation.Nullable;
-
-import com.google.common.base.Objects;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -21,9 +20,9 @@ public @Value class ConnectionConfig implements Cloneable {
      * and password they're connected with
      */
     public boolean isSameDatabase(@NonNull ConnectionConfig other) {
-        boolean same = Objects.equal(key.server, other.key.server) && //
-                Objects.equal(key.portNumber, other.key.portNumber) && //
-                Objects.equal(key.databaseName, other.key.databaseName);
+        boolean same = Objects.equals(key.server, other.key.server) && //
+                Objects.equals(key.portNumber, other.key.portNumber) && //
+                Objects.equals(key.databaseName, other.key.databaseName);
         return same;
     }
 
@@ -33,8 +32,8 @@ public @Value class ConnectionConfig implements Cloneable {
      */
     public boolean isSameDatabaseAndSchema(@NonNull ConnectionConfig other) {
         boolean same = isSameDatabase(other) && //
-                Objects.equal(key.schema, other.key.schema)
-                && Objects.equal(key.tablePrefix, other.key.tablePrefix);
+                Objects.equals(key.schema, other.key.schema)
+                && Objects.equals(key.tablePrefix, other.key.tablePrefix);
         return same;
     }
 

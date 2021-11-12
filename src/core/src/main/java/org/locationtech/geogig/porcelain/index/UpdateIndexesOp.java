@@ -1,7 +1,7 @@
 package org.locationtech.geogig.porcelain.index;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;

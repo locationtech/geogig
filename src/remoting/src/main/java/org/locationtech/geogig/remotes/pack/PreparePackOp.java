@@ -9,11 +9,11 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.Collections;

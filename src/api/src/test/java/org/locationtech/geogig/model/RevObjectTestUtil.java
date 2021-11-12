@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -28,7 +29,6 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import lombok.NonNull;
@@ -160,7 +160,7 @@ public @UtilityClass class RevObjectTestUtil {
 
     @SuppressWarnings("unchecked")
     private static void assertDeepEqualsValue(Object expected, Object actual) {
-        if (Objects.equal(expected, actual)) {
+        if (Objects.equals(expected, actual)) {
             return;
         }
         if (expected == null) {

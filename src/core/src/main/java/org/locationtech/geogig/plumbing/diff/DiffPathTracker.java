@@ -9,6 +9,7 @@
  */
 package org.locationtech.geogig.plumbing.diff;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -17,8 +18,6 @@ import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Node;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.model.ObjectId;
-
-import com.google.common.base.Objects;
 
 public final class DiffPathTracker {
 
@@ -78,8 +77,8 @@ public final class DiffPathTracker {
         final Node popLeft = this.leftTrees.pop();
         final Node popRight = this.rightTrees.pop();
         try {
-            Preconditions.checkState(Objects.equal(popLeft, left));
-            Preconditions.checkState(Objects.equal(popRight, right));
+            Preconditions.checkState(Objects.equals(popLeft, left));
+            Preconditions.checkState(Objects.equals(popRight, right));
         } catch (IllegalStateException e) {
             throw e;
         }

@@ -13,13 +13,13 @@ import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 
 import lombok.NonNull;
@@ -200,8 +200,9 @@ public class NodeRef implements Bounded, Comparable<NodeRef> {
             return false;
         }
         NodeRef r = (NodeRef) o;
-        return Objects.equal(parentPath, r.parentPath) && node.equals(r.node)
-                && metadataId().equals(r.metadataId());
+        return Objects.equals(parentPath, r.parentPath)//
+                && Objects.equals(node, r.node)//
+                && Objects.equals(metadataId(), r.metadataId());
     }
 
     /**

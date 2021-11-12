@@ -49,7 +49,7 @@ import org.locationtech.geogig.storage.memory.HeapObjectDatabase;
 import org.locationtech.geogig.storage.memory.HeapObjectStore;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Streams;
 

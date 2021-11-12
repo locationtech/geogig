@@ -31,7 +31,7 @@ import org.locationtech.geogig.repository.Remote;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 

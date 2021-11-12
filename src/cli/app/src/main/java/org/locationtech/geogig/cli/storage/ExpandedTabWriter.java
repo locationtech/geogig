@@ -20,7 +20,7 @@ import java.io.FilterWriter;
 import java.io.IOException;
 import java.io.Writer;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 /**
  * Writes characters to a stream while expanding tabs ({@code '\t'}) into spaces.

@@ -17,7 +17,7 @@ import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.Ref;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 

@@ -62,7 +62,7 @@ import org.locationtech.geogig.porcelain.StatusOp.StatusSummary;
 import org.locationtech.geogig.repository.Conflict;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.collect.Lists;
 
 public class MergeOpTest extends RepositoryTestCase {

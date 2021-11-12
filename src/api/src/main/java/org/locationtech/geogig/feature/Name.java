@@ -1,6 +1,6 @@
 package org.locationtech.geogig.feature;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

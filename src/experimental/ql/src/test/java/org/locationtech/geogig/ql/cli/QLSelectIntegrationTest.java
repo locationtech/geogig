@@ -119,8 +119,7 @@ public class QLSelectIntegrationTest extends RepositoryTestCase {
 
     @Test
     public void simpleSelect() {
-        helper.selectAndAssert("select * from Points", Set.of(idP1, idP2, idP3), "sp", "ip",
-                "pp");
+        helper.selectAndAssert("select * from Points", Set.of(idP1, idP2, idP3), "sp", "ip", "pp");
     }
 
     @Test

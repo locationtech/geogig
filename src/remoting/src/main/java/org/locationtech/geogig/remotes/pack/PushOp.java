@@ -51,7 +51,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ObjectDatabase;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;

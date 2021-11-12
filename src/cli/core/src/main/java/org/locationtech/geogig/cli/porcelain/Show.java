@@ -39,7 +39,7 @@ import org.locationtech.geogig.plumbing.RevObjectParse;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.text.CrsTextSerializer;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

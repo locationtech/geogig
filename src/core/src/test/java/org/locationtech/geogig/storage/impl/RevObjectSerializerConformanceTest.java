@@ -67,7 +67,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 

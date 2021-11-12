@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.Nullable;
 import org.locationtech.geogig.transaction.TransactionBlobStore;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.io.ByteStreams;
 
 public class HeapBlobStore implements TransactionBlobStore {

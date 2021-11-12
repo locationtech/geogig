@@ -23,7 +23,7 @@ import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevObject.TYPE;
 import org.locationtech.geogig.model.RevObjectFactory;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 public class TreeDifferenceTest extends Assert {
 

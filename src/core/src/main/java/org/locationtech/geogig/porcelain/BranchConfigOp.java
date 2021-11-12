@@ -24,7 +24,7 @@ import org.locationtech.geogig.porcelain.ConfigOp.ConfigScope;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.storage.ConfigDatabase;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 /**
  */

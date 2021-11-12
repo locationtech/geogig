@@ -34,7 +34,7 @@ import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

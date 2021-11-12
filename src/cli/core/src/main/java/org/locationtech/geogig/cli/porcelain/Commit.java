@@ -35,7 +35,7 @@ import org.locationtech.geogig.porcelain.NothingToCommitException;
 import org.locationtech.geogig.repository.DiffObjectCount;
 import org.locationtech.geogig.repository.ProgressListener;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

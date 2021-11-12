@@ -22,7 +22,7 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 

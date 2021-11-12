@@ -9,8 +9,8 @@
  */
 package org.geogig.commands.pr;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.Iterator;
 import java.util.List;

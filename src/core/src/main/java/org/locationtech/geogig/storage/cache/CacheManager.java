@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.cache;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;

@@ -9,14 +9,14 @@
  */
 package org.locationtech.geogig.storage.memory;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.getNext;
 import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.DISTINCT;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterators.spliteratorUnknownSize;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.BulkOpListener.NOOP_LISTENER;
 
 import java.util.Iterator;

@@ -9,9 +9,9 @@
  */
 package org.geogig.commands.pr;
 
+import static java.lang.String.format;
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.lang.String.format;
 
 import java.net.URI;
 import java.util.Map;

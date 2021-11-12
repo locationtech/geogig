@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.storage.datastream;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.lang.Integer.toBinaryString;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.storage.datastream.Varint.readSignedVarLong;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarInt;
 import static org.locationtech.geogig.storage.datastream.Varint.readUnsignedVarLong;

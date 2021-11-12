@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.geotools.plumbing;
 
+import static java.util.Optional.ofNullable;
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
 import java.util.HashSet;

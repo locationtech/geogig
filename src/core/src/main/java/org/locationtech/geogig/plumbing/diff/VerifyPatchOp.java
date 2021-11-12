@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,8 +30,6 @@ import org.locationtech.geogig.repository.FeatureInfo;
 import org.locationtech.geogig.repository.WorkingTree;
 import org.locationtech.geogig.repository.impl.AbstractGeoGigOp;
 import org.locationtech.geogig.repository.impl.DepthSearch;
-
-import com.google.common.base.Objects;
 
 /**
  * Verifies if a patch can be applied to the current working tree
@@ -178,7 +177,7 @@ public class VerifyPatchOp extends AbstractGeoGigOp<VerifyPatchResults> {
             DepthSearch depthSearch = new DepthSearch(objectDatabase());
             Optional<NodeRef> noderef = depthSearch.find(workingTree().getTree(), diff.getPath());
             ObjectId metadataId = noderef.isPresent() ? noderef.get().metadataId() : ObjectId.NULL;
-            if (Objects.equal(metadataId, diff.getOldFeatureType())) {
+            if (Objects.equals(metadataId, diff.getOldFeatureType())) {
                 toApply.addAlteredTree(diff);
             } else {
                 toReject.addAlteredTree(diff);

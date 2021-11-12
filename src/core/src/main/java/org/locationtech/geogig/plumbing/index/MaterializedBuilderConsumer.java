@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing.index;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static com.google.common.collect.Iterators.singletonIterator;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.geotools.feature.GeometryAttributeImpl;
 import org.geotools.feature.type.AttributeDescriptorImpl;
@@ -32,8 +33,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.geometry.BoundingBox;
-
-import com.google.common.base.Objects;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -283,7 +282,7 @@ public class SimpleFeatureAdapter implements SimpleFeature {
         for (int i = 0, ii = getAttributeCount(); i < ii; i++) {
             Object attribute = getAttribute(i);
             Object otherAtt = feat.getAttribute(i);
-            if (!Objects.equal(attribute, otherAtt)) {
+            if (!Objects.equals(attribute, otherAtt)) {
                 return false;
             }
         }

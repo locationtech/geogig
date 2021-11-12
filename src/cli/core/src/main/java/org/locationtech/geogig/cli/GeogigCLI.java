@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -46,7 +47,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
@@ -275,7 +275,7 @@ public class GeogigCLI {
     }
 
     private Context getContext(Hints hints) {
-        if (this.geogigContext == null || !Objects.equal(this.hints, hints)) {
+        if (this.geogigContext == null || !Objects.equals(this.hints, hints)) {
             geogigContext = newGeogigContext(hints);
         }
         return geogigContext;

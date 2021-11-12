@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.remotes.pack;
 
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 
 import java.util.List;
 

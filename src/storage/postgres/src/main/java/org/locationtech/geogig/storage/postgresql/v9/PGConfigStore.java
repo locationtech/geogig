@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.storage.postgresql.v9;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.log;
 import static org.locationtech.geogig.storage.postgresql.config.PGStorage.rollbackAndRethrow;
 

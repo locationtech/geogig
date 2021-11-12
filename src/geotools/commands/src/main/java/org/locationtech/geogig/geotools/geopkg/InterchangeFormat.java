@@ -9,9 +9,9 @@
  */
 package org.locationtech.geogig.geotools.geopkg;
 
+import static java.lang.String.format;
 import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static org.locationtech.geogig.base.Preconditions.checkState;
-import static java.lang.String.format;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_DELETE;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_INSERT;
 import static org.locationtech.geogig.geotools.geopkg.GeopkgGeogigMetadata.AUDIT_OP_UPDATE;

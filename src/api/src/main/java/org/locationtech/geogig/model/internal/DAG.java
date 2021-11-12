@@ -9,22 +9,19 @@
  */
 package org.locationtech.geogig.model.internal;
 
-import static com.google.common.base.Objects.equal;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import org.locationtech.geogig.base.Preconditions;
 import org.locationtech.geogig.model.ObjectId;
 import org.locationtech.geogig.model.RevTree;
-
-import com.google.common.base.Objects;
 
 public class DAG implements Cloneable, Serializable {
 
@@ -172,7 +169,7 @@ public class DAG implements Cloneable, Serializable {
             this.children = new HashMap<>();
         }
         NodeId oldVal = this.children.put(nodeId.name(), nodeId);
-        boolean changed = !Objects.equal(oldVal, nodeId);
+        boolean changed = !Objects.equals(oldVal, nodeId);
         if (changed) {
             setMutated();
         }
@@ -202,9 +199,11 @@ public class DAG implements Cloneable, Serializable {
             return false;
         }
         DAG d = (DAG) o;
-        return equal(originalTreeId, d.originalTreeId)
-                && equal(getTotalChildCount(), d.getTotalChildCount()) && equal(state, d.state)
-                && equal(children, d.children) && equal(buckets, d.buckets);
+        return Objects.equals(originalTreeId, d.originalTreeId)//
+                && Objects.equals(getTotalChildCount(), d.getTotalChildCount()) //
+                && Objects.equals(state, d.state)//
+                && Objects.equals(children, d.children)//
+                && Objects.equals(buckets, d.buckets);
     }
 
     public @Override String toString() {

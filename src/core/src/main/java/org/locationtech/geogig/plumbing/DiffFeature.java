@@ -9,8 +9,8 @@
  */
 package org.locationtech.geogig.plumbing;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
 
 import java.util.Arrays;
 import java.util.Map;

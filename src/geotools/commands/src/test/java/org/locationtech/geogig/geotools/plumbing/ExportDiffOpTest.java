@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -29,8 +30,6 @@ import org.locationtech.geogig.porcelain.CommitOp;
 import org.locationtech.geogig.test.integration.RepositoryTestCase;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-
-import com.google.common.base.Objects;
 
 @Ignore // REVISIT, ExportOp needs a revamp
 public class ExportDiffOpTest extends RepositoryTestCase {
@@ -135,7 +134,7 @@ public class ExportDiffOpTest extends RepositoryTestCase {
                 for (int j = 0; j < attributesExported.size() - 1; j++) {
                     Object attributeExported = attributesExported.get(j);
                     Object attributeOriginal = attributesOriginal.get(j);
-                    if (!Objects.equal(attributeOriginal, attributeExported)) {
+                    if (!Objects.equals(attributeOriginal, attributeExported)) {
                         found = false;
                         break;
                     }

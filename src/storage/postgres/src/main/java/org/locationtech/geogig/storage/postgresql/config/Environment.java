@@ -9,7 +9,6 @@
  */
 package org.locationtech.geogig.storage.postgresql.config;
 
-import static com.google.common.base.Objects.equal;
 import static java.lang.String.format;
 
 import java.net.URI;
@@ -19,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +31,6 @@ import org.locationtech.geogig.repository.Hints;
 import org.locationtech.geogig.storage.postgresql.v9.PGConfigDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -190,12 +189,12 @@ public class Environment implements Cloneable {
             return false;
         }
         Environment d = (Environment) o;
-        return equal(connectionConfig, d.connectionConfig)
-                && equal(repositoryName, d.repositoryName);
+        return Objects.equals(connectionConfig, d.connectionConfig)
+                && Objects.equals(repositoryName, d.repositoryName);
     }
 
     public @Override int hashCode() {
-        return Objects.hashCode(connectionConfig, repositoryName);
+        return Objects.hash(connectionConfig, repositoryName);
     }
 
     public TableNames getTables() {

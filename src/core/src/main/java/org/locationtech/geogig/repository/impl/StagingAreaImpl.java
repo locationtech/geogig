@@ -9,10 +9,10 @@
  */
 package org.locationtech.geogig.repository.impl;
 
-import static org.locationtech.geogig.base.Preconditions.checkArgument;
-import static org.locationtech.geogig.base.Preconditions.checkState;
 import static java.util.Spliterators.spliterator;
 import static java.util.Spliterators.spliteratorUnknownSize;
+import static org.locationtech.geogig.base.Preconditions.checkArgument;
+import static org.locationtech.geogig.base.Preconditions.checkState;
 import static org.locationtech.geogig.model.RevTree.EMPTY;
 import static org.locationtech.geogig.model.RevTree.EMPTY_TREE_ID;
 import static org.locationtech.geogig.storage.impl.PersistedIterable.newStringIterable;

@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 

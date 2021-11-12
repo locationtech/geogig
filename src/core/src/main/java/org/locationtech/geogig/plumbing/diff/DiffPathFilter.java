@@ -21,7 +21,7 @@ import org.locationtech.geogig.model.CanonicalNodeNameOrder;
 import org.locationtech.geogig.model.NodeRef;
 import org.locationtech.geogig.plumbing.diff.PreOrderDiffWalk.BucketIndex;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 /**
  * A helper class for {@link PathFilteringDiffConsumer} that evaluates whether path filters apply

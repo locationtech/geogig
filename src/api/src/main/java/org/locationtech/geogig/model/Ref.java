@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import org.locationtech.geogig.base.Preconditions;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 

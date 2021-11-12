@@ -16,7 +16,7 @@ import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.stream.Collectors;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 import lombok.Setter;

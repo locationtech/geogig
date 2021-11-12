@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
 
 import javax.swing.text.StyleConstants;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 /**
  * A character stream that can be used to format tables. Columns are separated by tabulations (

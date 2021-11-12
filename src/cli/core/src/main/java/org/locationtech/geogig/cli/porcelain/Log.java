@@ -47,7 +47,7 @@ import org.locationtech.geogig.repository.Platform;
 import org.locationtech.geogig.storage.AutoCloseableIterator;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.common.collect.Range;
 
 import picocli.CommandLine.Command;

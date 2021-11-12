@@ -31,7 +31,7 @@ import org.locationtech.geogig.porcelain.BranchDeleteOp;
 import org.locationtech.geogig.porcelain.BranchListOp;
 import org.locationtech.geogig.porcelain.BranchRenameOp;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

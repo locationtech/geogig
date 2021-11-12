@@ -31,7 +31,7 @@ import org.locationtech.geogig.repository.Repository;
 import org.locationtech.geogig.repository.RepositoryFinder;
 import org.locationtech.geogig.repository.RepositoryResolver;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;

@@ -41,7 +41,7 @@ import org.locationtech.geogig.storage.text.Marshallers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.NonNull;
 

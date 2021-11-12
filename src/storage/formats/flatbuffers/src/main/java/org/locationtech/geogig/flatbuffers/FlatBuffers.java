@@ -53,7 +53,7 @@ import org.locationtech.geogig.model.RevTree;
 import org.locationtech.geogig.model.ValueArray;
 import org.locationtech.jts.geom.Envelope;
 
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 import com.google.flatbuffers.FlatBufferBuilder;
 import com.google.flatbuffers.FlatBufferBuilder.ByteBufferFactory;
 

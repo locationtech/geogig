@@ -12,7 +12,9 @@ package org.locationtech.geogig.base;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
 
-public class Preconditions {
+import lombok.experimental.UtilityClass;
+
+public @UtilityClass class Preconditions {
 
     public static void checkArgument(boolean b) {
         if (!b) {

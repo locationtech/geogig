@@ -45,7 +45,7 @@ import org.locationtech.geogig.storage.decorator.ForwardingObjectDatabase;
 import org.locationtech.geogig.storage.decorator.ForwardingRefDatabase;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
+import org.locationtech.geogig.base.Strings;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

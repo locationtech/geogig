@@ -36,7 +36,7 @@
     <slf4j.version>1.7.5</slf4j.version>
     <hikaricp.version>5.0.0</hikaricp.version>
     <rocksdb.version>6.25.3</rocksdb.version>
-    <postgresql.version>42.3.1</postgresql.version>
+    <postgresql.version>42.3.7</postgresql.version>
     <appassembler.plugin.version>2.1.0</appassembler.plugin.version>
     <dependency.plugin.version>3.2.0</dependency.plugin.version>
     <surefire.plugin.version>3.0.0-M5</surefire.plugin.version>
